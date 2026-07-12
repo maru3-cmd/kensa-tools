@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1F3341">
+<meta name="description" content="穴位置の真位置度判定。図面値と実測値から位置度2√(ΔX²+ΔY²)を計算し、公差域の円に実測位置をプロットして合否判定。Ⓜ(最大実体公差)のボーナス公差にも対応。">
+<title>真位置度判定 | 検査計算ツール</title>
+<style>
+  :root{
+    --paper:#F2F4F5;
+    --sheet:#FFFFFF;
+    --ink:#1F3341;
+    --line:#8FA2AF;
+    --red:#D63426;
+    --green:#2E9E5B;
+    --dro-bg:#15181A;
+    --dro-red:#FF5A48;
+    --dro-green:#42D77D;
+    --dro-dim:#9FB0B8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI",sans-serif;
+    background:var(--paper);color:var(--ink);
+    min-height:100dvh;display:flex;flex-direction:column;align-items:center;
+    padding:0 12px calc(16px + env(safe-area-inset-bottom));
+  }
+  .wrap{width:100%;max-width:480px}
+
+  header{display:flex;align-items:baseline;justify-content:space-between;padding:14px 2px 10px}
+  header h1{font-size:16px;font-weight:700;letter-spacing:.04em}
+  header h1 small{display:block;font-size:11px;font-weight:400;color:#5B707E;letter-spacing:.08em;margin-top:2px}
+  header a{font-size:12px;color:#5B707E;text-decoration:none}
+
+  .sheet{background:var(--sheet);border:2px solid var(--ink);padding:5px}
+  .sheet-inner{border:1px solid var(--ink)}
+  .sheet svg{display:block;width:100%;height:auto}
+  .titleblock{display:flex;border-top:1px solid var(--ink);font-size:9px;letter-spacing:.06em}
+  .titleblock div{padding:3px 8px;border-right:1px solid var(--ink)}
+  .titleblock div:last-child{border-right:none;margin-left:auto}
+  .titleblock b{font-weight:700}
+
+  .inputs{margin-top:12px;display:flex;flex-direction:column;gap:10px}
+  .row{
+    display:grid;grid-template-columns:26px 1fr 130px 40px;
+    align-items:center;gap:8px;
+    background:var(--sheet);border:1px solid #D5DDE2;border-radius:10px;
+    padding:10px 12px;
+  }
+  .badge{
+    width:22px;height:22px;border-radius:50%;
+    background:var(--ink);color:#fff;font-size:12px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .row label{font-size:13px;font-weight:600}
+  .row label small{display:block;font-size:10px;font-weight:400;color:#5B707E}
+  .row input{
+    width:100%;font-size:19px;font-weight:600;text-align:right;
+    font-variant-numeric:tabular-nums;
+    border:none;border-bottom:2px solid var(--ink);
+    background:transparent;color:var(--ink);
+    padding:2px 4px;border-radius:0;outline:none;
+  }
+  .row input:focus{border-bottom-color:var(--red)}
+  .unit{font-size:12px;color:#5B707E}
+  .pairrow{
+    display:grid;grid-template-columns:26px 1fr 1fr;
+    align-items:center;gap:8px;
+    background:var(--sheet);border:1px solid #D5DDE2;border-radius:10px;
+    padding:10px 12px;
+  }
+  .fld{display:flex;align-items:baseline;gap:5px}
+  .fld .fl{font-size:11px;color:#5B707E;font-weight:600;flex:none}
+  .fld input{
+    width:100%;font-size:18px;font-weight:600;text-align:right;
+    font-variant-numeric:tabular-nums;
+    border:none;border-bottom:2px solid var(--ink);
+    background:transparent;color:var(--ink);
+    padding:2px 3px;border-radius:0;outline:none;min-width:0;
+  }
+  .fld input:focus{border-bottom-color:var(--red)}
+  .pairrow .lab2{font-size:12px;font-weight:700;color:#5B707E;grid-column:2/4;margin-bottom:-4px}
+
+  .instTgl{
+    margin-top:12px;width:100%;
+    display:flex;align-items:center;justify-content:space-between;
+    background:var(--sheet);border:1px solid #D5DDE2;border-radius:10px;
+    padding:11px 12px;font-size:13px;font-weight:600;color:var(--ink);
+  }
+  .instTgl .sw{
+    width:44px;height:26px;border-radius:13px;background:#D5DDE2;position:relative;flex:none;
+    transition:background .15s;
+  }
+  .instTgl .sw::after{
+    content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;
+    background:#fff;transition:left .15s;box-shadow:0 1px 3px rgba(0,0,0,.25);
+  }
+  .instTgl.on .sw{background:var(--ink)}
+  .instTgl.on .sw::after{left:21px}
+  .mmcBox{display:none;margin-top:10px}
+  .mmcBox.show{display:block}
+  .mode{display:inline-flex;border:1px solid var(--ink);border-radius:7px;overflow:hidden}
+  .mode button{font-size:11px;padding:5px 10px;border:none;background:var(--sheet);color:var(--ink);font-weight:700}
+  .mode button.on{background:var(--ink);color:#fff}
+  .note{font-size:11px;color:#5B707E;line-height:1.7;margin-top:8px;padding:0 2px}
+  .note b{color:var(--ink)}
+
+  .dro{
+    margin-top:16px;background:var(--dro-bg);border-radius:12px;
+    padding:14px 16px 12px;box-shadow:inset 0 2px 8px rgba(0,0,0,.5);
+  }
+  .judge{display:flex;align-items:baseline;justify-content:space-between;gap:10px;min-height:42px}
+  .judge .pos{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-variant-numeric:tabular-nums;
+    color:#c9d2d7;font-size:15px;font-weight:600;
+  }
+  .judge .pos small{color:#7d8a91;font-size:11px;font-weight:700;letter-spacing:.06em;display:block}
+  .judge .res{font-size:29px;font-weight:800;letter-spacing:.15em}
+  .judge .res.ok{color:var(--dro-green);text-shadow:0 0 12px rgba(66,215,125,.4)}
+  .judge .res.ng{color:var(--dro-red);text-shadow:0 0 12px rgba(255,90,72,.45)}
+  .judge .res.none{color:#4a555b;font-size:14px;font-weight:600;letter-spacing:.04em}
+  .judge-sub{
+    text-align:right;color:#7d8a91;font-size:12px;min-height:16px;
+    font-variant-numeric:tabular-nums;margin-top:2px;
+  }
+  .dro-grid{
+    display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;
+    border-top:1px solid #2a3034;margin-top:10px;padding-top:10px;
+  }
+  .cellv{display:flex;flex-direction:column;align-items:flex-end;padding:4px 8px;border-radius:8px}
+  .cellv:active{background:#1e2327}
+  .cellv .k{color:#7d8a91;font-size:11px;font-weight:700;letter-spacing:.06em;align-self:flex-start}
+  .cellv .v{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:19px;font-weight:600;color:var(--dro-dim);
+  }
+  .cellv .s{color:#5d6a71;font-size:10px}
+  .dro-foot{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-top:10px;border-top:1px solid #2a3034;padding-top:9px;gap:8px;
+  }
+  .statusTxt{color:#5d6a71;font-size:11px;letter-spacing:.02em}
+  .statusTxt.err{color:#FF8A7E}
+  .copy{
+    font-size:12px;font-weight:700;color:#c9d2d7;background:#252b2f;
+    border:1px solid #3a4247;border-radius:7px;padding:6px 14px;flex:none;
+  }
+  .copy:active{background:#31383d}
+
+  footer{margin-top:16px;font-size:11px;color:#5B707E;line-height:1.7;text-align:center;letter-spacing:.03em}
+
+  .toast{
+    position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);
+    background:var(--ink);color:#fff;font-size:13px;
+    padding:9px 20px;border-radius:20px;opacity:0;pointer-events:none;
+    transition:opacity .25s,transform .25s;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (prefers-reduced-motion:reduce){.toast{transition:none;} .instTgl .sw,.instTgl .sw::after{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>真位置度判定<small>穴位置の合否 = 2×√(ΔX²+ΔY²)</small></h1>
+    <a href="../index.html">≡ ツール一覧</a>
+  </header>
+
+  <!-- 公差域プロット -->
+  <div class="sheet">
+    <div class="sheet-inner">
+      <svg id="dwg" viewBox="0 0 340 250" role="img" aria-label="位置度公差域の円と実測位置のプロット">
+        <defs>
+          <marker id="arRed" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L8,3 L0,6 z" fill="#D63426"/>
+          </marker>
+        </defs>
+        <!-- 真位置(図面位置)の十字 -->
+        <line x1="60" y1="125" x2="280" y2="125" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="12 3 2 3"/>
+        <line x1="170" y1="18" x2="170" y2="232" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="12 3 2 3"/>
+        <text x="284" y="129" font-size="10" fill="#5B707E">+X</text>
+        <text x="164" y="14" font-size="10" fill="#5B707E">+Y</text>
+        <text x="8" y="16" font-size="10" fill="#5B707E">十字の中心 = 図面の真位置</text>
+        <g id="dyn"></g>
+        <text id="emptyMsg" x="170" y="128" font-size="11" fill="#8FA2AF" text-anchor="middle" stroke="#fff" stroke-width="3" paint-order="stroke">値を入力すると公差域と実測位置が描かれます</text>
+      </svg>
+      <div class="titleblock">
+        <div><b>品名</b> 真位置度判定</div>
+        <div><b>方式</b> 2√(ΔX²+ΔY²)</div>
+        <div>TOOL-13</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="inputs">
+    <div class="row">
+      <span class="badge">1</span>
+      <label for="fT">位置度公差 φ<small>図面の公差記入枠の値</small></label>
+      <input id="fT" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+    </div>
+    <div class="pairrow">
+      <span class="badge">2</span>
+      <span class="lab2">図面値(理論的に正確な寸法)</span>
+      <span></span>
+      <span class="fld"><span class="fl">X</span><input id="fBX" type="text" inputmode="decimal" autocomplete="off" placeholder="―"></span>
+      <span class="fld"><span class="fl">Y</span><input id="fBY" type="text" inputmode="decimal" autocomplete="off" placeholder="―"></span>
+    </div>
+    <div class="pairrow">
+      <span class="badge">3</span>
+      <span class="lab2">実測値(測定した穴位置)</span>
+      <span></span>
+      <span class="fld"><span class="fl">X</span><input id="fMX" type="text" inputmode="decimal" autocomplete="off" placeholder="―"></span>
+      <span class="fld"><span class="fl">Y</span><input id="fMY" type="text" inputmode="decimal" autocomplete="off" placeholder="―"></span>
+    </div>
+  </div>
+  <div class="note">差(ΔX・ΔY)が既に分かっている場合は、図面値を0・0にして実測値に差を入れてもOKです。</div>
+
+  <button class="instTgl" type="button" id="mmcTgl">
+    <span>Ⓜ 最大実体公差(ボーナス公差)を使う</span>
+    <span class="sw"></span>
+  </button>
+  <div class="mmcBox" id="mmcBox">
+    <div class="inputs">
+      <div class="row" style="grid-template-columns:26px 1fr 150px">
+        <span class="badge">4</span>
+        <label>対象<small>穴か軸か</small></label>
+        <div class="mode" role="group" aria-label="穴か軸か">
+          <button type="button" id="mHole" class="on">穴</button>
+          <button type="button" id="mShaft">軸</button>
+        </div>
+      </div>
+      <div class="row">
+        <span class="badge">5</span>
+        <label for="fDa">実測径<small>測定したφ</small></label>
+        <input id="fDa" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+        <span class="unit">mm</span>
+      </div>
+      <div class="row">
+        <span class="badge">6</span>
+        <label for="fDm">MMC径<small id="mmcHint">穴=最小許容径(いちばん小さい穴)</small></label>
+        <input id="fDm" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+        <span class="unit">mm</span>
+      </div>
+    </div>
+    <div class="note">
+      Ⓜの考え方: <b>穴が大きく(軸が細く)仕上がった分だけ、位置ズレの許容が増えます</b>。増えた分=ボーナス公差。有効公差 = 図面公差 + ボーナス。
+    </div>
+  </div>
+
+  <!-- 結果 -->
+  <div class="dro">
+    <div class="judge">
+      <span class="pos"><small>実測位置度</small><span id="posVal">―</span></span>
+      <span class="res none" id="resTxt">値を入力してください</span>
+    </div>
+    <div class="judge-sub" id="judgeSub"></div>
+    <div class="dro-grid">
+      <div class="cellv" id="cDX"><span class="k">ΔX</span><span class="v" id="vDX">―</span><span class="s">mm</span></div>
+      <div class="cellv" id="cDY"><span class="k">ΔY</span><span class="v" id="vDY">―</span><span class="s">mm</span></div>
+      <div class="cellv" id="cEff"><span class="k">有効公差 φ</span><span class="v" id="vEff">―</span><span class="s">mm</span></div>
+      <div class="cellv" id="cBonus"><span class="k">ボーナス公差</span><span class="v" id="vBonus">―</span><span class="s">mm</span></div>
+    </div>
+    <div class="dro-foot">
+      <span class="statusTxt" id="statusTxt">位置度 = 2 × √(ΔX² + ΔY²)</span>
+      <button class="copy" type="button" id="copyBtn">結果コピー</button>
+    </div>
+  </div>
+
+  <footer>
+    このページは計算のみを行います。入力値の送信・保存は一切ありません(端末内で完結)。<br>
+    データム系(基準の取り方)は図面の指示に従って測定してください。
+  </footer>
+</div>
+
+<div class="toast" id="toast">コピーしました</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var NS='http://www.w3.org/2000/svg';
+  var mmcOn=false, isHole=true;
+  var lastText=null;
+
+  function num(v){
+    if(v==null)return NaN;
+    v=String(v).replace(/[０-９．−]/g,function(c){
+      if(c==='−')return '-';
+      return String.fromCharCode(c.charCodeAt(0)-0xFEE0);
+    }).replace(/。/g,'.').replace(/[,，、\s]/g,'').trim();
+    if(v==='')return NaN;
+    return Number(v);
+  }
+  function el(name,attrs){
+    var e=document.createElementNS(NS,name);
+    for(var k in attrs)e.setAttribute(k,attrs[k]);
+    return e;
+  }
+  function f4(v){return v.toFixed(4)}
+
+  function draw(dx,dy,T,Teff){
+    var dyn=$('dyn');
+    while(dyn.firstChild)dyn.removeChild(dyn.firstChild);
+    var has=(dx!=null);
+    $('emptyMsg').style.display=has||T>0?'none':'';
+    if(!has&&!(T>0))return;
+
+    var CX=170,CY=125;
+    var rDev=has?Math.sqrt(dx*dx+dy*dy):0;
+    var rT=(T>0)?T/2:0;
+    var rE=(Teff>0)?Teff/2:rT;
+    var span=Math.max(rE,rDev,1e-9);
+    var s=92/span;
+
+    // 有効公差円(Ⓜで拡大時は点線の外円)
+    if(Teff>0&&Teff>T+1e-12){
+      dyn.appendChild(el('circle',{cx:CX,cy:CY,r:(rE*s).toFixed(1),fill:'#EAF4EE',stroke:'#2E9E5B','stroke-width':1.4,'stroke-dasharray':'6 4'}));
+      var te=el('text',{x:CX,y:(CY-rE*s-6).toFixed(1),'font-size':10,fill:'#2E9E5B','text-anchor':'middle',stroke:'#fff','stroke-width':3,'paint-order':'stroke'});
+      te.textContent='有効 φ'+Teff.toFixed(4).replace(/0+$/,'').replace(/\.$/,'');
+      dyn.appendChild(te);
+    }
+    // 図面公差円
+    if(T>0){
+      dyn.appendChild(el('circle',{cx:CX,cy:CY,r:(rT*s).toFixed(1),fill:(Teff>T+1e-12)?'none':'#D9E2E8',stroke:'#1F3341','stroke-width':1.5}));
+      var tt=el('text',{x:CX,y:(CY+rT*s+13).toFixed(1),'font-size':10,fill:'#1F3341','text-anchor':'middle',stroke:'#fff','stroke-width':3,'paint-order':'stroke'});
+      tt.textContent='図面 φ'+T.toFixed(4).replace(/0+$/,'').replace(/\.$/,'');
+      dyn.appendChild(tt);
+    }
+
+    // 実測位置
+    if(has){
+      var px=CX+dx*s, py=CY-dy*s;
+      var ok=(Teff>0)?(2*rDev<=Teff+1e-9):null;
+      var col=(ok==null)?'#1F3341':(ok?'#2E9E5B':'#D63426');
+      if(rDev*s>4){
+        dyn.appendChild(el('line',{x1:CX,y1:CY,x2:px.toFixed(1),y2:py.toFixed(1),stroke:col,'stroke-width':1.5}));
+      }
+      dyn.appendChild(el('circle',{cx:px.toFixed(1),cy:py.toFixed(1),r:4.2,fill:col}));
+      var lx=px+(dx>=0?12:-12), ly=py+(dy>=0?-10:16);
+      var lt=el('text',{x:lx.toFixed(1),y:ly.toFixed(1),'font-size':11,'font-weight':700,fill:col,'text-anchor':(dx>=0?'start':'end'),stroke:'#fff','stroke-width':3.5,'paint-order':'stroke'});
+      lt.textContent='実測';
+      dyn.appendChild(lt);
+    }
+  }
+
+  function recalc(){
+    var T=num($('fT').value);
+    var bx=num($('fBX').value), by=num($('fBY').value);
+    var mx=num($('fMX').value), my=num($('fMY').value);
+    lastText=null;
+
+    var hasPos=!isNaN(bx)&&!isNaN(by)&&!isNaN(mx)&&!isNaN(my);
+    var dx=hasPos?(mx-bx):null, dy=hasPos?(my-by):null;
+
+    // ボーナス
+    var bonus=0, bonusMsg='', mmcErr=null;
+    if(mmcOn){
+      var da=num($('fDa').value), dm=num($('fDm').value);
+      if(!isNaN(da)&&!isNaN(dm)){
+        bonus=isHole?(da-dm):(dm-da);
+        if(bonus<-1e-12){
+          mmcErr=isHole?'実測径がMMC(最小許容径)を下回っています=径公差外の可能性':'実測径がMMC(最大許容径)を上回っています=径公差外の可能性';
+          bonus=0;
+        }
+      }else if($('fDa').value.trim()!==''||$('fDm').value.trim()!==''){
+        bonusMsg='実測径とMMC径の両方を入力するとボーナスが加算されます';
+      }
+    }
+    var Teff=(T>0)?T+bonus:NaN;
+
+    // 表示
+    $('vDX').textContent=hasPos?((dx>=0?'+':'')+f4(dx)):'―';
+    $('vDY').textContent=hasPos?((dy>=0?'+':'')+f4(dy)):'―';
+    $('vEff').textContent=(Teff>0)?f4(Teff):'―';
+    $('vBonus').textContent=mmcOn?('+'+f4(bonus)):'―(Ⓜ未使用)';
+
+    var res=$('resTxt');
+    if(!hasPos){
+      $('posVal').textContent='―';
+      res.textContent=(T>0)?'図面値・実測値を入力':'値を入力してください';
+      res.className='res none';
+      $('judgeSub').textContent='';
+      $('statusTxt').textContent='位置度 = 2 × √(ΔX² + ΔY²)';
+      $('statusTxt').className='statusTxt';
+      draw(null,null,T>0?T:0,Teff>0?Teff:0);
+      return;
+    }
+
+    var pos=2*Math.sqrt(dx*dx+dy*dy);
+    $('posVal').textContent=f4(pos);
+
+    var lines=['[真位置度] 位置度='+f4(pos)];
+    lines.push('ΔX='+(dx>=0?'+':'')+f4(dx)+' ΔY='+(dy>=0?'+':'')+f4(dy));
+
+    if(Teff>0){
+      var ok=pos<=Teff+1e-9;
+      res.textContent=ok?'合格':'不合格';
+      res.className='res '+(ok?'ok':'ng');
+      var margin=Teff-pos;
+      $('judgeSub').textContent=ok
+        ?('余裕 '+f4(margin)+' mm(有効公差 φ'+f4(Teff)+')')
+        :('超過 '+f4(-margin)+' mm(有効公差 φ'+f4(Teff)+')');
+      lines.push('有効公差 φ'+f4(Teff)+(mmcOn?'(図面φ'+f4(T)+'+ボーナス'+f4(bonus)+')':'')+' → '+(ok?'合格':'不合格'));
+    }else{
+      res.textContent='公差を入れると判定';
+      res.className='res none';
+      $('judgeSub').textContent='';
+    }
+    lastText=lines.join('\n');
+
+    var st='位置度 = 2 × √(ΔX² + ΔY²)';
+    if(mmcErr){st='⚠ '+mmcErr;$('statusTxt').className='statusTxt err'}
+    else if(bonusMsg){st=bonusMsg;$('statusTxt').className='statusTxt'}
+    else{$('statusTxt').className='statusTxt'}
+    $('statusTxt').textContent=st;
+
+    draw(dx,dy,T>0?T:0,Teff>0?Teff:0);
+  }
+
+  ['fT','fBX','fBY','fMX','fMY','fDa','fDm'].forEach(function(id){$(id).addEventListener('input',recalc)});
+
+  $('mmcTgl').addEventListener('click',function(){
+    mmcOn=!mmcOn;
+    $('mmcTgl').classList.toggle('on',mmcOn);
+    $('mmcBox').classList.toggle('show',mmcOn);
+    recalc();
+  });
+  function setHole(h){
+    isHole=h;
+    $('mHole').classList.toggle('on',h);
+    $('mShaft').classList.toggle('on',!h);
+    $('mmcHint').textContent=h?'穴=最小許容径(いちばん小さい穴)':'軸=最大許容径(いちばん太い軸)';
+    recalc();
+  }
+  $('mHole').addEventListener('click',function(){setHole(true)});
+  $('mShaft').addEventListener('click',function(){setHole(false)});
+
+  var toastTimer=null;
+  function toast(msg){
+    var t=$('toast');t.textContent=msg;t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer=setTimeout(function(){t.classList.remove('show')},1600);
+  }
+  $('copyBtn').addEventListener('click',function(){
+    if(!lastText){toast('まだ結果がありません');return}
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(lastText).then(function(){toast('コピーしました')},function(){toast('コピーできませんでした')});
+    }else{
+      var ta=document.createElement('textarea');
+      ta.value=lastText;document.body.appendChild(ta);ta.select();
+      try{document.execCommand('copy');toast('コピーしました')}catch(e){toast('コピーできませんでした')}
+      document.body.removeChild(ta);
+    }
+  });
+
+  recalc();
+})();
+</script>
+</body>
+</html>

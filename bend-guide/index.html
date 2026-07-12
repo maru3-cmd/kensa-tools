@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1F3341">
+<meta name="description" content="パイプ・チューブ製の曲げガイド(杖・傘の柄のような形)の計算。直線と曲げ(R・角度)の並びから形状を作図し、展開長・端点間距離・座標を算出。計算は端末内で完結します。">
+<title>曲げガイド計算 | 検査計算ツール</title>
+<style>
+  :root{
+    --paper:#F2F4F5;
+    --sheet:#FFFFFF;
+    --ink:#1F3341;
+    --line:#8FA2AF;
+    --red:#D63426;
+    --dro-bg:#15181A;
+    --dro-red:#FF5A48;
+    --dro-dim:#9FB0B8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI",sans-serif;
+    background:var(--paper);color:var(--ink);
+    min-height:100dvh;display:flex;flex-direction:column;align-items:center;
+    padding:0 12px calc(16px + env(safe-area-inset-bottom));
+  }
+  .wrap{width:100%;max-width:480px}
+
+  header{display:flex;align-items:baseline;justify-content:space-between;padding:14px 2px 10px}
+  header h1{font-size:16px;font-weight:700;letter-spacing:.04em}
+  header h1 small{display:block;font-size:11px;font-weight:400;color:#5B707E;letter-spacing:.08em;margin-top:2px}
+  header a{font-size:12px;color:#5B707E;text-decoration:none}
+
+  .sheet{background:var(--sheet);border:2px solid var(--ink);padding:5px}
+  .sheet-inner{border:1px solid var(--ink)}
+  .sheet svg{display:block;width:100%;height:auto}
+  .titleblock{display:flex;border-top:1px solid var(--ink);font-size:9px;letter-spacing:.06em}
+  .titleblock div{padding:3px 8px;border-right:1px solid var(--ink)}
+  .titleblock div:last-child{border-right:none;margin-left:auto}
+  .titleblock b{font-weight:700}
+
+  .hint{margin-top:10px;font-size:11px;color:#5B707E;line-height:1.7;padding:0 2px}
+  .hint b{color:var(--ink)}
+
+  .inputs{margin-top:8px;display:flex;flex-direction:column;gap:8px}
+  .seg{
+    display:grid;align-items:center;gap:8px;
+    background:var(--sheet);border:1px solid #D5DDE2;border-radius:10px;
+    padding:9px 12px;
+  }
+  .seg.st{grid-template-columns:44px 1fr 34px}
+  .seg.bd{grid-template-columns:44px 1fr 1fr;border-left:4px solid var(--ink)}
+  .tag{
+    font-size:11px;font-weight:700;letter-spacing:.05em;
+    color:#fff;background:var(--ink);border-radius:6px;
+    padding:4px 0;text-align:center;
+  }
+  .seg.bd .tag{background:#5B707E}
+  .fld{display:flex;align-items:baseline;gap:5px}
+  .fld .fl{font-size:11px;color:#5B707E;font-weight:600;flex:none}
+  .fld input{
+    width:100%;font-size:18px;font-weight:600;text-align:right;
+    font-variant-numeric:tabular-nums;
+    border:none;border-bottom:2px solid var(--ink);
+    background:transparent;color:var(--ink);
+    padding:2px 3px;border-radius:0;outline:none;min-width:0;
+  }
+  .fld input:focus{border-bottom-color:var(--red)}
+  .fld .u{font-size:11px;color:#5B707E;flex:none}
+  .unit{font-size:12px;color:#5B707E}
+
+  .btnrow{display:flex;gap:8px;margin-top:10px}
+  .addBend{
+    flex:1;font-size:13px;font-weight:700;padding:11px 4px;
+    border:1.5px dashed var(--ink);border-radius:10px;
+    background:var(--sheet);color:var(--ink);letter-spacing:.05em;
+  }
+  .addBend:active{background:var(--ink);color:#fff}
+  .delBend{
+    flex:none;font-size:13px;font-weight:700;padding:11px 14px;
+    border:1.5px solid #C9D3DA;border-radius:10px;
+    background:var(--sheet);color:#5B707E;
+  }
+  .delBend:active{border-color:var(--red);color:var(--red)}
+
+  .dro{
+    margin-top:14px;background:var(--dro-bg);border-radius:12px;
+    padding:16px 18px 12px;box-shadow:inset 0 2px 8px rgba(0,0,0,.5);
+  }
+  .dro-line{display:flex;align-items:baseline;gap:10px;justify-content:flex-end}
+  .dro-label{color:#7d8a91;font-size:13px;font-weight:700;letter-spacing:.08em}
+  .dro-val{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:34px;font-weight:600;color:var(--dro-red);
+    text-shadow:0 0 10px rgba(255,90,72,.35);letter-spacing:.02em;
+  }
+  .dro-unit{color:#7d8a91;font-size:13px;font-weight:600}
+  .dro-grid{
+    display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;
+    border-top:1px solid #2a3034;margin-top:10px;padding-top:10px;
+  }
+  .cellv{display:flex;flex-direction:column;align-items:flex-end;padding:4px 8px;border-radius:8px}
+  .cellv:active{background:#1e2327}
+  .cellv .k{color:#7d8a91;font-size:11px;font-weight:700;letter-spacing:.06em;align-self:flex-start}
+  .cellv .v{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:19px;font-weight:600;color:var(--dro-dim);
+  }
+  .cellv .s{color:#5d6a71;font-size:10px}
+  .dro-foot{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-top:10px;border-top:1px solid #2a3034;padding-top:9px;gap:8px;
+  }
+  .statusTxt{color:#5d6a71;font-size:11px;letter-spacing:.02em}
+  .statusTxt.err{color:#FF8A7E}
+  .copy{
+    font-size:12px;font-weight:700;color:#c9d2d7;background:#252b2f;
+    border:1px solid #3a4247;border-radius:7px;padding:6px 14px;flex:none;
+  }
+  .copy:active{background:#31383d}
+
+  details.dtl{
+    background:var(--sheet);border:1px solid #D5DDE2;border-radius:12px;
+    padding:10px 12px;margin-top:10px;
+  }
+  details.dtl summary{font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.06em}
+  table.dt{
+    width:100%;border-collapse:collapse;margin-top:8px;
+    font-size:12.5px;font-variant-numeric:tabular-nums;
+  }
+  table.dt th{font-size:10px;color:#5B707E;text-align:right;padding:3px 6px;border-bottom:1px solid var(--ink)}
+  table.dt th:first-child{text-align:left}
+  table.dt td{text-align:right;padding:5px 6px;border-bottom:1px solid #E4EAEE}
+  table.dt td:first-child{text-align:left;color:#5B707E;font-size:12px}
+
+  footer{margin-top:16px;font-size:11px;color:#5B707E;line-height:1.7;text-align:center;letter-spacing:.03em}
+
+  .toast{
+    position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);
+    background:var(--ink);color:#fff;font-size:13px;
+    padding:9px 20px;border-radius:20px;opacity:0;pointer-events:none;
+    transition:opacity .25s,transform .25s;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>曲げガイド計算<small>パイプ・チューブの形状/展開長</small></h1>
+    <a href="../index.html">≡ ツール一覧</a>
+  </header>
+
+  <!-- 図面シート -->
+  <div class="sheet">
+    <div class="sheet-inner">
+      <svg id="dwg" viewBox="0 0 340 250" role="img" aria-label="直線と曲げの並びで定義した曲げガイドの中心線形状">
+        <defs>
+          <marker id="arRed" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L8,3 L0,6 z" fill="#D63426"/>
+          </marker>
+        </defs>
+        <g id="dyn"></g>
+        <text id="emptyMsg" x="170" y="128" font-size="12" fill="#8FA2AF" text-anchor="middle">直線と曲げを入力すると形状が描かれます</text>
+      </svg>
+      <div class="titleblock">
+        <div><b>品名</b> 曲げガイド</div>
+        <div><b>方式</b> 中心線計算</div>
+        <div>TOOL-10</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hint">
+    直線は<b>交点寸法</b>(曲げの延長線が交わる点までの長さ=図面の入れ方)で入力。曲げ角度は<b>進行方向が変わる量</b>で、<b>+が左曲げ/−が右曲げ</b>。Rは中心線の曲げ半径です。<b>弧から始まる形は最初の直線を0</b>に(終わりも同様)。
+  </div>
+
+  <!-- 区間入力 -->
+  <div class="inputs" id="segList"></div>
+
+  <div class="btnrow">
+    <button class="addBend" type="button" id="addBend">+ 曲げ+直線を追加</button>
+    <button class="delBend" type="button" id="delBend">最後の曲げを削除</button>
+  </div>
+
+  <!-- 結果 -->
+  <div class="dro">
+    <div class="dro-line">
+      <span class="dro-label">展開長(切断長)</span>
+      <span class="dro-val" id="out">―.―――</span>
+      <span class="dro-unit">mm</span>
+    </div>
+    <div class="dro-grid">
+      <div class="cellv" id="cDist"><span class="k">端点間距離</span><span class="v" id="vDist">―</span><span class="s">mm</span></div>
+      <div class="cellv" id="cBend"><span class="k">曲げ数</span><span class="v" id="vBend">0</span><span class="s">箇所</span></div>
+      <div class="cellv" id="cX"><span class="k">外形 X(全長)</span><span class="v" id="vX">―</span><span class="s">mm</span></div>
+      <div class="cellv" id="cY"><span class="k">外形 Y(全高)</span><span class="v" id="vY">―</span><span class="s">mm</span></div>
+    </div>
+    <div class="dro-foot">
+      <span class="statusTxt" id="statusTxt">直線1の長さから入力してください</span>
+      <button class="copy" type="button" id="copyBtn">全結果コピー</button>
+    </div>
+  </div>
+
+  <details class="dtl">
+    <summary>▼ 区間の内訳と座標</summary>
+    <table class="dt">
+      <thead><tr><th>区間</th><th>入力</th><th>実長/弧長</th></tr></thead>
+      <tbody id="secBody"></tbody>
+    </table>
+    <table class="dt" style="margin-top:10px">
+      <thead><tr><th>点</th><th>X</th><th>Y</th></tr></thead>
+      <tbody id="coBody"></tbody>
+    </table>
+  </details>
+
+  <footer>
+    このページは計算のみを行います。入力値の送信・保存は一切ありません(端末内で完結)。<br>
+    ※中心線基準・平面(2D)曲げ対応。ひねりを伴う3D曲げは非対応です。外形はパイプ径を含みません。
+  </footer>
+</div>
+
+<div class="toast" id="toast">コピーしました</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var NS='http://www.w3.org/2000/svg';
+  var MAXBEND=4;
+
+  // 状態: 直線 straights[0..n](交点寸法), 曲げ bends[0..n-1] {a,r}
+  var straights=[''];
+  var bends=[];
+
+  function zen(v){
+    return String(v).replace(/[０-９．−]/g,function(c){
+      if(c==='−')return '-';
+      return String.fromCharCode(c.charCodeAt(0)-0xFEE0);
+    }).replace(/。/g,'.');
+  }
+  function num(v){
+    if(v==null)return NaN;
+    v=zen(v).replace(/[,，、]/g,'').trim();
+    if(v==='')return NaN;
+    return Number(v);
+  }
+  function parseAngle(v){
+    if(v==null)return NaN;
+    var s=zen(v).replace(/[°度]/g,' ').replace(/[′’'分]/g,' ').replace(/[″”"秒]/g,' ').trim();
+    if(s==='')return NaN;
+    var parts=s.split(/\s+/);
+    if(parts.length===1)return Number(parts[0]);
+    var d=Number(parts[0]), m=Number(parts[1]||0), sec=Number(parts[2]||0);
+    if(isNaN(d)||isNaN(m)||isNaN(sec))return NaN;
+    var sign=(d<0||/^\s*-/.test(parts[0]))?-1:1;
+    return sign*(Math.abs(d)+m/60+sec/3600);
+  }
+  function el(name,attrs){
+    var e=document.createElementNS(NS,name);
+    for(var k in attrs)e.setAttribute(k,attrs[k]);
+    return e;
+  }
+  function fmt(v){return v.toFixed(3)}
+
+  /* ---- 入力行(構造変更時のみ再構築) ---- */
+  function buildRows(){
+    var box=$('segList');
+    box.innerHTML='';
+    var n=bends.length;
+    for(var i=0;i<=n;i++){
+      var d=document.createElement('div');
+      d.className='seg st';
+      d.innerHTML=
+        '<span class="tag">直線'+(i+1)+'</span>'+
+        '<span class="fld"><span class="fl">'+(i===0&&n>0?'交点寸法(0=弧から開始)':(i===n&&n>0?'交点寸法(0=弧で終了)':'長さ'))+'</span>'+
+        '<input data-t="s" data-i="'+i+'" type="text" inputmode="decimal" autocomplete="off" placeholder="―"></span>'+
+        '<span class="unit">mm</span>';
+      box.appendChild(d);
+      d.querySelector('input').value=straights[i];
+      if(i<n){
+        var b=document.createElement('div');
+        b.className='seg bd';
+        b.innerHTML=
+          '<span class="tag">曲げ'+(i+1)+'</span>'+
+          '<span class="fld"><span class="fl">θ</span>'+
+            '<input data-t="a" data-i="'+i+'" type="text" inputmode="decimal" autocomplete="off" placeholder="±―"><span class="u">°</span></span>'+
+          '<span class="fld"><span class="fl">R</span>'+
+            '<input data-t="r" data-i="'+i+'" type="text" inputmode="decimal" autocomplete="off" placeholder="―"><span class="u">mm</span></span>';
+        box.appendChild(b);
+        b.querySelector('[data-t="a"]').value=bends[i].a;
+        b.querySelector('[data-t="r"]').value=bends[i].r;
+      }
+    }
+  }
+
+  /* ---- 形状計算 ---- */
+  function compute(){
+    var n=bends.length;
+    var L=[],A=[],R=[];
+    var i;
+    for(i=0;i<=n;i++){
+      L.push(num(straights[i]));
+      if(isNaN(L[i])||L[i]<0)return {err:(isNaN(L[i])?'直線'+(i+1)+' を入力してください':'直線'+(i+1)+' は0以上で入力してください')};
+    }
+    for(i=0;i<n;i++){
+      A.push(parseAngle(bends[i].a));
+      R.push(num(bends[i].r));
+      if(isNaN(A[i]))return {err:'曲げ'+(i+1)+' の角度を入力してください'};
+      if(A[i]===0||Math.abs(A[i])>=180)return {err:'曲げ'+(i+1)+' の角度は 0°を除く ±180°未満で入力してください'};
+      if(isNaN(R[i])||R[i]<=0)return {err:'曲げ'+(i+1)+' のRを入力してください'};
+    }
+
+    // タンジェント長
+    var T=[];
+    for(i=0;i<n;i++)T.push(R[i]*Math.tan(Math.abs(A[i])*Math.PI/360));
+
+    // 弧から開始/終了(交点寸法0)
+    var Leff=L.slice();
+    var startArc=false, endArc=false;
+    if(n>0&&L[0]===0){Leff[0]=T[0];startArc=true}
+    if(n>0&&L[n]===0){Leff[n]=T[n-1];endArc=true}
+
+    // 実直線長チェック
+    var act=[],warn=null;
+    for(i=0;i<=n;i++){
+      var a=Leff[i]-(i>0?T[i-1]:0)-(i<n?T[i]:0);
+      act.push(a);
+      if(a<-1e-9&&!warn)warn='直線'+(i+1)+' が短く、曲げ同士が重なります(交点寸法を確認)';
+    }
+
+    // ノード(始端・交点・終端)と方位
+    var phi=0;
+    var nodes=[{x:0,y:0}];
+    for(i=0;i<n;i++){
+      var rad=phi*Math.PI/180;
+      nodes.push({x:nodes[i].x+Leff[i]*Math.cos(rad), y:nodes[i].y+Leff[i]*Math.sin(rad)});
+      phi+=A[i];
+    }
+    var radE=phi*Math.PI/180;
+    var end={x:nodes[n].x+Leff[n]*Math.cos(radE), y:nodes[n].y+Leff[n]*Math.sin(radE)};
+
+    // 各曲げの接点・中心・向き
+    var arcs=[];
+    var dir=0;
+    for(i=0;i<n;i++){
+      var u1=dir*Math.PI/180;
+      var u2=(dir+A[i])*Math.PI/180;
+      var Ax=nodes[i+1].x, Ay=nodes[i+1].y;
+      var t1={x:Ax-T[i]*Math.cos(u1), y:Ay-T[i]*Math.sin(u1)};
+      var t2={x:Ax+T[i]*Math.cos(u2), y:Ay+T[i]*Math.sin(u2)};
+      var nAng=u1+(A[i]>0?Math.PI/2:-Math.PI/2);
+      var c={x:t1.x+R[i]*Math.cos(nAng), y:t1.y+R[i]*Math.sin(nAng)};
+      var arcLen=R[i]*Math.abs(A[i])*Math.PI/180;
+      arcs.push({t1:t1,t2:t2,c:c,r:R[i],a:A[i],len:arcLen,apex:{x:Ax,y:Ay}});
+      dir+=A[i];
+    }
+
+    // 展開長
+    var dev=0;
+    for(i=0;i<=n;i++)dev+=Math.max(act[i],0);
+    for(i=0;i<n;i++)dev+=arcs[i].len;
+
+    // サンプル点(外形・フィット用)
+    var samples=[{x:0,y:0},end];
+    nodes.forEach(function(p){samples.push(p)});
+    arcs.forEach(function(ar){
+      samples.push(ar.t1);samples.push(ar.t2);
+      var a1=Math.atan2(ar.t1.y-ar.c.y, ar.t1.x-ar.c.x);
+      var steps=Math.max(4,Math.ceil(Math.abs(ar.a)/8));
+      for(var k=1;k<steps;k++){
+        var ang=a1+(ar.a*Math.PI/180)*(k/steps);
+        samples.push({x:ar.c.x+ar.r*Math.cos(ang), y:ar.c.y+ar.r*Math.sin(ang)});
+      }
+    });
+    var minX=1e18,maxX=-1e18,minY=1e18,maxY=-1e18;
+    samples.forEach(function(p){
+      if(p.x<minX)minX=p.x;if(p.x>maxX)maxX=p.x;
+      if(p.y<minY)minY=p.y;if(p.y>maxY)maxY=p.y;
+    });
+
+    var dist=Math.sqrt(end.x*end.x+end.y*end.y);
+
+    return {n:n,L:L,Leff:Leff,A:A,R:R,T:T,act:act,arcs:arcs,nodes:nodes,end:end,
+      dev:dev,dist:dist,minX:minX,maxX:maxX,minY:minY,maxY:maxY,
+      warn:warn,startArc:startArc,endArc:endArc};
+  }
+
+  /* ---- 作図 ---- */
+  function draw(m){
+    var dyn=$('dyn');
+    while(dyn.firstChild)dyn.removeChild(dyn.firstChild);
+    $('emptyMsg').style.display=m?'none':'';
+    if(!m)return;
+
+    var w=maxOr(m.maxX-m.minX,1), h=maxOr(m.maxY-m.minY,1);
+    function maxOr(v,mn){return v>mn?v:mn}
+    var s=Math.min(280/w, 190/h);
+    var ox=170-( (m.minX+m.maxX)/2 )*s;
+    var oy=125+( (m.minY+m.maxY)/2 )*s;
+    function px(p){return {x:ox+p.x*s, y:oy-p.y*s}}
+
+    var i;
+    // 交点への補助線(点線)+交点マーク
+    m.arcs.forEach(function(ar){
+      var A=px(ar.apex), T1=px(ar.t1), T2=px(ar.t2);
+      dyn.appendChild(el('line',{x1:T1.x.toFixed(1),y1:T1.y.toFixed(1),x2:A.x.toFixed(1),y2:A.y.toFixed(1),stroke:'#C9D3DA','stroke-width':1,'stroke-dasharray':'4 3'}));
+      dyn.appendChild(el('line',{x1:A.x.toFixed(1),y1:A.y.toFixed(1),x2:T2.x.toFixed(1),y2:T2.y.toFixed(1),stroke:'#C9D3DA','stroke-width':1,'stroke-dasharray':'4 3'}));
+      dyn.appendChild(el('line',{x1:(A.x-4).toFixed(1),y1:A.y.toFixed(1),x2:(A.x+4).toFixed(1),y2:A.y.toFixed(1),stroke:'#8FA2AF','stroke-width':1}));
+      dyn.appendChild(el('line',{x1:A.x.toFixed(1),y1:(A.y-4).toFixed(1),x2:A.x.toFixed(1),y2:(A.y+4).toFixed(1),stroke:'#8FA2AF','stroke-width':1}));
+    });
+
+    // 端点間距離(赤点線)
+    var S=px({x:0,y:0}), E=px(m.end);
+    if(m.dist>1e-9){
+      dyn.appendChild(el('line',{x1:S.x.toFixed(1),y1:S.y.toFixed(1),x2:E.x.toFixed(1),y2:E.y.toFixed(1),stroke:'#D63426','stroke-width':1.2,'stroke-dasharray':'6 4'}));
+      var mx=(S.x+E.x)/2,my=(S.y+E.y)/2;
+      var rot=Math.atan2(E.y-S.y,E.x-S.x)*180/Math.PI;
+      if(rot>90)rot-=180;if(rot<-90)rot+=180;
+      var t=el('text',{x:0,y:-6,'font-size':12,'font-weight':700,fill:'#D63426','text-anchor':'middle',stroke:'#fff','stroke-width':3.5,'paint-order':'stroke'});
+      t.textContent=m.dist.toFixed(3);
+      var g=el('g',{transform:'translate('+mx.toFixed(1)+','+my.toFixed(1)+') rotate('+rot.toFixed(1)+')'});
+      g.appendChild(t);dyn.appendChild(g);
+    }
+
+    // 中心線(本体)
+    var d='M '+S.x.toFixed(2)+' '+S.y.toFixed(2);
+    for(i=0;i<m.n;i++){
+      var T1=px(m.arcs[i].t1), T2=px(m.arcs[i].t2);
+      d+=' L '+T1.x.toFixed(2)+' '+T1.y.toFixed(2);
+      var sweep=(m.A[i]>0)?0:1;
+      d+=' A '+(m.R[i]*s).toFixed(2)+' '+(m.R[i]*s).toFixed(2)+' 0 0 '+sweep+' '+T2.x.toFixed(2)+' '+T2.y.toFixed(2);
+    }
+    d+=' L '+E.x.toFixed(2)+' '+E.y.toFixed(2);
+    dyn.appendChild(el('path',{d:d,fill:'none',stroke:'#1F3341','stroke-width':2.6,'stroke-linecap':'round'}));
+
+    // 区間ラベル
+    for(i=0;i<=m.n;i++){
+      var p1=(i===0)?{x:0,y:0}:m.arcs[i-1].t2;
+      var p2=(i===m.n)?m.end:m.arcs[i].t1;
+      if(m.act[i]>1e-9){
+        var P1=px(p1),P2=px(p2);
+        var lt=el('text',{x:((P1.x+P2.x)/2).toFixed(1),y:((P1.y+P2.y)/2-7).toFixed(1),'font-size':10,fill:'#5B707E','text-anchor':'middle',stroke:'#fff','stroke-width':3,'paint-order':'stroke'});
+        lt.textContent='直'+(i+1);
+        dyn.appendChild(lt);
+      }
+    }
+    m.arcs.forEach(function(ar,k){
+      var a1=Math.atan2(ar.t1.y-ar.c.y, ar.t1.x-ar.c.x);
+      var mid=a1+(ar.a*Math.PI/180)/2;
+      var lp=px({x:ar.c.x+(ar.r)*Math.cos(mid), y:ar.c.y+(ar.r)*Math.sin(mid)});
+      var cp=px(ar.c);
+      var vx=lp.x-cp.x, vy=lp.y-cp.y, vl=Math.sqrt(vx*vx+vy*vy)||1;
+      var lt=el('text',{x:(lp.x+vx/vl*13).toFixed(1),y:(lp.y+vy/vl*13+3).toFixed(1),'font-size':10,fill:'#5B707E','text-anchor':'middle',stroke:'#fff','stroke-width':3,'paint-order':'stroke'});
+      lt.textContent='曲'+(k+1);
+      dyn.appendChild(lt);
+    });
+
+    // 始端・終端
+    dyn.appendChild(el('circle',{cx:S.x.toFixed(1),cy:S.y.toFixed(1),r:4,fill:'#1F3341'}));
+    dyn.appendChild(el('circle',{cx:E.x.toFixed(1),cy:E.y.toFixed(1),r:4,fill:'#fff',stroke:'#1F3341','stroke-width':1.8}));
+    var ts=el('text',{x:(S.x).toFixed(1),y:(S.y+16).toFixed(1),'font-size':10,fill:'#1F3341','text-anchor':'middle',stroke:'#fff','stroke-width':3,'paint-order':'stroke'});
+    ts.textContent='始';dyn.appendChild(ts);
+    var te=el('text',{x:(E.x).toFixed(1),y:(E.y+16).toFixed(1),'font-size':10,fill:'#1F3341','text-anchor':'middle',stroke:'#fff','stroke-width':3,'paint-order':'stroke'});
+    te.textContent='終';dyn.appendChild(te);
+  }
+
+  /* ---- 表示更新 ---- */
+  var lastModel=null;
+  function recalc(){
+    var m=compute();
+    if(m.err){
+      lastModel=null;
+      $('out').textContent='―.―――';
+      $('vDist').textContent='―';$('vX').textContent='―';$('vY').textContent='―';
+      $('vBend').textContent=String(bends.length);
+      $('secBody').innerHTML='';$('coBody').innerHTML='';
+      $('statusTxt').textContent=m.err;
+      $('statusTxt').className='statusTxt';
+      draw(null);
+      return;
+    }
+    lastModel=m;
+    $('out').textContent=fmt(m.dev);
+    $('vDist').textContent=fmt(m.dist);
+    $('vBend').textContent=String(m.n);
+    $('vX').textContent=fmt(m.maxX-m.minX);
+    $('vY').textContent=fmt(m.maxY-m.minY);
+
+    var sb=$('secBody');
+    sb.innerHTML='';
+    var i;
+    for(i=0;i<=m.n;i++){
+      var tr=document.createElement('tr');
+      var inp=m.startArc&&i===0?'0(弧から)':(m.endArc&&i===m.n?'0(弧まで)':fmt(m.L[i]));
+      if(!(m.startArc&&i===0)&&!(m.endArc&&i===m.n))inp=fmt(m.L[i]);
+      tr.innerHTML='<td>直線'+(i+1)+'</td><td>'+inp+'</td><td>'+fmt(Math.max(m.act[i],0))+'</td>';
+      sb.appendChild(tr);
+      if(i<m.n){
+        var tr2=document.createElement('tr');
+        tr2.innerHTML='<td>曲げ'+(i+1)+'</td><td>θ='+(m.A[i]>0?'+':'')+m.A[i]+'° R='+m.R[i]+'</td><td>'+fmt(m.arcs[i].len)+'</td>';
+        sb.appendChild(tr2);
+      }
+    }
+
+    var cb=$('coBody');
+    cb.innerHTML='';
+    var pts=[['始端',{x:0,y:0}]];
+    for(i=0;i<m.n;i++)pts.push(['交点'+(i+1),m.nodes[i+1]]);
+    pts.push(['終端',m.end]);
+    pts.forEach(function(a){
+      var tr=document.createElement('tr');
+      tr.innerHTML='<td>'+a[0]+'</td><td>'+fmt(a[1].x)+'</td><td>'+fmt(a[1].y)+'</td>';
+      cb.appendChild(tr);
+    });
+
+    if(m.warn){
+      $('statusTxt').textContent='⚠ '+m.warn;
+      $('statusTxt').className='statusTxt err';
+    }else{
+      $('statusTxt').textContent=(m.startArc?'弧から開始 ':'')+(m.endArc?'弧で終了 ':'')+'| 実直線長は内訳表を参照';
+      $('statusTxt').className='statusTxt';
+    }
+    draw(m);
+  }
+
+  /* ---- イベント ---- */
+  $('segList').addEventListener('input',function(e){
+    var t=e.target;
+    var i=t.getAttribute('data-i'), ty=t.getAttribute('data-t');
+    if(i==null||!ty)return;
+    if(ty==='s')straights[i]=t.value;
+    if(ty==='a')bends[i].a=t.value;
+    if(ty==='r')bends[i].r=t.value;
+    recalc();
+  });
+  $('addBend').addEventListener('click',function(){
+    if(bends.length>=MAXBEND){toast('曲げは最大'+MAXBEND+'箇所です');return}
+    bends.push({a:'',r:''});
+    straights.push('');
+    buildRows();recalc();
+  });
+  $('delBend').addEventListener('click',function(){
+    if(!bends.length){toast('曲げがありません');return}
+    bends.pop();straights.pop();
+    buildRows();recalc();
+  });
+
+  var toastTimer=null;
+  function toast(msg){
+    var t=$('toast');t.textContent=msg;t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer=setTimeout(function(){t.classList.remove('show')},1600);
+  }
+  $('copyBtn').addEventListener('click',function(){
+    var m=lastModel;
+    if(!m){toast('まだ結果がありません');return}
+    var lines=['[曲げガイド計算]'];
+    var i;
+    for(i=0;i<=m.n;i++){
+      lines.push('直線'+(i+1)+': 交点寸法'+fmt(m.L[i])+' 実長'+fmt(Math.max(m.act[i],0)));
+      if(i<m.n)lines.push('曲げ'+(i+1)+': θ='+(m.A[i]>0?'+':'')+m.A[i]+'° R='+m.R[i]+' 弧長'+fmt(m.arcs[i].len));
+    }
+    lines.push('展開長(切断長): '+fmt(m.dev));
+    lines.push('端点間距離: '+fmt(m.dist));
+    lines.push('外形: X='+fmt(m.maxX-m.minX)+' × Y='+fmt(m.maxY-m.minY));
+    var pts=['始端(0, 0)'];
+    for(i=0;i<m.n;i++)pts.push('交点'+(i+1)+'('+fmt(m.nodes[i+1].x)+', '+fmt(m.nodes[i+1].y)+')');
+    pts.push('終端('+fmt(m.end.x)+', '+fmt(m.end.y)+')');
+    lines.push('座標: '+pts.join(' '));
+    var s=lines.join('\n');
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(s).then(function(){toast('コピーしました')},function(){toast('コピーできませんでした')});
+    }else{
+      var ta=document.createElement('textarea');
+      ta.value=s;document.body.appendChild(ta);ta.select();
+      try{document.execCommand('copy');toast('コピーしました')}catch(e){toast('コピーできませんでした')}
+      document.body.removeChild(ta);
+    }
+  });
+
+  buildRows();
+  recalc();
+})();
+</script>
+</body>
+</html>

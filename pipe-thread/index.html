@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1F3341">
+<meta name="description" content="管用ねじ(R/Rc テーパ・G/Rp 平行)の基準寸法と下穴の目安、実測外径からのサイズ推定(NPTの可能性判別付き)。計算は端末内で完結します。">
+<title>管用ねじ | 検査計算ツール</title>
+<style>
+  :root{
+    --paper:#F2F4F5;
+    --sheet:#FFFFFF;
+    --ink:#1F3341;
+    --line:#8FA2AF;
+    --red:#D63426;
+    --dro-bg:#15181A;
+    --dro-red:#FF5A48;
+    --dro-dim:#9FB0B8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI",sans-serif;
+    background:var(--paper);color:var(--ink);
+    min-height:100dvh;display:flex;flex-direction:column;align-items:center;
+    padding:0 12px calc(16px + env(safe-area-inset-bottom));
+  }
+  .wrap{width:100%;max-width:480px}
+
+  header{display:flex;align-items:baseline;justify-content:space-between;padding:14px 2px 10px}
+  header h1{font-size:16px;font-weight:700;letter-spacing:.04em}
+  header h1 small{display:block;font-size:11px;font-weight:400;color:#5B707E;letter-spacing:.08em;margin-top:2px}
+  header a{font-size:12px;color:#5B707E;text-decoration:none}
+
+  .mode-lg{
+    display:grid;grid-template-columns:1fr 1fr;
+    border:1.5px solid var(--ink);border-radius:9px;overflow:hidden;
+    margin-bottom:10px;
+  }
+  .mode-lg button{
+    font-size:13px;font-weight:700;padding:10px 4px;border:none;
+    background:var(--sheet);color:var(--ink);letter-spacing:.03em;
+  }
+  .mode-lg button.on{background:var(--ink);color:#fff}
+
+  .sheet{background:var(--sheet);border:2px solid var(--ink);padding:5px}
+  .sheet-inner{border:1px solid var(--ink)}
+  .sheet svg{display:block;width:100%;height:auto}
+  .titleblock{display:flex;border-top:1px solid var(--ink);font-size:9px;letter-spacing:.06em}
+  .titleblock div{padding:3px 8px;border-right:1px solid var(--ink)}
+  .titleblock div:last-child{border-right:none;margin-left:auto}
+  .titleblock b{font-weight:700}
+
+  h2{
+    font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.1em;
+    margin:12px 2px 8px;display:flex;align-items:center;gap:6px;
+  }
+  h2::before{content:'';width:4px;height:14px;background:var(--ink);border-radius:2px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{
+    font-size:12.5px;font-weight:700;padding:8px 11px;
+    border:1.5px solid var(--ink);border-radius:8px;
+    background:var(--sheet);color:var(--ink);
+    font-variant-numeric:tabular-nums;
+  }
+  .chip.on{background:var(--ink);color:#fff}
+
+  .inputs{margin-top:10px;display:flex;flex-direction:column;gap:10px}
+  .row{
+    display:grid;grid-template-columns:26px 1fr 130px 40px;
+    align-items:center;gap:8px;
+    background:var(--sheet);border:1px solid #D5DDE2;border-radius:10px;
+    padding:10px 12px;
+  }
+  .badge{
+    width:22px;height:22px;border-radius:50%;
+    background:var(--ink);color:#fff;font-size:12px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .row label{font-size:13px;font-weight:600}
+  .row label small{display:block;font-size:10px;font-weight:400;color:#5B707E}
+  .row input{
+    width:100%;font-size:19px;font-weight:600;text-align:right;
+    font-variant-numeric:tabular-nums;
+    border:none;border-bottom:2px solid var(--ink);
+    background:transparent;color:var(--ink);
+    padding:2px 4px;border-radius:0;outline:none;
+  }
+  .row input:focus{border-bottom-color:var(--red)}
+  .unit{font-size:12px;color:#5B707E}
+  .note{font-size:11px;color:#5B707E;line-height:1.7;margin-top:8px;padding:0 2px}
+  .note b{color:var(--ink)}
+
+  .dro{
+    margin-top:14px;background:var(--dro-bg);border-radius:12px;
+    padding:16px 18px 12px;box-shadow:inset 0 2px 8px rgba(0,0,0,.5);
+  }
+  .dro-line{display:flex;align-items:baseline;gap:10px;justify-content:flex-end}
+  .dro-label{color:#7d8a91;font-size:13px;font-weight:700;letter-spacing:.08em}
+  .dro-val{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:30px;font-weight:600;color:var(--dro-red);
+    text-shadow:0 0 10px rgba(255,90,72,.35);letter-spacing:.02em;
+  }
+  .dro-unit{color:#7d8a91;font-size:13px;font-weight:600}
+  .dro-grid{
+    display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;
+    border-top:1px solid #2a3034;margin-top:10px;padding-top:10px;
+  }
+  .cellv{display:flex;flex-direction:column;align-items:flex-end;padding:4px 8px;border-radius:8px}
+  .cellv:active{background:#1e2327}
+  .cellv .k{color:#7d8a91;font-size:11px;font-weight:700;letter-spacing:.06em;align-self:flex-start}
+  .cellv .v{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:17px;font-weight:600;color:var(--dro-dim);
+  }
+  .cellv .s{color:#5d6a71;font-size:10px}
+  .dro-foot{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-top:10px;border-top:1px solid #2a3034;padding-top:9px;gap:8px;
+  }
+  .statusTxt{color:#5d6a71;font-size:11px;letter-spacing:.02em;line-height:1.6}
+  .statusTxt.err{color:#FF8A7E}
+  .copy{
+    font-size:12px;font-weight:700;color:#c9d2d7;background:#252b2f;
+    border:1px solid #3a4247;border-radius:7px;padding:6px 14px;flex:none;
+  }
+  .copy:active{background:#31383d}
+
+  .tbl-btn{
+    margin-top:14px;width:100%;
+    font-size:13px;font-weight:700;padding:11px 4px;
+    border:1.5px solid var(--ink);border-radius:9px;
+    background:var(--sheet);color:var(--ink);letter-spacing:.05em;
+  }
+  .tbl-btn:active{background:var(--ink);color:#fff}
+  .tblWrap{margin-top:10px;display:none;overflow-x:auto}
+  .tblWrap.show{display:block}
+  table.tol{
+    width:100%;border-collapse:collapse;background:var(--sheet);
+    border:2px solid var(--ink);font-size:12px;
+    font-variant-numeric:tabular-nums;
+  }
+  table.tol th,table.tol td{border:1px solid var(--ink);padding:4px 6px;text-align:right;white-space:nowrap}
+  table.tol th{background:#E8EDF0;font-size:10px;font-weight:700;text-align:center}
+  table.tol td:first-child{text-align:left;font-weight:700}
+  table.tol tr.hit td{background:#FCE9E7;font-weight:700}
+
+  footer{margin-top:16px;font-size:11px;color:#5B707E;line-height:1.7;text-align:center;letter-spacing:.03em}
+
+  .toast{
+    position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);
+    background:var(--ink);color:#fff;font-size:13px;
+    padding:9px 20px;border-radius:20px;opacity:0;pointer-events:none;
+    transition:opacity .25s,transform .25s;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>管用ねじ<small>R/Rc・G/Rp: 下穴・基準寸法・サイズ推定</small></h1>
+    <a href="../index.html">≡ ツール一覧</a>
+  </header>
+
+  <div class="mode-lg" role="group" aria-label="モード">
+    <button type="button" id="mData" class="on">規格データ・下穴</button>
+    <button type="button" id="mEst">実測からサイズ推定</button>
+  </div>
+
+  <!-- 図面シート -->
+  <div class="sheet">
+    <div class="sheet-inner">
+      <svg viewBox="0 0 340 250" role="img" aria-label="管用ねじの模式図(テーパ/平行)と基準寸法">
+        <defs>
+          <marker id="ar" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L8,3 L0,6 z" fill="#1F3341"/>
+          </marker>
+          <marker id="arRed" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L8,3 L0,6 z" fill="#D63426"/>
+          </marker>
+        </defs>
+        <line x1="20" y1="132" x2="320" y2="132" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="12 3 2 3"/>
+
+        <!-- 管本体 -->
+        <line x1="30" y1="92" x2="150" y2="92" stroke="#1F3341" stroke-width="1.8"/>
+        <line x1="30" y1="172" x2="150" y2="172" stroke="#1F3341" stroke-width="1.8"/>
+
+        <!-- ねじ部(テーパ: 山を誇張) -->
+        <g id="g-taper">
+          <path d="M 150 92 L 165 100 L 180 90 L 195 99 L 210 89 L 225 98 L 240 88 L 255 97 L 270 87 L 285 96"
+                fill="none" stroke="#1F3341" stroke-width="1.6"/>
+          <path d="M 150 172 L 165 164 L 180 174 L 195 165 L 210 175 L 225 166 L 240 176 L 255 167 L 270 177 L 285 168"
+                fill="none" stroke="#1F3341" stroke-width="1.6"/>
+          <text x="230" y="70" font-size="11" fill="#1F3341" text-anchor="middle"
+                stroke="#fff" stroke-width="3" paint-order="stroke">テーパ 1/16(径・誇張)</text>
+        </g>
+        <!-- ねじ部(平行) -->
+        <g id="g-para" style="display:none">
+          <path d="M 150 92 L 165 100 L 180 92 L 195 100 L 210 92 L 225 100 L 240 92 L 255 100 L 270 92 L 285 100"
+                fill="none" stroke="#1F3341" stroke-width="1.6"/>
+          <path d="M 150 172 L 165 164 L 180 172 L 195 164 L 210 172 L 225 164 L 240 172 L 255 164 L 270 172 L 285 164"
+                fill="none" stroke="#1F3341" stroke-width="1.6"/>
+          <text x="230" y="70" font-size="11" fill="#1F3341" text-anchor="middle"
+                stroke="#fff" stroke-width="3" paint-order="stroke">平行(ストレート)</text>
+        </g>
+
+        <!-- 外径寸法 -->
+        <line x1="304" y1="88" x2="304" y2="176" stroke="#D63426" stroke-width="1.4" marker-start="url(#arRed)" marker-end="url(#arRed)"/>
+        <text id="svgD" x="314" y="136" font-size="11" font-weight="700" fill="#D63426" text-anchor="middle"
+              stroke="#fff" stroke-width="3.5" paint-order="stroke" transform="rotate(-90 314 136)">外径 d</text>
+
+        <!-- 山角 -->
+        <text x="70" y="212" font-size="11" fill="#5B707E">山の角度 55°(ウィット系)・山は丸み付き</text>
+        <text id="svgName" x="70" y="46" font-size="13" font-weight="700" fill="#1F3341"
+              stroke="#fff" stroke-width="3.5" paint-order="stroke">R 1/2</text>
+        <text x="70" y="232" font-size="11" fill="#5B707E">三針で有効径を測るなら TOOL-14 の 55° を使用</text>
+      </svg>
+      <div class="titleblock">
+        <div><b>品名</b> 管用ねじ</div>
+        <div><b>方式</b> JIS B 0202/0203</div>
+        <div>TOOL-19</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- モードA: 規格データ -->
+  <div id="dataBox">
+    <h2>ねじの種類</h2>
+    <div class="chips" id="kindChips"></div>
+    <h2>呼びサイズ</h2>
+    <div class="chips" id="sizeChips"></div>
+  </div>
+
+  <!-- モードB: 推定 -->
+  <div id="estBox" style="display:none">
+    <h2>実測した場所</h2>
+    <div class="chips" id="whChips"></div>
+    <div class="inputs">
+      <div class="row">
+        <span class="badge">1</span>
+        <label for="fMeas" id="measLbl">おねじの外径<small>ノギスで山の頂どうし</small></label>
+        <input id="fMeas" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+        <span class="unit">mm</span>
+      </div>
+      <div class="row">
+        <span class="badge">2</span>
+        <label for="fTpi">山数<small>任意: 25.4mmあたりの山数で照合</small></label>
+        <input id="fTpi" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+        <span class="unit">山</span>
+      </div>
+    </div>
+    <div class="note">テーパねじ(R)は<b>測る位置で外径が変わります</b>(1/16勾配)。管端寄りで測ると小さめに出ます。山数はねじゲージ(ピッチゲージ)か、25.4mmに定規を当てて数えてもOK。</div>
+  </div>
+
+  <!-- 結果 -->
+  <div class="dro">
+    <div class="dro-line">
+      <span class="dro-label" id="mainLbl">下穴の目安</span>
+      <span class="dro-val" id="out">―</span>
+      <span class="dro-unit" id="mainUnit">mm</span>
+    </div>
+    <div class="dro-grid" id="cellGrid"></div>
+    <div class="dro-foot">
+      <span class="statusTxt" id="statusTxt">種類とサイズを選んでください</span>
+      <button class="copy" type="button" id="copyBtn">コピー</button>
+    </div>
+  </div>
+
+  <button class="tbl-btn" type="button" id="tblBtn">▼ 全サイズ表を表示</button>
+  <div class="tblWrap" id="tblWrap"></div>
+
+  <footer>
+    このページは計算のみを行います。入力値の送信・保存は一切ありません(端末内で完結)。<br>
+    下穴は一般的な目安で、タップメーカー指定・下穴深さ・材質により±0.2mm程度変わります。<br>
+    ねじの合否判定は管用ねじゲージ(模範)で行ってください。このツールはその手前の確認用です。
+  </footer>
+</div>
+
+<div class="toast" id="toast">コピーしました</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var mode='data';
+  var kind='taper';     // taper: R/Rc / para: G/Rp
+  var sizeIdx=4;        // 初期 1/2
+  var whMale=true;      // 推定: おねじ外径/めねじ内径
+  var lastCopy=null;
+
+  // [呼び, 山数n(25.4mm), 基準外径d, Rc下穴目安(一般チャート)]
+  var SZ=[
+    ['1/16',28,7.723,6.2],
+    ['1/8',28,9.728,8.4],
+    ['1/4',19,13.157,11.1],
+    ['3/8',19,16.662,14.5],
+    ['1/2',14,20.955,18.0],
+    ['3/4',14,26.441,23.4],
+    ['1',11,33.249,29.3],
+    ['1.1/4',11,41.910,38.0],
+    ['1.1/2',11,47.803,43.9],
+    ['2',11,59.614,55.8],
+    ['2.1/2',11,75.184,null],
+    ['3',11,87.884,null],
+    ['4',11,113.030,null],
+    ['5',11,138.430,null],
+    ['6',11,163.830,null]
+  ];
+  // NPT(60°・米国)の基準外径: 判別用
+  var NPT=[
+    ['1/16',27,7.938],['1/8',27,10.287],['1/4',18,13.716],['3/8',18,17.145],
+    ['1/2',14,21.336],['3/4',14,26.670],['1',11.5,33.401],
+    ['1.1/4',11.5,42.164],['1.1/2',11.5,48.260],['2',11.5,60.325]
+  ];
+
+  function num(v){
+    if(v==null)return NaN;
+    v=String(v).replace(/[０-９．]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0)}).replace(/。/g,'.').replace(/[,，、\s]/g,'').trim();
+    if(v==='')return NaN;
+    return Number(v);
+  }
+  function derive(s){
+    var P=25.4/s[1];
+    var h=Math.round(0.640327*P*1000)/1000;  // JIS表と同じくhを3桁に丸めてから径を算出
+    return {name:s[0],n:s[1],P:P,h:h,d:s[2],d2:s[2]-h,d1:s[2]-2*h,rc:s[3]};
+  }
+  function f3(v){return v.toFixed(3)}
+
+  function cellsHtml(list){
+    var g=$('cellGrid');g.innerHTML='';
+    list.forEach(function(c){
+      var d=document.createElement('div');
+      d.className='cellv';
+      d.innerHTML='<span class="k">'+c.k+'</span><span class="v">'+c.v+'</span><span class="s">'+(c.s||'')+'</span>';
+      g.appendChild(d);
+    });
+  }
+
+  /* ---- チップ ---- */
+  function buildKind(){
+    var box=$('kindChips');box.innerHTML='';
+    [['taper','R/Rc(テーパ)'],['para','G/Rp(平行)']].forEach(function(k){
+      var b=document.createElement('button');
+      b.type='button';b.className='chip'+(kind===k[0]?' on':'');
+      b.textContent=k[1];
+      b.addEventListener('click',function(){kind=k[0];buildKind();recalc()});
+      box.appendChild(b);
+    });
+  }
+  function buildSizes(){
+    var box=$('sizeChips');box.innerHTML='';
+    SZ.forEach(function(s,i){
+      var b=document.createElement('button');
+      b.type='button';b.className='chip'+(i===sizeIdx?' on':'');
+      b.textContent=s[0];
+      b.addEventListener('click',function(){sizeIdx=i;buildSizes();recalc()});
+      box.appendChild(b);
+    });
+  }
+  function buildWh(){
+    var box=$('whChips');box.innerHTML='';
+    [['m','おねじ(外径)'],['f','めねじ(内径)']].forEach(function(k){
+      var b=document.createElement('button');
+      b.type='button';b.className='chip'+((whMale?'m':'f')===k[0]?' on':'');
+      b.textContent=k[1];
+      b.addEventListener('click',function(){
+        whMale=(k[0]==='m');buildWh();
+        $('measLbl').innerHTML=whMale?'おねじの外径<small>ノギスで山の頂どうし</small>':'めねじの内径<small>山の頂どうし(見えている穴径)</small>';
+        recalc();
+      });
+      box.appendChild(b);
+    });
+  }
+
+  /* ---- モードA ---- */
+  function recalcData(){
+    var t=derive(SZ[sizeIdx]);
+    var isT=(kind==='taper');
+    var prefix=isT?'R(おねじ)/Rc(めねじ)':'G/Rp';
+    $('svgName').textContent=(isT?'R ':'G ')+t.name;
+    $('g-taper').style.display=isT?'':'none';
+    $('g-para').style.display=isT?'none':'';
+
+    var drill, drillNote;
+    if(isT){
+      drill=t.rc;
+      drillNote='Rcタップ用(一般チャート)';
+    }else{
+      drill=Math.ceil(t.d1*10)/10;
+      drillNote='G/Rp用 ≈ 谷径を0.1mm切上げ';
+    }
+    $('mainLbl').textContent='下穴の目安';
+    $('mainUnit').textContent='mm';
+    $('out').textContent=(drill!=null)?drill.toFixed(1):'―';
+
+    var cells=[
+      {k:'外径 d(基準)',v:f3(t.d),s:'mm'},
+      {k:'有効径 d₂',v:f3(t.d2),s:'mm'},
+      {k:'谷径 d₁',v:f3(t.d1),s:'mm'},
+      {k:'ピッチ P',v:t.P.toFixed(4)+'('+t.n+'山)',s:'mm/25.4mm'},
+      {k:'山の高さ h',v:t.h.toFixed(3),s:'mm'},
+      {k:'下穴の根拠',v:(drill!=null)?drillNote:'大径は要メーカー確認',s:''}
+    ];
+    cellsHtml(cells);
+
+    var st=prefix+' '+t.name+' | 55°ウィット系';
+    if(isT)st+=' | テーパ1/16: 基準径は規定位置での値です(測る位置で径が変わる)';
+    if(drill==null)st='このサイズのタップ下穴は加工法・メーカー指定を確認してください(基準値は表示中)';
+    $('statusTxt').textContent=st;
+    $('statusTxt').className='statusTxt';
+
+    lastCopy='['+(isT?'R/Rc':'G/Rp')+' '+t.name+'] 下穴目安'+(drill!=null?drill.toFixed(1):'―')+
+      ' 外径'+f3(t.d)+' 有効径'+f3(t.d2)+' 谷径'+f3(t.d1)+' P='+t.P.toFixed(4)+'('+t.n+'山)';
+    if($('tblWrap').classList.contains('show'))buildTable();
+  }
+
+  /* ---- モードB: 推定 ---- */
+  function recalcEst(){
+    $('g-taper').style.display='';
+    $('g-para').style.display='none';
+    $('svgName').textContent='サイズ推定';
+    var v=num($('fMeas').value);
+    var tpi=num($('fTpi').value);
+    $('mainLbl').textContent='推定サイズ';
+    $('mainUnit').textContent='';
+    lastCopy=null;
+
+    if(!(v>0)){
+      $('out').textContent='―';
+      cellsHtml([]);
+      $('statusTxt').textContent=whMale?'おねじの外径を測って入力してください':'めねじの内径を測って入力してください';
+      $('statusTxt').className='statusTxt';
+      return;
+    }
+
+    // 候補: R/G(同一基準径) + NPT(おねじ外径のみ)
+    var cand=[];
+    SZ.forEach(function(s){
+      var t=derive(s);
+      var ref=whMale?t.d:t.d1;
+      cand.push({label:(kind==='para'?'G':'R')+' '+t.name,name:t.name,n:t.n,diff:v-ref,ref:ref,type:'jis'});
+    });
+    if(whMale){
+      NPT.forEach(function(s){
+        cand.push({label:'NPT '+s[0],name:s[0],n:s[1],diff:v-s[2],ref:s[2],type:'npt'});
+      });
+    }
+    cand.sort(function(a,b){return Math.abs(a.diff)-Math.abs(b.diff)});
+    var top=cand.slice(0,3);
+
+    function pitchMark(c){
+      if(isNaN(tpi))return '';
+      return (Math.abs(tpi-c.n)<0.6)?' ✓山数一致':' ×山数不一致('+c.n+'山)';
+    }
+
+    $('out').textContent=top[0].label;
+    var cells=top.map(function(c,i){
+      return {k:'候補'+(i+1)+(c.type==='npt'?'(米国60°)':''),
+        v:c.label+' '+(c.diff>=0?'+':'')+c.diff.toFixed(3),
+        s:'基準'+f3(c.ref)+pitchMark(c)};
+    });
+    cells.push({k:'見分けのコツ',v:whMale?'Rは先細り/Gは平行':'穴径≈谷径で比較',s:whMale?'NPTは山60°(ゲージで判別)':''});
+    cellsHtml(cells);
+
+    var st='実測 '+v.toFixed(3)+' に近い順。テーパねじは測る位置で±0.5mm程度動きます';
+    if(whMale&&top[0].type==='npt')st='⚠ NPT(米国規格・山60°)の可能性が高い測定値です。R系ゲージは通りません';
+    if(!isNaN(tpi)){
+      var hit=top.filter(function(c){return Math.abs(tpi-c.n)<0.6});
+      if(hit.length&&hit[0]!==top[0])st+=' | 山数は '+hit[0].label+' と一致します';
+    }
+    $('statusTxt').textContent=st;
+    $('statusTxt').className='statusTxt';
+
+    lastCopy='[管用ねじ推定] 実測'+v.toFixed(3)+'('+(whMale?'おねじ外径':'めねじ内径')+') → '+
+      top.map(function(c){return c.label+'('+(c.diff>=0?'+':'')+c.diff.toFixed(3)+')'}).join(' / ');
+  }
+
+  function recalc(){
+    if(mode==='data')recalcData();else recalcEst();
+  }
+
+  /* ---- 全サイズ表 ---- */
+  function buildTable(){
+    var html='<table class="tol"><tr><th>呼び</th><th>山数</th><th>P</th><th>外径d</th><th>有効径d₂</th><th>谷径d₁</th><th>Rc下穴</th><th>G下穴≈</th></tr>';
+    SZ.forEach(function(s,i){
+      var t=derive(s);
+      html+='<tr'+(mode==='data'&&i===sizeIdx?' class="hit"':'')+'><td>'+t.name+'</td><td>'+t.n+'</td><td>'+t.P.toFixed(3)+'</td><td>'+f3(t.d)+'</td><td>'+f3(t.d2)+'</td><td>'+f3(t.d1)+'</td><td>'+(t.rc!=null?t.rc.toFixed(1):'―')+'</td><td>'+(Math.ceil(t.d1*10)/10).toFixed(1)+'</td></tr>';
+    });
+    html+='</table>';
+    $('tblWrap').innerHTML=html;
+  }
+
+  /* ---- イベント ---- */
+  function setMode(m){
+    mode=m;
+    $('mData').classList.toggle('on',m==='data');
+    $('mEst').classList.toggle('on',m==='est');
+    $('dataBox').style.display=(m==='data')?'':'none';
+    $('estBox').style.display=(m==='est')?'':'none';
+    recalc();
+  }
+  $('mData').addEventListener('click',function(){setMode('data')});
+  $('mEst').addEventListener('click',function(){setMode('est')});
+  ['fMeas','fTpi'].forEach(function(id){$(id).addEventListener('input',recalc)});
+
+  $('tblBtn').addEventListener('click',function(){
+    var w=$('tblWrap');
+    var show=!w.classList.contains('show');
+    w.classList.toggle('show',show);
+    $('tblBtn').textContent=show?'▲ 全サイズ表を閉じる':'▼ 全サイズ表を表示';
+    if(show)buildTable();
+  });
+
+  var toastTimer=null;
+  function toast(msg){
+    var t=$('toast');t.textContent=msg;t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer=setTimeout(function(){t.classList.remove('show')},1600);
+  }
+  $('copyBtn').addEventListener('click',function(){
+    if(!lastCopy){toast('まだ結果がありません');return}
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(lastCopy).then(function(){toast('コピーしました')},function(){toast('コピーできませんでした')});
+    }else{
+      var ta=document.createElement('textarea');
+      ta.value=lastCopy;document.body.appendChild(ta);ta.select();
+      try{document.execCommand('copy');toast('コピーしました')}catch(e){toast('コピーできませんでした')}
+      document.body.removeChild(ta);
+    }
+  });
+
+  buildKind();
+  buildSizes();
+  buildWh();
+  recalc();
+})();
+</script>
+</body>
+</html>

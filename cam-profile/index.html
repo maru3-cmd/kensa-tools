@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1F3341">
+<meta name="description" content="板カムの変位線図。区間ごとに運動曲線(等速・等加速度・単弦・サイクロイド・修正台形)を選び、リフト・速度・加速度・ジャーク曲線と任意角のリフト値を計算。端末内で完結します。">
+<title>カム変位線図 | 検査計算ツール</title>
+<style>
+  :root{
+    --paper:#F2F4F5;--sheet:#FFFFFF;--ink:#1F3341;--line:#8FA2AF;--red:#D63426;
+    --dro-bg:#15181A;--dro-red:#FF5A48;--dro-green:#42D77D;--dro-dim:#9FB0B8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI",sans-serif;background:var(--paper);color:var(--ink);min-height:100dvh;display:flex;flex-direction:column;align-items:center;padding:0 12px calc(16px + env(safe-area-inset-bottom))}
+  .wrap{width:100%;max-width:480px}
+  header{display:flex;align-items:baseline;justify-content:space-between;padding:14px 2px 10px}
+  header h1{font-size:16px;font-weight:700;letter-spacing:.04em}
+  header h1 small{display:block;font-size:11px;font-weight:400;color:#5B707E;letter-spacing:.08em;margin-top:2px}
+  header a{font-size:12px;color:#5B707E;text-decoration:none}
+
+  .sheet{background:var(--sheet);border:2px solid var(--ink);padding:5px}
+  .sheet-inner{border:1px solid var(--ink)}
+  .sheet svg{display:block;width:100%;height:auto}
+  .titleblock{display:flex;border-top:1px solid var(--ink);font-size:9px;letter-spacing:.06em}
+  .titleblock div{padding:3px 8px;border-right:1px solid var(--ink)}
+  .titleblock div:last-child{border-right:none;margin-left:auto}
+  .titleblock b{font-weight:700}
+
+  .tabs{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+  .tab{font-size:11.5px;font-weight:700;padding:7px 10px;border:1.5px solid var(--ink);border-radius:8px;background:var(--sheet);color:var(--ink)}
+  .tab.on{background:var(--ink);color:#fff}
+
+  h2{font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.1em;margin:12px 2px 8px;display:flex;align-items:center;gap:6px}
+  h2::before{content:'';width:4px;height:14px;background:var(--ink);border-radius:2px}
+
+  .inputs{margin-top:8px;display:flex;flex-direction:column;gap:8px}
+  .row{display:grid;grid-template-columns:26px 1fr 110px 34px;align-items:center;gap:8px;background:var(--sheet);border:1px solid #D5DDE2;border-radius:10px;padding:9px 12px}
+  .badge{width:22px;height:22px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .row label{font-size:13px;font-weight:600}
+  .row label small{display:block;font-size:10px;font-weight:400;color:#5B707E}
+  .row input{width:100%;font-size:18px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums;border:none;border-bottom:2px solid var(--ink);background:transparent;color:var(--ink);padding:2px 4px;outline:none}
+  .row input:focus{border-bottom-color:var(--red)}
+  .unit{font-size:12px;color:#5B707E}
+
+  .seg{background:var(--sheet);border:1px solid #D5DDE2;border-radius:10px;padding:9px 10px}
+  .seg .lab{font-size:11px;font-weight:700;color:#5B707E;margin-bottom:6px;display:flex;justify-content:space-between}
+  .seg .lab .del{color:var(--red);font-weight:700;cursor:pointer}
+  .seg .fl2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+  .fld{display:flex;align-items:baseline;gap:4px}
+  .fld .fl{font-size:11px;color:#5B707E;font-weight:600;flex:none}
+  .fld input{width:100%;font-size:16px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums;border:none;border-bottom:2px solid var(--ink);background:transparent;color:var(--ink);padding:2px 3px;outline:none;min-width:0}
+  .fld input:focus{border-bottom-color:var(--red)}
+  .fld .u{font-size:10px;color:#5B707E;flex:none}
+  .seg select{width:100%;font-size:14px;padding:7px 8px;border:1.5px solid var(--ink);border-radius:8px;background:var(--sheet);color:var(--ink);font-weight:600}
+  .addbtn{font-size:12px;font-weight:700;padding:9px 6px;border:1.5px dashed var(--ink);border-radius:9px;background:var(--sheet);color:var(--ink);flex:1}
+  .addbtn:active{background:var(--ink);color:#fff}
+  .btnrow{display:flex;gap:8px;margin-top:8px}
+  .note{font-size:11px;color:#5B707E;line-height:1.7;margin-top:8px;padding:0 2px}
+  .note b{color:var(--ink)}
+
+  .dro{margin-top:14px;background:var(--dro-bg);border-radius:12px;padding:14px 16px 12px;box-shadow:inset 0 2px 8px rgba(0,0,0,.5)}
+  .dro-line{display:flex;align-items:baseline;gap:10px;justify-content:flex-end}
+  .dro-label{color:#7d8a91;font-size:13px;font-weight:700;letter-spacing:.08em}
+  .dro-val{font-family:ui-monospace,Consolas,monospace;font-variant-numeric:tabular-nums;font-size:30px;font-weight:600;color:var(--dro-red);text-shadow:0 0 10px rgba(255,90,72,.35)}
+  .dro-unit{color:#7d8a91;font-size:13px;font-weight:600}
+  .dro-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;border-top:1px solid #2a3034;margin-top:10px;padding-top:10px}
+  .cellv{display:flex;flex-direction:column;align-items:flex-end;padding:4px 8px;border-radius:8px}
+  .cellv:active{background:#1e2327}
+  .cellv .k{color:#7d8a91;font-size:11px;font-weight:700;letter-spacing:.06em;align-self:flex-start}
+  .cellv .v{font-family:ui-monospace,Consolas,monospace;font-variant-numeric:tabular-nums;font-size:17px;font-weight:600;color:var(--dro-dim)}
+  .cellv .s{color:#5d6a71;font-size:10px}
+  .dro-foot{display:flex;align-items:center;justify-content:space-between;margin-top:10px;border-top:1px solid #2a3034;padding-top:9px;gap:8px}
+  .statusTxt{color:#5d6a71;font-size:11px;letter-spacing:.02em;line-height:1.6}
+  .statusTxt.err{color:#FF8A7E}
+  .copy{font-size:12px;font-weight:700;color:#c9d2d7;background:#252b2f;border:1px solid #3a4247;border-radius:7px;padding:6px 14px;flex:none}
+  .copy:active{background:#31383d}
+
+  footer{margin-top:16px;font-size:11px;color:#5B707E;line-height:1.7;text-align:center;letter-spacing:.03em}
+  .toast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);background:var(--ink);color:#fff;font-size:13px;padding:9px 20px;border-radius:20px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>カム変位線図<small>板カム: 区間の運動曲線→リフト/速度/加速度</small></h1>
+    <a href="../index.html">≡ ツール一覧</a>
+  </header>
+
+  <div class="sheet">
+    <div class="sheet-inner">
+      <svg viewBox="0 0 340 250" id="dwg" role="img" aria-label="カムの変位・速度・加速度線図">
+        <g id="grid"></g>
+        <g id="curve"></g>
+        <g id="marker"></g>
+        <text id="emptyMsg" x="170" y="128" font-size="11" fill="#8FA2AF" text-anchor="middle">区間を入れると線図が描かれます</text>
+      </svg>
+      <div class="titleblock">
+        <div><b>品名</b> カム変位線図</div>
+        <div><b>方式</b> 運動曲線</div>
+        <div>TOOL-23</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tabs" id="plotTabs"></div>
+
+  <h2>基本設定</h2>
+  <div class="inputs">
+    <div class="row">
+      <span class="badge">L</span>
+      <label for="fLift">総リフト量<small>最大揚程(ストローク)</small></label>
+      <input id="fLift" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row">
+      <span class="badge">N</span>
+      <label for="fRpm">回転数<small>任意: 速度/加速度を実単位で</small></label>
+      <input id="fRpm" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">rpm</span>
+    </div>
+    <div class="row">
+      <span class="badge">R</span>
+      <label for="fRb">基礎円半径<small>任意: 輪郭半径を計算</small></label>
+      <input id="fRb" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+    </div>
+  </div>
+
+  <h2>カム線図の区間(上から順)</h2>
+  <div class="inputs" id="segList"></div>
+  <div class="btnrow"><button class="addbtn" type="button" id="addSeg">+ 区間を追加</button></div>
+  <div class="note">各区間は<b>角度幅</b>と<b>動作</b>(上昇/下降/停留)+<b>運動曲線</b>で決めます。合計が360°になるよう最後に停留を足すのが一般的。停留(ドウェル)は曲線不要です。</div>
+
+  <h2>照合(任意)</h2>
+  <div class="inputs">
+    <div class="row">
+      <span class="badge">θ</span>
+      <label for="fAngle">確認したい角度<small>この角度のリフトを計算</small></label>
+      <input id="fAngle" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">°</span>
+    </div>
+    <div class="row">
+      <span class="badge">M</span>
+      <label for="fMeas">実測リフト<small>任意: 理論との差</small></label>
+      <input id="fMeas" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+    </div>
+  </div>
+
+  <div class="dro">
+    <div class="dro-line">
+      <span class="dro-label" id="mainLbl">θでのリフト</span>
+      <span class="dro-val" id="out">―</span>
+      <span class="dro-unit">mm</span>
+    </div>
+    <div class="dro-grid" id="cellGrid"></div>
+    <div class="dro-foot">
+      <span class="statusTxt" id="statusTxt">リフト量と区間を入力してください</span>
+      <button class="copy" type="button" id="copyBtn">この角度をコピー</button>
+    </div>
+  </div>
+
+  <footer>
+    このページは計算のみを行います。入力値の送信・保存は一切ありません(端末内で完結)。<br>
+    輪郭半径 = 基礎円半径 + そのθのリフト(並進フォロワ・ローラ中心の軌跡)。<br>
+    速度/加速度は回転数から換算した参考値です。実際のカム設計は専用ソフト・規格で確認してください。
+  </footer>
+</div>
+
+<div class="toast" id="toast">コピーしました</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var NS='http://www.w3.org/2000/svg';
+  var plot='s';  // s:変位 v:速度 a:加速度 j:ジャーク
+  var lastCopy=null;
+
+  var segs=[
+    {span:'90',act:'rise',curve:'cyclo'},
+    {span:'90',act:'dwell',curve:'cyclo'},
+    {span:'90',act:'fall',curve:'cyclo'},
+    {span:'90',act:'dwell',curve:'cyclo'}
+  ];
+  var CURVES=[
+    {id:'const',n:'等速'},
+    {id:'accel',n:'等加速度(放物線)'},
+    {id:'shm',n:'単弦(SHM)'},
+    {id:'cyclo',n:'サイクロイド'},
+    {id:'modtrap',n:'修正台形'}
+  ];
+  var ACTS=[{id:'rise',n:'上昇'},{id:'fall',n:'下降'},{id:'dwell',n:'停留'}];
+  var PLOTS=[{id:'s',n:'変位 s'},{id:'v',n:'速度 v'},{id:'a',n:'加速度 a'},{id:'j',n:'ジャーク j'}];
+
+  function zen(v){return String(v).replace(/[０-９．−]/g,function(c){if(c==='−')return '-';return String.fromCharCode(c.charCodeAt(0)-0xFEE0)}).replace(/。/g,'.')}
+  function num(v){if(v==null)return NaN;v=zen(v).replace(/[,，、\s]/g,'').trim();if(v==='')return NaN;return Number(v)}
+  function el(name,attrs){var e=document.createElementNS(NS,name);for(var k in attrs)e.setAttribute(k,attrs[k]);return e}
+
+  // 正規化運動則: u=区間内進捗0..1 → {s,v,a,j} (無次元, sは0..1)
+  function motion(curve,u){
+    var PI=Math.PI;
+    if(u<0)u=0;if(u>1)u=1;
+    switch(curve){
+      case 'const':
+        return {s:u, v:1, a:0, j:0};
+      case 'accel': // 前半放物線加速+後半減速
+        if(u<0.5)return {s:2*u*u, v:4*u, a:4, j:0};
+        return {s:1-2*(1-u)*(1-u), v:4*(1-u), a:-4, j:0};
+      case 'shm':
+        return {s:0.5*(1-Math.cos(PI*u)), v:0.5*PI*Math.sin(PI*u), a:0.5*PI*PI*Math.cos(PI*u), j:-0.5*PI*PI*PI*Math.sin(PI*u)};
+      case 'cyclo':
+        return {s:u-Math.sin(2*PI*u)/(2*PI), v:1-Math.cos(2*PI*u), a:2*PI*Math.sin(2*PI*u), j:4*PI*PI*Math.cos(2*PI*u)};
+      case 'modtrap':
+        return modTrap(u);
+      default:
+        return {s:u,v:1,a:0,j:0};
+    }
+  }
+  // 修正台形(加速度が台形): 標準 Modified Trapezoid。
+  // 加速度形状 acc(x) を区分定義し、数値積分で v,s を求め、s(1)=1 になるよう正規化。
+  var _mt=null;
+  function mtSetup(){
+    var A=1; // 相対振幅(正規化するので任意)
+    function acc(x){
+      var b=0.125;
+      if(x< b)   return A*(0.5-0.5*Math.cos(Math.PI*x/b));        // 0→A なめらか立上げ
+      if(x< 3*b) return A;                                        // 一定 +A
+      if(x< 5*b) return A*Math.cos(Math.PI*(x-3*b)/(2*b));        // +A→−A(cos)
+      if(x< 7*b) return -A;                                       // 一定 −A
+      return -A*(0.5+0.5*Math.cos(Math.PI*(x-7*b)/b));            // −A→0 なめらか
+    }
+    var N=2000, dx=1/N;
+    var sArr=new Float64Array(N+1), vArr=new Float64Array(N+1);
+    var v=0,s=0,pa=acc(0),pv=0;
+    sArr[0]=0;vArr[0]=0;
+    for(var i=1;i<=N;i++){
+      var x=dx*i, ai=acc(x);
+      v+=(pa+ai)/2*dx;
+      s+=(pv+v)/2*dx;
+      sArr[i]=s;vArr[i]=v;pa=ai;pv=v;
+    }
+    var norm=1/sArr[N];               // s(1)=1 に規格化
+    _mt={N:N,dx:dx,sArr:sArr,vArr:vArr,norm:norm,acc:acc};
+  }
+  function modTrap(u){
+    if(!_mt)mtSetup();
+    if(u<0)u=0;if(u>1)u=1;
+    var pos=u*_mt.N, i0=Math.floor(pos), t=pos-i0;
+    if(i0>=_mt.N){i0=_mt.N-1;t=1}
+    var s=(_mt.sArr[i0]*(1-t)+_mt.sArr[i0+1]*t)*_mt.norm;
+    var v=(_mt.vArr[i0]*(1-t)+_mt.vArr[i0+1]*t)*_mt.norm;
+    var a=_mt.acc(u)*_mt.norm;
+    return {s:s, v:v, a:a, j:0};
+  }
+
+  function buildTabs(){
+    var box=$('plotTabs');box.innerHTML='';
+    PLOTS.forEach(function(p){
+      var b=document.createElement('button');b.type='button';b.className='tab'+(p.id===plot?' on':'');b.textContent=p.n;
+      b.addEventListener('click',function(){plot=p.id;buildTabs();recalc()});
+      box.appendChild(b);
+    });
+  }
+  function buildSegs(){
+    var box=$('segList');box.innerHTML='';
+    segs.forEach(function(sg,i){
+      var g=document.createElement('div');g.className='seg';
+      var curveSel=sg.act==='dwell'?'':'<select data-i="'+i+'" data-f="curve">'+CURVES.map(function(c){return '<option value="'+c.id+'"'+(c.id===sg.curve?' selected':'')+'>'+c.n+'</option>'}).join('')+'</select>';
+      g.innerHTML='<div class="lab"><span>区間'+(i+1)+'</span>'+(segs.length>1?'<span class="del" data-del="'+i+'">削除</span>':'')+'</div>'+
+        '<div class="fl2">'+
+        '<div class="fld"><span class="fl">角度幅</span><input data-i="'+i+'" data-f="span" type="text" inputmode="decimal" placeholder="―"><span class="u">°</span></div>'+
+        '<select data-i="'+i+'" data-f="act">'+ACTS.map(function(a){return '<option value="'+a.id+'"'+(a.id===sg.act?' selected':'')+'>'+a.n+'</option>'}).join('')+'</select>'+
+        '</div>'+curveSel;
+      box.appendChild(g);
+      g.querySelector('[data-f="span"]').value=sg.span;
+    });
+  }
+
+  // θ(度) → その角度の {s(mm), phase, valid}
+  function evalAt(deg,L){
+    var acc=0, cum=0, lift=0; // liftはその区間開始時点の絶対リフト
+    var base=0;
+    for(var i=0;i<segs.length;i++){
+      var sp=num(segs[i].span);
+      if(!(sp>0))continue;
+      var start=cum, end=cum+sp;
+      if(deg>=start-1e-9&&deg<=end+1e-9){
+        var u=(sp>0)?(deg-start)/sp:0;
+        var m=motion(segs[i].curve,u);
+        var s;
+        if(segs[i].act==='rise')s=base+L*m.s;
+        else if(segs[i].act==='fall')s=base-L*m.s;
+        else s=base;
+        return {s:s, seg:i, u:u};
+      }
+      // 区間終わりでbase更新
+      if(segs[i].act==='rise')base+=L;
+      else if(segs[i].act==='fall')base-=L;
+      cum=end;
+    }
+    return null;
+  }
+
+  function totalSpan(){var t=0;segs.forEach(function(s){var v=num(s.span);if(v>0)t+=v});return t}
+
+  function recalc(){
+    var L=num($('fLift').value);
+    var rpm=num($('fRpm').value);
+    var rb=num($('fRb').value);
+    lastCopy=null;
+    var tot=totalSpan();
+
+    // 曲線描画
+    var grid=$('grid'),cv=$('curve'),mk=$('marker');
+    [grid,cv,mk].forEach(function(g){while(g.firstChild)g.removeChild(g.firstChild)});
+    var ready=(L>0&&tot>0);
+    $('emptyMsg').style.display=ready?'none':'';
+
+    if(ready){
+      var X0=30,X1=326,Y0=210,Y1=40,Ymid=(Y0+Y1)/2;
+      // サンプリング
+      var N=360, xs=[], ss=[], vs=[], as=[], js=[];
+      var omega=(rpm>0)?rpm*2*Math.PI/60:1; // rad/s
+      for(var i=0;i<=N;i++){
+        var deg=tot*i/N;
+        var r=evalAt(deg,L);
+        var sp=num(segs[r?r.seg:0].span);
+        var m=r?motion(segs[r.seg].curve, r.u):{s:0,v:0,a:0,j:0};
+        var dir=r?(segs[r.seg].act==='rise'?1:segs[r.seg].act==='fall'?-1:0):0;
+        var betaRad=sp*Math.PI/180;
+        xs.push(deg);
+        ss.push(r?r.s:0);
+        // v = L*dir*m.v/beta * omega  (mm/s) ; 無次元表示はL*dir*m.v/beta
+        vs.push(dir*L*m.v/betaRad*(rpm>0?omega:1));
+        as.push(dir*L*m.a/(betaRad*betaRad)*(rpm>0?omega*omega:1));
+        js.push(dir*L*m.j/(betaRad*betaRad*betaRad)*(rpm>0?omega*omega*omega:1));
+      }
+      var series=(plot==='s')?ss:(plot==='v')?vs:(plot==='a')?as:js;
+      var pmax=0;series.forEach(function(y){if(Math.abs(y)>pmax)pmax=Math.abs(y)});
+      if(pmax<1e-9)pmax=1;
+      var zeroBase=(plot==='s');
+      function X(deg){return X0+deg/tot*(X1-X0)}
+      function Y(y){
+        if(zeroBase)return Y0-(y/pmax)*(Y0-Y1);        // 0..max を下→上
+        return Ymid-(y/pmax)*(Ymid-Y1);                // ±max 中央基準
+      }
+      // グリッド: 区間境界
+      var cum=0;
+      grid.appendChild(el('line',{x1:X0,y1:zeroBase?Y0:Ymid,x2:X1,y2:zeroBase?Y0:Ymid,stroke:'#C9D3DA','stroke-width':1}));
+      segs.forEach(function(sg){
+        var sp=num(sg.span);if(!(sp>0))return;cum+=sp;
+        var x=X(cum);
+        grid.appendChild(el('line',{x1:x.toFixed(1),y1:Y1,x2:x.toFixed(1),y2:Y0,stroke:'#E1E7EB','stroke-width':1}));
+        var t=el('text',{x:x.toFixed(1),y:(Y0+12).toFixed(1),'font-size':8,fill:'#8FA2AF','text-anchor':'middle'});
+        t.textContent=Math.round(cum);grid.appendChild(t);
+      });
+      var t0=el('text',{x:X0,y:(Y0+12).toFixed(1),'font-size':8,fill:'#8FA2AF','text-anchor':'middle'});t0.textContent='0';grid.appendChild(t0);
+      var ylab=el('text',{x:X0-4,y:Y1-6,'font-size':9,fill:'#5B707E','text-anchor':'start'});
+      ylab.textContent=(plot==='s'?'s max='+pmax.toFixed(2)+'mm':plot==='v'?'v max='+(rpm>0?pmax.toFixed(1)+'mm/s':pmax.toFixed(3)+'(無次元)'):plot==='a'?'a max='+(rpm>0?pmax.toFixed(0)+'mm/s²':pmax.toFixed(2)):'j max');
+      grid.appendChild(ylab);
+
+      // カーブ
+      var d='';
+      for(i=0;i<=N;i++){d+=(i?' L ':'M ')+X(xs[i]).toFixed(1)+' '+Y(series[i]).toFixed(1)}
+      cv.appendChild(el('path',{d:d,fill:'none',stroke:'#1F3341','stroke-width':1.8}));
+
+      // マーカー(照合角度)
+      var qa=num($('fAngle').value);
+      if(qa>=0&&qa<=tot){
+        var r=evalAt(qa,L);
+        if(r){
+          var series2=(plot==='s')?r.s:null;
+          // 該当のseries値を補間
+          var idx=Math.round(qa/tot*N);
+          var yv=series[Math.max(0,Math.min(N,idx))];
+          var mx=X(qa),my=Y(yv);
+          mk.appendChild(el('line',{x1:mx.toFixed(1),y1:Y1,x2:mx.toFixed(1),y2:Y0,stroke:'#D63426','stroke-width':1,'stroke-dasharray':'4 3'}));
+          mk.appendChild(el('circle',{cx:mx.toFixed(1),cy:my.toFixed(1),r:4,fill:'#D63426'}));
+        }
+      }
+    }
+
+    // 数値: 照合角度
+    var qa=num($('fAngle').value);
+    var meas=num($('fMeas').value);
+    var cells=[];
+    if(L>0&&tot>0&&qa>=0&&qa<=tot+1e-9){
+      var r=evalAt(qa,L);
+      if(r){
+        $('mainLbl').textContent=qa+'° でのリフト';
+        $('out').textContent=r.s.toFixed(3);
+        var sg=segs[r.seg];
+        var spd=num(sg.span);
+        var m=motion(sg.curve,r.u);
+        var betaRad=spd*Math.PI/180;
+        var dir=(sg.act==='rise'?1:sg.act==='fall'?-1:0);
+        cells.push({k:'区間',v:(r.seg+1)+':'+ACTS.filter(function(a){return a.id===sg.act})[0].n,s:sg.act!=='dwell'?CURVES.filter(function(c){return c.id===sg.curve})[0].n:''});
+        if(rb>0)cells.push({k:'輪郭半径(Rb+s)',v:(rb+r.s).toFixed(3),s:'mm'});
+        if(rpm>0){
+          var omega=rpm*2*Math.PI/60;
+          cells.push({k:'速度',v:(dir*L*m.v/betaRad*omega).toFixed(1),s:'mm/s'});
+          cells.push({k:'加速度',v:(dir*L*m.a/(betaRad*betaRad)*omega*omega).toFixed(0),s:'mm/s²'});
+        }else{
+          cells.push({k:'速度係数',v:(dir*m.v).toFixed(3),s:'×L/β(rad)'});
+          cells.push({k:'加速度係数',v:(dir*m.a).toFixed(3),s:'×L/β²'});
+        }
+        if(!isNaN(meas)){
+          cells.push({k:'実測との差',v:((meas-r.s)>=0?'+':'')+(meas-r.s).toFixed(3),s:'mm'});
+        }
+        lastCopy='[カム θ='+qa+'°] リフト'+r.s.toFixed(3)+(rb>0?' 輪郭R'+(rb+r.s).toFixed(3):'')+' 区間'+(r.seg+1);
+      }
+    }else{
+      $('mainLbl').textContent='θでのリフト';
+      $('out').textContent='―';
+    }
+
+    // 合計角度の状態
+    var stat;
+    if(!(L>0))stat='総リフト量を入力してください';
+    else if(!(tot>0))stat='区間の角度幅を入力してください';
+    else if(Math.abs(tot-360)>0.01)stat='⚠ 区間の合計='+tot.toFixed(1)+'°(360°になるよう調整推奨)';
+    else stat='合計360° | '+PLOTS.filter(function(p){return p.id===plot})[0].n+'を表示中';
+    $('statusTxt').textContent=stat;
+    $('statusTxt').className='statusTxt'+(L>0&&tot>0&&Math.abs(tot-360)>0.01?' err':'');
+
+    if(!cells.length)cells=[{k:'合計角度',v:tot.toFixed(1),s:'°'},{k:'区間数',v:String(segs.length),s:''}];
+    $('cellGrid').innerHTML='';cells.forEach(function(c){var d=document.createElement('div');d.className='cellv';d.innerHTML='<span class="k">'+c.k+'</span><span class="v">'+c.v+'</span><span class="s">'+(c.s||'')+'</span>';$('cellGrid').appendChild(d)});
+  }
+
+  /* イベント */
+  $('segList').addEventListener('input',function(e){var t=e.target,i=t.getAttribute('data-i'),f=t.getAttribute('data-f');if(i==null)return;segs[+i][f]=t.value;recalc()});
+  $('segList').addEventListener('change',function(e){var t=e.target,i=t.getAttribute('data-i'),f=t.getAttribute('data-f');if(i==null)return;segs[+i][f]=t.value;if(f==='act')buildSegs();recalc()});
+  $('segList').addEventListener('click',function(e){var t=e.target;if(t.getAttribute('data-del')!=null){segs.splice(+t.getAttribute('data-del'),1);if(!segs.length)segs.push({span:'90',act:'rise',curve:'cyclo'});buildSegs();recalc()}});
+  $('addSeg').addEventListener('click',function(){if(segs.length>=8){toast('区間は最大8です');return}segs.push({span:'',act:'dwell',curve:'cyclo'});buildSegs();recalc()});
+  ['fLift','fRpm','fRb','fAngle','fMeas'].forEach(function(id){$(id).addEventListener('input',recalc)});
+
+  var toastTimer=null;
+  function toast(msg){var t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(function(){t.classList.remove('show')},1600)}
+  $('copyBtn').addEventListener('click',function(){if(!lastCopy){toast('確認したい角度を入れてください');return}
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(lastCopy).then(function(){toast('コピーしました')},function(){toast('コピーできませんでした')})}
+    else{var ta=document.createElement('textarea');ta.value=lastCopy;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('コピーしました')}catch(e){toast('コピーできませんでした')}document.body.removeChild(ta)}
+  });
+
+  buildTabs();buildSegs();recalc();
+})();
+</script>
+</body>
+</html>

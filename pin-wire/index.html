@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1F3341">
+<meta name="description" content="ピン・三針測定の換算。ねじ有効径(三針法)、アリ溝の内外ピン測定、V溝、平行溝幅に対応。計算は端末内で完結します。">
+<title>ピン・三針測定 | 検査計算ツール</title>
+<style>
+  :root{
+    --paper:#F2F4F5;
+    --sheet:#FFFFFF;
+    --ink:#1F3341;
+    --line:#8FA2AF;
+    --red:#D63426;
+    --dro-bg:#15181A;
+    --dro-red:#FF5A48;
+    --dro-dim:#9FB0B8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI",sans-serif;
+    background:var(--paper);color:var(--ink);
+    min-height:100dvh;display:flex;flex-direction:column;align-items:center;
+    padding:0 12px calc(16px + env(safe-area-inset-bottom));
+  }
+  .wrap{width:100%;max-width:480px}
+
+  header{display:flex;align-items:baseline;justify-content:space-between;padding:14px 2px 10px}
+  header h1{font-size:16px;font-weight:700;letter-spacing:.04em}
+  header h1 small{display:block;font-size:11px;font-weight:400;color:#5B707E;letter-spacing:.08em;margin-top:2px}
+  header a{font-size:12px;color:#5B707E;text-decoration:none}
+
+  .tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+  .tab{
+    font-size:12.5px;font-weight:700;padding:9px 12px;
+    border:1.5px solid var(--ink);border-radius:8px;
+    background:var(--sheet);color:var(--ink);
+  }
+  .tab.on{background:var(--ink);color:#fff}
+
+  .sheet{background:var(--sheet);border:2px solid var(--ink);padding:5px}
+  .sheet-inner{border:1px solid var(--ink)}
+  .sheet svg{display:block;width:100%;height:auto}
+  .titleblock{display:flex;border-top:1px solid var(--ink);font-size:9px;letter-spacing:.06em}
+  .titleblock div{padding:3px 8px;border-right:1px solid var(--ink)}
+  .titleblock div:last-child{border-right:none;margin-left:auto}
+  .titleblock b{font-weight:700}
+
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+  .chip{
+    font-size:12.5px;font-weight:700;padding:8px 11px;
+    border:1.5px solid var(--ink);border-radius:8px;
+    background:var(--sheet);color:var(--ink);
+    font-variant-numeric:tabular-nums;
+  }
+  .chip.on{background:var(--ink);color:#fff}
+
+  .inputs{margin-top:10px;display:flex;flex-direction:column;gap:10px}
+  .row{
+    display:grid;grid-template-columns:26px 1fr 130px 40px;
+    align-items:center;gap:8px;
+    background:var(--sheet);border:1px solid #D5DDE2;border-radius:10px;
+    padding:10px 12px;
+  }
+  .badge{
+    width:22px;height:22px;border-radius:50%;
+    background:var(--ink);color:#fff;font-size:12px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .row label{font-size:13px;font-weight:600}
+  .row label small{display:block;font-size:10px;font-weight:400;color:#5B707E}
+  .row input{
+    width:100%;font-size:19px;font-weight:600;text-align:right;
+    font-variant-numeric:tabular-nums;
+    border:none;border-bottom:2px solid var(--ink);
+    background:transparent;color:var(--ink);
+    padding:2px 4px;border-radius:0;outline:none;
+  }
+  .row input:focus{border-bottom-color:var(--red)}
+  .unit{font-size:12px;color:#5B707E}
+
+  .dro{
+    margin-top:16px;background:var(--dro-bg);border-radius:12px;
+    padding:16px 18px 12px;box-shadow:inset 0 2px 8px rgba(0,0,0,.5);
+  }
+  .dro-line{display:flex;align-items:baseline;gap:10px;justify-content:flex-end}
+  .dro-label{color:#7d8a91;font-size:13px;font-weight:700;letter-spacing:.08em}
+  .dro-val{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:34px;font-weight:600;color:var(--dro-red);
+    text-shadow:0 0 10px rgba(255,90,72,.35);letter-spacing:.02em;
+  }
+  .dro-unit{color:#7d8a91;font-size:13px;font-weight:600}
+  .dro-grid{
+    display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;
+    border-top:1px solid #2a3034;margin-top:10px;padding-top:10px;
+  }
+  .cellv{display:flex;flex-direction:column;align-items:flex-end;padding:4px 8px;border-radius:8px}
+  .cellv:active{background:#1e2327}
+  .cellv .k{color:#7d8a91;font-size:11px;font-weight:700;letter-spacing:.06em;align-self:flex-start}
+  .cellv .v{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:18px;font-weight:600;color:var(--dro-dim);
+  }
+  .cellv .s{color:#5d6a71;font-size:10px}
+  .dro-foot{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-top:10px;border-top:1px solid #2a3034;padding-top:9px;gap:8px;
+  }
+  .statusTxt{color:#5d6a71;font-size:11px;letter-spacing:.02em;line-height:1.6}
+  .statusTxt.err{color:#FF8A7E}
+  .copy{
+    font-size:12px;font-weight:700;color:#c9d2d7;background:#252b2f;
+    border:1px solid #3a4247;border-radius:7px;padding:6px 14px;flex:none;
+  }
+  .copy:active{background:#31383d}
+
+  footer{margin-top:16px;font-size:11px;color:#5B707E;line-height:1.7;text-align:center;letter-spacing:.03em}
+
+  .toast{
+    position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);
+    background:var(--ink);color:#fff;font-size:13px;
+    padding:9px 20px;border-radius:20px;opacity:0;pointer-events:none;
+    transition:opacity .25s,transform .25s;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>ピン・三針測定<small>ねじ有効径・アリ溝・V溝・平行溝の換算</small></h1>
+    <a href="../index.html">≡ ツール一覧</a>
+  </header>
+
+  <div class="tabs" id="tabs"></div>
+
+  <!-- 図面シート(モードごとに切替) -->
+  <div class="sheet">
+    <div class="sheet-inner">
+      <svg viewBox="0 0 340 250" role="img" aria-label="各測定モードの模式図">
+        <defs>
+          <marker id="ar" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L8,3 L0,6 z" fill="#1F3341"/>
+          </marker>
+          <marker id="arRed" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L8,3 L0,6 z" fill="#D63426"/>
+          </marker>
+        </defs>
+
+        <!-- ねじ三針 -->
+        <g id="dg-thread">
+          <line x1="30" y1="176" x2="310" y2="176" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="12 3 2 3"/>
+          <path d="M 30 140 L 50 100 L 70 140 L 90 100 L 110 140 L 130 100 L 150 140 L 170 100 L 190 140"
+                fill="none" stroke="#1F3341" stroke-width="1.8"/>
+          <path d="M 50 212 L 70 252 L 90 212 L 110 252 L 130 212 L 150 252 L 170 212"
+                fill="none" stroke="#1F3341" stroke-width="1.8" transform="translate(0,-40)"/>
+          <circle cx="70" cy="124" r="12" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+          <circle cx="130" cy="124" r="12" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+          <circle cx="110" cy="188" r="12" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+          <line x1="70" y1="88" x2="130" y2="88" stroke="#1F3341" stroke-width="1.2" marker-start="url(#ar)" marker-end="url(#ar)"/>
+          <text x="100" y="82" font-size="11" fill="#1F3341" text-anchor="middle" stroke="#fff" stroke-width="3" paint-order="stroke">P</text>
+          <text x="43" y="128" font-size="11" fill="#1F3341" text-anchor="end" stroke="#fff" stroke-width="3" paint-order="stroke">針 dw</text>
+          <line x1="266" y1="112" x2="266" y2="200" stroke="#D63426" stroke-width="1.6" marker-start="url(#arRed)" marker-end="url(#arRed)"/>
+          <line x1="142" y1="112" x2="270" y2="112" stroke="#C9D3DA" stroke-width="1" stroke-dasharray="4 3"/>
+          <line x1="122" y1="200" x2="270" y2="200" stroke="#C9D3DA" stroke-width="1" stroke-dasharray="4 3"/>
+          <text x="274" y="160" font-size="13" font-weight="700" fill="#D63426" stroke="#fff" stroke-width="3.5" paint-order="stroke">M</text>
+          <text x="30" y="26" font-size="11" fill="#5B707E">3本の針を掛けてマイクロメータでMを測る</text>
+        </g>
+
+        <!-- アリ溝(外) -->
+        <g id="dg-dovM" style="display:none">
+          <line x1="20" y1="200" x2="320" y2="200" stroke="#1F3341" stroke-width="2"/>
+          <path d="M 130 200 L 110 140 L 230 140 L 210 200 Z" fill="#EFF2F4" stroke="#1F3341" stroke-width="1.8"/>
+          <circle cx="107.5" cy="187" r="13" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+          <circle cx="232.5" cy="187" r="13" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+          <line x1="94.5" y1="225" x2="245.5" y2="225" stroke="#D63426" stroke-width="1.6" marker-start="url(#arRed)" marker-end="url(#arRed)"/>
+          <line x1="94.5" y1="192" x2="94.5" y2="229" stroke="#C9D3DA" stroke-width="1" stroke-dasharray="4 3"/>
+          <line x1="245.5" y1="192" x2="245.5" y2="229" stroke="#C9D3DA" stroke-width="1" stroke-dasharray="4 3"/>
+          <text x="170" y="220" font-size="13" font-weight="700" fill="#D63426" text-anchor="middle" stroke="#fff" stroke-width="3.5" paint-order="stroke">M(外側)</text>
+          <line x1="131" y1="128" x2="209" y2="128" stroke="#1F3341" stroke-width="1.2" marker-start="url(#ar)" marker-end="url(#ar)"/>
+          <text x="170" y="122" font-size="11" fill="#1F3341" text-anchor="middle" stroke="#fff" stroke-width="3" paint-order="stroke">根元幅 a(計算)</text>
+          <path d="M 158 200 A 28 28 0 0 0 144 176" fill="none" stroke="#1F3341" stroke-width="1.1"/>
+          <text x="164" y="184" font-size="11" fill="#1F3341" stroke="#fff" stroke-width="3" paint-order="stroke">α</text>
+          <text x="30" y="26" font-size="11" fill="#5B707E">凸のアリ: ピン2本を当てて外側Mを測る</text>
+        </g>
+
+        <!-- アリ溝(内) -->
+        <g id="dg-dovF" style="display:none">
+          <path d="M 30 110 L 130 110 L 110 190 L 230 190 L 210 110 L 310 110" fill="none" stroke="#1F3341" stroke-width="2"/>
+          <line x1="110" y1="190" x2="230" y2="190" stroke="none"/>
+          <circle cx="132.5" cy="177" r="13" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+          <circle cx="207.5" cy="177" r="13" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+          <line x1="145.5" y1="177" x2="194.5" y2="177" stroke="#D63426" stroke-width="1.6" marker-start="url(#arRed)" marker-end="url(#arRed)"/>
+          <text x="170" y="168" font-size="12" font-weight="700" fill="#D63426" text-anchor="middle" stroke="#fff" stroke-width="3.5" paint-order="stroke">M(内側)</text>
+          <line x1="110" y1="212" x2="230" y2="212" stroke="#1F3341" stroke-width="1.2" marker-start="url(#ar)" marker-end="url(#ar)"/>
+          <text x="170" y="228" font-size="11" fill="#1F3341" text-anchor="middle" stroke="#fff" stroke-width="3" paint-order="stroke">底幅 A(計算)</text>
+          <path d="M 134 190 A 26 26 0 0 0 121 168" fill="none" stroke="#1F3341" stroke-width="1.1"/>
+          <text x="140" y="176" font-size="11" fill="#1F3341" stroke="#fff" stroke-width="3" paint-order="stroke">α</text>
+          <text x="30" y="26" font-size="11" fill="#5B707E">凹のアリ: ピン2本を入れて間(内側)Mを測る</text>
+        </g>
+
+        <!-- V溝 -->
+        <g id="dg-vg" style="display:none">
+          <line x1="30" y1="100" x2="310" y2="100" stroke="#1F3341" stroke-width="2"/>
+          <path d="M 130 100 L 170 190 L 210 100" fill="none" stroke="#1F3341" stroke-width="1.8"/>
+          <circle cx="170" cy="140.8" r="20" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+          <line x1="170" y1="120.8" x2="248" y2="120.8" stroke="#C9D3DA" stroke-width="1" stroke-dasharray="4 3"/>
+          <line x1="222" y1="100" x2="248" y2="100" stroke="#C9D3DA" stroke-width="1" stroke-dasharray="4 3"/>
+          <line x1="244" y1="100" x2="244" y2="120.8" stroke="#D63426" stroke-width="1.6" marker-start="url(#arRed)" marker-end="url(#arRed)"/>
+          <text x="252" y="114" font-size="12" font-weight="700" fill="#D63426" stroke="#fff" stroke-width="3.5" paint-order="stroke">H</text>
+          <path d="M 156 158 A 36 36 0 0 0 184 158" fill="none" stroke="#1F3341" stroke-width="1.1"/>
+          <text x="170" y="172" font-size="11" fill="#1F3341" text-anchor="middle" stroke="#fff" stroke-width="3" paint-order="stroke">γ</text>
+          <text x="128" y="132" font-size="11" fill="#1F3341" text-anchor="end" stroke="#fff" stroke-width="3" paint-order="stroke">ピン D</text>
+          <text x="30" y="26" font-size="11" fill="#5B707E">Vにピンを落とし、面からピン頭までHを測る</text>
+          <text x="30" y="42" font-size="11" fill="#5B707E">(頭が面より下ならHはマイナスで入力)</text>
+        </g>
+
+        <!-- 平行溝 -->
+        <g id="dg-slot" style="display:none">
+          <path d="M 30 100 L 130 100 L 130 190 L 210 190 L 210 100 L 310 100" fill="none" stroke="#1F3341" stroke-width="2"/>
+          <circle cx="144" cy="150" r="14" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+          <circle cx="196" cy="150" r="14" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+          <line x1="158" y1="150" x2="182" y2="150" stroke="#D63426" stroke-width="1.6" marker-start="url(#arRed)" marker-end="url(#arRed)"/>
+          <text x="170" y="141" font-size="12" font-weight="700" fill="#D63426" text-anchor="middle" stroke="#fff" stroke-width="3.5" paint-order="stroke">M</text>
+          <line x1="130" y1="84" x2="210" y2="84" stroke="#1F3341" stroke-width="1.2" marker-start="url(#ar)" marker-end="url(#ar)"/>
+          <text x="170" y="78" font-size="11" fill="#1F3341" text-anchor="middle" stroke="#fff" stroke-width="3" paint-order="stroke">溝幅 W(計算)</text>
+          <text x="120" y="168" font-size="10" fill="#1F3341" text-anchor="end" stroke="#fff" stroke-width="3" paint-order="stroke">D₁</text>
+          <text x="222" y="168" font-size="10" fill="#1F3341" stroke="#fff" stroke-width="3" paint-order="stroke">D₂</text>
+          <text x="30" y="26" font-size="11" fill="#5B707E">深い溝など: ピンを両壁に当てて間Mを測る</text>
+        </g>
+      </svg>
+      <div class="titleblock">
+        <div><b>品名</b> ピン・三針測定</div>
+        <div><b>方式</b> 接触幾何</div>
+        <div>TOOL-14</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ねじ種類(三針モードのみ) -->
+  <div class="chips" id="thChips" style="display:none"></div>
+
+  <!-- 入力(モードごとに生成) -->
+  <div class="inputs" id="fieldBox"></div>
+
+  <!-- 結果 -->
+  <div class="dro">
+    <div class="dro-line">
+      <span class="dro-label" id="mainLbl">―</span>
+      <span class="dro-val" id="out">―.―――</span>
+      <span class="dro-unit">mm</span>
+    </div>
+    <div class="dro-grid" id="cellGrid"></div>
+    <div class="dro-foot">
+      <span class="statusTxt" id="statusTxt">値を入力してください</span>
+      <button class="copy" type="button" id="copyBtn">コピー</button>
+    </div>
+  </div>
+
+  <footer>
+    このページは計算のみを行います。入力値の送信・保存は一切ありません(端末内で完結)。<br>
+    三針法はリード角補正を省略した実用式です(多条ねじ・リード角の大きいねじでは差が出ます)。
+  </footer>
+</div>
+
+<div class="toast" id="toast">コピーしました</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var mode='thread';
+  var thIdx=0;   // ねじ種類
+  var lastMain=null;
+
+  var TH=[
+    {n:'メートル/ユニファイ 60°',g:60},
+    {n:'管用・ウィット 55°',g:55},
+    {n:'台形ねじ 30°',g:30},
+    {n:'カスタム',g:null}
+  ];
+  var TABS=[
+    {id:'thread',n:'ねじ三針'},
+    {id:'dovM',n:'アリ溝(外)'},
+    {id:'dovF',n:'アリ溝(内)'},
+    {id:'vg',n:'V溝'},
+    {id:'slot',n:'平行溝'}
+  ];
+
+  function num(v){
+    if(v==null)return NaN;
+    v=String(v).replace(/[０-９．−]/g,function(c){
+      if(c==='−')return '-';
+      return String.fromCharCode(c.charCodeAt(0)-0xFEE0);
+    }).replace(/。/g,'.').replace(/[,，、\s]/g,'').trim();
+    if(v==='')return NaN;
+    return Number(v);
+  }
+  function parseAngle(v){
+    if(v==null)return NaN;
+    var s=String(v).replace(/[０-９．−]/g,function(c){
+      if(c==='−')return '-';
+      return String.fromCharCode(c.charCodeAt(0)-0xFEE0);
+    }).replace(/。/g,'.').replace(/[°度]/g,' ').replace(/[′’'分]/g,' ').replace(/[″”"秒]/g,' ').trim();
+    if(s==='')return NaN;
+    var p=s.split(/\s+/);
+    if(p.length===1)return Number(p[0]);
+    var d=Number(p[0]),m=Number(p[1]||0),sec=Number(p[2]||0);
+    if(isNaN(d)||isNaN(m)||isNaN(sec))return NaN;
+    var sign=(d<0||/^\s*-/.test(p[0]))?-1:1;
+    return sign*(Math.abs(d)+m/60+sec/3600);
+  }
+  function f4(v){return v.toFixed(4)}
+  function getv(id){var e=$(id);return e?num(e.value):NaN}
+  function getA(id){var e=$(id);return e?parseAngle(e.value):NaN}
+  function raw(id){var e=$(id);return e?e.value.trim():''}
+
+  /* ---- UI生成 ---- */
+  function mkRow(badge,label,small,id,unit,ph){
+    return '<div class="row">'+
+      '<span class="badge">'+badge+'</span>'+
+      '<label for="'+id+'">'+label+(small?'<small>'+small+'</small>':'')+'</label>'+
+      '<input id="'+id+'" type="text" inputmode="decimal" autocomplete="off" placeholder="'+(ph||'―')+'">'+
+      '<span class="unit">'+unit+'</span></div>';
+  }
+  function buildTabs(){
+    var box=$('tabs');box.innerHTML='';
+    TABS.forEach(function(t){
+      var b=document.createElement('button');
+      b.type='button';b.className='tab'+(t.id===mode?' on':'');
+      b.textContent=t.n;
+      b.addEventListener('click',function(){mode=t.id;buildTabs();buildFields();recalc()});
+      box.appendChild(b);
+    });
+  }
+  function buildThChips(){
+    var box=$('thChips');box.innerHTML='';
+    TH.forEach(function(t,i){
+      var b=document.createElement('button');
+      b.type='button';b.className='chip'+(i===thIdx?' on':'');
+      b.textContent=t.n;
+      b.addEventListener('click',function(){thIdx=i;buildThChips();buildFields();recalc()});
+      box.appendChild(b);
+    });
+  }
+  function buildFields(){
+    var h='';
+    // 図の切替
+    ['thread','dovM','dovF','vg','slot'].forEach(function(m){
+      $('dg-'+m).style.display=(m===mode)?'':'none';
+    });
+    $('thChips').style.display=(mode==='thread')?'':'none';
+
+    if(mode==='thread'){
+      if(TH[thIdx].g==null)h+=mkRow('γ','ねじ山の角度','カスタム(全角)','tG','°','60');
+      h+=mkRow('1','ピッチ P','','tP','mm');
+      h+=mkRow('2','針径 dw','最適線径は結果欄に表示','tDw','mm');
+      h+=mkRow('3','実測 M','三針を掛けた測定値','tM','mm');
+      h+=mkRow('4','図面の有効径 d₂','任意: 理論Mと差を表示','tD2','mm');
+    }else if(mode==='dovM'||mode==='dovF'){
+      var ext=(mode==='dovM');
+      h+=mkRow('1','アリ溝角度 α','面と斜面の角度(例: 55, 60)','dA','°');
+      h+=mkRow('2','ピン径 D','','dD','mm');
+      h+=mkRow('3','実測 M',ext?'ピン外側の距離':'ピンの間(内側)の距離','dM','mm');
+      h+=mkRow('4','深さ h','任意: もう一方の幅も計算','dH','mm');
+      h+=mkRow('5','図面の幅',ext?'任意: 根元幅aの図面値':'任意: 底幅Aの図面値','dNom','mm');
+    }else if(mode==='vg'){
+      h+=mkRow('1','V溝の角度 γ','全角(例: 90, 60)','vG','°');
+      h+=mkRow('2','ピン径 D','','vD','mm');
+      h+=mkRow('3','実測 H','面からピン頭まで(下がりは−)','vH','mm');
+    }else if(mode==='slot'){
+      h+=mkRow('1','実測 M','ピンの間(内側)の距離','sM','mm');
+      h+=mkRow('2','ピン径 D₁','','sD1','mm');
+      h+=mkRow('3','ピン径 D₂','空欄なら D₁ と同じ','sD2','mm');
+    }
+    $('fieldBox').innerHTML=h;
+    var inputs=$('fieldBox').querySelectorAll('input');
+    for(var i=0;i<inputs.length;i++)inputs[i].addEventListener('input',recalc);
+  }
+
+  /* ---- 表示 ---- */
+  function show(mainLbl,mainVal,cells,status,isErr){
+    $('mainLbl').textContent=mainLbl;
+    $('out').textContent=(mainVal==null)?'―.―――':f4(mainVal);
+    lastMain=(mainVal==null)?null:f4(mainVal);
+    var g=$('cellGrid');g.innerHTML='';
+    (cells||[]).forEach(function(c){
+      var d=document.createElement('div');
+      d.className='cellv';
+      d.innerHTML='<span class="k">'+c.k+'</span><span class="v">'+c.v+'</span><span class="s">'+(c.s||'mm')+'</span>';
+      g.appendChild(d);
+    });
+    $('statusTxt').textContent=status;
+    $('statusTxt').className='statusTxt'+(isErr?' err':'');
+  }
+
+  /* ---- 計算 ---- */
+  function recalc(){
+    if(mode==='thread'){
+      var g=(TH[thIdx].g!=null)?TH[thIdx].g:getA('tG');
+      var P=getv('tP'), dw=getv('tDw'), M=getv('tM'), d2n=getv('tD2');
+      if(!(g>0&&g<180)){show('有効径 d₂',null,[], TH[thIdx].g==null?'ねじ山の角度を入力してください':'角度が不正です',TH[thIdx].g==null);return}
+      var b=g/2*Math.PI/180;
+      var C1=1+1/Math.sin(b);
+      var C2=Math.cos(b)/Math.sin(b)/2;   // (1/2)cotβ
+      var cells=[];
+      if(P>0)cells.push({k:'最適線径 dw',v:f4(P/(2*Math.cos(b)))});
+      cells.push({k:'係数(針)',v:C1.toFixed(5),s:'×dw'});
+      var main=null,st='式: d₂ = M − dw×'+C1.toFixed(4)+' + P×'+C2.toFixed(4);
+      if(P>0&&dw>0&&!isNaN(M)){
+        main=M-C1*dw+C2*P;
+        if(!isNaN(d2n)){
+          cells.push({k:'図面d₂との差',v:(main-d2n>=0?'+':'')+f4(main-d2n)});
+        }
+      }else if(P>0&&dw>0&&!isNaN(d2n)){
+        cells.push({k:'理論M(図面d₂)',v:f4(d2n+C1*dw-C2*P)});
+        st='実測Mを入れると有効径を計算します';
+      }else{
+        st='P・dw・M を入力してください';
+      }
+      if(P>0&&dw>0&&!isNaN(d2n)&&!isNaN(M)){
+        cells.push({k:'理論M(図面d₂)',v:f4(d2n+C1*dw-C2*P)});
+      }
+      show('有効径 d₂',main,cells,st,false);
+
+    }else if(mode==='dovM'||mode==='dovF'){
+      var ext=(mode==='dovM');
+      var al=getA('dA'), D=getv('dD'), M=getv('dM'), hh=getv('dH'), nom=getv('dNom');
+      if(!(al>0&&al<90)){show(ext?'根元幅 a':'底幅 A',null,[],'アリ溝角度 α(0〜90°)を入力してください',false);return}
+      var half=al/2*Math.PI/180;
+      var C=0, main=null, cells=[], st='';
+      if(D>0){
+        C=D*(1+Math.cos(half)/Math.sin(half));
+        cells.push({k:'ピン定数 D(1+cot(α/2))',v:f4(C)});
+      }
+      if(D>0&&!isNaN(M)){
+        main=ext?(M-C):(M+C);
+        if(hh>0){
+          var other=ext?(main+2*hh/Math.tan(al*Math.PI/180)):(main-2*hh/Math.tan(al*Math.PI/180));
+          cells.push({k:ext?'上端幅(深さhで)':'開口幅(深さhで)',v:f4(other)});
+        }
+        if(!isNaN(nom)){
+          cells.push({k:'理論M(図面値)',v:f4(ext?(nom+C):(nom-C))});
+          cells.push({k:'図面との差',v:(main-nom>=0?'+':'')+f4(main-nom)});
+        }
+        st='式: '+(ext?'a = M − D(1+cot(α/2))':'A = M + D(1+cot(α/2))');
+      }else{
+        st='α・D・M を入力してください';
+      }
+      show(ext?'根元幅 a':'底幅 A',main,cells,st,false);
+
+    }else if(mode==='vg'){
+      var gg=getA('vG'), D=getv('vD'), H=getv('vH');
+      if(!(gg>0&&gg<180)){show('溝深さ(頂点まで)',null,[],'V溝の角度 γ(全角)を入力してください',false);return}
+      var hf=gg/2*Math.PI/180;
+      var cells=[], main=null, lbl='頂点→ピン頭', st='';
+      if(D>0){
+        var r=D/2;
+        var vc=r/Math.sin(hf);
+        var vt=vc+r;
+        cells.push({k:'頂点→ピン中心',v:f4(vc)});
+        cells.push({k:'頂点→ピン頭',v:f4(vt)});
+        if(!isNaN(H)){
+          main=vt-H;
+          lbl='溝深さ(面→頂点)';
+          cells.push({k:'口元幅 W',v:f4(2*main*Math.tan(hf))});
+          st='式: 深さ = D/2×(1+1/sin(γ/2)) − H';
+        }else{
+          main=vt;
+          st='H(面からピン頭)を入れると溝深さ・口元幅を計算します';
+        }
+      }else{
+        st='γ・D を入力してください';
+      }
+      show(lbl,main,cells,st,false);
+
+    }else if(mode==='slot'){
+      var M=getv('sM'), D1=getv('sD1');
+      var D2=raw('sD2')===''?D1:getv('sD2');
+      var main=null, cells=[], st='';
+      if(!isNaN(M)&&D1>0&&D2>0){
+        main=M+D1+D2;
+        cells.push({k:'ピン合計 D₁+D₂',v:f4(D1+D2)});
+        st='式: W = M + D₁ + D₂';
+      }else{
+        st='M と D₁ を入力してください(D₂は空欄で同径)';
+      }
+      show('溝幅 W',main,cells,st,false);
+    }
+  }
+
+  var toastTimer=null;
+  function toast(msg){
+    var t=$('toast');t.textContent=msg;t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer=setTimeout(function(){t.classList.remove('show')},1600);
+  }
+  $('copyBtn').addEventListener('click',function(){
+    if(lastMain==null){toast('まだ値がありません');return}
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(lastMain).then(function(){toast('コピーしました')},function(){toast('コピーできませんでした')});
+    }else{
+      var ta=document.createElement('textarea');
+      ta.value=lastMain;document.body.appendChild(ta);ta.select();
+      try{document.execCommand('copy');toast('コピーしました')}catch(e){toast('コピーできませんでした')}
+      document.body.removeChild(ta);
+    }
+  });
+
+  buildTabs();
+  buildThChips();
+  buildFields();
+  recalc();
+})();
+</script>
+</body>
+</html>

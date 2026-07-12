@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1F3341">
+<meta name="description" content="PCD(ピッチ円直径)と穴数から穴間ピッチを計算。実測ピッチからPCDの逆算も可能。計算は端末内で完結し、入力値はどこにも送信されません。">
+<title>PCD穴ピッチ | 検査計算ツール</title>
+<style>
+  :root{
+    --paper:#F2F4F5;
+    --sheet:#FFFFFF;
+    --ink:#1F3341;
+    --line:#8FA2AF;
+    --red:#D63426;
+    --dro-bg:#15181A;
+    --dro-red:#FF5A48;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI",sans-serif;
+    background:var(--paper);color:var(--ink);
+    min-height:100dvh;display:flex;flex-direction:column;align-items:center;
+    padding:0 12px calc(16px + env(safe-area-inset-bottom));
+  }
+  .wrap{width:100%;max-width:480px}
+
+  header{display:flex;align-items:baseline;justify-content:space-between;padding:14px 2px 10px}
+  header h1{font-size:16px;font-weight:700;letter-spacing:.04em}
+  header h1 small{display:block;font-size:11px;font-weight:400;color:#5B707E;letter-spacing:.08em;margin-top:2px}
+  header a{font-size:12px;color:#5B707E;text-decoration:none}
+
+  /* モード切替 */
+  .mode-lg{
+    display:grid;grid-template-columns:1fr 1fr;
+    border:1.5px solid var(--ink);border-radius:9px;overflow:hidden;
+    margin-bottom:12px;
+  }
+  .mode-lg button{
+    font-size:13px;font-weight:700;padding:10px 4px;border:none;
+    background:var(--sheet);color:var(--ink);letter-spacing:.03em;
+  }
+  .mode-lg button.on{background:var(--ink);color:#fff}
+
+  /* 図面シート */
+  .sheet{background:var(--sheet);border:2px solid var(--ink);padding:5px}
+  .sheet-inner{border:1px solid var(--ink)}
+  .sheet svg{display:block;width:100%;height:auto}
+  .titleblock{display:flex;border-top:1px solid var(--ink);font-size:9px;letter-spacing:.06em}
+  .titleblock div{padding:3px 8px;border-right:1px solid var(--ink)}
+  .titleblock div:last-child{border-right:none;margin-left:auto}
+  .titleblock b{font-weight:700}
+
+  /* 入力 */
+  .inputs{margin-top:14px;display:flex;flex-direction:column;gap:10px}
+  .row{
+    display:grid;grid-template-columns:26px 1fr 120px 34px;
+    align-items:center;gap:8px;
+    background:var(--sheet);border:1px solid #D5DDE2;border-radius:10px;
+    padding:10px 12px;
+  }
+  .badge{
+    width:22px;height:22px;border-radius:50%;
+    background:var(--ink);color:#fff;font-size:12px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .row label{font-size:13px;font-weight:600}
+  .row label small{display:block;font-size:10px;font-weight:400;color:#5B707E}
+  .row input{
+    width:100%;font-size:20px;font-weight:600;text-align:right;
+    font-variant-numeric:tabular-nums;
+    border:none;border-bottom:2px solid var(--ink);
+    background:transparent;color:var(--ink);
+    padding:2px 4px;border-radius:0;outline:none;
+  }
+  .row input:focus{border-bottom-color:var(--red)}
+  .unit{font-size:12px;color:#5B707E}
+
+  .step-wrap{display:flex;align-items:center;gap:6px}
+  .step-wrap input{text-align:center}
+  .step{
+    width:34px;height:34px;flex:none;border-radius:8px;
+    border:1.5px solid var(--ink);background:var(--sheet);color:var(--ink);
+    font-size:18px;font-weight:700;line-height:1;
+  }
+  .step:active{background:var(--ink);color:#fff}
+
+  /* 結果表示器 */
+  .dro{
+    margin-top:16px;background:var(--dro-bg);border-radius:12px;
+    padding:16px 18px 14px;box-shadow:inset 0 2px 8px rgba(0,0,0,.5);
+  }
+  .dro-line{display:flex;align-items:baseline;gap:10px;justify-content:flex-end}
+  .dro-label{color:#7d8a91;font-size:14px;font-weight:700;letter-spacing:.1em}
+  .dro-val{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:38px;font-weight:600;color:var(--dro-red);
+    text-shadow:0 0 10px rgba(255,90,72,.35);letter-spacing:.02em;
+  }
+  .dro-unit{color:#7d8a91;font-size:14px;font-weight:600}
+  .dro-sub{
+    text-align:right;color:#7d8a91;font-size:12px;margin-top:4px;
+    font-variant-numeric:tabular-nums;
+  }
+  .dro-foot{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-top:10px;border-top:1px solid #2a3034;padding-top:9px;gap:8px;
+  }
+  .formula{color:#5d6a71;font-size:11px;letter-spacing:.02em}
+  .copy{
+    font-size:12px;font-weight:700;color:#c9d2d7;background:#252b2f;
+    border:1px solid #3a4247;border-radius:7px;padding:6px 14px;flex:none;
+  }
+  .copy:active{background:#31383d}
+
+  footer{margin-top:18px;font-size:11px;color:#5B707E;line-height:1.7;text-align:center;letter-spacing:.03em}
+
+  .toast{
+    position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);
+    background:var(--ink);color:#fff;font-size:13px;
+    padding:9px 20px;border-radius:20px;opacity:0;pointer-events:none;
+    transition:opacity .25s,transform .25s;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>PCD穴ピッチ<small>ピッチ円上の穴間距離</small></h1>
+    <a href="../index.html">≡ ツール一覧</a>
+  </header>
+
+  <div class="mode-lg" role="group" aria-label="計算方向">
+    <button type="button" id="mFwd" class="on">PCD → ピッチ</button>
+    <button type="button" id="mRev">ピッチ → PCD</button>
+  </div>
+
+  <!-- 図面シート -->
+  <div class="sheet">
+    <div class="sheet-inner">
+      <svg id="dwg" viewBox="0 0 340 250" role="img" aria-label="ピッチ円上に等配された穴と、PCD・穴間ピッチ・中心角の関係図">
+        <defs>
+          <marker id="ar" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L8,3 L0,6 z" fill="#1F3341"/>
+          </marker>
+          <marker id="arRed" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L8,3 L0,6 z" fill="#D63426"/>
+          </marker>
+        </defs>
+
+        <!-- 部品外形(フランジ) -->
+        <circle cx="170" cy="125" r="116" fill="none" stroke="#C9D3DA" stroke-width="1.2"/>
+        <circle cx="170" cy="125" r="40" fill="none" stroke="#C9D3DA" stroke-width="1.2"/>
+
+        <!-- 中心十字(一点鎖線) -->
+        <line x1="40" y1="125" x2="300" y2="125" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="12 3 2 3"/>
+        <line x1="170" y1="8" x2="170" y2="242" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="12 3 2 3"/>
+
+        <!-- ピッチ円(一点鎖線) -->
+        <circle cx="170" cy="125" r="88" fill="none" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="12 3 2 3"/>
+
+        <!-- PCD直径寸法(25°-205°) -->
+        <line id="pcdLine" x1="90.2" y1="162.2" x2="249.8" y2="87.8"
+              stroke="#1F3341" stroke-width="1.4"
+              marker-start="url(#ar)" marker-end="url(#ar)"/>
+        <g id="pcdBadge">
+          <circle cx="44" cy="182" r="8.5" fill="#1F3341" stroke="#fff" stroke-width="2"/>
+          <text x="44" y="186" font-size="10.5" font-weight="700" fill="#fff" text-anchor="middle">1</text>
+        </g>
+        <text id="pcdLabel" x="57" y="187" font-size="13" fill="#1F3341"
+              stroke="#fff" stroke-width="3.5" paint-order="stroke">PCD</text>
+
+        <!-- 凡例(左上) -->
+        <g id="legend">
+          <circle cx="18" cy="18" r="8.5" fill="#1F3341" stroke="#fff" stroke-width="2"/>
+          <text x="18" y="22" font-size="10.5" font-weight="700" fill="#fff" text-anchor="middle">2</text>
+          <text id="nTxt" x="32" y="22" font-size="12" fill="#1F3341" stroke="#fff" stroke-width="3.5" paint-order="stroke">穴数 n = 8</text>
+          <circle cx="18" cy="40" r="8.5" fill="#1F3341" stroke="#fff" stroke-width="2"/>
+          <text x="18" y="44" font-size="10.5" font-weight="700" fill="#fff" text-anchor="middle">3</text>
+          <text id="kTxt" x="32" y="44" font-size="12" fill="#1F3341" stroke="#fff" stroke-width="3.5" paint-order="stroke">とび k = 1(隣り)</text>
+        </g>
+
+        <!-- 動的部分(穴・弦・中心角) -->
+        <g id="dyn"></g>
+      </svg>
+      <div class="titleblock">
+        <div><b>品名</b> PCD穴ピッチ</div>
+        <div><b>方式</b> 弦長計算</div>
+        <div>TOOL-02</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 入力 -->
+  <div class="inputs">
+    <div class="row">
+      <span class="badge">1</span>
+      <label for="in1" id="lbl1">PCD<small id="lbl1s">ピッチ円直径</small></label>
+      <input id="in1" type="text" inputmode="decimal" autocomplete="off" placeholder="0.000">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row">
+      <span class="badge">2</span>
+      <label for="inN">穴数 n<small>円周上の穴の総数</small></label>
+      <input id="inN" type="text" inputmode="numeric" autocomplete="off" placeholder="8">
+      <span class="unit">穴</span>
+    </div>
+    <div class="row" style="grid-template-columns:26px 1fr 150px 0px">
+      <span class="badge">3</span>
+      <label for="inK">穴とび k<small>1=隣りの穴どうし</small></label>
+      <div class="step-wrap">
+        <button class="step" type="button" id="kMinus" aria-label="とびを減らす">−</button>
+        <input id="inK" type="text" inputmode="numeric" autocomplete="off" value="1">
+        <button class="step" type="button" id="kPlus" aria-label="とびを増やす">＋</button>
+      </div>
+      <span></span>
+    </div>
+  </div>
+
+  <!-- 結果 -->
+  <div class="dro">
+    <div class="dro-line">
+      <span class="dro-label" id="droLbl">p</span>
+      <span class="dro-val" id="out">―.―――</span>
+      <span class="dro-unit">mm</span>
+    </div>
+    <div class="dro-sub" id="thOut">中心角 θ = ―</div>
+    <div class="dro-foot">
+      <span class="formula" id="formulaTxt">p = PCD × sin(k × 180° ÷ n)</span>
+      <button class="copy" id="copyBtn" type="button">コピー</button>
+    </div>
+  </div>
+
+  <footer>
+    このページは計算のみを行います。<br>
+    入力値の送信・保存は一切ありません(端末内で完結)。
+  </footer>
+</div>
+
+<div class="toast" id="toast">コピーしました</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var NS='http://www.w3.org/2000/svg';
+  var CX=170, CY=125, R=88;
+  var mode='fwd';          // fwd: PCD→ピッチ / rev: ピッチ→PCD
+  var lastResult=null;
+
+  function num(v){
+    if(v==null)return NaN;
+    v=String(v).replace(/[０-９．]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0)}).replace(/。/g,'.').trim();
+    if(v==='')return NaN;
+    return Number(v);
+  }
+  function intVal(v){
+    var x=num(v);
+    return (isFinite(x)&&x===Math.floor(x))?x:NaN;
+  }
+  function el(name,attrs){
+    var e=document.createElementNS(NS,name);
+    for(var k in attrs)e.setAttribute(k,attrs[k]);
+    return e;
+  }
+  function holePos(i,n){ // i:0始まり、穴1が真上、時計回り
+    var a=(90 - i*360/n)*Math.PI/180;
+    return {x:CX+R*Math.cos(a), y:CY-R*Math.sin(a), a:a};
+  }
+
+  function draw(n,k,resultText){
+    var dyn=$('dyn');
+    while(dyn.firstChild)dyn.removeChild(dyn.firstChild);
+
+    var nD=Math.min(Math.max(n,2),36);
+    var kD=Math.min(Math.max(k,1),nD-1);
+    var hr=Math.max(3, Math.min(9, R*Math.sin(Math.PI/nD)*0.55));
+    var isFwd=(mode==='fwd');
+    var i;
+
+    // 中心角の補助線と円弧
+    var p1=holePos(0,nD), p2=holePos(kD,nD);
+    var f1=(R-hr)/R, f2=(R-hr)/R;
+    dyn.appendChild(el('line',{x1:CX,y1:CY,x2:CX+(p1.x-CX)*f1,y2:CY+(p1.y-CY)*f1,stroke:'#B8C4CC','stroke-width':1}));
+    dyn.appendChild(el('line',{x1:CX,y1:CY,x2:CX+(p2.x-CX)*f2,y2:CY+(p2.y-CY)*f2,stroke:'#B8C4CC','stroke-width':1}));
+    var ra=26;
+    var a1=p1.a, a2=p2.a;
+    var s={x:CX+ra*Math.cos(a1),y:CY-ra*Math.sin(a1)};
+    var e2={x:CX+ra*Math.cos(a2),y:CY-ra*Math.sin(a2)};
+    var large=(kD*360/nD)>180?1:0;
+    dyn.appendChild(el('path',{d:'M '+s.x.toFixed(1)+' '+s.y.toFixed(1)+' A '+ra+' '+ra+' 0 '+large+' 1 '+e2.x.toFixed(1)+' '+e2.y.toFixed(1),fill:'none',stroke:'#5B707E','stroke-width':1}));
+    var amid=(a1+a2)/2;
+    var tTh=el('text',{x:(CX+44*Math.cos(amid)).toFixed(1),y:(CY-44*Math.sin(amid)+4).toFixed(1),'font-size':11,fill:'#5B707E','text-anchor':'middle',stroke:'#fff','stroke-width':3,'paint-order':'stroke'});
+    tTh.textContent='θ';
+    dyn.appendChild(tTh);
+
+    // 穴
+    for(i=0;i<nD;i++){
+      var p=holePos(i,nD);
+      dyn.appendChild(el('circle',{cx:p.x.toFixed(1),cy:p.y.toFixed(1),r:hr.toFixed(1),fill:'#fff',stroke:'#1F3341','stroke-width':1.5}));
+      if(nD<=16 || i===0 || i===kD){
+        var rn=R+hr+9;
+        var tn=el('text',{x:(CX+rn*Math.cos(p.a)).toFixed(1),y:(CY-rn*Math.sin(p.a)+3).toFixed(1),'font-size':8.5,fill:'#5B707E','text-anchor':'middle'});
+        tn.textContent=String(i+1);
+        dyn.appendChild(tn);
+      }
+    }
+
+    // 弦(穴1 → 穴1+k)
+    var dx=p2.x-p1.x, dy=p2.y-p1.y, len=Math.sqrt(dx*dx+dy*dy);
+    if(len>hr*2.2){
+      var ux=dx/len, uy=dy/len;
+      var sx=p1.x+ux*hr, sy=p1.y+uy*hr, ex=p2.x-ux*hr, ey=p2.y-uy*hr;
+      var col=isFwd?'#D63426':'#1F3341';
+      var mk=isFwd?'url(#arRed)':'url(#ar)';
+      dyn.appendChild(el('line',{x1:sx.toFixed(1),y1:sy.toFixed(1),x2:ex.toFixed(1),y2:ey.toFixed(1),stroke:col,'stroke-width':1.6,'marker-start':mk,'marker-end':mk}));
+
+      // 弦ラベル(外向きオフセット+回転)
+      var mx=(sx+ex)/2, my=(sy+ey)/2;
+      var ox=mx-CX, oy=my-CY, ol=Math.sqrt(ox*ox+oy*oy)||1;
+      var lx=mx+ox/ol*18, ly=my+oy/ol*18;
+      var rot=Math.atan2(dy,dx)*180/Math.PI;
+      if(rot>90)rot-=180; if(rot<-90)rot+=180;
+      var g=el('g',{transform:'translate('+lx.toFixed(1)+','+ly.toFixed(1)+') rotate('+rot.toFixed(1)+')'});
+      if(isFwd){
+        var t=el('text',{x:0,y:4,'font-size':13,'font-weight':700,fill:'#D63426','text-anchor':'middle',stroke:'#fff','stroke-width':4,'paint-order':'stroke'});
+        t.textContent='p = '+resultText;
+        g.appendChild(t);
+      }else{
+        g.appendChild(el('circle',{cx:-14,cy:0,r:8.5,fill:'#1F3341',stroke:'#fff','stroke-width':2}));
+        var tb=el('text',{x:-14,y:4,'font-size':10.5,'font-weight':700,fill:'#fff','text-anchor':'middle'});
+        tb.textContent='1';g.appendChild(tb);
+        var tp=el('text',{x:-2,y:4,'font-size':13,fill:'#1F3341','text-anchor':'start',stroke:'#fff','stroke-width':3.5,'paint-order':'stroke'});
+        tp.textContent='p';g.appendChild(tp);
+      }
+      dyn.appendChild(g);
+    }
+
+    // PCD寸法線の色・ラベル
+    var pl=$('pcdLine');
+    if(isFwd){
+      pl.setAttribute('stroke','#1F3341');
+      pl.setAttribute('marker-start','url(#ar)');
+      pl.setAttribute('marker-end','url(#ar)');
+      $('pcdBadge').style.display='';
+      $('pcdLabel').textContent='PCD';
+      $('pcdLabel').setAttribute('fill','#1F3341');
+      $('pcdLabel').setAttribute('font-weight','400');
+    }else{
+      pl.setAttribute('stroke','#D63426');
+      pl.setAttribute('marker-start','url(#arRed)');
+      pl.setAttribute('marker-end','url(#arRed)');
+      $('pcdBadge').style.display='none';
+      $('pcdLabel').textContent='PCD = '+resultText;
+      $('pcdLabel').setAttribute('fill','#D63426');
+      $('pcdLabel').setAttribute('font-weight','700');
+    }
+
+    // 凡例
+    $('nTxt').textContent='穴数 n = '+(isNaN(n)?'―':n);
+    $('kTxt').textContent='とび k = '+kD+(kD===1?'(隣り)':'');
+  }
+
+  function recalc(){
+    var v1=num($('in1').value);
+    var n=intVal($('inN').value);
+    var k=intVal($('inK').value);
+    if(isNaN(k))k=1;
+
+    var nOk = !isNaN(n)&&n>=2;
+    var kOk = k>=1&&(!nOk||k<=n-1);
+    var ok = v1>0 && nOk && kOk;
+
+    var th=null, result=null;
+    if(ok){
+      th=k*360/n;
+      var s=Math.sin(k*Math.PI/n);
+      result = (mode==='fwd') ? v1*s : v1/s;
+    }
+
+    lastResult = ok ? result.toFixed(3) : null;
+    $('out').textContent = ok ? lastResult : '―.―――';
+    $('thOut').textContent = ok ? ('中心角 θ = '+th.toFixed(3)+'°') : '中心角 θ = ―';
+    draw(nOk?n:8, kOk?k:1, ok?lastResult:'―');
+  }
+
+  function setMode(m){
+    mode=m;
+    var fwd=(m==='fwd');
+    $('mFwd').classList.toggle('on',fwd);
+    $('mRev').classList.toggle('on',!fwd);
+    $('lbl1').childNodes[0].textContent = fwd?'PCD':'実測ピッチ p';
+    $('lbl1s').textContent = fwd?'ピッチ円直径':'穴の中心間距離';
+    $('droLbl').textContent = fwd?'p':'PCD';
+    $('formulaTxt').textContent = fwd?'p = PCD × sin(k × 180° ÷ n)':'PCD = p ÷ sin(k × 180° ÷ n)';
+    recalc();
+  }
+
+  $('mFwd').addEventListener('click',function(){setMode('fwd')});
+  $('mRev').addEventListener('click',function(){setMode('rev')});
+
+  ['in1','inN','inK'].forEach(function(id){$(id).addEventListener('input',recalc)});
+
+  function bump(d){
+    var n=intVal($('inN').value);
+    var k=intVal($('inK').value);if(isNaN(k))k=1;
+    k+=d;
+    if(k<1)k=1;
+    if(!isNaN(n)&&n>=2&&k>n-1)k=n-1;
+    $('inK').value=k;
+    recalc();
+  }
+  $('kMinus').addEventListener('click',function(){bump(-1)});
+  $('kPlus').addEventListener('click',function(){bump(1)});
+
+  var toastTimer=null;
+  function toast(msg){
+    var t=$('toast');t.textContent=msg;t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer=setTimeout(function(){t.classList.remove('show')},1600);
+  }
+  $('copyBtn').addEventListener('click',function(){
+    if(lastResult==null){toast('先に値を入力してください');return}
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(lastResult).then(function(){toast('コピーしました')},function(){toast('コピーできませんでした')});
+    }else{
+      var ta=document.createElement('textarea');
+      ta.value=lastResult;document.body.appendChild(ta);ta.select();
+      try{document.execCommand('copy');toast('コピーしました')}catch(e){toast('コピーできませんでした')}
+      document.body.removeChild(ta);
+    }
+  });
+
+  recalc();
+})();
+</script>
+</body>
+</html>

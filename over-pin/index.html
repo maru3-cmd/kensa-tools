@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1F3341">
+<meta name="description" content="平歯車のオーバーピン径(2本のピンを挟んだ測定値)を計算。偶数歯・奇数歯を自動判別、転位対応。計算は端末内で完結します。">
+<title>オーバーピン径 | 検査計算ツール</title>
+<style>
+  :root{
+    --paper:#F2F4F5;
+    --sheet:#FFFFFF;
+    --ink:#1F3341;
+    --line:#8FA2AF;
+    --red:#D63426;
+    --dro-bg:#15181A;
+    --dro-red:#FF5A48;
+    --dro-dim:#9FB0B8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI",sans-serif;
+    background:var(--paper);color:var(--ink);
+    min-height:100dvh;display:flex;flex-direction:column;align-items:center;
+    padding:0 12px calc(16px + env(safe-area-inset-bottom));
+  }
+  .wrap{width:100%;max-width:480px}
+
+  header{display:flex;align-items:baseline;justify-content:space-between;padding:14px 2px 10px}
+  header h1{font-size:16px;font-weight:700;letter-spacing:.04em}
+  header h1 small{display:block;font-size:11px;font-weight:400;color:#5B707E;letter-spacing:.08em;margin-top:2px}
+  header a{font-size:12px;color:#5B707E;text-decoration:none}
+
+  .sheet{background:var(--sheet);border:2px solid var(--ink);padding:5px}
+  .sheet-inner{border:1px solid var(--ink)}
+  .sheet svg{display:block;width:100%;height:auto}
+  .titleblock{display:flex;border-top:1px solid var(--ink);font-size:9px;letter-spacing:.06em}
+  .titleblock div{padding:3px 8px;border-right:1px solid var(--ink)}
+  .titleblock div:last-child{border-right:none;margin-left:auto}
+  .titleblock b{font-weight:700}
+
+  .inputs{margin-top:14px;display:flex;flex-direction:column;gap:10px}
+  .row{
+    display:grid;grid-template-columns:26px 1fr 120px 34px;
+    align-items:center;gap:8px;
+    background:var(--sheet);border:1px solid #D5DDE2;border-radius:10px;
+    padding:10px 12px;
+  }
+  .badge{
+    width:22px;height:22px;border-radius:50%;
+    background:var(--ink);color:#fff;font-size:12px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .row label{font-size:13px;font-weight:600}
+  .row label small{display:block;font-size:10px;font-weight:400;color:#5B707E}
+  .row input{
+    width:100%;font-size:20px;font-weight:600;text-align:right;
+    font-variant-numeric:tabular-nums;
+    border:none;border-bottom:2px solid var(--ink);
+    background:transparent;color:var(--ink);
+    padding:2px 4px;border-radius:0;outline:none;
+  }
+  .row input:focus{border-bottom-color:var(--red)}
+  .unit{font-size:12px;color:#5B707E}
+
+  .dro{
+    margin-top:16px;background:var(--dro-bg);border-radius:12px;
+    padding:16px 18px 12px;box-shadow:inset 0 2px 8px rgba(0,0,0,.5);
+  }
+  .dro-line{display:flex;align-items:baseline;gap:10px;justify-content:flex-end}
+  .dro-label{color:#7d8a91;font-size:14px;font-weight:700;letter-spacing:.1em}
+  .dro-val{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:38px;font-weight:600;color:var(--dro-red);
+    text-shadow:0 0 10px rgba(255,90,72,.35);letter-spacing:.02em;
+  }
+  .dro-unit{color:#7d8a91;font-size:14px;font-weight:600}
+  .dro-grid{
+    display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;
+    border-top:1px solid #2a3034;margin-top:12px;padding-top:10px;
+  }
+  .cellv{display:flex;flex-direction:column;align-items:flex-end;padding:4px 8px;border-radius:8px}
+  .cellv:active{background:#1e2327}
+  .cellv .k{color:#7d8a91;font-size:11px;font-weight:700;letter-spacing:.06em;align-self:flex-start}
+  .cellv .v{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:18px;font-weight:600;color:var(--dro-dim);letter-spacing:.01em;
+  }
+  .cellv .s{color:#5d6a71;font-size:10px}
+  .dro-foot{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-top:10px;border-top:1px solid #2a3034;padding-top:9px;gap:8px;
+  }
+  .statusTxt{color:#5d6a71;font-size:11px;letter-spacing:.02em;line-height:1.6}
+  .statusTxt.err{color:#FF8A7E}
+  .statusTxt.warn{color:#E8B34B}
+  .copy{
+    font-size:12px;font-weight:700;color:#c9d2d7;background:#252b2f;
+    border:1px solid #3a4247;border-radius:7px;padding:6px 14px;flex:none;
+  }
+  .copy:active{background:#31383d}
+
+  footer{margin-top:18px;font-size:11px;color:#5B707E;line-height:1.7;text-align:center;letter-spacing:.03em}
+
+  .toast{
+    position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);
+    background:var(--ink);color:#fff;font-size:13px;
+    padding:9px 20px;border-radius:20px;opacity:0;pointer-events:none;
+    transition:opacity .25s,transform .25s;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>オーバーピン径<small>平歯車: 2本のピンを挟んだ測定値</small></h1>
+    <a href="../index.html">≡ ツール一覧</a>
+  </header>
+
+  <!-- 図面シート -->
+  <div class="sheet">
+    <div class="sheet-inner">
+      <svg viewBox="0 0 340 250" role="img" aria-label="歯車の反対側の歯溝に入れた2本のピンを挟んで測るオーバーピン径Mの模式図">
+        <defs>
+          <marker id="ar" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L8,3 L0,6 z" fill="#1F3341"/>
+          </marker>
+          <marker id="arRed" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L8,3 L0,6 z" fill="#D63426"/>
+          </marker>
+        </defs>
+
+        <!-- 上側の歯列(歯先が上) -->
+        <path d="M 55 128 L 85 88 L 115 128 L 145 88 L 175 128 L 205 88 L 235 128"
+              fill="none" stroke="#1F3341" stroke-width="1.8"/>
+        <!-- 下側の歯列(反対側・歯先が下) -->
+        <path d="M 95 156 L 125 196 L 155 156 L 185 196 L 215 156 L 245 196 L 275 156"
+              fill="none" stroke="#1F3341" stroke-width="1.8"/>
+        <line x1="40" y1="142" x2="300" y2="142" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="12 3 2 3"/>
+
+        <!-- ピン(歯溝に着座) -->
+        <circle cx="115" cy="101.3" r="16" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+        <circle cx="215" cy="182.7" r="16" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+        <text x="92" y="94" font-size="11" fill="#1F3341" text-anchor="end" stroke="#fff" stroke-width="3" paint-order="stroke">ピン dp</text>
+
+        <!-- M寸法(赤) -->
+        <line x1="115" y1="85.3" x2="292" y2="85.3" stroke="#C9D3DA" stroke-width="1" stroke-dasharray="4 3"/>
+        <line x1="215" y1="198.7" x2="292" y2="198.7" stroke="#C9D3DA" stroke-width="1" stroke-dasharray="4 3"/>
+        <line x1="288" y1="85.3" x2="288" y2="198.7" stroke="#D63426" stroke-width="1.6"
+              marker-start="url(#arRed)" marker-end="url(#arRed)"/>
+        <text id="svgM" x="296" y="146" font-size="13" font-weight="700" fill="#D63426"
+              stroke="#fff" stroke-width="3.5" paint-order="stroke" text-anchor="middle" transform="rotate(-90 296 146)">M = ―</text>
+
+        <!-- 凡例 -->
+        <text id="oddEvenTxt" x="40" y="224" font-size="12" fill="#1F3341"
+              stroke="#fff" stroke-width="3.5" paint-order="stroke">偶数歯: ピンは正対 / 奇数歯: 半ピッチずれ(自動補正)</text>
+        <text x="40" y="26" font-size="11" fill="#5B707E">反対側の歯溝にピンを入れ、マイクロメータで挟んでMを測る</text>
+      </svg>
+      <div class="titleblock">
+        <div><b>品名</b> オーバーピン径</div>
+        <div><b>方式</b> インボリュート</div>
+        <div>TOOL-15</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 入力 -->
+  <div class="inputs">
+    <div class="row">
+      <span class="badge">1</span>
+      <label for="fM">モジュール m</label>
+      <input id="fM" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row">
+      <span class="badge">2</span>
+      <label for="fZ">歯数 z<small>偶数/奇数は自動判別</small></label>
+      <input id="fZ" type="text" inputmode="numeric" autocomplete="off" placeholder="―">
+      <span class="unit">枚</span>
+    </div>
+    <div class="row">
+      <span class="badge">3</span>
+      <label for="fA">圧力角 α<small>通常は20°</small></label>
+      <input id="fA" type="text" inputmode="decimal" autocomplete="off" value="20">
+      <span class="unit">°</span>
+    </div>
+    <div class="row">
+      <span class="badge">4</span>
+      <label for="fX">転位係数 x<small>標準歯車は 0</small></label>
+      <input id="fX" type="text" inputmode="decimal" autocomplete="off" value="0">
+      <span class="unit"></span>
+    </div>
+    <div class="row">
+      <span class="badge">5</span>
+      <label for="fDp">ピン径 dp<small>目安は結果欄に表示</small></label>
+      <input id="fDp" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row">
+      <span class="badge">6</span>
+      <label for="fMe">実測M<small>任意。理論値との差を表示</small></label>
+      <input id="fMe" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+    </div>
+  </div>
+
+  <!-- 結果 -->
+  <div class="dro">
+    <div class="dro-line">
+      <span class="dro-label">M</span>
+      <span class="dro-val" id="out">―.―――</span>
+      <span class="dro-unit">mm</span>
+    </div>
+    <div class="dro-grid">
+      <div class="cellv" id="cRec"><span class="k">推奨ピン径(目安 1.68m)</span><span class="v" id="vRec">―</span><span class="s">mm</span></div>
+      <div class="cellv" id="cDc"><span class="k">ピン中心円 dc</span><span class="v" id="vDc">―</span><span class="s">mm</span></div>
+      <div class="cellv" id="cPhi"><span class="k">中心の圧力角 φ</span><span class="v" id="vPhi">―</span><span class="s">°</span></div>
+      <div class="cellv" id="cDa"><span class="k">歯先円 da</span><span class="v" id="vDa">―</span><span class="s">mm</span></div>
+      <div class="cellv" id="cForm"><span class="k">適用式</span><span class="v" id="vForm">―</span><span class="s"></span></div>
+      <div class="cellv" id="cDelta"><span class="k">実測との差 Δ</span><span class="v" id="vDelta">―</span><span class="s">mm</span></div>
+    </div>
+    <div class="dro-foot">
+      <span class="statusTxt" id="statusTxt">m・z・ピン径を入力してください</span>
+      <button class="copy" type="button" id="copyBtn">コピー</button>
+    </div>
+  </div>
+
+  <footer>
+    このページは計算のみを行います。入力値の送信・保存は一切ありません(端末内で完結)。<br>
+    対応: 外歯の平歯車(標準/転位)。内歯車・はすば歯車は非対応です。
+  </footer>
+</div>
+
+<div class="toast" id="toast">コピーしました</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var lastM=null;
+
+  function num(v){
+    if(v==null)return NaN;
+    v=String(v).replace(/[０-９．−]/g,function(c){
+      if(c==='−')return '-';
+      return String.fromCharCode(c.charCodeAt(0)-0xFEE0);
+    }).replace(/。/g,'.').replace(/[,，、\s]/g,'').trim();
+    if(v==='')return NaN;
+    return Number(v);
+  }
+  function intVal(v){
+    var x=num(v);
+    return (isFinite(x)&&x===Math.floor(x))?x:NaN;
+  }
+
+  // インボリュート逆関数: tanφ − φ = q を解く(ニュートン法)
+  function invInverse(q){
+    if(q<=0)return NaN;
+    var phi=Math.pow(3*q,1/3);   // 初期値
+    for(var i=0;i<50;i++){
+      var t=Math.tan(phi);
+      var f=t-phi-q;
+      var df=t*t;                // d/dφ(tanφ−φ)=tan²φ
+      if(df<1e-12)break;
+      var d=f/df;
+      phi-=d;
+      if(Math.abs(d)<1e-13)break;
+    }
+    return phi;
+  }
+
+  function recalc(){
+    var m=num($('fM').value);
+    var z=intVal($('fZ').value);
+    var a=num($('fA').value);
+    var xRaw=$('fX').value.trim();
+    var x=(xRaw==='')?0:num($('fX').value);
+    var dp=num($('fDp').value);
+    var meas=num($('fMe').value);
+    lastM=null;
+
+    // 推奨ピン径は m だけで先に出す
+    $('vRec').textContent=(m>0)?(1.68*m).toFixed(3):'―';
+
+    var base=m>0&&!isNaN(z)&&z>=4&&!isNaN(a)&&a>0&&a<45&&!isNaN(x);
+    if(!base||!(dp>0)){
+      $('out').textContent='―.―――';
+      $('svgM').textContent='M = ―';
+      ['vDc','vPhi','vDa','vForm','vDelta'].forEach(function(id){$(id).textContent='―'});
+      var msg='m・z・ピン径を入力してください';
+      if(base&&!(dp>0))msg='ピン径 dp を入力してください(目安: '+(1.68*m).toFixed(3)+')';
+      else if(!isNaN(z)&&z<4)msg='歯数 z は 4 以上で入力してください';
+      else if(m>0&&!isNaN(z)&&!(a>0&&a<45))msg='圧力角 α は 0°〜45° の間で入力してください';
+      $('statusTxt').textContent=msg;
+      $('statusTxt').className='statusTxt';
+      return;
+    }
+
+    var aR=a*Math.PI/180;
+    var inva=Math.tan(aR)-aR;
+    var db=m*z*Math.cos(aR);
+    var da=m*(z+2)+2*x*m;
+
+    // ピン中心の圧力角: invφ = invα + dp/(z·m·cosα) − π/(2z) + 2x·tanα/z
+    var q=inva + dp/db - Math.PI/(2*z) + 2*x*Math.tan(aR)/z;
+    if(!(q>0)){
+      $('out').textContent='―.―――';
+      $('svgM').textContent='M = ―';
+      ['vDc','vPhi','vForm','vDelta'].forEach(function(id){$(id).textContent='―'});
+      $('vDa').textContent=da.toFixed(3);
+      $('statusTxt').textContent='ピン径が小さすぎて歯溝の奥に沈みます。太いピンにしてください';
+      $('statusTxt').className='statusTxt err';
+      return;
+    }
+    var phi=invInverse(q);
+    var dc=db/Math.cos(phi);
+
+    var even=(z%2===0);
+    var M=even ? dc+dp : dc*Math.cos(Math.PI/(2*z))+dp;
+
+    // 接触チェック
+    var warns=[];
+    var rb=db/2;
+    var tk=Math.tan(phi)-dp/(2*rb);   // 接触点の tanφk
+    if(tk<=0){
+      warns.push('基礎円より下で当たります(ピンが太すぎ/歯数が少なすぎ)');
+    }else{
+      var rk=rb/Math.cos(Math.atan(tk));
+      if(2*rk>da+1e-9)warns.push('歯先エッジに当たるおそれ(ピンが太すぎ)');
+    }
+    if(dc/2+dp/2<=da/2+1e-9)warns.push('ピンの頭が歯先から出ず、測定できないおそれ(ピンが細すぎ)');
+
+    lastM=M;
+    $('out').textContent=M.toFixed(3);
+    $('svgM').textContent='M = '+M.toFixed(3);
+    $('vDc').textContent=dc.toFixed(3);
+    $('vPhi').textContent=(phi*180/Math.PI).toFixed(4);
+    $('vDa').textContent=da.toFixed(3);
+    $('vForm').textContent=even?'偶数歯: dc+dp':'奇数歯: dc·cos(90°/z)+dp';
+    $('oddEvenTxt').textContent=even
+      ?'偶数歯('+z+'枚): ピンは正対 → M = dc + dp'
+      :'奇数歯('+z+'枚): 半ピッチずれ → M = dc×cos(90°/'+z+') + dp';
+
+    if(!isNaN(meas)){
+      var d=meas-M;
+      $('vDelta').textContent=(d>0?'+':'')+d.toFixed(3)+'('+(d>0?'+':'')+(d*1000).toFixed(0)+'µm)';
+    }else{
+      $('vDelta').textContent='―';
+    }
+
+    if(warns.length){
+      $('statusTxt').textContent='⚠ '+warns.join(' / ');
+      $('statusTxt').className='statusTxt warn';
+    }else{
+      $('statusTxt').textContent='ピン接触OK(インボリュート面内)';
+      $('statusTxt').className='statusTxt';
+    }
+  }
+
+  ['fM','fZ','fA','fX','fDp','fMe'].forEach(function(id){$(id).addEventListener('input',recalc)});
+
+  var toastTimer=null;
+  function toast(msg){
+    var t=$('toast');t.textContent=msg;t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer=setTimeout(function(){t.classList.remove('show')},1600);
+  }
+  $('copyBtn').addEventListener('click',function(){
+    if(lastM==null){toast('まだ値がありません');return}
+    var s=lastM.toFixed(3);
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(s).then(function(){toast('コピーしました')},function(){toast('コピーできませんでした')});
+    }else{
+      var ta=document.createElement('textarea');
+      ta.value=s;document.body.appendChild(ta);ta.select();
+      try{document.execCommand('copy');toast('コピーしました')}catch(e){toast('コピーできませんでした')}
+      document.body.removeChild(ta);
+    }
+  });
+
+  recalc();
+})();
+</script>
+</body>
+</html>

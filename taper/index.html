@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1F3341">
+<meta name="description" content="テーパ計算。標準テーパ(1/10・7/24・モールス等)内蔵、比・勾配・角度からの寸法計算、サインバーのブロックゲージ高さ、実測からの標準テーパ推定。計算は端末内で完結します。">
+<title>テーパ計算 | 検査計算ツール</title>
+<style>
+  :root{
+    --paper:#F2F4F5;
+    --sheet:#FFFFFF;
+    --ink:#1F3341;
+    --line:#8FA2AF;
+    --red:#D63426;
+    --dro-bg:#15181A;
+    --dro-red:#FF5A48;
+    --dro-dim:#9FB0B8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI",sans-serif;
+    background:var(--paper);color:var(--ink);
+    min-height:100dvh;display:flex;flex-direction:column;align-items:center;
+    padding:0 12px calc(16px + env(safe-area-inset-bottom));
+  }
+  .wrap{width:100%;max-width:480px}
+
+  header{display:flex;align-items:baseline;justify-content:space-between;padding:14px 2px 10px}
+  header h1{font-size:16px;font-weight:700;letter-spacing:.04em}
+  header h1 small{display:block;font-size:11px;font-weight:400;color:#5B707E;letter-spacing:.08em;margin-top:2px}
+  header a{font-size:12px;color:#5B707E;text-decoration:none}
+
+  .mode-lg{
+    display:grid;grid-template-columns:1fr 1fr;
+    border:1.5px solid var(--ink);border-radius:9px;overflow:hidden;
+    margin-bottom:10px;
+  }
+  .mode-lg button{
+    font-size:13px;font-weight:700;padding:10px 4px;border:none;
+    background:var(--sheet);color:var(--ink);letter-spacing:.03em;
+  }
+  .mode-lg button.on{background:var(--ink);color:#fff}
+
+  .sheet{background:var(--sheet);border:2px solid var(--ink);padding:5px}
+  .sheet-inner{border:1px solid var(--ink)}
+  .sheet svg{display:block;width:100%;height:auto}
+  .titleblock{display:flex;border-top:1px solid var(--ink);font-size:9px;letter-spacing:.06em}
+  .titleblock div{padding:3px 8px;border-right:1px solid var(--ink)}
+  .titleblock div:last-child{border-right:none;margin-left:auto}
+  .titleblock b{font-weight:700}
+
+  h2{
+    font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.1em;
+    margin:12px 2px 8px;display:flex;align-items:center;gap:6px;
+  }
+  h2::before{content:'';width:4px;height:14px;background:var(--ink);border-radius:2px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{
+    font-size:12.5px;font-weight:700;padding:8px 11px;
+    border:1.5px solid var(--ink);border-radius:8px;
+    background:var(--sheet);color:var(--ink);
+    font-variant-numeric:tabular-nums;
+  }
+  .chip.on{background:var(--ink);color:#fff}
+
+  .inputs{margin-top:10px;display:flex;flex-direction:column;gap:10px}
+  .row{
+    display:grid;grid-template-columns:26px 1fr 130px 40px;
+    align-items:center;gap:8px;
+    background:var(--sheet);border:1px solid #D5DDE2;border-radius:10px;
+    padding:10px 12px;
+  }
+  .badge{
+    width:22px;height:22px;border-radius:50%;
+    background:var(--ink);color:#fff;font-size:12px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .row label{font-size:13px;font-weight:600}
+  .row label small{display:block;font-size:10px;font-weight:400;color:#5B707E}
+  .row input{
+    width:100%;font-size:19px;font-weight:600;text-align:right;
+    font-variant-numeric:tabular-nums;
+    border:none;border-bottom:2px solid var(--ink);
+    background:transparent;color:var(--ink);
+    padding:2px 4px;border-radius:0;outline:none;
+  }
+  .row input:focus{border-bottom-color:var(--red)}
+  .row input.computed{color:var(--red)}
+  .unit{font-size:12px;color:#5B707E}
+  .mode{display:inline-flex;border:1px solid var(--ink);border-radius:7px;overflow:hidden}
+  .mode button{font-size:11px;padding:5px 10px;border:none;background:var(--sheet);color:var(--ink);font-weight:700}
+  .mode button.on{background:var(--ink);color:#fff}
+  .note{font-size:11px;color:#5B707E;line-height:1.7;margin-top:8px;padding:0 2px}
+  .note b{color:var(--ink)}
+  .hidden{display:none !important}
+
+  .dro{
+    margin-top:14px;background:var(--dro-bg);border-radius:12px;
+    padding:16px 18px 12px;box-shadow:inset 0 2px 8px rgba(0,0,0,.5);
+  }
+  .dro-line{display:flex;align-items:baseline;gap:10px;justify-content:flex-end}
+  .dro-label{color:#7d8a91;font-size:13px;font-weight:700;letter-spacing:.08em}
+  .dro-val{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:32px;font-weight:600;color:var(--dro-red);
+    text-shadow:0 0 10px rgba(255,90,72,.35);letter-spacing:.02em;
+  }
+  .dro-unit{color:#7d8a91;font-size:13px;font-weight:600}
+  .dro-grid{
+    display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;
+    border-top:1px solid #2a3034;margin-top:10px;padding-top:10px;
+  }
+  .cellv{display:flex;flex-direction:column;align-items:flex-end;padding:4px 8px;border-radius:8px}
+  .cellv:active{background:#1e2327}
+  .cellv .k{color:#7d8a91;font-size:11px;font-weight:700;letter-spacing:.06em;align-self:flex-start}
+  .cellv .v{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:17px;font-weight:600;color:var(--dro-dim);
+  }
+  .cellv .s{color:#5d6a71;font-size:10px}
+  .dro-foot{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-top:10px;border-top:1px solid #2a3034;padding-top:9px;gap:8px;
+  }
+  .statusTxt{color:#5d6a71;font-size:11px;letter-spacing:.02em;line-height:1.6}
+  .statusTxt.err{color:#FF8A7E}
+  .copy{
+    font-size:12px;font-weight:700;color:#c9d2d7;background:#252b2f;
+    border:1px solid #3a4247;border-radius:7px;padding:6px 14px;flex:none;
+  }
+  .copy:active{background:#31383d}
+
+  footer{margin-top:16px;font-size:11px;color:#5B707E;line-height:1.7;text-align:center;letter-spacing:.03em}
+
+  .toast{
+    position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);
+    background:var(--ink);color:#fff;font-size:13px;
+    padding:9px 20px;border-radius:20px;opacity:0;pointer-events:none;
+    transition:opacity .25s,transform .25s;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>テーパ計算<small>比・勾配・角度・サインバー・標準テーパ</small></h1>
+    <a href="../index.html">≡ ツール一覧</a>
+  </header>
+
+  <div class="mode-lg" role="group" aria-label="計算方向">
+    <button type="button" id="mSpec" class="on">テーパから寸法</button>
+    <button type="button" id="mMeas">実測からテーパ</button>
+  </div>
+
+  <!-- 図面シート -->
+  <div class="sheet">
+    <div class="sheet-inner">
+      <svg viewBox="0 0 340 250" role="img" aria-label="テーパの大端径D・小端径d・長さL・角度の関係図">
+        <defs>
+          <marker id="ar" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L8,3 L0,6 z" fill="#1F3341"/>
+          </marker>
+        </defs>
+        <text id="svgName" x="170" y="34" font-size="12" font-weight="700" fill="#1F3341" text-anchor="middle"
+              stroke="#fff" stroke-width="3.5" paint-order="stroke">テーパ = ―</text>
+        <line x1="40" y1="125" x2="300" y2="125" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="12 3 2 3"/>
+        <path d="M 60 70 L 280 95 L 280 155 L 60 180 Z" fill="#EFF2F4" stroke="#1F3341" stroke-width="1.8"/>
+        <!-- 半角 -->
+        <line x1="60" y1="70" x2="200" y2="70" stroke="#C9D3DA" stroke-width="1" stroke-dasharray="5 3"/>
+        <path d="M 150 70 A 90 90 0 0 1 149.4 80.2" fill="none" stroke="#1F3341" stroke-width="1.1"/>
+        <text id="svgAng" x="160" y="86" font-size="11" fill="#1F3341"
+              stroke="#fff" stroke-width="3" paint-order="stroke">θ/2</text>
+        <!-- D -->
+        <line x1="44" y1="70" x2="44" y2="180" stroke="#1F3341" stroke-width="1.2" marker-start="url(#ar)" marker-end="url(#ar)"/>
+        <line x1="48" y1="70" x2="60" y2="70" stroke="#8FA2AF" stroke-width="1"/>
+        <line x1="48" y1="180" x2="60" y2="180" stroke="#8FA2AF" stroke-width="1"/>
+        <text id="svgD" x="38" y="128" font-size="12" fill="#1F3341" text-anchor="middle"
+              stroke="#fff" stroke-width="3.5" paint-order="stroke" transform="rotate(-90 38 128)">D</text>
+        <!-- d -->
+        <line x1="296" y1="95" x2="296" y2="155" stroke="#1F3341" stroke-width="1.2" marker-start="url(#ar)" marker-end="url(#ar)"/>
+        <line x1="280" y1="95" x2="292" y2="95" stroke="#8FA2AF" stroke-width="1"/>
+        <line x1="280" y1="155" x2="292" y2="155" stroke="#8FA2AF" stroke-width="1"/>
+        <text id="svgd" x="304" y="128" font-size="12" fill="#1F3341" text-anchor="middle"
+              stroke="#fff" stroke-width="3.5" paint-order="stroke" transform="rotate(-90 304 128)">d</text>
+        <!-- L -->
+        <line x1="60" y1="206" x2="280" y2="206" stroke="#1F3341" stroke-width="1.2" marker-start="url(#ar)" marker-end="url(#ar)"/>
+        <line x1="60" y1="184" x2="60" y2="210" stroke="#8FA2AF" stroke-width="1"/>
+        <line x1="280" y1="159" x2="280" y2="210" stroke="#8FA2AF" stroke-width="1"/>
+        <text id="svgL" x="170" y="222" font-size="12" fill="#1F3341" text-anchor="middle"
+              stroke="#fff" stroke-width="3.5" paint-order="stroke">L</text>
+      </svg>
+      <div class="titleblock">
+        <div><b>品名</b> テーパ計算</div>
+        <div><b>方式</b> tan(θ/2)=(D−d)/2L</div>
+        <div>TOOL-18</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- テーパの決め方(モード1) -->
+  <div id="specBox">
+    <h2>テーパの決め方</h2>
+    <div class="chips" id="stdChips"></div>
+    <div class="inputs">
+      <div class="row hidden" id="rowRatio" style="grid-template-columns:26px 1fr 100px 150px">
+        <span class="badge">比</span>
+        <label for="fX">1 / x<small>xを入力(例: 10)</small></label>
+        <input id="fX" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+        <div class="mode" role="group" aria-label="比の意味">
+          <button type="button" id="rTaper" class="on">テーパ(径)</button>
+          <button type="button" id="rSlope">勾配(片側)</button>
+        </div>
+      </div>
+      <div class="row hidden" id="rowAngle" style="grid-template-columns:26px 1fr 100px 130px">
+        <span class="badge">角</span>
+        <label for="fAng">角度<small>度分秒可(例: 5 43)</small></label>
+        <input id="fAng" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+        <div class="mode" role="group" aria-label="角度の種類">
+          <button type="button" id="aFull" class="on">全角</button>
+          <button type="button" id="aHalf">半角</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h2 id="dimHead">寸法(モード1: 2つ入力で残りを計算 / モード2: 3つとも入力)</h2>
+  <div class="inputs">
+    <div class="row">
+      <span class="badge">D</span>
+      <label for="fD">大端径 D</label>
+      <input id="fD" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row">
+      <span class="badge">d</span>
+      <label for="fd">小端径 d</label>
+      <input id="fd" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row">
+      <span class="badge">L</span>
+      <label for="fL">テーパ部長さ L</label>
+      <input id="fL" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row">
+      <span class="badge">SB</span>
+      <label for="fSb">サインバー呼び寸法<small>ローラー中心間距離</small></label>
+      <input id="fSb" type="text" inputmode="decimal" autocomplete="off" value="100">
+      <span class="unit">mm</span>
+    </div>
+  </div>
+
+  <!-- 結果 -->
+  <div class="dro">
+    <div class="dro-line">
+      <span class="dro-label" id="mainLbl">―</span>
+      <span class="dro-val" id="out">―.―――</span>
+      <span class="dro-unit" id="mainUnit">mm</span>
+    </div>
+    <div class="dro-grid" id="cellGrid"></div>
+    <div class="dro-foot">
+      <span class="statusTxt" id="statusTxt">テーパを選び、寸法を入力してください</span>
+      <button class="copy" type="button" id="copyBtn">コピー</button>
+    </div>
+  </div>
+
+  <footer>
+    このページは計算のみを行います。入力値の送信・保存は一切ありません(端末内で完結)。<br>
+    テーパ=直径の変化/長さ(両側)、勾配=片側の傾き。サインバー高さH=呼び寸法×sin(角度)。<br>
+    円すいを横に寝かせて上面を水平にする場合は<b>半角</b>のHを使います。
+  </footer>
+</div>
+
+<div class="toast" id="toast">コピーしました</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var mode='spec';         // spec: テーパから寸法 / meas: 実測からテーパ
+  var stdIdx=1;            // 初期 1/10
+  var ratioKind='taper';   // taper / slope
+  var angKind='full';      // full / half
+  var queue=[];            // D,d,L の入力順(spec時, 最大2)
+  var lastMain=null;
+
+  var STD=[
+    {n:'1/5',x:5},{n:'1/10',x:10},{n:'1/20',x:20},{n:'1/50',x:50},
+    {n:'7/24(NT/BT)',x:24/7},
+    {n:'MT0',x:19.212},{n:'MT1',x:20.047},{n:'MT2',x:20.020},{n:'MT3',x:19.922},
+    {n:'MT4',x:19.254},{n:'MT5',x:19.002},{n:'MT6',x:19.180},
+    {n:'比を入力',x:null,kind:'ratio'},
+    {n:'角度を入力',x:null,kind:'angle'}
+  ];
+
+  function zen(v){
+    return String(v).replace(/[０-９．−]/g,function(c){
+      if(c==='−')return '-';
+      return String.fromCharCode(c.charCodeAt(0)-0xFEE0);
+    }).replace(/。/g,'.');
+  }
+  function num(v){
+    if(v==null)return NaN;
+    v=zen(v).replace(/[,，、]/g,'').trim();
+    if(v==='')return NaN;
+    return Number(v);
+  }
+  function parseAngle(v){
+    if(v==null)return NaN;
+    var s=zen(v).replace(/[°度]/g,' ').replace(/[′’'分]/g,' ').replace(/[″”"秒]/g,' ').trim();
+    if(s==='')return NaN;
+    var p=s.split(/\s+/);
+    if(p.length===1)return Number(p[0]);
+    var d=Number(p[0]),m=Number(p[1]||0),sec=Number(p[2]||0);
+    if(isNaN(d)||isNaN(m)||isNaN(sec))return NaN;
+    var sign=(d<0||/^\s*-/.test(p[0]))?-1:1;
+    return sign*(Math.abs(d)+m/60+sec/3600);
+  }
+  function dmsStr(v){
+    var d=Math.floor(v),rest=(v-d)*60,m=Math.floor(rest),sec=Math.round((rest-m)*60*10)/10;
+    if(sec>=60){sec-=60;m+=1}
+    if(m>=60){m-=60;d+=1}
+    return d+'°'+m+'′'+sec+'″';
+  }
+
+  /* ---- テーパ仕様の取得(spec時) ---- */
+  function getSpec(){
+    var s=STD[stdIdx];
+    if(s.x!=null){
+      var r=1/s.x;
+      return {ratio:r, half:Math.atan(r/2), label:s.n};
+    }
+    if(s.kind==='ratio'){
+      var x=num($('fX').value);
+      if(!(x>0))return null;
+      if(ratioKind==='taper'){
+        return {ratio:1/x, half:Math.atan(1/(2*x)), label:'テーパ 1/'+x};
+      }
+      return {ratio:2/x, half:Math.atan(1/x), label:'勾配 1/'+x+'(片側)'};
+    }
+    var a=parseAngle($('fAng').value);
+    if(!(a>0&&a<180))return null;
+    var half=(angKind==='full')?a/2:a;
+    if(half>=90)return null;
+    var hr=half*Math.PI/180;
+    return {ratio:2*Math.tan(hr), half:hr, label:(angKind==='full'?'全角 ':'半角 ')+a+'°'};
+  }
+
+  /* ---- UI ---- */
+  function buildChips(){
+    var box=$('stdChips');box.innerHTML='';
+    STD.forEach(function(s,i){
+      var b=document.createElement('button');
+      b.type='button';b.className='chip'+(i===stdIdx?' on':'');
+      b.textContent=s.n;
+      b.addEventListener('click',function(){
+        stdIdx=i;buildChips();
+        $('rowRatio').classList.toggle('hidden',STD[i].kind!=='ratio');
+        $('rowAngle').classList.toggle('hidden',STD[i].kind!=='angle');
+        recalc();
+      });
+      box.appendChild(b);
+    });
+  }
+  function clearComputed(){
+    ['fD','fd','fL'].forEach(function(id){$(id).classList.remove('computed')});
+  }
+  function blankComputed(){
+    ['fD','fd','fL'].forEach(function(id){
+      if($(id).classList.contains('computed')){$(id).value='';$(id).classList.remove('computed')}
+    });
+  }
+
+  function cellsHtml(list){
+    var g=$('cellGrid');g.innerHTML='';
+    list.forEach(function(c){
+      var d=document.createElement('div');
+      d.className='cellv';
+      d.innerHTML='<span class="k">'+c.k+'</span><span class="v">'+c.v+'</span><span class="s">'+(c.s||'')+'</span>';
+      g.appendChild(d);
+    });
+  }
+  function updSvg(D,d,L,spec,compKey){
+    function set(id,letter,val,comp){
+      var t=$(id);
+      t.textContent=(val==null||isNaN(val))?letter:letter+' = '+val.toFixed(3).replace(/\.?0+$/,'');
+      t.setAttribute('fill',comp?'#D63426':'#1F3341');
+      t.setAttribute('font-weight',comp?'700':'400');
+    }
+    set('svgD','D',D,compKey==='D');
+    set('svgd','d',d,compKey==='d');
+    set('svgL','L',L,compKey==='L');
+    $('svgAng').textContent=spec?('θ/2 = '+(spec.half*180/Math.PI).toFixed(3)+'°'):'θ/2';
+    $('svgName').textContent=spec?(spec.label):'テーパ = ―';
+  }
+
+  /* ---- 計算 ---- */
+  function recalc(){
+    lastMain=null;
+    var sb=num($('fSb').value);
+
+    if(mode==='spec'){
+      var spec=getSpec();
+      if(!spec){
+        $('mainLbl').textContent='―';$('out').textContent='―.―――';
+        cellsHtml([]);
+        updSvg(NaN,NaN,NaN,null,null);
+        $('statusTxt').textContent='比または角度を入力してください';
+        $('statusTxt').className='statusTxt';
+        return;
+      }
+      var vals={D:num($('fD').value),d:num($('fd').value),L:num($('fL').value)};
+      queue=queue.filter(function(k){return $('f'+k).value.trim()!==''&&!$('f'+k).classList.contains('computed')});
+      var comp=null, err=null;
+      if(queue.length>=2){
+        var a=queue[queue.length-2], b=queue[queue.length-1];
+        var missing=['D','d','L'].filter(function(k){return k!==a&&k!==b})[0];
+        var D=vals.D,d=vals.d,L=vals.L;
+        if(missing==='L'){
+          if(!(D>d))err='D は d より大きい値が必要です';
+          else L=(D-d)/spec.ratio;
+        }else if(missing==='d'){
+          if(!(D>0&&L>0))err='D・L は正の値で入力してください';
+          else{d=D-spec.ratio*L;if(d<0)err='この長さでは小端径がマイナスになります(L過大)'}
+        }else{
+          if(!(d>=0&&L>0))err='d・L を確認してください';
+          else D=d+spec.ratio*L;
+        }
+        if(!err){
+          comp=missing;
+          var f=$('f'+missing);
+          f.value=(missing==='D'?D:missing==='d'?d:L).toFixed(3);
+          f.classList.add('computed');
+          vals={D:D,d:d,L:L};
+        }
+      }else{
+        blankComputed();
+      }
+
+      var half=spec.half, hd=half*180/Math.PI;
+      var cells=[
+        {k:'テーパ比',v:'1/'+(1/spec.ratio).toFixed(3).replace(/\.?0+$/,''),s:'(径)'},
+        {k:'全角 θ',v:(2*hd).toFixed(4)+'° / '+dmsStr(2*hd)},
+        {k:'半角 θ/2',v:hd.toFixed(4)+'° / '+dmsStr(hd)},
+      ];
+      if(sb>0){
+        cells.push({k:'サインバーH(半角)',v:(sb*Math.sin(half)).toFixed(4),s:'mm'});
+        cells.push({k:'サインバーH(全角)',v:(sb*Math.sin(2*half)).toFixed(4),s:'mm'});
+      }
+      cellsHtml(cells);
+
+      if(err){
+        $('mainLbl').textContent='―';$('out').textContent='―.―――';
+        $('statusTxt').textContent=err;
+        $('statusTxt').className='statusTxt err';
+        updSvg(vals.D,vals.d,vals.L,spec,null);
+        return;
+      }
+      if(comp){
+        var v=vals[comp];
+        $('mainLbl').textContent=(comp==='D'?'大端径 D':comp==='d'?'小端径 d':'長さ L');
+        $('out').textContent=v.toFixed(3);
+        $('mainUnit').textContent='mm';
+        lastMain=v.toFixed(3);
+        $('statusTxt').textContent=spec.label+' | D − d = L × テーパ比';
+      }else{
+        $('mainLbl').textContent='寸法待ち';$('out').textContent='―.―――';
+        $('statusTxt').textContent='D・d・L のうち2つを入力すると残りを計算します(3つ目入力で古いものが計算値に)';
+      }
+      $('statusTxt').className='statusTxt';
+      updSvg(vals.D,vals.d,vals.L,spec,comp);
+
+    }else{
+      // 実測からテーパ
+      var D=num($('fD').value), d=num($('fd').value), L=num($('fL').value);
+      clearComputed();
+      if(!(D>0&&d>=0&&L>0&&D>d)){
+        $('mainLbl').textContent='テーパ比';$('out').textContent='―';
+        cellsHtml([]);
+        updSvg(D,d,L,null,null);
+        $('statusTxt').textContent='実測した D・d・L を3つとも入力してください(D>d)';
+        $('statusTxt').className='statusTxt';
+        return;
+      }
+      var ratio=(D-d)/L;
+      var x=1/ratio;
+      var half=Math.atan(ratio/2), hd=half*180/Math.PI;
+      $('mainLbl').textContent='テーパ比 1/x の x';
+      $('out').textContent=x.toFixed(3);
+      $('mainUnit').textContent='';
+      lastMain='1/'+x.toFixed(3);
+
+      // 最も近い標準
+      var best=null;
+      STD.forEach(function(s){
+        if(s.x==null)return;
+        var diff=Math.abs(1/s.x-ratio)/ratio;
+        if(!best||diff<best.diff)best={n:s.n,x:s.x,diff:diff};
+      });
+      var nearTxt=best?(best.n+'(差 '+(best.diff*100).toFixed(2)+'%)'):'―';
+
+      var cells=[
+        {k:'全角 θ',v:(2*hd).toFixed(4)+'° / '+dmsStr(2*hd)},
+        {k:'半角 θ/2',v:hd.toFixed(4)+'° / '+dmsStr(hd)},
+        {k:'最も近い標準',v:nearTxt}
+      ];
+      if(sb>0){
+        cells.push({k:'サインバーH(半角)',v:(sb*Math.sin(half)).toFixed(4),s:'mm'});
+        cells.push({k:'サインバーH(全角)',v:(sb*Math.sin(2*half)).toFixed(4),s:'mm'});
+      }
+      cellsHtml(cells);
+      var st='テーパ比 = (D−d)/L';
+      if(best&&best.diff<0.005)st+=' | '+best.n+' とほぼ一致します';
+      $('statusTxt').textContent=st;
+      $('statusTxt').className='statusTxt';
+      updSvg(D,d,L,{half:half,label:'実測: 1/'+x.toFixed(2)},null);
+    }
+  }
+
+  /* ---- イベント ---- */
+  function setMode(m){
+    mode=m;
+    $('mSpec').classList.toggle('on',m==='spec');
+    $('mMeas').classList.toggle('on',m==='meas');
+    $('specBox').style.display=(m==='spec')?'':'none';
+    $('dimHead').textContent=(m==='spec')?'寸法(2つ入力で残りを計算)':'寸法(実測を3つとも入力)';
+    queue=[];
+    blankComputed();
+    recalc();
+  }
+  $('mSpec').addEventListener('click',function(){setMode('spec')});
+  $('mMeas').addEventListener('click',function(){setMode('meas')});
+
+  ['D','d','L'].forEach(function(k){
+    $('f'+k).addEventListener('input',function(){
+      if(mode==='spec'){
+        $('f'+k).classList.remove('computed');
+        queue=queue.filter(function(q){return q!==k});
+        if($('f'+k).value.trim()!=='')queue.push(k);
+        while(queue.length>2)queue.shift();
+      }
+      recalc();
+    });
+  });
+  ['fX','fAng','fSb'].forEach(function(id){$(id).addEventListener('input',recalc)});
+
+  $('rTaper').addEventListener('click',function(){ratioKind='taper';$('rTaper').classList.add('on');$('rSlope').classList.remove('on');recalc()});
+  $('rSlope').addEventListener('click',function(){ratioKind='slope';$('rSlope').classList.add('on');$('rTaper').classList.remove('on');recalc()});
+  $('aFull').addEventListener('click',function(){angKind='full';$('aFull').classList.add('on');$('aHalf').classList.remove('on');recalc()});
+  $('aHalf').addEventListener('click',function(){angKind='half';$('aHalf').classList.add('on');$('aFull').classList.remove('on');recalc()});
+
+  var toastTimer=null;
+  function toast(msg){
+    var t=$('toast');t.textContent=msg;t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer=setTimeout(function(){t.classList.remove('show')},1600);
+  }
+  $('copyBtn').addEventListener('click',function(){
+    if(lastMain==null){toast('まだ値がありません');return}
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(lastMain).then(function(){toast('コピーしました')},function(){toast('コピーできませんでした')});
+    }else{
+      var ta=document.createElement('textarea');
+      ta.value=lastMain;document.body.appendChild(ta);ta.select();
+      try{document.execCommand('copy');toast('コピーしました')}catch(e){toast('コピーできませんでした')}
+      document.body.removeChild(ta);
+    }
+  });
+
+  buildChips();
+  recalc();
+})();
+</script>
+</body>
+</html>

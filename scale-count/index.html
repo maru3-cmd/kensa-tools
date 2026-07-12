@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1F3341">
+<meta name="description" content="電子はかりでの数取り(重量カウント)支援。サンプルから単重を算出し、小分け計量を記録・合計して総個数を計算。データは端末内にのみ保存され、どこにも送信されません。">
+<title>はかり数取器 | 検査計算ツール</title>
+<style>
+  :root{
+    --paper:#F2F4F5;
+    --sheet:#FFFFFF;
+    --ink:#1F3341;
+    --line:#8FA2AF;
+    --red:#D63426;
+    --amber:#B97A1E;
+    --dro-bg:#15181A;
+    --dro-red:#FF5A48;
+    --dro-green:#42D77D;
+    --dro-amber:#E8B34B;
+    --dro-dim:#9FB0B8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI",sans-serif;
+    background:var(--paper);color:var(--ink);
+    min-height:100dvh;display:flex;flex-direction:column;align-items:center;
+    padding:0 12px calc(16px + env(safe-area-inset-bottom));
+  }
+  .wrap{width:100%;max-width:480px}
+
+  header{display:flex;align-items:baseline;justify-content:space-between;padding:14px 2px 8px}
+  header h1{font-size:16px;font-weight:700;letter-spacing:.04em}
+  header h1 small{display:block;font-size:11px;font-weight:400;color:#5B707E;letter-spacing:.08em;margin-top:2px}
+  header a{font-size:12px;color:#5B707E;text-decoration:none}
+
+  .tb-strip{
+    display:flex;background:var(--sheet);border:2px solid var(--ink);
+    font-size:9px;letter-spacing:.06em;margin-bottom:12px;
+  }
+  .tb-strip div{padding:4px 8px;border-right:1px solid var(--ink)}
+  .tb-strip div:last-child{border-right:none;margin-left:auto}
+  .tb-strip b{font-weight:700}
+
+  .banner{
+    display:none;background:#FBF3E2;border:1.5px solid #D9A94E;border-radius:10px;
+    padding:12px;margin-bottom:12px;font-size:13px;line-height:1.6;
+  }
+  .banner.show{display:block}
+  .banner .btns{display:flex;gap:8px;margin-top:8px}
+  .banner button{
+    flex:1;font-size:13px;font-weight:700;padding:9px 4px;border-radius:8px;
+    border:1.5px solid var(--ink);background:var(--sheet);color:var(--ink);
+  }
+  .banner button.warn{border-color:var(--red);color:var(--red)}
+
+  .card{
+    background:var(--sheet);border:1px solid #D5DDE2;border-radius:12px;
+    padding:12px;margin-bottom:12px;
+  }
+  .card h2{
+    font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.1em;
+    margin-bottom:10px;display:flex;align-items:center;gap:6px;
+  }
+  .card h2::before{content:'';width:4px;height:14px;background:var(--ink);border-radius:2px}
+
+  .row{
+    display:grid;grid-template-columns:26px 1fr 110px 30px;
+    align-items:center;gap:8px;padding:7px 0;
+  }
+  .badge{
+    width:22px;height:22px;border-radius:50%;
+    background:var(--ink);color:#fff;font-size:12px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .row label{font-size:13px;font-weight:600}
+  .row label small{display:block;font-size:10px;font-weight:400;color:#5B707E}
+  .row input,.bigin{
+    width:100%;font-size:20px;font-weight:600;text-align:right;
+    font-variant-numeric:tabular-nums;
+    border:none;border-bottom:2px solid var(--ink);
+    background:transparent;color:var(--ink);
+    padding:2px 4px;border-radius:0;outline:none;
+  }
+  .row input:focus,.bigin:focus{border-bottom-color:var(--red)}
+  .unit{font-size:12px;color:#5B707E}
+
+  .unitline{
+    margin-top:6px;padding-top:9px;border-top:1px dashed #D5DDE2;
+    font-size:13px;display:flex;justify-content:space-between;align-items:baseline;
+    font-variant-numeric:tabular-nums;
+  }
+  .unitline b{font-size:18px;font-weight:700;color:var(--red)}
+  .unitline .lab{color:#5B707E;font-size:12px;font-weight:600}
+
+  .addline{display:flex;gap:8px;align-items:flex-end}
+  .addline .bigin{font-size:26px;flex:1}
+  .addbtn{
+    flex:none;font-size:15px;font-weight:700;padding:12px 22px;border-radius:10px;
+    border:none;background:var(--ink);color:#fff;letter-spacing:.1em;
+  }
+  .addbtn:active{background:#3A5468}
+  .caphint{font-size:11px;color:#5B707E;margin-top:7px;font-variant-numeric:tabular-nums}
+  .caphint.warn{color:var(--amber);font-weight:700}
+  .caphint.err{color:var(--red);font-weight:700}
+
+  table.rec{
+    width:100%;border-collapse:collapse;margin-top:10px;
+    font-size:14px;font-variant-numeric:tabular-nums;
+  }
+  table.rec th{
+    font-size:10px;color:#5B707E;font-weight:700;text-align:right;
+    border-bottom:1.5px solid var(--ink);padding:4px 6px;
+  }
+  table.rec th:first-child{text-align:center}
+  table.rec td{
+    padding:8px 6px;border-bottom:1px solid #E4EAEE;text-align:right;
+  }
+  table.rec td:first-child{text-align:center;color:#5B707E;font-size:12px}
+  table.rec td.warn{color:var(--amber);font-weight:700}
+  table.rec .del{
+    border:none;background:none;color:#B4C1C9;font-size:17px;
+    padding:2px 8px;font-weight:700;
+  }
+  table.rec .del:active{color:var(--red)}
+  .empty{font-size:12px;color:#8FA2AF;text-align:center;padding:14px 0 6px}
+
+  .dro{
+    background:var(--dro-bg);border-radius:12px;
+    padding:16px 18px 12px;box-shadow:inset 0 2px 8px rgba(0,0,0,.5);
+    margin-bottom:12px;
+  }
+  .dro-line{display:flex;align-items:baseline;gap:10px;justify-content:flex-end}
+  .dro-label{color:#7d8a91;font-size:13px;font-weight:700;letter-spacing:.1em}
+  .dro-val{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:40px;font-weight:600;color:var(--dro-green);
+    text-shadow:0 0 12px rgba(66,215,125,.35);letter-spacing:.02em;
+  }
+  .dro-unit{color:#7d8a91;font-size:14px;font-weight:600}
+  .devline{
+    text-align:right;font-size:12px;margin-top:2px;min-height:16px;
+    font-variant-numeric:tabular-nums;
+  }
+  .devline.good{color:var(--dro-green)}
+  .devline.warn{color:var(--dro-amber)}
+  .devline.bad{color:var(--dro-red)}
+  .devline.none{color:#5d6a71}
+  .dro-grid{
+    display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;
+    border-top:1px solid #2a3034;margin-top:10px;padding-top:10px;
+  }
+  .cellv{display:flex;flex-direction:column;align-items:flex-end;padding:4px 8px;border-radius:8px}
+  .cellv:active{background:#1e2327}
+  .cellv .k{color:#7d8a91;font-size:11px;font-weight:700;letter-spacing:.06em;align-self:flex-start}
+  .cellv .v{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:19px;font-weight:600;color:var(--dro-dim);
+  }
+  .cellv .s{color:#5d6a71;font-size:10px}
+  .dro-foot{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-top:10px;border-top:1px solid #2a3034;padding-top:9px;gap:8px;
+  }
+  .statusTxt{color:#5d6a71;font-size:11px;letter-spacing:.02em}
+  .statusTxt.err{color:#FF8A7E}
+  .copyRec{
+    font-size:12px;font-weight:700;color:#c9d2d7;background:#252b2f;
+    border:1px solid #3a4247;border-radius:7px;padding:6px 14px;flex:none;
+  }
+  .copyRec:active{background:#31383d}
+
+  .revline{
+    display:flex;justify-content:space-between;align-items:baseline;
+    padding-top:9px;margin-top:8px;border-top:1px dashed #D5DDE2;
+    font-size:13px;font-variant-numeric:tabular-nums;
+  }
+  .revline b{font-size:17px;color:var(--red)}
+  .revline .lab{color:#5B707E;font-size:12px;font-weight:600}
+
+  .clearBtn{
+    width:100%;font-size:13px;font-weight:700;padding:12px 4px;
+    border:1.5px solid #C9D3DA;border-radius:10px;
+    background:var(--sheet);color:#5B707E;letter-spacing:.05em;
+    margin-bottom:6px;
+  }
+  .clearBtn.arm{border-color:var(--red);color:var(--red);background:#FCF0EF}
+
+  footer{margin-top:12px;font-size:11px;color:#5B707E;line-height:1.7;text-align:center;letter-spacing:.03em}
+
+  .toast{
+    position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);
+    background:var(--ink);color:#fff;font-size:13px;
+    padding:9px 20px;border-radius:20px;opacity:0;pointer-events:none;
+    transition:opacity .25s,transform .25s;z-index:9;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>はかり数取器<small>重量カウント:小分け記録と総個数</small></h1>
+    <a href="../index.html">≡ ツール一覧</a>
+  </header>
+
+  <div class="tb-strip">
+    <div><b>品名</b> はかり数取器</div>
+    <div><b>方式</b> 単重換算</div>
+    <div>TOOL-07</div>
+  </div>
+
+  <div class="banner" id="banner">
+    <span id="bannerTxt">前回の記録が残っています。</span>
+    <div class="btns">
+      <button type="button" id="bKeep">続きを使う</button>
+      <button type="button" class="warn" id="bWipe">消去して新規</button>
+    </div>
+  </div>
+
+  <!-- 設定 -->
+  <div class="card">
+    <h2>設定(サンプルとはかり)</h2>
+    <div class="row">
+      <span class="badge">1</span>
+      <label for="sN">サンプル個数<small>数えて載せた個数</small></label>
+      <input id="sN" type="text" inputmode="numeric" autocomplete="off" placeholder="10">
+      <span class="unit">個</span>
+    </div>
+    <div class="row">
+      <span class="badge">2</span>
+      <label for="sG">サンプル重量<small>その時の表示値</small></label>
+      <input id="sG" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">g</span>
+    </div>
+    <div class="row">
+      <span class="badge">3</span>
+      <label for="sTare">風袋<small>容器の重さ(任意・毎回引く)</small></label>
+      <input id="sTare" type="text" inputmode="decimal" autocomplete="off" placeholder="0">
+      <span class="unit">g</span>
+    </div>
+    <div class="unitline">
+      <span class="lab">単重(1個あたり)</span>
+      <span><b id="unitOut">―</b> <span class="unit">g/個</span></span>
+    </div>
+  </div>
+
+  <!-- 小分け入力 -->
+  <div class="card">
+    <h2>小分け計量の記録</h2>
+    <div class="addline">
+      <input class="bigin" id="bIn" type="text" inputmode="decimal" autocomplete="off" placeholder="表示値を入力">
+      <button class="addbtn" type="button" id="addBtn">追加</button>
+    </div>
+    <div class="caphint" id="capHint"></div>
+    <table class="rec" id="recTbl" style="display:none">
+      <thead><tr><th>#</th><th>表示値 g</th><th>正味 g</th><th>個数換算</th><th></th></tr></thead>
+      <tbody id="listBody"></tbody>
+    </table>
+    <div class="empty" id="emptyMsg">まだ記録がありません。小分けごとに表示値を入力して「追加」。</div>
+  </div>
+
+  <!-- 結果 -->
+  <div class="dro">
+    <div class="dro-line">
+      <span class="dro-label">総個数</span>
+      <span class="dro-val" id="outPcs">―</span>
+      <span class="dro-unit">個</span>
+    </div>
+    <div class="devline none" id="devLine"></div>
+    <div class="dro-grid">
+      <div class="cellv" id="cSum"><span class="k">合計(正味)</span><span class="v" id="vSum">―</span><span class="s">g</span></div>
+      <div class="cellv" id="cCnt"><span class="k">小分け回数</span><span class="v" id="vCnt">0</span><span class="s">回</span></div>
+    </div>
+    <div class="dro-foot">
+      <span class="statusTxt" id="statusTxt">サンプル(何個で何g)を設定してください</span>
+      <button class="copyRec" type="button" id="copyRec">記録をコピー</button>
+    </div>
+  </div>
+
+  <!-- 逆算 -->
+  <div class="card">
+    <h2>逆算(目標個数から必要重量)</h2>
+    <div class="row">
+      <span class="badge">4</span>
+      <label for="qtyIn">目標個数<small>この個数を取り分けたい</small></label>
+      <input id="qtyIn" type="text" inputmode="numeric" autocomplete="off" placeholder="―">
+      <span class="unit">個</span>
+    </div>
+    <div class="revline">
+      <span class="lab">必要重量(正味)</span>
+      <span><b id="qtyOut">―</b> <span class="unit">g</span></span>
+    </div>
+    <div class="caphint" id="planHint"></div>
+  </div>
+
+  <button class="clearBtn" type="button" id="clearBtn">すべて消去(記録と設定)</button>
+
+  <footer>
+    入力値はどこにも送信されません。記録はこの端末のブラウザ内にのみ保存され、<br>
+    「すべて消去」で完全に削除できます。
+  </footer>
+</div>
+
+<div class="toast" id="toast">追加しました</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var KEY='scale-count-v1';
+  var CAP=8200;   // 最大秤量(固定)
+  var state={date:today(),n:'',g:'',tare:'',batches:[]};
+
+  function today(){
+    var d=new Date();
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+  function num(v){
+    if(v==null)return NaN;
+    v=String(v).replace(/[０-９．]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0)}).replace(/。/g,'.').replace(/[,，、\s]/g,'').trim();
+    if(v==='')return NaN;
+    return Number(v);
+  }
+  function fmtG(v){
+    if(Math.abs(v)%1===0)return String(v);
+    return String(Math.round(v*100)/100);
+  }
+  function save(){
+    try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}
+  }
+  function load(){
+    try{
+      var raw=localStorage.getItem(KEY);
+      if(!raw)return;
+      var s=JSON.parse(raw);
+      if(s&&typeof s==='object'&&Array.isArray(s.batches)){
+        state=s;
+        if(state.date!==today()&&(state.batches.length>0)){
+          $('bannerTxt').textContent='前回('+state.date+'・'+state.batches.length+'件)の記録が残っています。';
+          $('banner').classList.add('show');
+        }else{
+          state.date=today();
+        }
+      }
+    }catch(e){}
+  }
+
+  function unitW(){
+    var n=num(state.n), g=num(state.g);
+    if(n>0&&Number.isInteger(n)&&g>0)return g/n;
+    return null;
+  }
+  function tareG(){
+    var t=num(state.tare);
+    return (t>0)?t:0;
+  }
+
+  function render(){
+    // 設定欄(入力中の欄には書き戻さない: カーソル飛び防止)
+    [['sN','n'],['sG','g'],['sTare','tare']].forEach(function(a){
+      var el=$(a[0]);
+      if(document.activeElement!==el&&el.value!==String(state[a[1]]))el.value=state[a[1]];
+    });
+
+    var u=unitW();
+    $('unitOut').textContent=u?u.toFixed(4):'―';
+
+    // 秤量ヒント(最大秤量は固定)
+    var cap=CAP;
+    var capHint=$('capHint');
+    capHint.textContent='最大秤量 '+fmtG(cap)+' g(9割の目安 '+fmtG(cap*0.9)+' g)';
+    capHint.className='caphint';
+
+    // リスト
+    var tare=tareG();
+    var body=$('listBody');
+    body.innerHTML='';
+    var sum=0, anyNegative=false;
+    state.batches.forEach(function(b,i){
+      var net=b.g-tare;
+      sum+=net;
+      if(net<=0)anyNegative=true;
+      var tr=document.createElement('tr');
+      var pcsTxt='―';
+      if(u&&net>0){
+        var raw=net/u, r=Math.round(raw), dv=raw-r;
+        pcsTxt=r.toLocaleString('ja-JP')+'個 ('+(dv>=0?'+':'')+dv.toFixed(2)+')';
+      }
+      var warnCls=(cap>0&&b.g>=cap*0.9)?' class="warn"':'';
+      tr.innerHTML='<td>'+(i+1)+'</td><td'+warnCls+'>'+fmtG(b.g)+(cap>0&&b.g>=cap*0.9?' ⚠':'')+'</td>'+
+        '<td>'+(tare>0?fmtG(net):fmtG(b.g))+'</td><td>'+pcsTxt+'</td>'+
+        '<td><button class="del" type="button" data-i="'+i+'" aria-label="この行を削除">×</button></td>';
+      body.appendChild(tr);
+    });
+    $('recTbl').style.display=state.batches.length?'table':'none';
+    $('emptyMsg').style.display=state.batches.length?'none':'block';
+
+    // 結果
+    $('vCnt').textContent=String(state.batches.length);
+    if(state.batches.length){
+      $('vSum').textContent=fmtG(sum);
+    }else{
+      $('vSum').textContent='―';
+    }
+
+    var dev=$('devLine');
+    if(u&&state.batches.length&&sum>0){
+      var raw=sum/u, r=Math.round(raw), dv=raw-r;
+      $('outPcs').textContent=r.toLocaleString('ja-JP');
+      var ad=Math.abs(dv);
+      var cls,msg;
+      if(ad<=0.2){cls='good';msg='ズレ '+(dv>=0?'+':'')+dv.toFixed(2)+' 個分:良好'}
+      else if(ad<=0.4){cls='warn';msg='ズレ '+(dv>=0?'+':'')+dv.toFixed(2)+' 個分:注意(単重かバラツキを確認)'}
+      else{cls='bad';msg='ズレ '+(dv>=0?'+':'')+dv.toFixed(2)+' 個分:要確認(数え直し推奨)'}
+      dev.textContent=msg;dev.className='devline '+cls;
+      $('statusTxt').textContent='単重 '+u.toFixed(4)+' g/個 × 合計 '+fmtG(sum)+' g';
+      $('statusTxt').className='statusTxt';
+    }else{
+      $('outPcs').textContent='―';
+      dev.textContent='';dev.className='devline none';
+      if(!u)$('statusTxt').textContent='サンプル(何個で何g)を設定してください';
+      else if(!state.batches.length)$('statusTxt').textContent='小分け計量を追加してください';
+      else $('statusTxt').textContent='';
+      $('statusTxt').className='statusTxt';
+    }
+    if(anyNegative){
+      $('statusTxt').textContent='風袋が表示値より大きい行があります(正味が0以下)';
+      $('statusTxt').className='statusTxt err';
+    }
+
+    // 逆算
+    var q=num($('qtyIn').value);
+    if(u&&q>0&&Number.isInteger(q)){
+      var need=q*u;
+      $('qtyOut').textContent=need.toFixed(1);
+      var plan='';
+      if(tare>0)plan='風袋込みの表示値 '+ (need+tare).toFixed(1)+' g';
+      if(cap>0&&u>0){
+        var maxPcs=Math.floor((cap*0.9-tare)/u);
+        if(maxPcs>0)plan+=(plan?' | ':'')+'1回で載せられる目安 約'+maxPcs.toLocaleString('ja-JP')+'個(秤量9割)';
+      }
+      $('planHint').textContent=plan;
+      $('planHint').className='caphint';
+    }else{
+      $('qtyOut').textContent='―';
+      if(!u&&$('qtyIn').value.trim()!==''){
+        $('planHint').textContent='先に「設定」でサンプル(何個で何g)を入力してください';
+        $('planHint').className='caphint warn';
+      }else if($('qtyIn').value.trim()!==''&&!(q>0&&Number.isInteger(q))){
+        $('planHint').textContent='目標個数は1以上の整数で入力してください';
+        $('planHint').className='caphint warn';
+      }else{
+        $('planHint').textContent='';
+        $('planHint').className='caphint';
+      }
+    }
+  }
+
+  /* ---- イベント ---- */
+  ['sN','sG','sTare'].forEach(function(id){
+    $(id).addEventListener('input',function(){
+      state[id==='sN'?'n':id==='sG'?'g':'tare']=$(id).value;
+      save();render();
+    });
+  });
+  $('qtyIn').addEventListener('input',render);
+
+  function addBatch(){
+    var v=num($('bIn').value);
+    var cap=CAP;
+    if(!(v>0)){toast('表示値を入力してください');return}
+    if(cap>0&&v>cap){
+      $('capHint').textContent='最大秤量 '+fmtG(cap)+' g を超えています。入力ミスでは?';
+      $('capHint').className='caphint err';
+      return;
+    }
+    state.batches.push({g:v});
+    state.date=today();
+    save();
+    $('bIn').value='';
+    $('bIn').focus();
+    if(cap>0&&v>=cap*0.9)toast('追加しました(秤量ぎりぎり ⚠)');
+    else toast('追加しました');
+    render();
+  }
+  $('addBtn').addEventListener('click',addBatch);
+  $('bIn').addEventListener('keydown',function(e){
+    if(e.key==='Enter'){e.preventDefault();addBatch()}
+  });
+
+  $('listBody').addEventListener('click',function(e){
+    var b=e.target.closest('.del');
+    if(!b)return;
+    state.batches.splice(Number(b.getAttribute('data-i')),1);
+    save();render();
+  });
+
+  // 前回記録バナー
+  $('bKeep').addEventListener('click',function(){
+    state.date=today();save();
+    $('banner').classList.remove('show');
+    render();
+  });
+  $('bWipe').addEventListener('click',function(){
+    state={date:today(),n:'',g:'',tare:'',batches:[]};
+    save();
+    $('banner').classList.remove('show');
+    render();
+  });
+
+  // すべて消去(2度押し)
+  var armTimer=null;
+  $('clearBtn').addEventListener('click',function(){
+    var b=$('clearBtn');
+    if(!b.classList.contains('arm')){
+      b.classList.add('arm');
+      b.textContent='もう一度タップで完全消去';
+      armTimer=setTimeout(function(){
+        b.classList.remove('arm');
+        b.textContent='すべて消去(記録と設定)';
+      },3000);
+      return;
+    }
+    clearTimeout(armTimer);
+    state={date:today(),n:'',g:'',tare:'',batches:[]};
+    try{localStorage.removeItem(KEY)}catch(e){}
+    b.classList.remove('arm');
+    b.textContent='すべて消去(記録と設定)';
+    $('qtyIn').value='';
+    toast('すべて消去しました');
+    render();
+  });
+
+  // 記録コピー
+  $('copyRec').addEventListener('click',function(){
+    var u=unitW(), tare=tareG();
+    var lines=['[数取り記録] '+state.date];
+    if(u)lines.push('単重: '+u.toFixed(4)+' g/個('+state.n+'個 = '+state.g+' g)');
+    if(tare>0)lines.push('風袋: '+fmtG(tare)+' g');
+    var sum=0;
+    state.batches.forEach(function(b,i){
+      var net=b.g-tare;sum+=net;
+      var pcs=(u&&net>0)?(' → '+Math.round(net/u).toLocaleString('ja-JP')+'個'):'';
+      lines.push((i+1)+': '+fmtG(b.g)+' g'+(tare>0?'(正味 '+fmtG(net)+' g)':'')+pcs);
+    });
+    if(state.batches.length){
+      lines.push('合計(正味): '+fmtG(sum)+' g');
+      if(u&&sum>0){
+        var raw=sum/u, r=Math.round(raw);
+        lines.push('総個数: '+r.toLocaleString('ja-JP')+' 個(ズレ '+((raw-r)>=0?'+':'')+(raw-r).toFixed(2)+' 個分)');
+      }
+    }
+    copyText(lines.join('\n'));
+  });
+
+  var toastTimer=null;
+  function toast(msg){
+    var t=$('toast');t.textContent=msg;t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer=setTimeout(function(){t.classList.remove('show')},1600);
+  }
+  function copyText(s){
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(s).then(function(){toast('コピーしました')},function(){toast('コピーできませんでした')});
+    }else{
+      var ta=document.createElement('textarea');
+      ta.value=s;document.body.appendChild(ta);ta.select();
+      try{document.execCommand('copy');toast('コピーしました')}catch(e){toast('コピーできませんでした')}
+      document.body.removeChild(ta);
+    }
+  }
+
+  // 合計・総個数タップでコピー
+  document.querySelector('.dro-line').addEventListener('click',function(){
+    var t=$('outPcs').textContent;
+    if(t==='―'){toast('まだ値がありません');return}
+    copyText(t.replace(/,/g,''));
+  });
+  $('cSum').addEventListener('click',function(){
+    var t=$('vSum').textContent;
+    if(t==='―'){toast('まだ値がありません');return}
+    copyText(t);
+  });
+
+  load();
+  render();
+})();
+</script>
+</body>
+</html>

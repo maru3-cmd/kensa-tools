@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1F3341">
+<meta name="description" content="測定値の20℃換算(熱膨張補正)。材質別の線膨張係数を内蔵し、測定器側の伸びも考慮可能。計算は端末内で完結します。">
+<title>温度補正 | 検査計算ツール</title>
+<style>
+  :root{
+    --paper:#F2F4F5;
+    --sheet:#FFFFFF;
+    --ink:#1F3341;
+    --line:#8FA2AF;
+    --red:#D63426;
+    --dro-bg:#15181A;
+    --dro-red:#FF5A48;
+    --dro-dim:#9FB0B8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI",sans-serif;
+    background:var(--paper);color:var(--ink);
+    min-height:100dvh;display:flex;flex-direction:column;align-items:center;
+    padding:0 12px calc(16px + env(safe-area-inset-bottom));
+  }
+  .wrap{width:100%;max-width:480px}
+
+  header{display:flex;align-items:baseline;justify-content:space-between;padding:14px 2px 10px}
+  header h1{font-size:16px;font-weight:700;letter-spacing:.04em}
+  header h1 small{display:block;font-size:11px;font-weight:400;color:#5B707E;letter-spacing:.08em;margin-top:2px}
+  header a{font-size:12px;color:#5B707E;text-decoration:none}
+
+  .sheet{background:var(--sheet);border:2px solid var(--ink);padding:5px}
+  .sheet-inner{border:1px solid var(--ink)}
+  .sheet svg{display:block;width:100%;height:auto}
+  .titleblock{display:flex;border-top:1px solid var(--ink);font-size:9px;letter-spacing:.06em}
+  .titleblock div{padding:3px 8px;border-right:1px solid var(--ink)}
+  .titleblock div:last-child{border-right:none;margin-left:auto}
+  .titleblock b{font-weight:700}
+
+  h2{
+    font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.1em;
+    margin:14px 2px 8px;display:flex;align-items:center;gap:6px;
+  }
+  h2::before{content:'';width:4px;height:14px;background:var(--ink);border-radius:2px}
+
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{
+    font-size:12.5px;font-weight:700;padding:8px 11px;
+    border:1.5px solid var(--ink);border-radius:8px;
+    background:var(--sheet);color:var(--ink);
+    font-variant-numeric:tabular-nums;
+  }
+  .chip.on{background:var(--ink);color:#fff}
+  .chip small{font-weight:400;font-size:10px;opacity:.75;margin-left:3px}
+  .grp-label{
+    width:100%;font-size:10px;font-weight:700;color:#8FA2AF;
+    letter-spacing:.14em;margin:4px 2px 0;
+  }
+
+  .inputs{margin-top:10px;display:flex;flex-direction:column;gap:10px}
+  .row{
+    display:grid;grid-template-columns:26px 1fr 130px 40px;
+    align-items:center;gap:8px;
+    background:var(--sheet);border:1px solid #D5DDE2;border-radius:10px;
+    padding:10px 12px;
+  }
+  .badge{
+    width:22px;height:22px;border-radius:50%;
+    background:var(--ink);color:#fff;font-size:12px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .row label{font-size:13px;font-weight:600}
+  .row label small{display:block;font-size:10px;font-weight:400;color:#5B707E}
+  .row input{
+    width:100%;font-size:20px;font-weight:600;text-align:right;
+    font-variant-numeric:tabular-nums;
+    border:none;border-bottom:2px solid var(--ink);
+    background:transparent;color:var(--ink);
+    padding:2px 4px;border-radius:0;outline:none;
+  }
+  .row input:focus{border-bottom-color:var(--red)}
+  .unit{font-size:12px;color:#5B707E}
+
+  .instTgl{
+    margin-top:12px;width:100%;
+    display:flex;align-items:center;justify-content:space-between;
+    background:var(--sheet);border:1px solid #D5DDE2;border-radius:10px;
+    padding:11px 12px;font-size:13px;font-weight:600;color:var(--ink);
+  }
+  .instTgl .sw{
+    width:44px;height:26px;border-radius:13px;background:#D5DDE2;position:relative;flex:none;
+    transition:background .15s;
+  }
+  .instTgl .sw::after{
+    content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;
+    background:#fff;transition:left .15s;box-shadow:0 1px 3px rgba(0,0,0,.25);
+  }
+  .instTgl.on .sw{background:var(--ink)}
+  .instTgl.on .sw::after{left:21px}
+  .instBox{display:none;margin-top:10px}
+  .instBox.show{display:block}
+  .note{font-size:11px;color:#5B707E;line-height:1.7;margin-top:8px;padding:0 2px}
+
+  .dro{
+    margin-top:16px;background:var(--dro-bg);border-radius:12px;
+    padding:16px 18px 12px;box-shadow:inset 0 2px 8px rgba(0,0,0,.5);
+  }
+  .dro-line{display:flex;align-items:baseline;gap:10px;justify-content:flex-end}
+  .dro-label{color:#7d8a91;font-size:13px;font-weight:700;letter-spacing:.08em}
+  .dro-val{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:34px;font-weight:600;color:var(--dro-red);
+    text-shadow:0 0 10px rgba(255,90,72,.35);letter-spacing:.02em;
+  }
+  .dro-unit{color:#7d8a91;font-size:13px;font-weight:600}
+  .dro-grid{
+    display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;
+    border-top:1px solid #2a3034;margin-top:10px;padding-top:10px;
+  }
+  .cellv{display:flex;flex-direction:column;align-items:flex-end;padding:4px 8px;border-radius:8px}
+  .cellv:active{background:#1e2327}
+  .cellv .k{color:#7d8a91;font-size:11px;font-weight:700;letter-spacing:.06em;align-self:flex-start}
+  .cellv .v{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:19px;font-weight:600;color:var(--dro-dim);
+  }
+  .cellv .s{color:#5d6a71;font-size:10px}
+  .dro-foot{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-top:10px;border-top:1px solid #2a3034;padding-top:9px;gap:8px;
+  }
+  .statusTxt{color:#5d6a71;font-size:11px;letter-spacing:.02em;line-height:1.6}
+  .copy{
+    font-size:12px;font-weight:700;color:#c9d2d7;background:#252b2f;
+    border:1px solid #3a4247;border-radius:7px;padding:6px 14px;flex:none;
+  }
+  .copy:active{background:#31383d}
+
+  footer{margin-top:16px;font-size:11px;color:#5B707E;line-height:1.7;text-align:center;letter-spacing:.03em}
+
+  .toast{
+    position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);
+    background:var(--ink);color:#fff;font-size:13px;
+    padding:9px 20px;border-radius:20px;opacity:0;pointer-events:none;
+    transition:opacity .25s,transform .25s;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (prefers-reduced-motion:reduce){.toast{transition:none;} .instTgl .sw,.instTgl .sw::after{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>温度補正<small>測定値の20℃換算(熱膨張)</small></h1>
+    <a href="../index.html">≡ ツール一覧</a>
+  </header>
+
+  <!-- 図面シート -->
+  <div class="sheet">
+    <div class="sheet-inner">
+      <svg viewBox="0 0 340 250" role="img" aria-label="温度による部品の伸び縮みと20℃換算の関係図">
+        <defs>
+          <marker id="ar" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L8,3 L0,6 z" fill="#1F3341"/>
+          </marker>
+          <marker id="arRed" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L8,3 L0,6 z" fill="#D63426"/>
+          </marker>
+        </defs>
+
+        <!-- 20℃の部品(基準・輪郭のみ) -->
+        <rect x="40" y="70" width="220" height="34" fill="none" stroke="#8FA2AF" stroke-width="1.4" stroke-dasharray="7 4"/>
+        <text x="42" y="63" font-size="11" fill="#5B707E">20℃のとき(換算値)</text>
+        <line x1="40" y1="118" x2="260" y2="118" stroke="#1F3341" stroke-width="1.2" marker-start="url(#ar)" marker-end="url(#ar)"/>
+        <text id="svgL20" x="150" y="132" font-size="12" font-weight="700" fill="#D63426" text-anchor="middle"
+              stroke="#fff" stroke-width="3.5" paint-order="stroke">20℃換算値 = ―</text>
+
+        <!-- 現在温度の部品(伸びを誇張) -->
+        <rect x="40" y="158" width="252" height="34" fill="#EFF2F4" stroke="#1F3341" stroke-width="1.8"/>
+        <text id="svgTemp" x="42" y="151" font-size="11" fill="#1F3341">いまの温度のとき(実測)</text>
+        <line x1="40" y1="206" x2="292" y2="206" stroke="#1F3341" stroke-width="1.2" marker-start="url(#ar)" marker-end="url(#ar)"/>
+        <text id="svgLt" x="166" y="220" font-size="12" fill="#1F3341" text-anchor="middle"
+              stroke="#fff" stroke-width="3.5" paint-order="stroke">実測値 = ―</text>
+
+        <!-- 伸び分(赤) -->
+        <line x1="260" y1="70" x2="260" y2="192" stroke="#C9D3DA" stroke-width="1" stroke-dasharray="4 3"/>
+        <line x1="260" y1="175" x2="292" y2="175" stroke="#D63426" stroke-width="1.6" marker-start="url(#arRed)" marker-end="url(#arRed)"/>
+        <text id="svgDelta" x="298" y="170" font-size="11" font-weight="700" fill="#D63426"
+              stroke="#fff" stroke-width="3.5" paint-order="stroke" text-anchor="end" transform="rotate(-90 298 170)">Δ</text>
+
+        <!-- 温度計 -->
+        <line x1="312" y1="70" x2="312" y2="115" stroke="#1F3341" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="312" cy="122" r="7" fill="#D63426"/>
+        <line id="svgTherm" x1="312" y1="115" x2="312" y2="95" stroke="#D63426" stroke-width="4" stroke-linecap="round"/>
+        <text x="35" y="26" font-size="11" fill="#5B707E">部品は温度で伸び縮みします(図は誇張)</text>
+        <text x="35" y="42" font-size="11" fill="#5B707E">寸法の正式な基準温度は 20℃(JIS B 0680)</text>
+      </svg>
+      <div class="titleblock">
+        <div><b>品名</b> 温度補正</div>
+        <div><b>方式</b> 線膨張(20℃基準)</div>
+        <div>TOOL-12</div>
+      </div>
+    </div>
+  </div>
+
+  <h2>部品の材質(線膨張係数 ×10⁻⁶/℃)</h2>
+  <div class="chips" id="matChips"></div>
+  <div class="note" id="resinNote" style="display:none">
+    ⚠ 樹脂の線膨張は<b>銘柄・ガラス繊維の有無で大きく変わります</b>(ガラス入りは1/3程度まで下がることも)。上は無充填の代表値です。厳密な判定はメーカー物性表の値をカスタム入力してください。ナイロン系は<b>吸湿でも寸法が変わる</b>点にも注意。</div>
+
+  <div class="inputs">
+    <div class="row" id="alphaRow" style="display:none">
+      <span class="badge">α</span>
+      <label for="fAlpha">線膨張係数<small>カスタム値</small></label>
+      <input id="fAlpha" type="text" inputmode="decimal" autocomplete="off" placeholder="11.5">
+      <span class="unit">×10⁻⁶</span>
+    </div>
+    <div class="row">
+      <span class="badge">1</span>
+      <label for="fL">実測値<small>いま測った長さ</small></label>
+      <input id="fL" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row">
+      <span class="badge">2</span>
+      <label for="fT">部品の温度<small>表面温度計などで</small></label>
+      <input id="fT" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">℃</span>
+    </div>
+  </div>
+
+  <button class="instTgl" type="button" id="instTgl">
+    <span>測定器側の伸びも考慮する(上級)</span>
+    <span class="sw"></span>
+  </button>
+  <div class="instBox" id="instBox">
+    <div class="inputs">
+      <div class="row">
+        <span class="badge">3</span>
+        <label for="fTs">測定器の温度<small>スケール・ノギス等</small></label>
+        <input id="fTs" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+        <span class="unit">℃</span>
+      </div>
+      <div class="row">
+        <span class="badge">4</span>
+        <label for="fAs">測定器のα<small>鋼スケールは11.5</small></label>
+        <input id="fAs" type="text" inputmode="decimal" autocomplete="off" value="11.5">
+        <span class="unit">×10⁻⁶</span>
+      </div>
+    </div>
+    <div class="note">
+      ポイント: 部品と測定器が<b>同じ材質・同じ温度</b>なら誤差はほぼ相殺されます(鋼部品を鋼スケールで測る場合など)。材質や温度が違うときにこの補正が効きます。
+    </div>
+  </div>
+
+  <!-- 結果 -->
+  <div class="dro">
+    <div class="dro-line">
+      <span class="dro-label">20℃換算値</span>
+      <span class="dro-val" id="out">―.―――</span>
+      <span class="dro-unit">mm</span>
+    </div>
+    <div class="dro-grid">
+      <div class="cellv" id="cCorr"><span class="k">補正量</span><span class="v" id="vCorr">―</span><span class="s">µm</span></div>
+      <div class="cellv" id="cSens"><span class="k">感度(1℃あたり)</span><span class="v" id="vSens">―</span><span class="s">µm/℃</span></div>
+      <div class="cellv" id="cAlpha"><span class="k">部品α</span><span class="v" id="vAlpha">―</span><span class="s">×10⁻⁶/℃</span></div>
+      <div class="cellv" id="cDt"><span class="k">温度差(20℃比)</span><span class="v" id="vDt">―</span><span class="s">℃</span></div>
+    </div>
+    <div class="dro-foot">
+      <span class="statusTxt" id="statusTxt">材質を選び、実測値と温度を入力してください</span>
+      <button class="copy" type="button" id="copyBtn">コピー</button>
+    </div>
+  </div>
+
+  <footer>
+    このページは計算のみを行います。入力値の送信・保存は一切ありません(端末内で完結)。<br>
+    線膨張係数は代表値です。厳密な判定が必要な場合は材料規格の値をカスタム入力してください。
+  </footer>
+</div>
+
+<div class="toast" id="toast">コピーしました</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+
+  // 材質と線膨張係数(×10⁻⁶/℃, 代表値)
+  var MATS=[
+    {g:'金属',n:'鋼',a:11.5},
+    {g:'金属',n:'鋳鉄',a:10.5},
+    {g:'金属',n:'SUS304',a:17.3},
+    {g:'金属',n:'SUS430',a:10.4},
+    {g:'金属',n:'アルミ合金',a:23.6},
+    {g:'金属',n:'銅',a:16.5},
+    {g:'金属',n:'黄銅',a:18.7},
+    {g:'樹脂',n:'POM(ジュラコン)',a:110},
+    {g:'樹脂',n:'MCナイロン',a:90},
+    {g:'樹脂',n:'PTFE(テフロン)',a:100},
+    {g:'樹脂',n:'PEEK',a:47},
+    {g:'樹脂',n:'ポリカ(PC)',a:65},
+    {g:'樹脂',n:'硬質塩ビ',a:70},
+    {g:'樹脂',n:'アクリル',a:70},
+    {g:'樹脂',n:'UHMW-PE',a:180},
+    {g:'樹脂',n:'ベーク',a:25},
+    {g:'',n:'カスタム',a:null}
+  ];
+  var matIdx=0;
+  var instOn=false;
+  var lastL20=null;
+
+  function num(v){
+    if(v==null)return NaN;
+    v=String(v).replace(/[０-９．−]/g,function(c){
+      if(c==='−')return '-';
+      return String.fromCharCode(c.charCodeAt(0)-0xFEE0);
+    }).replace(/。/g,'.').replace(/[,，、\s]/g,'').trim();
+    if(v==='')return NaN;
+    return Number(v);
+  }
+
+  function buildChips(){
+    var box=$('matChips');
+    box.innerHTML='';
+    var lastG=null;
+    MATS.forEach(function(m,i){
+      if(m.g&&m.g!==lastG){
+        var lab=document.createElement('div');
+        lab.className='grp-label';
+        lab.textContent=m.g;
+        box.appendChild(lab);
+        lastG=m.g;
+      }
+      var b=document.createElement('button');
+      b.type='button';
+      b.className='chip'+(i===matIdx?' on':'');
+      b.innerHTML=m.n+(m.a!=null?'<small>'+m.a+'</small>':'');
+      b.addEventListener('click',function(){
+        matIdx=i;
+        buildChips();
+        $('alphaRow').style.display=(MATS[i].a==null)?'':'none';
+        $('resinNote').style.display=(MATS[i].g==='樹脂')?'':'none';
+        recalc();
+      });
+      box.appendChild(b);
+    });
+  }
+
+  function partAlpha(){
+    var m=MATS[matIdx];
+    if(m.a!=null)return m.a;
+    return num($('fAlpha').value);
+  }
+
+  function recalc(){
+    var L=num($('fL').value);
+    var t=num($('fT').value);
+    var ap=partAlpha();
+    lastL20=null;
+
+    var ok=(L>0)&&!isNaN(t)&&(ap>0);
+    var instOk=true, as=NaN, ts=NaN;
+    if(instOn){
+      ts=num($('fTs').value);
+      as=num($('fAs').value);
+      instOk=!isNaN(ts)&&(as>0);
+    }
+
+    if(!ok||!instOk){
+      $('out').textContent='―.―――';
+      ['vCorr','vSens','vAlpha','vDt'].forEach(function(id){$(id).textContent='―'});
+      if(ap>0)$('vAlpha').textContent=ap.toFixed(1);
+      $('svgL20').textContent='20℃換算値 = ―';
+      $('svgLt').textContent='実測値 = ―';
+      $('svgTemp').textContent='いまの温度のとき(実測)';
+      var msg='材質を選び、実測値と温度を入力してください';
+      if(ok&&!instOk)msg='測定器の温度とαを入力してください(または上級補正をOFFに)';
+      if(!isNaN(L)&&L<=0)msg='実測値は正の値で入力してください';
+      if(MATS[matIdx].a==null&&!(ap>0))msg='カスタムの線膨張係数を入力してください';
+      $('statusTxt').textContent=msg;
+      return;
+    }
+
+    var dtp=t-20;
+    var fp=1+ap*1e-6*dtp;                 // 部品の伸び率
+    var fs=instOn?(1+as*1e-6*(ts-20)):1;  // 測定器の伸び率
+    var L20=L*fs/fp;
+    lastL20=L20;
+
+    var corr=(L20-L)*1000;                // µm
+    var sens=L*ap*1e-6*1000;              // µm/℃(部品)
+
+    // 表示桁: 実測の細かさに合わせて4桁
+    $('out').textContent=L20.toFixed(4);
+    $('vCorr').textContent=(corr>0?'+':'')+corr.toFixed(1);
+    $('vSens').textContent='±'+sens.toFixed(1);
+    $('vAlpha').textContent=ap.toFixed(1);
+    $('vDt').textContent=(dtp>0?'+':'')+dtp.toFixed(1);
+
+    $('svgL20').textContent='20℃換算値 = '+L20.toFixed(3);
+    $('svgLt').textContent='実測値 = '+L.toFixed(3);
+    $('svgTemp').textContent='いまの温度('+t+'℃)のとき(実測)';
+
+    var st='式: 20℃値 = 実測'+(instOn?' × 器の伸び率':'')+' ÷ 部品の伸び率(1 + α×ΔT)';
+    if(instOn&&Math.abs(as-ap)<0.05&&Math.abs(ts-t)<0.05){
+      st='部品と測定器が同条件のため補正はほぼ相殺されています';
+    }
+    if(Math.abs(corr)>=100)st+=' | ⚠ 補正量が0.1mmを超えています';
+    $('statusTxt').textContent=st;
+  }
+
+  buildChips();
+  ['fL','fT','fAlpha','fTs','fAs'].forEach(function(id){$(id).addEventListener('input',recalc)});
+
+  $('instTgl').addEventListener('click',function(){
+    instOn=!instOn;
+    $('instTgl').classList.toggle('on',instOn);
+    $('instBox').classList.toggle('show',instOn);
+    recalc();
+  });
+
+  var toastTimer=null;
+  function toast(msg){
+    var t=$('toast');t.textContent=msg;t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer=setTimeout(function(){t.classList.remove('show')},1600);
+  }
+  $('copyBtn').addEventListener('click',function(){
+    if(lastL20==null){toast('まだ値がありません');return}
+    var s=lastL20.toFixed(4);
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(s).then(function(){toast('コピーしました')},function(){toast('コピーできませんでした')});
+    }else{
+      var ta=document.createElement('textarea');
+      ta.value=s;document.body.appendChild(ta);ta.select();
+      try{document.execCommand('copy');toast('コピーしました')}catch(e){toast('コピーできませんでした')}
+      document.body.removeChild(ta);
+    }
+  });
+
+  recalc();
+})();
+</script>
+</body>
+</html>

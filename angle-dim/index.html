@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1F3341">
+<meta name="description" content="端面からの穴位置など、直角三角形のX・Y・L・θのうち2つを入力すると残りを自動計算。計算は端末内で完結し、入力値はどこにも送信されません。">
+<title>穴位置と角度 | 検査計算ツール</title>
+<style>
+  :root{
+    --paper:#F2F4F5;
+    --sheet:#FFFFFF;
+    --ink:#1F3341;
+    --line:#8FA2AF;
+    --red:#D63426;
+    --dro-bg:#15181A;
+    --dro-red:#FF5A48;
+    --dro-dim:#9FB0B8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI",sans-serif;
+    background:var(--paper);color:var(--ink);
+    min-height:100dvh;display:flex;flex-direction:column;align-items:center;
+    padding:0 12px calc(16px + env(safe-area-inset-bottom));
+  }
+  .wrap{width:100%;max-width:480px}
+
+  header{display:flex;align-items:baseline;justify-content:space-between;padding:14px 2px 10px}
+  header h1{font-size:16px;font-weight:700;letter-spacing:.04em}
+  header h1 small{display:block;font-size:11px;font-weight:400;color:#5B707E;letter-spacing:.08em;margin-top:2px}
+  header a{font-size:12px;color:#5B707E;text-decoration:none}
+
+  .sheet{background:var(--sheet);border:2px solid var(--ink);padding:5px}
+  .sheet-inner{border:1px solid var(--ink)}
+  .sheet svg{display:block;width:100%;height:auto}
+  .titleblock{display:flex;border-top:1px solid var(--ink);font-size:9px;letter-spacing:.06em}
+  .titleblock div{padding:3px 8px;border-right:1px solid var(--ink)}
+  .titleblock div:last-child{border-right:none;margin-left:auto}
+  .titleblock b{font-weight:700}
+
+  .hint{
+    margin-top:12px;font-size:12px;color:#5B707E;line-height:1.6;
+    padding:0 2px;
+  }
+  .hint b{color:var(--red);font-weight:700}
+
+  .inputs{margin-top:10px;display:flex;flex-direction:column;gap:10px}
+  .row{
+    display:grid;grid-template-columns:26px 1fr 130px 34px;
+    align-items:center;gap:8px;
+    background:var(--sheet);border:1px solid #D5DDE2;border-radius:10px;
+    padding:10px 12px;
+  }
+  .badge{
+    width:22px;height:22px;border-radius:50%;
+    background:var(--ink);color:#fff;font-size:12px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .row label{font-size:13px;font-weight:600}
+  .row label small{display:block;font-size:10px;font-weight:400;color:#5B707E}
+  .row input{
+    width:100%;font-size:20px;font-weight:600;text-align:right;
+    font-variant-numeric:tabular-nums;
+    border:none;border-bottom:2px solid var(--ink);
+    background:transparent;color:var(--ink);
+    padding:2px 4px;border-radius:0;outline:none;
+  }
+  .row input:focus{border-bottom-color:var(--red)}
+  .row input.computed{color:var(--red)}
+  .unit{font-size:12px;color:#5B707E}
+
+  .mode{display:inline-flex;border:1px solid var(--ink);border-radius:7px;overflow:hidden;margin-left:auto}
+  .mode button{font-size:11px;padding:4px 9px;border:none;background:var(--sheet);color:var(--ink);font-weight:600}
+  .mode button.on{background:var(--ink);color:#fff}
+  .dms-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+  .dms-grid .cell{display:flex;align-items:baseline;gap:3px}
+  .dms-grid .u{font-size:11px;color:#5B707E}
+  .dms-grid input{font-size:18px}
+  .hidden{display:none !important}
+  .angle-head{display:flex;align-items:center;gap:8px}
+
+  /* 結果表示器(2×2) */
+  .dro{
+    margin-top:16px;background:var(--dro-bg);border-radius:12px;
+    padding:14px 16px 12px;box-shadow:inset 0 2px 8px rgba(0,0,0,.5);
+  }
+  .dro-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}
+  .cellv{
+    display:flex;flex-direction:column;align-items:flex-end;
+    padding:6px 8px;border-radius:8px;
+  }
+  .cellv:active{background:#1e2327}
+  .cellv .k{color:#7d8a91;font-size:12px;font-weight:700;letter-spacing:.1em;align-self:flex-start}
+  .cellv .v{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:23px;font-weight:600;letter-spacing:.02em;
+  }
+  .cellv .v.led{color:var(--dro-red);text-shadow:0 0 9px rgba(255,90,72,.35)}
+  .cellv .v.dim{color:var(--dro-dim)}
+  .cellv .s{color:#5d6a71;font-size:11px;font-variant-numeric:tabular-nums;min-height:14px}
+  .dro-foot{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-top:10px;border-top:1px solid #2a3034;padding-top:9px;gap:8px;
+  }
+  .statusTxt{color:#5d6a71;font-size:11px;letter-spacing:.02em}
+  .statusTxt.err{color:#FF8A7E}
+  .taphint{color:#5d6a71;font-size:11px;flex:none}
+
+  footer{margin-top:18px;font-size:11px;color:#5B707E;line-height:1.7;text-align:center;letter-spacing:.03em}
+
+  .toast{
+    position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);
+    background:var(--ink);color:#fff;font-size:13px;
+    padding:9px 20px;border-radius:20px;opacity:0;pointer-events:none;
+    transition:opacity .25s,transform .25s;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>穴位置と角度<small>直角三角形:2つ入力で残りを計算</small></h1>
+    <a href="../index.html">≡ ツール一覧</a>
+  </header>
+
+  <!-- 図面シート -->
+  <div class="sheet">
+    <div class="sheet-inner">
+      <svg viewBox="0 0 340 250" role="img" aria-label="端面と底面を基準にした穴位置。水平距離X、垂直距離Y、直線距離L、角度θの関係図">
+        <defs>
+          <marker id="ar" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L8,3 L0,6 z" fill="#1F3341"/>
+          </marker>
+          <marker id="arRed" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L8,3 L0,6 z" fill="#D63426"/>
+          </marker>
+        </defs>
+
+        <!-- 部品外形 -->
+        <line x1="55" y1="35" x2="305" y2="35" stroke="#C9D3DA" stroke-width="1.2"/>
+        <line x1="305" y1="35" x2="305" y2="215" stroke="#C9D3DA" stroke-width="1.2"/>
+        <line x1="55" y1="35" x2="55" y2="215" stroke="#1F3341" stroke-width="2.4"/>
+        <line x1="55" y1="215" x2="305" y2="215" stroke="#1F3341" stroke-width="2.4"/>
+        <text x="47" y="130" font-size="10" fill="#5B707E" text-anchor="middle" transform="rotate(-90 47 130)">端面</text>
+
+        <!-- 穴 -->
+        <circle cx="225" cy="90" r="11" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+        <line x1="209" y1="90" x2="241" y2="90" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="8 3 2 3"/>
+        <line x1="225" y1="74" x2="225" y2="106" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="8 3 2 3"/>
+
+        <!-- X寸法(下) -->
+        <line x1="55" y1="219" x2="55" y2="240" stroke="#8FA2AF" stroke-width="1"/>
+        <line x1="225" y1="106" x2="225" y2="240" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="8 3 2 3"/>
+        <line x1="55" y1="234" x2="225" y2="234" stroke="#1F3341" stroke-width="1.3" marker-start="url(#ar)" marker-end="url(#ar)" id="dimX"/>
+        <text id="svgX" x="140" y="229" font-size="12" fill="#1F3341" text-anchor="middle"
+              stroke="#fff" stroke-width="3.5" paint-order="stroke">X</text>
+        <circle cx="80" cy="228" r="8.5" fill="#1F3341" stroke="#fff" stroke-width="2"/>
+        <text x="80" y="232" font-size="10.5" font-weight="700" fill="#fff" text-anchor="middle">1</text>
+
+        <!-- Y寸法(穴中心の垂直線上) -->
+        <line x1="225" y1="106" x2="225" y2="215" stroke="#1F3341" stroke-width="1.3" marker-start="url(#ar)" marker-end="url(#ar)" id="dimY"/>
+        <text id="svgY" x="219" y="158" font-size="12" fill="#1F3341" text-anchor="middle"
+              stroke="#fff" stroke-width="3.5" paint-order="stroke"
+              transform="rotate(-90 219 158)">Y</text>
+        <circle cx="200" cy="158" r="8.5" fill="#1F3341" stroke="#fff" stroke-width="2"/>
+        <text x="200" y="162" font-size="10.5" font-weight="700" fill="#fff" text-anchor="middle">2</text>
+
+        <!-- L寸法(斜め・基準角から穴へ) -->
+        <line x1="55" y1="215" x2="216.1" y2="96.5" stroke="#1F3341" stroke-width="1.3" marker-end="url(#ar)" id="dimL"/>
+        <text id="svgL" x="127" y="148" font-size="12" fill="#1F3341" text-anchor="middle"
+              stroke="#fff" stroke-width="3.5" paint-order="stroke"
+              transform="rotate(-36.3 127 148)">L</text>
+        <circle cx="100" cy="124" r="8.5" fill="#1F3341" stroke="#fff" stroke-width="2"/>
+        <text x="100" y="128" font-size="10.5" font-weight="700" fill="#fff" text-anchor="middle">3</text>
+
+        <!-- θ(角度) -->
+        <path d="M 97 215 A 42 42 0 0 0 88.8 190.1" fill="none" stroke="#1F3341" stroke-width="1.2" marker-start="url(#ar)" marker-end="url(#ar)" id="dimT"/>
+        <text id="svgT" x="112" y="202" font-size="12" fill="#1F3341"
+              stroke="#fff" stroke-width="3.5" paint-order="stroke">θ</text>
+        <circle cx="98" cy="197" r="8.5" fill="#1F3341" stroke="#fff" stroke-width="2"/>
+        <text x="98" y="201" font-size="10.5" font-weight="700" fill="#fff" text-anchor="middle">4</text>
+      </svg>
+      <div class="titleblock">
+        <div><b>品名</b> 穴位置・角度</div>
+        <div><b>方式</b> 三角関数</div>
+        <div>TOOL-03</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hint">①〜④のうち<b>どれか2つ</b>を入力すると、残り(<b>赤字</b>)を自動計算します。3つ目を入力すると、いちばん古い入力が計算値に切り替わります。</div>
+
+  <!-- 入力 -->
+  <div class="inputs">
+    <div class="row">
+      <span class="badge">1</span>
+      <label for="fX">水平距離 X<small>端面から穴中心まで</small></label>
+      <input id="fX" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row">
+      <span class="badge">2</span>
+      <label for="fY">垂直距離 Y<small>底面から穴中心まで</small></label>
+      <input id="fY" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row">
+      <span class="badge">3</span>
+      <label for="fL">直線距離 L<small>基準角から穴中心まで(斜め)</small></label>
+      <input id="fL" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row" style="grid-template-columns:26px 1fr;row-gap:8px">
+      <span class="badge">4</span>
+      <div class="angle-head">
+        <label for="fT">角度 θ<small>底面からの傾き(0°〜90°)</small></label>
+        <div class="mode" role="group" aria-label="角度の入力形式">
+          <button type="button" id="mDec" class="on">10進</button>
+          <button type="button" id="mDms">度分秒</button>
+        </div>
+      </div>
+      <span></span>
+      <div id="decBox" style="display:flex;align-items:baseline;gap:6px">
+        <input id="fT" type="text" inputmode="decimal" autocomplete="off" placeholder="―" style="font-size:20px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums;border:none;border-bottom:2px solid var(--ink);background:transparent;color:var(--ink);padding:2px 4px;width:100%;outline:none">
+        <span class="unit">°</span>
+      </div>
+      <div id="dmsBox" class="dms-grid hidden">
+        <div class="cell"><input id="dmsD" type="text" inputmode="numeric" autocomplete="off" placeholder="0" style="border:none;border-bottom:2px solid var(--ink);background:transparent;text-align:right;width:100%;font-weight:600;outline:none"><span class="u">度</span></div>
+        <div class="cell"><input id="dmsM" type="text" inputmode="numeric" autocomplete="off" placeholder="0" style="border:none;border-bottom:2px solid var(--ink);background:transparent;text-align:right;width:100%;font-weight:600;outline:none"><span class="u">分</span></div>
+        <div class="cell"><input id="dmsS" type="text" inputmode="decimal" autocomplete="off" placeholder="0" style="border:none;border-bottom:2px solid var(--ink);background:transparent;text-align:right;width:100%;font-weight:600;outline:none"><span class="u">秒</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 結果 -->
+  <div class="dro">
+    <div class="dro-grid">
+      <div class="cellv" id="cX"><span class="k">X</span><span class="v dim" id="vX">―</span><span class="s">mm</span></div>
+      <div class="cellv" id="cY"><span class="k">Y</span><span class="v dim" id="vY">―</span><span class="s">mm</span></div>
+      <div class="cellv" id="cL"><span class="k">L</span><span class="v dim" id="vL">―</span><span class="s">mm</span></div>
+      <div class="cellv" id="cT"><span class="k">θ</span><span class="v dim" id="vT">―</span><span class="s" id="vTdms">°</span></div>
+    </div>
+    <div class="dro-foot">
+      <span class="statusTxt" id="statusTxt">入力待ち(2つ入力してください)</span>
+      <span class="taphint">値をタップでコピー</span>
+    </div>
+  </div>
+
+  <footer>
+    このページは計算のみを行います。<br>
+    入力値の送信・保存は一切ありません(端末内で完結)。
+  </footer>
+</div>
+
+<div class="toast" id="toast">コピーしました</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var mode='dec';
+  var queue=[];           // 入力された順のフィールド名 'X','Y','L','T'(最大2)
+  var results={X:null,Y:null,L:null,T:null};   // 数値(表示中の値)
+  var computedSet={};     // 計算値かどうか
+
+  var JP={X:'X',Y:'Y',L:'L',T:'θ'};
+
+  function num(v){
+    if(v==null)return NaN;
+    v=String(v).replace(/[０-９．]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0)}).replace(/。/g,'.').trim();
+    if(v==='')return NaN;
+    return Number(v);
+  }
+
+  function readField(f){
+    if(f==='T'){
+      if(mode==='dec')return num($('fT').value);
+      var d=num($('dmsD').value),m=num($('dmsM').value),s=num($('dmsS').value);
+      if(isNaN(d)&&isNaN(m)&&isNaN(s))return NaN;
+      return (isNaN(d)?0:d)+(isNaN(m)?0:m)/60+(isNaN(s)?0:s)/3600;
+    }
+    return num($('f'+f).value);
+  }
+
+  function fieldEmpty(f){
+    if(f==='T'){
+      if(mode==='dec')return $('fT').value.trim()==='';
+      return $('dmsD').value.trim()===''&&$('dmsM').value.trim()===''&&$('dmsS').value.trim()==='';
+    }
+    return $('f'+f).value.trim()==='';
+  }
+
+  function dmsStr(v){
+    var d=Math.floor(v),rest=(v-d)*60;
+    var m=Math.floor(rest);
+    var s=Math.round((rest-m)*60*10)/10;
+    if(s>=60){s-=60;m+=1}
+    if(m>=60){m-=60;d+=1}
+    return d+'°'+m+'′'+s+'″';
+  }
+
+  function setFieldValue(f,val){
+    if(f==='T'){
+      $('fT').value=val.toFixed(3);
+      var d=Math.floor(val),rest=(val-d)*60,m=Math.floor(rest),s=Math.round((rest-m)*60*10)/10;
+      if(s>=60){s-=60;m+=1}
+      if(m>=60){m-=60;d+=1}
+      $('dmsD').value=d;$('dmsM').value=m;$('dmsS').value=s;
+      $('fT').classList.add('computed');
+      $('dmsD').classList.add('computed');$('dmsM').classList.add('computed');$('dmsS').classList.add('computed');
+    }else{
+      $('f'+f).value=val.toFixed(3);
+      $('f'+f).classList.add('computed');
+    }
+  }
+  function clearComputedMark(f){
+    if(f==='T'){
+      $('fT').classList.remove('computed');
+      $('dmsD').classList.remove('computed');$('dmsM').classList.remove('computed');$('dmsS').classList.remove('computed');
+    }else{
+      $('f'+f).classList.remove('computed');
+    }
+  }
+  function blankField(f){
+    if(f==='T'){$('fT').value='';$('dmsD').value='';$('dmsM').value='';$('dmsS').value=''}
+    else{$('f'+f).value=''}
+    clearComputedMark(f);
+  }
+
+  function solve(a,av,b,bv){
+    var key=[a,b].sort().join('');
+    var X,Y,L,T,rad;
+    var m={};m[a]=av;m[b]=bv;
+    if(m.X!=null&&m.X<=0)return{err:'X は正の値で入力してください'};
+    if(m.Y!=null&&m.Y<=0)return{err:'Y は正の値で入力してください'};
+    if(m.L!=null&&m.L<=0)return{err:'L は正の値で入力してください'};
+    if(m.T!=null&&(m.T<=0||m.T>=90))return{err:'θ は 0°〜90° の間で入力してください'};
+    switch(key){
+      case 'XY':
+        X=m.X;Y=m.Y;L=Math.sqrt(X*X+Y*Y);T=Math.atan2(Y,X)*180/Math.PI;break;
+      case 'LX':
+        X=m.X;L=m.L;
+        if(L<=X)return{err:'L は X より大きい値が必要です'};
+        Y=Math.sqrt(L*L-X*X);T=Math.acos(X/L)*180/Math.PI;break;
+      case 'LY':
+        Y=m.Y;L=m.L;
+        if(L<=Y)return{err:'L は Y より大きい値が必要です'};
+        X=Math.sqrt(L*L-Y*Y);T=Math.asin(Y/L)*180/Math.PI;break;
+      case 'TX':
+        X=m.X;T=m.T;rad=T*Math.PI/180;Y=X*Math.tan(rad);L=X/Math.cos(rad);break;
+      case 'TY':
+        Y=m.Y;T=m.T;rad=T*Math.PI/180;X=Y/Math.tan(rad);L=Y/Math.sin(rad);break;
+      case 'LT':
+        L=m.L;T=m.T;rad=T*Math.PI/180;X=L*Math.cos(rad);Y=L*Math.sin(rad);break;
+      default:return{err:'計算できない組合せです'};
+    }
+    return {X:X,Y:Y,L:L,T:T};
+  }
+
+  function updateDro(){
+    ['X','Y','L','T'].forEach(function(f){
+      var v=$('v'+f);
+      var val=results[f];
+      if(val==null){
+        v.textContent='―';v.className='v dim';
+        if(f==='T')$('vTdms').textContent='°';
+      }else{
+        v.textContent=(f==='T')?val.toFixed(3)+'°':val.toFixed(3);
+        v.className=computedSet[f]?'v led':'v dim';
+        if(f==='T')$('vTdms').textContent=dmsStr(val);
+      }
+    });
+  }
+
+  function updateSvg(){
+    ['X','Y','L','T'].forEach(function(f){
+      var t=$('svg'+f);
+      var val=results[f];
+      var letter=JP[f];
+      if(val==null){
+        t.textContent=letter;
+        t.setAttribute('fill','#1F3341');t.setAttribute('font-weight','400');
+      }else{
+        t.textContent=letter+' = '+((f==='T')?val.toFixed(3)+'°':val.toFixed(3));
+        if(computedSet[f]){t.setAttribute('fill','#D63426');t.setAttribute('font-weight','700')}
+        else{t.setAttribute('fill','#1F3341');t.setAttribute('font-weight','400')}
+      }
+      // 寸法線の色も連動
+      var dim=$('dim'+f);
+      if(dim){
+        var red=computedSet[f]&&val!=null;
+        dim.setAttribute('stroke',red?'#D63426':'#1F3341');
+        if(dim.hasAttribute('marker-start'))dim.setAttribute('marker-start',red?'url(#arRed)':'url(#ar)');
+        if(dim.hasAttribute('marker-end'))dim.setAttribute('marker-end',red?'url(#arRed)':'url(#ar)');
+      }
+    });
+  }
+
+  function setStatus(msg,isErr){
+    var s=$('statusTxt');
+    s.textContent=msg;
+    s.className='statusTxt'+(isErr?' err':'');
+  }
+
+  function recalc(){
+    // 空欄になったフィールドをキューから外す
+    queue=queue.filter(function(f){return !fieldEmpty(f)});
+
+    results={X:null,Y:null,L:null,T:null};
+    computedSet={};
+
+    // 入力値を反映
+    queue.forEach(function(f){
+      var v=readField(f);
+      if(!isNaN(v))results[f]=v;
+    });
+
+    // 計算値だった欄を白紙に戻す(入力2つ未満のとき)
+    ['X','Y','L','T'].forEach(function(f){
+      if(queue.indexOf(f)<0)clearComputedMark(f);
+    });
+
+    if(queue.length<2){
+      // 計算値だった欄のみ白紙に戻す(手入力はそのまま)
+      ['X','Y','L','T'].forEach(function(f){
+        if(queue.indexOf(f)<0){
+          var isComp=(f==='T')?$('fT').classList.contains('computed'):$('f'+f).classList.contains('computed');
+          if(isComp)blankField(f);
+        }
+      });
+      setStatus('入力待ち(あと'+(2-queue.length)+'つ入力してください)',false);
+      updateDro();updateSvg();
+      return;
+    }
+
+    var a=queue[queue.length-2], b=queue[queue.length-1];
+    var av=readField(a), bv=readField(b);
+    if(isNaN(av)||isNaN(bv)){
+      setStatus('数値を確認してください',true);
+      updateDro();updateSvg();
+      return;
+    }
+
+    var r=solve(a,av,b,bv);
+    if(r.err){
+      ['X','Y','L','T'].forEach(function(f){
+        if(f!==a&&f!==b)blankField(f);
+      });
+      setStatus(r.err,true);
+      updateDro();updateSvg();
+      return;
+    }
+
+    ['X','Y','L','T'].forEach(function(f){
+      results[f]=r[f];
+      if(f!==a&&f!==b){
+        computedSet[f]=true;
+        setFieldValue(f,r[f]);
+      }else{
+        clearComputedMark(f);
+      }
+    });
+    setStatus('入力: '+JP[a]+'・'+JP[b]+' → 計算: '+
+      ['X','Y','L','T'].filter(function(f){return computedSet[f]}).map(function(f){return JP[f]}).join('・'),false);
+    updateDro();updateSvg();
+  }
+
+  function onEdit(f){
+    return function(){
+      if(fieldEmpty(f)){
+        queue=queue.filter(function(q){return q!==f});
+      }else{
+        clearComputedMark(f);
+        queue=queue.filter(function(q){return q!==f});
+        queue.push(f);
+        while(queue.length>2)queue.shift();
+      }
+      recalc();
+    };
+  }
+
+  $('fX').addEventListener('input',onEdit('X'));
+  $('fY').addEventListener('input',onEdit('Y'));
+  $('fL').addEventListener('input',onEdit('L'));
+  $('fT').addEventListener('input',onEdit('T'));
+  ['dmsD','dmsM','dmsS'].forEach(function(id){$(id).addEventListener('input',onEdit('T'))});
+
+  $('mDec').addEventListener('click',function(){
+    mode='dec';
+    $('mDec').classList.add('on');$('mDms').classList.remove('on');
+    $('decBox').classList.remove('hidden');$('dmsBox').classList.add('hidden');
+    recalc();
+  });
+  $('mDms').addEventListener('click',function(){
+    mode='dms';
+    $('mDms').classList.add('on');$('mDec').classList.remove('on');
+    $('dmsBox').classList.remove('hidden');$('decBox').classList.add('hidden');
+    recalc();
+  });
+
+  var toastTimer=null;
+  function toast(msg){
+    var t=$('toast');t.textContent=msg;t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer=setTimeout(function(){t.classList.remove('show')},1600);
+  }
+
+  ['X','Y','L','T'].forEach(function(f){
+    $('c'+f).addEventListener('click',function(){
+      var val=results[f];
+      if(val==null){toast('まだ値がありません');return}
+      var s=val.toFixed(3);
+      if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(s).then(function(){toast(JP[f]+' をコピーしました')},function(){toast('コピーできませんでした')});
+      }else{
+        var ta=document.createElement('textarea');
+        ta.value=s;document.body.appendChild(ta);ta.select();
+        try{document.execCommand('copy');toast(JP[f]+' をコピーしました')}catch(e){toast('コピーできませんでした')}
+        document.body.removeChild(ta);
+      }
+    });
+  });
+})();
+</script>
+</body>
+</html>

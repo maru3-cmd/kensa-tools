@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1F3341">
+<meta name="description" content="弦(スパン)と矢高から円弧の半径Rを計算。R既知なら期待矢高の逆算も可能。計算は端末内で完結し、入力値はどこにも送信されません。">
+<title>弦・矢高とR | 検査計算ツール</title>
+<style>
+  :root{
+    --paper:#F2F4F5;
+    --sheet:#FFFFFF;
+    --ink:#1F3341;
+    --line:#8FA2AF;
+    --red:#D63426;
+    --dro-bg:#15181A;
+    --dro-red:#FF5A48;
+    --dro-dim:#9FB0B8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI",sans-serif;
+    background:var(--paper);color:var(--ink);
+    min-height:100dvh;display:flex;flex-direction:column;align-items:center;
+    padding:0 12px calc(16px + env(safe-area-inset-bottom));
+  }
+  .wrap{width:100%;max-width:480px}
+
+  header{display:flex;align-items:baseline;justify-content:space-between;padding:14px 2px 10px}
+  header h1{font-size:16px;font-weight:700;letter-spacing:.04em}
+  header h1 small{display:block;font-size:11px;font-weight:400;color:#5B707E;letter-spacing:.08em;margin-top:2px}
+  header a{font-size:12px;color:#5B707E;text-decoration:none}
+
+  .sheet{background:var(--sheet);border:2px solid var(--ink);padding:5px}
+  .sheet-inner{border:1px solid var(--ink)}
+  .sheet svg{display:block;width:100%;height:auto}
+  .titleblock{display:flex;border-top:1px solid var(--ink);font-size:9px;letter-spacing:.06em}
+  .titleblock div{padding:3px 8px;border-right:1px solid var(--ink)}
+  .titleblock div:last-child{border-right:none;margin-left:auto}
+  .titleblock b{font-weight:700}
+
+  .hint{margin-top:12px;font-size:12px;color:#5B707E;line-height:1.6;padding:0 2px}
+  .hint b{color:var(--red);font-weight:700}
+
+  .inputs{margin-top:10px;display:flex;flex-direction:column;gap:10px}
+  .row{
+    display:grid;grid-template-columns:26px 1fr 130px 34px;
+    align-items:center;gap:8px;
+    background:var(--sheet);border:1px solid #D5DDE2;border-radius:10px;
+    padding:10px 12px;
+  }
+  .badge{
+    width:22px;height:22px;border-radius:50%;
+    background:var(--ink);color:#fff;font-size:12px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .row label{font-size:13px;font-weight:600}
+  .row label small{display:block;font-size:10px;font-weight:400;color:#5B707E}
+  .row input{
+    width:100%;font-size:20px;font-weight:600;text-align:right;
+    font-variant-numeric:tabular-nums;
+    border:none;border-bottom:2px solid var(--ink);
+    background:transparent;color:var(--ink);
+    padding:2px 4px;border-radius:0;outline:none;
+  }
+  .row input:focus{border-bottom-color:var(--red)}
+  .row input.computed{color:var(--red)}
+  .unit{font-size:12px;color:#5B707E}
+
+  .dro{
+    margin-top:16px;background:var(--dro-bg);border-radius:12px;
+    padding:14px 16px 12px;box-shadow:inset 0 2px 8px rgba(0,0,0,.5);
+  }
+  .dro-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  .cellv{display:flex;flex-direction:column;align-items:flex-end;padding:6px 8px;border-radius:8px}
+  .cellv:active{background:#1e2327}
+  .cellv .k{color:#7d8a91;font-size:12px;font-weight:700;letter-spacing:.1em;align-self:flex-start}
+  .cellv .v{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:21px;font-weight:600;letter-spacing:.01em;
+  }
+  .cellv .v.led{color:var(--dro-red);text-shadow:0 0 9px rgba(255,90,72,.35)}
+  .cellv .v.dim{color:var(--dro-dim)}
+  .cellv .s{color:#5d6a71;font-size:11px}
+  .dro-sub{
+    text-align:right;color:#7d8a91;font-size:12px;margin-top:8px;
+    font-variant-numeric:tabular-nums;
+  }
+  .dro-foot{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-top:10px;border-top:1px solid #2a3034;padding-top:9px;gap:8px;
+  }
+  .statusTxt{color:#5d6a71;font-size:11px;letter-spacing:.02em}
+  .statusTxt.err{color:#FF8A7E}
+  .taphint{color:#5d6a71;font-size:11px;flex:none}
+
+  footer{margin-top:18px;font-size:11px;color:#5B707E;line-height:1.7;text-align:center;letter-spacing:.03em}
+
+  .toast{
+    position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);
+    background:var(--ink);color:#fff;font-size:13px;
+    padding:9px 20px;border-radius:20px;opacity:0;pointer-events:none;
+    transition:opacity .25s,transform .25s;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>弦・矢高とR<small>大きなRの半径測定(弦・矢高法)</small></h1>
+    <a href="../index.html">≡ ツール一覧</a>
+  </header>
+
+  <!-- 図面シート -->
+  <div class="sheet">
+    <div class="sheet-inner">
+      <svg viewBox="0 0 340 250" role="img" aria-label="円弧に弦を当て、弦の長さcと矢高hから半径Rを求める関係図">
+        <defs>
+          <marker id="ar" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L8,3 L0,6 z" fill="#1F3341"/>
+          </marker>
+          <marker id="arRed" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L8,3 L0,6 z" fill="#D63426"/>
+          </marker>
+        </defs>
+
+        <!-- 中心線(鉛直) -->
+        <line x1="170" y1="42" x2="170" y2="246" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="12 3 2 3"/>
+
+        <!-- 部品の円弧面(実線=測定面) -->
+        <path d="M 22.1 140.4 A 170.8 170.8 0 0 1 317.9 140.4" fill="none" stroke="#1F3341" stroke-width="2.4"/>
+        <line x1="22.1" y1="140.4" x2="22.1" y2="178" stroke="#C9D3DA" stroke-width="1.2"/>
+        <line x1="317.9" y1="140.4" x2="317.9" y2="178" stroke="#C9D3DA" stroke-width="1.2"/>
+
+        <!-- 弦の接点 -->
+        <circle cx="40" cy="115" r="2.6" fill="#1F3341"/>
+        <circle cx="300" cy="115" r="2.6" fill="#1F3341"/>
+
+        <!-- 弦 c(寸法兼用) -->
+        <line id="dimC" x1="40" y1="115" x2="300" y2="115" stroke="#1F3341" stroke-width="1.3"
+              marker-start="url(#ar)" marker-end="url(#ar)"/>
+        <text id="svgC" x="122" y="109" font-size="12" fill="#1F3341" text-anchor="middle"
+              stroke="#fff" stroke-width="3.5" paint-order="stroke">c</text>
+        <circle cx="68" cy="105" r="8.5" fill="#1F3341" stroke="#fff" stroke-width="2"/>
+        <text x="68" y="109" font-size="10.5" font-weight="700" fill="#fff" text-anchor="middle">1</text>
+
+        <!-- 矢高 h -->
+        <line id="dimH" x1="170" y1="55" x2="170" y2="115" stroke="#1F3341" stroke-width="1.3"
+              marker-start="url(#ar)" marker-end="url(#ar)"/>
+        <text id="svgH" x="178" y="88" font-size="12" fill="#1F3341" text-anchor="start"
+              stroke="#fff" stroke-width="3.5" paint-order="stroke">h</text>
+        <circle cx="166" cy="84" r="8.5" fill="#1F3341" stroke="#fff" stroke-width="2"/>
+        <text x="166" y="88" font-size="10.5" font-weight="700" fill="#fff" text-anchor="middle">2</text>
+
+        <!-- 半径 R(中心→円弧) -->
+        <line id="dimR" x1="170" y1="225.8" x2="49.2" y2="105" stroke="#1F3341" stroke-width="1.3"
+              marker-end="url(#ar)"/>
+        <text id="svgR" x="118.1" y="156.9" font-size="12" fill="#1F3341" text-anchor="middle"
+              stroke="#fff" stroke-width="3.5" paint-order="stroke"
+              transform="rotate(45 118.1 156.9)">R</text>
+        <circle cx="60" cy="140" r="8.5" fill="#1F3341" stroke="#fff" stroke-width="2"/>
+        <text x="60" y="144" font-size="10.5" font-weight="700" fill="#fff" text-anchor="middle">3</text>
+
+        <!-- 円弧中心 -->
+        <line x1="140" y1="225.8" x2="200" y2="225.8" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="9 3 2 3"/>
+        <circle cx="170" cy="225.8" r="2.5" fill="#1F3341"/>
+        <text x="180" y="240" font-size="10" fill="#5B707E">円弧の中心</text>
+      </svg>
+      <div class="titleblock">
+        <div><b>品名</b> 弦・矢高とR</div>
+        <div><b>方式</b> 弦・矢高法</div>
+        <div>TOOL-04</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hint">直定規やゲージを円弧面に当て、弦 c と矢高 h を測ると R が出ます。①〜③のうち<b>どれか2つ</b>を入力すると、残り(<b>赤字</b>)を自動計算します。図面のRと定規のスパンcから「合格時のh」の逆算もできます。</div>
+
+  <!-- 入力 -->
+  <div class="inputs">
+    <div class="row">
+      <span class="badge">1</span>
+      <label for="fC">弦 c<small>当て幅(接点間の直線距離)</small></label>
+      <input id="fC" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row">
+      <span class="badge">2</span>
+      <label for="fH">矢高 h<small>弦の中央から円弧までの高さ</small></label>
+      <input id="fH" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row">
+      <span class="badge">3</span>
+      <label for="fR">半径 R<small>円弧の半径</small></label>
+      <input id="fR" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+    </div>
+  </div>
+
+  <!-- 結果 -->
+  <div class="dro">
+    <div class="dro-grid">
+      <div class="cellv" id="cC"><span class="k">c</span><span class="v dim" id="vC">―</span><span class="s">mm</span></div>
+      <div class="cellv" id="cH"><span class="k">h</span><span class="v dim" id="vH">―</span><span class="s">mm</span></div>
+      <div class="cellv" id="cR"><span class="k">R</span><span class="v dim" id="vR">―</span><span class="s">mm</span></div>
+    </div>
+    <div class="dro-sub" id="subTxt">φ(直径)= ― | 中心角 = ―</div>
+    <div class="dro-foot">
+      <span class="statusTxt" id="statusTxt">入力待ち(2つ入力してください)</span>
+      <span class="taphint">値をタップでコピー</span>
+    </div>
+  </div>
+
+  <footer>
+    このページは計算のみを行います。<br>
+    入力値の送信・保存は一切ありません(端末内で完結)。
+  </footer>
+</div>
+
+<div class="toast" id="toast">コピーしました</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var queue=[];                       // 'C','H','R'(最大2)
+  var results={C:null,H:null,R:null};
+  var computedSet={};
+  var JP={C:'c',H:'h',R:'R'};
+
+  function num(v){
+    if(v==null)return NaN;
+    v=String(v).replace(/[０-９．]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0)}).replace(/。/g,'.').trim();
+    if(v==='')return NaN;
+    return Number(v);
+  }
+  function readField(f){return num($('f'+f).value)}
+  function fieldEmpty(f){return $('f'+f).value.trim()===''}
+
+  function setFieldValue(f,val){
+    $('f'+f).value=val.toFixed(3);
+    $('f'+f).classList.add('computed');
+  }
+  function clearComputedMark(f){$('f'+f).classList.remove('computed')}
+  function blankField(f){$('f'+f).value='';clearComputedMark(f)}
+
+  function solve(a,av,b,bv){
+    var m={};m[a]=av;m[b]=bv;
+    if(m.C!=null&&m.C<=0)return{err:'c は正の値で入力してください'};
+    if(m.H!=null&&m.H<=0)return{err:'h は正の値で入力してください'};
+    if(m.R!=null&&m.R<=0)return{err:'R は正の値で入力してください'};
+    var C,H,R;
+    var key=[a,b].sort().join('');
+    if(key==='CH'){
+      C=m.C;H=m.H;
+      R=(C*C+4*H*H)/(8*H);
+    }else if(key==='CR'){
+      C=m.C;R=m.R;
+      if(R<C/2)return{err:'R は c÷2 以上の値が必要です'};
+      H=R-Math.sqrt(R*R-C*C/4);
+    }else if(key==='HR'){
+      H=m.H;R=m.R;
+      if(H>=2*R)return{err:'h は 2R より小さい値が必要です'};
+      C=2*Math.sqrt(H*(2*R-H));
+    }else{
+      return{err:'計算できない組合せです'};
+    }
+    return {C:C,H:H,R:R};
+  }
+
+  function updateDro(){
+    ['C','H','R'].forEach(function(f){
+      var v=$('v'+f), val=results[f];
+      if(val==null){v.textContent='―';v.className='v dim'}
+      else{
+        v.textContent=val.toFixed(3);
+        v.className=computedSet[f]?'v led':'v dim';
+      }
+    });
+    if(results.C!=null&&results.R!=null&&results.H!=null){
+      var D=2*results.R;
+      var arg=results.C/(2*results.R);
+      if(arg>1)arg=1;
+      var th=2*Math.asin(arg)*180/Math.PI;
+      if(results.H>results.C/2)th=360-th;   // 半円を超える弧
+      $('subTxt').textContent='φ(直径)= '+D.toFixed(3)+' | 中心角 = '+th.toFixed(2)+'°';
+    }else{
+      $('subTxt').textContent='φ(直径)= ― | 中心角 = ―';
+    }
+  }
+
+  function updateSvg(){
+    ['C','H','R'].forEach(function(f){
+      var t=$('svg'+f), val=results[f];
+      if(val==null){
+        t.textContent=JP[f];
+        t.setAttribute('fill','#1F3341');t.setAttribute('font-weight','400');
+      }else{
+        t.textContent=JP[f]+' = '+val.toFixed(3);
+        if(computedSet[f]){t.setAttribute('fill','#D63426');t.setAttribute('font-weight','700')}
+        else{t.setAttribute('fill','#1F3341');t.setAttribute('font-weight','400')}
+      }
+      var dim=$('dim'+f);
+      var red=computedSet[f]&&val!=null;
+      dim.setAttribute('stroke',red?'#D63426':'#1F3341');
+      if(dim.hasAttribute('marker-start'))dim.setAttribute('marker-start',red?'url(#arRed)':'url(#ar)');
+      if(dim.hasAttribute('marker-end'))dim.setAttribute('marker-end',red?'url(#arRed)':'url(#ar)');
+    });
+  }
+
+  function setStatus(msg,isErr){
+    var s=$('statusTxt');
+    s.textContent=msg;
+    s.className='statusTxt'+(isErr?' err':'');
+  }
+
+  function recalc(){
+    queue=queue.filter(function(f){return !fieldEmpty(f)});
+    results={C:null,H:null,R:null};
+    computedSet={};
+
+    queue.forEach(function(f){
+      var v=readField(f);
+      if(!isNaN(v))results[f]=v;
+    });
+
+    if(queue.length<2){
+      ['C','H','R'].forEach(function(f){
+        if(queue.indexOf(f)<0&&$('f'+f).classList.contains('computed'))blankField(f);
+      });
+      setStatus('入力待ち(あと'+(2-queue.length)+'つ入力してください)',false);
+      updateDro();updateSvg();
+      return;
+    }
+
+    var a=queue[queue.length-2], b=queue[queue.length-1];
+    var av=readField(a), bv=readField(b);
+    if(isNaN(av)||isNaN(bv)){
+      setStatus('数値を確認してください',true);
+      updateDro();updateSvg();
+      return;
+    }
+
+    var r=solve(a,av,b,bv);
+    if(r.err){
+      ['C','H','R'].forEach(function(f){if(f!==a&&f!==b)blankField(f)});
+      setStatus(r.err,true);
+      updateDro();updateSvg();
+      return;
+    }
+
+    ['C','H','R'].forEach(function(f){
+      results[f]=r[f];
+      if(f!==a&&f!==b){
+        computedSet[f]=true;
+        setFieldValue(f,r[f]);
+      }else{
+        clearComputedMark(f);
+      }
+    });
+    setStatus('入力: '+JP[a]+'・'+JP[b]+' → 計算: '+
+      ['C','H','R'].filter(function(f){return computedSet[f]}).map(function(f){return JP[f]}).join('・'),false);
+    updateDro();updateSvg();
+  }
+
+  function onEdit(f){
+    return function(){
+      if(fieldEmpty(f)){
+        queue=queue.filter(function(q){return q!==f});
+      }else{
+        clearComputedMark(f);
+        queue=queue.filter(function(q){return q!==f});
+        queue.push(f);
+        while(queue.length>2)queue.shift();
+      }
+      recalc();
+    };
+  }
+  $('fC').addEventListener('input',onEdit('C'));
+  $('fH').addEventListener('input',onEdit('H'));
+  $('fR').addEventListener('input',onEdit('R'));
+
+  var toastTimer=null;
+  function toast(msg){
+    var t=$('toast');t.textContent=msg;t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer=setTimeout(function(){t.classList.remove('show')},1600);
+  }
+  ['C','H','R'].forEach(function(f){
+    $('c'+f).addEventListener('click',function(){
+      var val=results[f];
+      if(val==null){toast('まだ値がありません');return}
+      var s=val.toFixed(3);
+      if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(s).then(function(){toast(JP[f]+' をコピーしました')},function(){toast('コピーできませんでした')});
+      }else{
+        var ta=document.createElement('textarea');
+        ta.value=s;document.body.appendChild(ta);ta.select();
+        try{document.execCommand('copy');toast(JP[f]+' をコピーしました')}catch(e){toast('コピーできませんでした')}
+        document.body.removeChild(ta);
+      }
+    });
+  });
+})();
+</script>
+</body>
+</html>

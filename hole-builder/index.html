@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1F3341">
+<meta name="description" content="複数の中心を持つ穴配置の座標計算と、穴間の実測距離から穴位置(縦横)を割り出す逆算(三辺測量)。計算は端末内で完結します。">
+<title>穴位置ビルダー | 検査計算ツール</title>
+<style>
+  :root{
+    --paper:#F2F4F5;--sheet:#FFFFFF;--ink:#1F3341;--line:#8FA2AF;--red:#D63426;
+    --dro-bg:#15181A;--dro-red:#FF5A48;--dro-green:#42D77D;--dro-dim:#9FB0B8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI",sans-serif;
+    background:var(--paper);color:var(--ink);
+    min-height:100dvh;display:flex;flex-direction:column;align-items:center;
+    padding:0 12px calc(16px + env(safe-area-inset-bottom));
+  }
+  .wrap{width:100%;max-width:480px}
+  header{display:flex;align-items:baseline;justify-content:space-between;padding:14px 2px 10px}
+  header h1{font-size:16px;font-weight:700;letter-spacing:.04em}
+  header h1 small{display:block;font-size:11px;font-weight:400;color:#5B707E;letter-spacing:.08em;margin-top:2px}
+  header a{font-size:12px;color:#5B707E;text-decoration:none}
+
+  .mode-lg{display:grid;grid-template-columns:1fr 1fr;border:1.5px solid var(--ink);border-radius:9px;overflow:hidden;margin-bottom:10px}
+  .mode-lg button{font-size:13px;font-weight:700;padding:10px 4px;border:none;background:var(--sheet);color:var(--ink);letter-spacing:.03em}
+  .mode-lg button.on{background:var(--ink);color:#fff}
+
+  .sheet{background:var(--sheet);border:2px solid var(--ink);padding:5px}
+  .sheet-inner{border:1px solid var(--ink)}
+  .sheet svg{display:block;width:100%;height:auto}
+  .titleblock{display:flex;border-top:1px solid var(--ink);font-size:9px;letter-spacing:.06em}
+  .titleblock div{padding:3px 8px;border-right:1px solid var(--ink)}
+  .titleblock div:last-child{border-right:none;margin-left:auto}
+  .titleblock b{font-weight:700}
+
+  h2{font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.1em;margin:12px 2px 8px;display:flex;align-items:center;gap:6px}
+  h2::before{content:'';width:4px;height:14px;background:var(--ink);border-radius:2px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{font-size:12.5px;font-weight:700;padding:8px 11px;border:1.5px solid var(--ink);border-radius:8px;background:var(--sheet);color:var(--ink);font-variant-numeric:tabular-nums}
+  .chip.on{background:var(--ink);color:#fff}
+
+  .inputs{margin-top:10px;display:flex;flex-direction:column;gap:8px}
+  .grp{background:var(--sheet);border:1px solid #D5DDE2;border-radius:10px;padding:8px 10px}
+  .grp.ctr{border-left:4px solid var(--ink)}
+  .grp.hole{border-left:4px solid #8FA2AF;margin-left:10px}
+  .grp .lab{font-size:11px;font-weight:700;color:#5B707E;letter-spacing:.05em;margin-bottom:4px;display:flex;justify-content:space-between}
+  .grp .lab .del{color:var(--red);font-size:11px;cursor:pointer;font-weight:700}
+  .flds{display:grid;gap:8px}
+  .flds.c2{grid-template-columns:1fr 1fr}
+  .flds.c3{grid-template-columns:1fr 1fr 1fr}
+  .fld{display:flex;align-items:baseline;gap:4px}
+  .fld .fl{font-size:11px;color:#5B707E;font-weight:600;flex:none}
+  .fld input{width:100%;font-size:17px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums;border:none;border-bottom:2px solid var(--ink);background:transparent;color:var(--ink);padding:2px 3px;outline:none;min-width:0}
+  .fld input:focus{border-bottom-color:var(--red)}
+  .fld .u{font-size:10px;color:#5B707E;flex:none}
+  .addbtn{font-size:12px;font-weight:700;padding:9px 6px;border:1.5px dashed var(--ink);border-radius:9px;background:var(--sheet);color:var(--ink);flex:1}
+  .addbtn:active{background:var(--ink);color:#fff}
+  .btnrow{display:flex;gap:8px;margin-top:8px}
+  .note{font-size:11px;color:#5B707E;line-height:1.7;margin-top:8px;padding:0 2px}
+  .note b{color:var(--ink)}
+  .sel{display:flex;gap:8px;align-items:center;margin-top:10px}
+  .sel select{flex:1;font-size:15px;padding:9px 10px;border:1.5px solid var(--ink);border-radius:9px;background:var(--sheet);color:var(--ink);font-weight:600}
+
+  .dro{margin-top:14px;background:var(--dro-bg);border-radius:12px;padding:14px 16px 12px;box-shadow:inset 0 2px 8px rgba(0,0,0,.5)}
+  .dro-line{display:flex;align-items:baseline;gap:10px;justify-content:flex-end}
+  .dro-label{color:#7d8a91;font-size:13px;font-weight:700;letter-spacing:.08em}
+  .dro-val{font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;font-variant-numeric:tabular-nums;font-size:30px;font-weight:600;color:var(--dro-red);text-shadow:0 0 10px rgba(255,90,72,.35)}
+  .dro-unit{color:#7d8a91;font-size:13px;font-weight:600}
+  .dro-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;border-top:1px solid #2a3034;margin-top:10px;padding-top:10px}
+  .cellv{display:flex;flex-direction:column;align-items:flex-end;padding:4px 8px;border-radius:8px}
+  .cellv:active{background:#1e2327}
+  .cellv .k{color:#7d8a91;font-size:11px;font-weight:700;letter-spacing:.06em;align-self:flex-start}
+  .cellv .v{font-family:ui-monospace,Consolas,monospace;font-variant-numeric:tabular-nums;font-size:17px;font-weight:600;color:var(--dro-dim)}
+  .cellv .s{color:#5d6a71;font-size:10px}
+  .dro-foot{display:flex;align-items:center;justify-content:space-between;margin-top:10px;border-top:1px solid #2a3034;padding-top:9px;gap:8px}
+  .statusTxt{color:#5d6a71;font-size:11px;letter-spacing:.02em;line-height:1.6}
+  .statusTxt.err{color:#FF8A7E}
+  .copy{font-size:12px;font-weight:700;color:#c9d2d7;background:#252b2f;border:1px solid #3a4247;border-radius:7px;padding:6px 14px;flex:none}
+  .copy:active{background:#31383d}
+
+  details.dtl{background:var(--sheet);border:1px solid #D5DDE2;border-radius:12px;padding:10px 12px;margin-top:10px}
+  details.dtl summary{font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.06em}
+  table.dt{width:100%;border-collapse:collapse;margin-top:8px;font-size:12.5px;font-variant-numeric:tabular-nums}
+  table.dt th{font-size:10px;color:#5B707E;text-align:right;padding:3px 6px;border-bottom:1px solid var(--ink)}
+  table.dt th:first-child{text-align:left}
+  table.dt td{text-align:right;padding:5px 6px;border-bottom:1px solid #E4EAEE}
+  table.dt td:first-child{text-align:left;color:#5B707E}
+
+  footer{margin-top:16px;font-size:11px;color:#5B707E;line-height:1.7;text-align:center;letter-spacing:.03em}
+  .toast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);background:var(--ink);color:#fff;font-size:13px;padding:9px 20px;border-radius:20px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>穴位置ビルダー<small>複数中心の配置 / 実測距離→位置の割り出し</small></h1>
+    <a href="../index.html">≡ ツール一覧</a>
+  </header>
+
+  <div class="mode-lg" role="group" aria-label="モード">
+    <button type="button" id="mBuild" class="on">配置(中心→穴→座標)</button>
+    <button type="button" id="mSolve">逆算(距離→位置)</button>
+  </div>
+
+  <div class="sheet">
+    <div class="sheet-inner">
+      <svg viewBox="0 0 340 250" id="dwg" role="img" aria-label="穴配置図">
+        <defs>
+          <marker id="arRed" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L8,3 L0,6 z" fill="#D63426"/></marker>
+        </defs>
+        <g id="dyn"></g>
+        <text id="emptyMsg" x="170" y="128" font-size="11" fill="#8FA2AF" text-anchor="middle">入力すると穴の配置が描かれます</text>
+      </svg>
+      <div class="titleblock">
+        <div><b>品名</b> 穴位置ビルダー</div>
+        <div><b>方式</b> <span id="tbMethod">絶対座標</span></div>
+        <div>TOOL-22</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 配置モード -->
+  <div id="buildBox">
+    <div class="note">
+      中心Aを原点(0,0)とし、中心B以降は「<b>Aから見た角度・距離</b>」で置きます。各中心にぶら下がる穴は、その中心からの <b>r・θ</b> で入力。全穴の絶対座標を計算します(角度は度分秒可)。
+    </div>
+    <div class="inputs" id="ctrList"></div>
+    <div class="btnrow">
+      <button class="addbtn" type="button" id="addCtr">+ 中心を追加</button>
+    </div>
+    <div class="sel">
+      <select id="pairA" aria-label="穴1"></select>
+      <span style="color:#5B707E">→</span>
+      <select id="pairB" aria-label="穴2"></select>
+    </div>
+  </div>
+
+  <!-- 逆算モード -->
+  <div id="solveBox" style="display:none">
+    <div class="note">
+      <b>三辺測量方式</b>: 基準の2穴 P1・P2 を先に置き(P1=原点、P2はX軸上に既知間隔で配置)、他の各穴について <b>P1からの距離・P2からの距離</b>を実測入力すると位置(縦横)が決まります。CMMがなくてもノギス/ハイトゲージで測れます。
+    </div>
+    <div class="inputs">
+      <div class="grp ctr">
+        <div class="lab">基準間隔(P1→P2)</div>
+        <div class="flds"><div class="fld"><span class="fl">P1P2</span><input id="fBase" type="text" inputmode="decimal" placeholder="―"><span class="u">mm</span></div></div>
+      </div>
+    </div>
+    <div class="inputs" id="solveList" style="margin-top:8px"></div>
+    <div class="btnrow"><button class="addbtn" type="button" id="addSolve">+ 測る穴を追加</button></div>
+    <div class="note">上下(基準線のどちら側)は現物に合わせて切り替えられます。三角形が作れない実測値(距離の和や差が合わない)には警告を出します。</div>
+  </div>
+
+  <div class="dro">
+    <div class="dro-line">
+      <span class="dro-label" id="mainLbl">選択2穴の距離</span>
+      <span class="dro-val" id="out">―</span>
+      <span class="dro-unit">mm</span>
+    </div>
+    <div class="dro-grid" id="cellGrid"></div>
+    <div class="dro-foot">
+      <span class="statusTxt" id="statusTxt">入力してください</span>
+      <button class="copy" type="button" id="copyBtn">座標コピー</button>
+    </div>
+  </div>
+
+  <details class="dtl">
+    <summary>▼ 全穴の絶対座標(基準=P1/中心A)</summary>
+    <table class="dt"><thead><tr><th>穴</th><th>X</th><th>Y</th></tr></thead><tbody id="coBody"></tbody></table>
+  </details>
+
+  <footer>
+    このページは計算のみを行います。入力値の送信・保存は一切ありません(端末内で完結)。<br>
+    座標系は基準点を原点、基準線をX軸にとった相対座標です。図面のデータムに合わせて読み替えてください。
+  </footer>
+</div>
+
+<div class="toast" id="toast">コピーしました</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var NS='http://www.w3.org/2000/svg';
+  var mode='build';
+  var lastCopy=null;
+
+  // 配置モード状態: centers[0]=A(角度距離なし), 各centerに holes[]
+  var centers=[{ang:'',dist:'',holes:[{r:'',a:''}]}];
+  // 逆算モード状態
+  var solveHoles=[{d1:'',d2:'',side:1}];
+
+  function zen(v){return String(v).replace(/[０-９．−]/g,function(c){if(c==='−')return '-';return String.fromCharCode(c.charCodeAt(0)-0xFEE0)}).replace(/。/g,'.')}
+  function num(v){if(v==null)return NaN;v=zen(v).replace(/[,，、\s]/g,'').trim();if(v==='')return NaN;return Number(v)}
+  function parseAngle(v){
+    if(v==null)return NaN;
+    var s=zen(v).replace(/[°度]/g,' ').replace(/[′’'分]/g,' ').replace(/[″”"秒]/g,' ').trim();
+    if(s==='')return NaN;
+    var p=s.split(/\s+/);if(p.length===1)return Number(p[0]);
+    var d=Number(p[0]),m=Number(p[1]||0),sec=Number(p[2]||0);
+    if(isNaN(d)||isNaN(m)||isNaN(sec))return NaN;
+    var sign=(d<0||/^\s*-/.test(p[0]))?-1:1;return sign*(Math.abs(d)+m/60+sec/3600);
+  }
+  function el(name,attrs){var e=document.createElementNS(NS,name);for(var k in attrs)e.setAttribute(k,attrs[k]);return e}
+  function f3(v){return v.toFixed(3)}
+  var LBL='ABCDEFGH';
+
+  /* ===== 配置モードUI ===== */
+  function buildCtrRows(){
+    var box=$('ctrList');box.innerHTML='';
+    centers.forEach(function(c,ci){
+      var g=document.createElement('div');
+      g.className='grp ctr';
+      var head='<div class="lab"><span>中心 '+LBL[ci]+(ci===0?'(原点 0,0)':'')+'</span>'+(ci>0?'<span class="del" data-delc="'+ci+'">中心を削除</span>':'')+'</div>';
+      var body='';
+      if(ci>0){
+        body+='<div class="flds c2">'+
+          '<div class="fld"><span class="fl">Aから角度</span><input data-ci="'+ci+'" data-f="ang" type="text" inputmode="decimal" placeholder="―"><span class="u">°</span></div>'+
+          '<div class="fld"><span class="fl">距離</span><input data-ci="'+ci+'" data-f="dist" type="text" inputmode="decimal" placeholder="―"><span class="u">mm</span></div></div>';
+      }
+      g.innerHTML=head+body;
+      box.appendChild(g);
+      if(ci>0){
+        g.querySelector('[data-f="ang"]').value=c.ang;
+        g.querySelector('[data-f="dist"]').value=c.dist;
+      }
+      // 穴
+      c.holes.forEach(function(h,hi){
+        var hg=document.createElement('div');
+        hg.className='grp hole';
+        hg.innerHTML='<div class="lab"><span>穴 '+LBL[ci]+(hi+1)+'</span>'+(c.holes.length>1||centers.length>1?'<span class="del" data-delh="'+ci+'_'+hi+'">削除</span>':'')+'</div>'+
+          '<div class="flds c2">'+
+          '<div class="fld"><span class="fl">r</span><input data-ci="'+ci+'" data-hi="'+hi+'" data-f="r" type="text" inputmode="decimal" placeholder="―"><span class="u">mm</span></div>'+
+          '<div class="fld"><span class="fl">θ</span><input data-ci="'+ci+'" data-hi="'+hi+'" data-f="a" type="text" inputmode="decimal" placeholder="―"><span class="u">°</span></div></div>';
+        box.appendChild(hg);
+        hg.querySelector('[data-f="r"]').value=h.r;
+        hg.querySelector('[data-f="a"]').value=h.a;
+      });
+      var addh=document.createElement('div');
+      addh.className='btnrow';addh.style.marginLeft='10px';addh.style.marginTop='0';addh.style.marginBottom='2px';
+      addh.innerHTML='<button class="addbtn" type="button" data-addh="'+ci+'" style="padding:7px 4px;font-size:11px">+ この中心に穴を追加</button>';
+      box.appendChild(addh);
+    });
+  }
+
+  function computeBuild(){
+    var pts=[]; // {name,x,y}
+    var cen=[];
+    centers.forEach(function(c,ci){
+      var cx,cy;
+      if(ci===0){cx=0;cy=0}
+      else{
+        var ang=parseAngle(c.ang),dist=num(c.dist);
+        if(isNaN(ang)||isNaN(dist)){cen.push(null);return}
+        var r=ang*Math.PI/180;cx=dist*Math.cos(r);cy=dist*Math.sin(r);
+      }
+      cen.push({x:cx,y:cy});
+      c.holes.forEach(function(h,hi){
+        var r=num(h.r),a=parseAngle(h.a);
+        if(isNaN(r)||isNaN(a))return;
+        var ra=a*Math.PI/180;
+        pts.push({name:LBL[ci]+(hi+1),x:cx+r*Math.cos(ra),y:cy+r*Math.sin(ra)});
+      });
+    });
+    return {pts:pts,cen:cen};
+  }
+
+  /* ===== 逆算モードUI ===== */
+  function buildSolveRows(){
+    var box=$('solveList');box.innerHTML='';
+    solveHoles.forEach(function(h,i){
+      var g=document.createElement('div');
+      g.className='grp hole';g.style.marginLeft='0';g.style.borderLeftColor='#8FA2AF';
+      g.innerHTML='<div class="lab"><span>穴 Q'+(i+1)+'</span>'+(solveHoles.length>1?'<span class="del" data-dels="'+i+'">削除</span>':'')+'</div>'+
+        '<div class="flds c3">'+
+        '<div class="fld"><span class="fl">P1から</span><input data-si="'+i+'" data-f="d1" type="text" inputmode="decimal" placeholder="―"><span class="u">mm</span></div>'+
+        '<div class="fld"><span class="fl">P2から</span><input data-si="'+i+'" data-f="d2" type="text" inputmode="decimal" placeholder="―"><span class="u">mm</span></div>'+
+        '<button class="addbtn" type="button" data-side="'+i+'" style="padding:6px 2px;font-size:11px">'+(h.side>0?'上側▲':'下側▼')+'</button></div>';
+      box.appendChild(g);
+      g.querySelector('[data-f="d1"]').value=h.d1;
+      g.querySelector('[data-f="d2"]').value=h.d2;
+    });
+  }
+
+  function computeSolve(){
+    var base=num($('fBase').value);
+    var pts=[]; var warns=[];
+    if(base>0){
+      pts.push({name:'P1',x:0,y:0,base:true});
+      pts.push({name:'P2',x:base,y:0,base:true});
+    }
+    solveHoles.forEach(function(h,i){
+      var d1=num(h.d1),d2=num(h.d2);
+      if(!(base>0)||isNaN(d1)||isNaN(d2))return;
+      // x=(base²+d1²−d2²)/(2base), y²=d1²−x²
+      var x=(base*base+d1*d1-d2*d2)/(2*base);
+      var y2=d1*d1-x*x;
+      if(y2<-1e-6){warns.push('Q'+(i+1)+': 実測距離で三角形が作れません(和/差を確認)');return}
+      var y=Math.sqrt(Math.max(0,y2))*h.side;
+      pts.push({name:'Q'+(i+1),x:x,y:y});
+    });
+    return {pts:pts,warns:warns};
+  }
+
+  /* ===== 描画 ===== */
+  function draw(pts,cen){
+    var dyn=$('dyn');while(dyn.firstChild)dyn.removeChild(dyn.firstChild);
+    $('emptyMsg').style.display=(pts&&pts.length)?'none':'';
+    if(!pts||!pts.length)return;
+    var minX=1e18,maxX=-1e18,minY=1e18,maxY=-1e18;
+    var all=pts.slice();
+    if(cen)cen.forEach(function(c){if(c)all.push(c)});
+    all.forEach(function(p){if(p.x<minX)minX=p.x;if(p.x>maxX)maxX=p.x;if(p.y<minY)minY=p.y;if(p.y>maxY)maxY=p.y});
+    var w=Math.max(maxX-minX,1),h=Math.max(maxY-minY,1);
+    var s=Math.min(270/w,180/h);
+    var ox=170-((minX+maxX)/2)*s, oy=128+((minY+maxY)/2)*s;
+    function px(p){return {x:ox+p.x*s,y:oy-p.y*s}}
+    // 中心マーク＆連結
+    if(cen){
+      var prev=null;
+      cen.forEach(function(c){
+        if(!c)return;var P=px(c);
+        if(prev)dyn.appendChild(el('line',{x1:prev.x.toFixed(1),y1:prev.y.toFixed(1),x2:P.x.toFixed(1),y2:P.y.toFixed(1),stroke:'#C9D3DA','stroke-width':1,'stroke-dasharray':'4 3'}));
+        dyn.appendChild(el('line',{x1:(P.x-5).toFixed(1),y1:P.y.toFixed(1),x2:(P.x+5).toFixed(1),y2:P.y.toFixed(1),stroke:'#8FA2AF','stroke-width':1}));
+        dyn.appendChild(el('line',{x1:P.x.toFixed(1),y1:(P.y-5).toFixed(1),x2:P.x.toFixed(1),y2:(P.y+5).toFixed(1),stroke:'#8FA2AF','stroke-width':1}));
+        prev=P;
+      });
+    }
+    // 選択ペア(配置モード)
+    if(mode==='build'){
+      var a=$('pairA').value,b=$('pairB').value;
+      var pa=null,pb=null;
+      pts.forEach(function(p){if(p.name===a)pa=p;if(p.name===b)pb=p});
+      if(pa&&pb&&a!==b){
+        var A=px(pa),B=px(pb);
+        dyn.appendChild(el('line',{x1:A.x.toFixed(1),y1:A.y.toFixed(1),x2:B.x.toFixed(1),y2:B.y.toFixed(1),stroke:'#D63426','stroke-width':1.8,'marker-end':'url(#arRed)','marker-start':'url(#arRed)'}));
+      }
+    }
+    // 穴
+    pts.forEach(function(p){
+      var P=px(p);
+      dyn.appendChild(el('circle',{cx:P.x.toFixed(1),cy:P.y.toFixed(1),r:p.base?5:7,fill:p.base?'#1F3341':'#fff',stroke:'#1F3341','stroke-width':1.6}));
+      var t=el('text',{x:P.x.toFixed(1),y:(P.y-11).toFixed(1),'font-size':10,'font-weight':700,fill:'#1F3341','text-anchor':'middle',stroke:'#fff','stroke-width':3,'paint-order':'stroke'});
+      t.textContent=p.name;dyn.appendChild(t);
+    });
+  }
+
+  function fillCoTable(pts){
+    var b=$('coBody');b.innerHTML='';
+    pts.forEach(function(p){
+      var tr=document.createElement('tr');
+      tr.innerHTML='<td>'+p.name+'</td><td>'+f3(p.x)+'</td><td>'+f3(p.y)+'</td>';
+      b.appendChild(tr);
+    });
+  }
+
+  /* ===== 再計算 ===== */
+  function recalc(){
+    lastCopy=null;
+    if(mode==='build'){
+      var r=computeBuild();
+      var pts=r.pts;
+      // ペアセレクタ更新
+      syncPairSelect(pts);
+      draw(pts,r.cen);
+      fillCoTable(pts);
+      var a=$('pairA').value,b=$('pairB').value,pa=null,pb=null;
+      pts.forEach(function(p){if(p.name===a)pa=p;if(p.name===b)pb=p});
+      var cells=[];
+      if(pa&&pb&&a!==b){
+        var dx=pb.x-pa.x,dy=pb.y-pa.y,d=Math.sqrt(dx*dx+dy*dy);
+        var ang=Math.atan2(dy,dx)*180/Math.PI;
+        $('mainLbl').textContent=a+' → '+b+' の距離';
+        $('out').textContent=f3(d);
+        cells=[{k:'ΔX',v:(dx>=0?'+':'')+f3(dx),s:'mm'},{k:'ΔY',v:(dy>=0?'+':'')+f3(dy),s:'mm'},
+               {k:'角度(+X基準)',v:ang.toFixed(3)+'°',s:''},{k:'穴数',v:String(pts.length),s:'点'}];
+        lastCopy='['+a+'→'+b+'] 距離'+f3(d)+' ΔX'+f3(dx)+' ΔY'+f3(dy)+' 角度'+ang.toFixed(3)+'°';
+      }else{
+        $('mainLbl').textContent='選択2穴の距離';$('out').textContent='―';
+        cells=[{k:'穴数',v:String(pts.length),s:'点'}];
+      }
+      $('cellGrid').innerHTML='';cells.forEach(function(c){var d=document.createElement('div');d.className='cellv';d.innerHTML='<span class="k">'+c.k+'</span><span class="v">'+c.v+'</span><span class="s">'+(c.s||'')+'</span>';$('cellGrid').appendChild(d)});
+      if(!lastCopy){var co=[];pts.forEach(function(p){co.push(p.name+'('+f3(p.x)+', '+f3(p.y)+')')});lastCopy='[穴座標] '+co.join(' ')}
+      $('statusTxt').textContent=(pts.length<1)?'中心と穴を入力してください':'中心Aが原点。全穴の絶対座標を座標表に表示中';
+      $('statusTxt').className='statusTxt';
+    }else{
+      var r2=computeSolve();
+      draw(r2.pts,null);
+      fillCoTable(r2.pts);
+      var qs=r2.pts.filter(function(p){return !p.base});
+      $('mainLbl').textContent='割り出した穴';
+      $('out').textContent=String(qs.length);
+      $('cellGrid').innerHTML='';
+      qs.slice(0,4).forEach(function(p){
+        var d=document.createElement('div');d.className='cellv';
+        d.innerHTML='<span class="k">'+p.name+' (X, Y)</span><span class="v">'+f3(p.x)+', '+f3(p.y)+'</span><span class="s">mm</span>';
+        $('cellGrid').appendChild(d);
+      });
+      if(r2.warns.length){$('statusTxt').textContent='⚠ '+r2.warns.join(' / ');$('statusTxt').className='statusTxt err'}
+      else{$('statusTxt').textContent='P1=原点、P2をX軸上に配置。各Qの縦横を座標表に表示中';$('statusTxt').className='statusTxt'}
+      var co2=[];r2.pts.forEach(function(p){co2.push(p.name+'('+f3(p.x)+', '+f3(p.y)+')')});
+      lastCopy='[穴位置 逆算] '+co2.join(' ');
+      $('out').textContent=String(qs.length);
+    }
+  }
+
+  var lastNames='';
+  function syncPairSelect(pts){
+    var names=pts.map(function(p){return p.name}).join(',');
+    if(names===lastNames)return;lastNames=names;
+    [ 'pairA','pairB'].forEach(function(id,idx){
+      var sel=$(id),cur=sel.value;
+      sel.innerHTML='';
+      pts.forEach(function(p){var o=document.createElement('option');o.value=p.name;o.textContent=p.name;sel.appendChild(o)});
+      if(pts.length){
+        if([].slice.call(sel.options).some(function(o){return o.value===cur}))sel.value=cur;
+        else sel.value=pts[Math.min(idx,pts.length-1)].name;
+      }
+    });
+  }
+
+  /* ===== イベント ===== */
+  $('ctrList').addEventListener('input',function(e){
+    var t=e.target,ci=t.getAttribute('data-ci'),f=t.getAttribute('data-f'),hi=t.getAttribute('data-hi');
+    if(ci==null)return;ci=+ci;
+    if(hi!=null){centers[ci].holes[+hi][f]=t.value}
+    else if(f==='ang'||f==='dist'){centers[ci][f]=t.value}
+    recalc();
+  });
+  $('ctrList').addEventListener('click',function(e){
+    var t=e.target;
+    if(t.getAttribute('data-addh')!=null){centers[+t.getAttribute('data-addh')].holes.push({r:'',a:''});buildCtrRows();recalc();return}
+    if(t.getAttribute('data-delc')!=null){centers.splice(+t.getAttribute('data-delc'),1);buildCtrRows();recalc();return}
+    if(t.getAttribute('data-delh')!=null){var p=t.getAttribute('data-delh').split('_');centers[+p[0]].holes.splice(+p[1],1);if(!centers[+p[0]].holes.length)centers[+p[0]].holes.push({r:'',a:''});buildCtrRows();recalc();return}
+  });
+  $('addCtr').addEventListener('click',function(){if(centers.length>=8){toast('中心は最大8です');return}centers.push({ang:'',dist:'',holes:[{r:'',a:''}]});buildCtrRows();recalc()});
+  $('pairA').addEventListener('change',recalc);
+  $('pairB').addEventListener('change',recalc);
+
+  $('solveList').addEventListener('input',function(e){
+    var t=e.target,si=t.getAttribute('data-si'),f=t.getAttribute('data-f');
+    if(si==null)return;solveHoles[+si][f]=t.value;recalc();
+  });
+  $('solveList').addEventListener('click',function(e){
+    var t=e.target;
+    if(t.getAttribute('data-side')!=null){var i=+t.getAttribute('data-side');solveHoles[i].side*=-1;buildSolveRows();recalc();return}
+    if(t.getAttribute('data-dels')!=null){solveHoles.splice(+t.getAttribute('data-dels'),1);if(!solveHoles.length)solveHoles.push({d1:'',d2:'',side:1});buildSolveRows();recalc();return}
+  });
+  $('fBase').addEventListener('input',recalc);
+  $('addSolve').addEventListener('click',function(){if(solveHoles.length>=8){toast('穴は最大8です');return}solveHoles.push({d1:'',d2:'',side:1});buildSolveRows();recalc()});
+
+  function setMode(m){
+    mode=m;
+    $('mBuild').classList.toggle('on',m==='build');
+    $('mSolve').classList.toggle('on',m==='solve');
+    $('buildBox').style.display=(m==='build')?'':'none';
+    $('solveBox').style.display=(m==='solve')?'':'none';
+    $('tbMethod').textContent=(m==='build')?'絶対座標':'三辺測量';
+    lastNames='';
+    recalc();
+  }
+  $('mBuild').addEventListener('click',function(){setMode('build')});
+  $('mSolve').addEventListener('click',function(){setMode('solve')});
+
+  var toastTimer=null;
+  function toast(msg){var t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(function(){t.classList.remove('show')},1600)}
+  $('copyBtn').addEventListener('click',function(){
+    if(!lastCopy){toast('まだ結果がありません');return}
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(lastCopy).then(function(){toast('コピーしました')},function(){toast('コピーできませんでした')})}
+    else{var ta=document.createElement('textarea');ta.value=lastCopy;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('コピーしました')}catch(e){toast('コピーできませんでした')}document.body.removeChild(ta)}
+  });
+
+  buildCtrRows();
+  buildSolveRows();
+  recalc();
+})();
+</script>
+</body>
+</html>

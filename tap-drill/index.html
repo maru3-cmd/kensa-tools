@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1F3341">
+<meta name="description" content="メートルねじ(並目・細目)の下穴とひっかかり率。切削タップ/転造タップ対応、材質別の限度基準(編集可)で合否判定。計算は端末内で完結します。">
+<title>ねじ下穴・ひっかかり率 | 検査計算ツール</title>
+<style>
+  :root{
+    --paper:#F2F4F5;
+    --sheet:#FFFFFF;
+    --ink:#1F3341;
+    --line:#8FA2AF;
+    --red:#D63426;
+    --amber:#B8860B;
+    --green:#2E9E5B;
+    --dro-bg:#15181A;
+    --dro-red:#FF5A48;
+    --dro-green:#42D77D;
+    --dro-amber:#E8B34B;
+    --dro-dim:#9FB0B8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI",sans-serif;
+    background:var(--paper);color:var(--ink);
+    min-height:100dvh;display:flex;flex-direction:column;align-items:center;
+    padding:0 12px calc(16px + env(safe-area-inset-bottom));
+  }
+  .wrap{width:100%;max-width:480px}
+
+  header{display:flex;align-items:baseline;justify-content:space-between;padding:14px 2px 10px}
+  header h1{font-size:16px;font-weight:700;letter-spacing:.04em}
+  header h1 small{display:block;font-size:11px;font-weight:400;color:#5B707E;letter-spacing:.08em;margin-top:2px}
+  header a{font-size:12px;color:#5B707E;text-decoration:none}
+
+  .sheet{background:var(--sheet);border:2px solid var(--ink);padding:5px}
+  .sheet-inner{border:1px solid var(--ink)}
+  .sheet svg{display:block;width:100%;height:auto}
+  .titleblock{display:flex;border-top:1px solid var(--ink);font-size:9px;letter-spacing:.06em}
+  .titleblock div{padding:3px 8px;border-right:1px solid var(--ink)}
+  .titleblock div:last-child{border-right:none;margin-left:auto}
+  .titleblock b{font-weight:700}
+
+  h2{
+    font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.1em;
+    margin:12px 2px 8px;display:flex;align-items:center;gap:6px;
+  }
+  h2::before{content:'';width:4px;height:14px;background:var(--ink);border-radius:2px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{
+    font-size:12.5px;font-weight:700;padding:8px 11px;
+    border:1.5px solid var(--ink);border-radius:8px;
+    background:var(--sheet);color:var(--ink);
+    font-variant-numeric:tabular-nums;
+  }
+  .chip.on{background:var(--ink);color:#fff}
+  .chip small{font-weight:400;font-size:10px;opacity:.75;margin-left:3px}
+
+  .inputs{margin-top:10px;display:flex;flex-direction:column;gap:10px}
+  .row{
+    display:grid;grid-template-columns:26px 1fr 130px 40px;
+    align-items:center;gap:8px;
+    background:var(--sheet);border:1px solid #D5DDE2;border-radius:10px;
+    padding:10px 12px;
+  }
+  .badge{
+    width:22px;height:22px;border-radius:50%;
+    background:var(--ink);color:#fff;font-size:12px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .row label{font-size:13px;font-weight:600}
+  .row label small{display:block;font-size:10px;font-weight:400;color:#5B707E}
+  .row input{
+    width:100%;font-size:19px;font-weight:600;text-align:right;
+    font-variant-numeric:tabular-nums;
+    border:none;border-bottom:2px solid var(--ink);
+    background:transparent;color:var(--ink);
+    padding:2px 4px;border-radius:0;outline:none;
+  }
+  .row input:focus{border-bottom-color:var(--red)}
+  .unit{font-size:12px;color:#5B707E}
+  .limrow{
+    display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;
+  }
+  .limrow .row{grid-template-columns:1fr 90px 30px;padding:8px 12px}
+  .limrow label{font-size:12px}
+  .setBtn{
+    font-size:12px;font-weight:700;padding:8px 12px;
+    border:1.5px dashed var(--ink);border-radius:8px;
+    background:var(--sheet);color:var(--ink);
+  }
+  .setBtn:active{background:var(--ink);color:#fff}
+  .note{font-size:11px;color:#5B707E;line-height:1.7;margin-top:8px;padding:0 2px}
+  .note b{color:var(--ink)}
+
+  .dro{
+    margin-top:14px;background:var(--dro-bg);border-radius:12px;
+    padding:14px 16px 12px;box-shadow:inset 0 2px 8px rgba(0,0,0,.5);
+  }
+  .judge{display:flex;align-items:baseline;justify-content:space-between;gap:10px;min-height:42px}
+  .judge .pos{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-variant-numeric:tabular-nums;
+    color:#c9d2d7;font-size:26px;font-weight:600;
+  }
+  .judge .pos small{color:#7d8a91;font-size:11px;font-weight:700;letter-spacing:.06em;display:block}
+  .judge .res{font-size:27px;font-weight:800;letter-spacing:.15em}
+  .judge .res.ok{color:var(--dro-green);text-shadow:0 0 12px rgba(66,215,125,.4)}
+  .judge .res.ng{color:var(--dro-red);text-shadow:0 0 12px rgba(255,90,72,.45)}
+  .judge .res.warn{color:var(--dro-amber);text-shadow:0 0 12px rgba(232,179,75,.4)}
+  .judge .res.none{color:#4a555b;font-size:14px;font-weight:600;letter-spacing:.04em}
+  .judge-sub{
+    text-align:right;color:#7d8a91;font-size:12px;min-height:16px;
+    font-variant-numeric:tabular-nums;margin-top:2px;
+  }
+  .dro-grid{
+    display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;
+    border-top:1px solid #2a3034;margin-top:10px;padding-top:10px;
+  }
+  .cellv{display:flex;flex-direction:column;align-items:flex-end;padding:4px 8px;border-radius:8px}
+  .cellv:active{background:#1e2327}
+  .cellv .k{color:#7d8a91;font-size:11px;font-weight:700;letter-spacing:.06em;align-self:flex-start}
+  .cellv .v{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:18px;font-weight:600;color:var(--dro-dim);
+  }
+  .cellv .s{color:#5d6a71;font-size:10px}
+  .dro-foot{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-top:10px;border-top:1px solid #2a3034;padding-top:9px;gap:8px;
+  }
+  .statusTxt{color:#5d6a71;font-size:11px;letter-spacing:.02em;line-height:1.6}
+  .copy{
+    font-size:12px;font-weight:700;color:#c9d2d7;background:#252b2f;
+    border:1px solid #3a4247;border-radius:7px;padding:6px 14px;flex:none;
+  }
+  .copy:active{background:#31383d}
+
+  .tbl-btn{
+    margin-top:14px;width:100%;
+    font-size:13px;font-weight:700;padding:11px 4px;
+    border:1.5px solid var(--ink);border-radius:9px;
+    background:var(--sheet);color:var(--ink);letter-spacing:.05em;
+  }
+  .tbl-btn:active{background:var(--ink);color:#fff}
+  .tblWrap{margin-top:10px;display:none;overflow-x:auto}
+  .tblWrap.show{display:block}
+  table.tol{
+    width:100%;border-collapse:collapse;background:var(--sheet);
+    border:2px solid var(--ink);font-size:12px;
+    font-variant-numeric:tabular-nums;
+  }
+  table.tol th,table.tol td{border:1px solid var(--ink);padding:4px 6px;text-align:right;white-space:nowrap}
+  table.tol th{background:#E8EDF0;font-size:10px;font-weight:700;text-align:center}
+  table.tol td:first-child{text-align:left;font-weight:700}
+  table.tol tr.hit td{background:#FCE9E7;font-weight:700}
+
+  footer{margin-top:16px;font-size:11px;color:#5B707E;line-height:1.7;text-align:center;letter-spacing:.03em}
+
+  .toast{
+    position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);
+    background:var(--ink);color:#fff;font-size:13px;
+    padding:9px 20px;border-radius:20px;opacity:0;pointer-events:none;
+    transition:opacity .25s,transform .25s;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>ねじ下穴・ひっかかり率<small>メートル並目/細目・切削/転造・限度判定</small></h1>
+    <a href="../index.html">≡ ツール一覧</a>
+  </header>
+
+  <!-- 図面シート -->
+  <div class="sheet">
+    <div class="sheet-inner">
+      <svg viewBox="0 0 340 250" role="img" aria-label="ねじ山のかみ合い高さと下穴径の関係、および限度帯ゲージ">
+        <!-- おねじ山(左) -->
+        <path d="M 25 180 L 55 75 L 85 180 L 115 75 L 145 180 L 175 75 L 205 180"
+              fill="none" stroke="#1F3341" stroke-width="1.8"/>
+        <text x="30" y="212" font-size="11" fill="#5B707E">おねじの山 / 赤=めねじが掛かる高さ</text>
+        <text x="30" y="228" font-size="11" fill="#5B707E">下穴が小さいほど深く掛かる(%大)</text>
+        <g id="dynL"></g>
+
+        <!-- ひっかかり率ゲージ(右) -->
+        <line x1="272" y1="45" x2="272" y2="205" stroke="#1F3341" stroke-width="1.6"/>
+        <g id="ticks"></g>
+        <g id="dynR"></g>
+        <text x="272" y="34" font-size="11" font-weight="700" fill="#1F3341" text-anchor="middle">ひっかかり率</text>
+      </svg>
+      <div class="titleblock">
+        <div><b>品名</b> ねじ下穴</div>
+        <div><b>方式</b> ひっかかり率</div>
+        <div>TOOL-20</div>
+      </div>
+    </div>
+  </div>
+
+  <h2>ねじの呼び</h2>
+  <div class="chips" id="sizeChips"></div>
+  <div class="inputs" id="customBox" style="display:none">
+    <div class="row">
+      <span class="badge">D</span>
+      <label for="fCD">呼び径 D<small>カスタム</small></label>
+      <input id="fCD" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row">
+      <span class="badge">P</span>
+      <label for="fCP">ピッチ P<small>カスタム</small></label>
+      <input id="fCP" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+    </div>
+  </div>
+
+  <h2>ピッチ</h2>
+  <div class="chips" id="pitchChips"></div>
+
+  <h2>タップの種類</h2>
+  <div class="chips" id="tapChips"></div>
+
+  <h2>材質と限度基準(%は自由に変更OK)</h2>
+  <div class="chips" id="matChips"></div>
+  <div class="limrow">
+    <div class="row">
+      <label for="fLo">下限(強度)</label>
+      <input id="fLo" type="text" inputmode="decimal" autocomplete="off">
+      <span class="unit">%</span>
+    </div>
+    <div class="row">
+      <label for="fHi">上限(タップ負荷)</label>
+      <input id="fHi" type="text" inputmode="decimal" autocomplete="off">
+      <span class="unit">%</span>
+    </div>
+  </div>
+
+  <h2>下穴</h2>
+  <div class="inputs">
+    <div class="row" style="grid-template-columns:26px 1fr 110px 40px 76px">
+      <span class="badge">1</span>
+      <label for="fDrill">下穴径<small>実測または予定</small></label>
+      <input id="fDrill" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+      <button class="setBtn" type="button" id="setDP">D−P<br>セット</button>
+    </div>
+    <div class="row">
+      <span class="badge">2</span>
+      <label for="fEta">目標ひっかかり率<small>任意: 推奨下穴を逆算</small></label>
+      <input id="fEta" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">%</span>
+    </div>
+  </div>
+
+  <!-- 結果 -->
+  <div class="dro">
+    <div class="judge">
+      <span class="pos"><small>ひっかかり率</small><span id="etaVal">―</span></span>
+      <span class="res none" id="resTxt">値を入力してください</span>
+    </div>
+    <div class="judge-sub" id="judgeSub"></div>
+    <div class="dro-grid">
+      <div class="cellv"><span class="k">推奨下穴(目標%から)</span><span class="v" id="vRec">―</span><span class="s">mm</span></div>
+      <div class="cellv"><span class="k">限度帯の下穴範囲</span><span class="v" id="vBand">―</span><span class="s">mm(上限%→下限%)</span></div>
+      <div class="cellv"><span class="k">基準めねじ内径(100%)</span><span class="v" id="vD1">―</span><span class="s">mm</span></div>
+      <div class="cellv"><span class="k">慣用 D−P</span><span class="v" id="vDP">―</span><span class="s" id="vDPs">mm</span></div>
+    </div>
+    <div class="dro-foot">
+      <span class="statusTxt" id="statusTxt">ねじと下穴を入力してください</span>
+      <button class="copy" type="button" id="copyBtn">結果コピー</button>
+    </div>
+  </div>
+
+  <button class="tbl-btn" type="button" id="tblBtn">▼ 下穴表を表示(現在の設定で計算)</button>
+  <div class="tblWrap" id="tblWrap"></div>
+
+  <footer>
+    このページは計算のみを行います。入力値の送信・保存は一切ありません(端末内で完結)。<br>
+    式: 切削タップ 下穴=D−η×P/92.4 / 転造タップ 下穴=D−η×P/147(タップメーカー慣用式)。<br>
+    限度帯の初期値は一般的な目安です。社内基準・タップメーカー推奨に合わせて%を書き換えてください。
+  </footer>
+</div>
+
+<div class="toast" id="toast">コピーしました</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var NS='http://www.w3.org/2000/svg';
+
+  // 呼び: [名称, D, ピッチ配列(先頭=並目)]
+  var SZ=[
+    ['M2',2,[0.4]],['M2.5',2.5,[0.45]],['M3',3,[0.5,0.35]],['M4',4,[0.7,0.5]],
+    ['M5',5,[0.8,0.5]],['M6',6,[1.0,0.75]],['M8',8,[1.25,1.0,0.75]],
+    ['M10',10,[1.5,1.25,1.0,0.75]],['M12',12,[1.75,1.5,1.25,1.0]],
+    ['M14',14,[2,1.5]],['M16',16,[2,1.5,1.0]],['M18',18,[2.5,2,1.5]],
+    ['M20',20,[2.5,2,1.5,1.0]],['M24',24,[3,2,1.5]],['M30',30,[3.5,2,1.5]],
+    ['カスタム',null,null]
+  ];
+  var MATS=[
+    {n:'鉄(一般鋼)',lo:65,hi:85},
+    {n:'SUS',lo:50,hi:70},
+    {n:'アルミ',lo:70,hi:90},
+    {n:'カスタム',lo:60,hi:80}
+  ];
+  var TAPS=[
+    {n:'切削タップ',c:92.4},
+    {n:'転造(盛り上げ)',c:147}
+  ];
+
+  var sizeIdx=5, pitchIdx=0, tapIdx=0, matIdx=0;
+  var lastCopy=null;
+
+  function num(v){
+    if(v==null)return NaN;
+    v=String(v).replace(/[０-９．]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0)}).replace(/。/g,'.').replace(/[,，、\s]/g,'').trim();
+    if(v==='')return NaN;
+    return Number(v);
+  }
+  function el(name,attrs){
+    var e=document.createElementNS(NS,name);
+    for(var k in attrs)e.setAttribute(k,attrs[k]);
+    return e;
+  }
+  function curDP(){
+    var s=SZ[sizeIdx];
+    if(s[1]==null)return {D:num($('fCD').value),P:num($('fCP').value),custom:true};
+    return {D:s[1],P:s[2][pitchIdx],custom:false};
+  }
+
+  /* ---- チップ ---- */
+  function buildSizes(){
+    var box=$('sizeChips');box.innerHTML='';
+    SZ.forEach(function(s,i){
+      var b=document.createElement('button');
+      b.type='button';b.className='chip'+(i===sizeIdx?' on':'');
+      b.textContent=s[0];
+      b.addEventListener('click',function(){
+        sizeIdx=i;pitchIdx=0;
+        buildSizes();buildPitches();
+        $('customBox').style.display=(SZ[i][1]==null)?'':'none';
+        recalc();
+      });
+      box.appendChild(b);
+    });
+  }
+  function buildPitches(){
+    var box=$('pitchChips');box.innerHTML='';
+    var s=SZ[sizeIdx];
+    if(s[1]==null){box.innerHTML='<span class="note">カスタムはピッチPを直接入力</span>';return}
+    s[2].forEach(function(p,i){
+      var b=document.createElement('button');
+      b.type='button';b.className='chip'+(i===pitchIdx?' on':'');
+      b.innerHTML=(i===0?'並目':'細目')+'<small>'+p+'</small>';
+      b.addEventListener('click',function(){pitchIdx=i;buildPitches();recalc()});
+      box.appendChild(b);
+    });
+  }
+  function buildTaps(){
+    var box=$('tapChips');box.innerHTML='';
+    TAPS.forEach(function(t,i){
+      var b=document.createElement('button');
+      b.type='button';b.className='chip'+(i===tapIdx?' on':'');
+      b.textContent=t.n;
+      b.addEventListener('click',function(){tapIdx=i;buildTaps();recalc()});
+      box.appendChild(b);
+    });
+  }
+  function buildMats(){
+    var box=$('matChips');box.innerHTML='';
+    MATS.forEach(function(m,i){
+      var b=document.createElement('button');
+      b.type='button';b.className='chip'+(i===matIdx?' on':'');
+      b.innerHTML=m.n+'<small>'+m.lo+'–'+m.hi+'%</small>';
+      b.addEventListener('click',function(){
+        matIdx=i;buildMats();
+        $('fLo').value=MATS[i].lo;
+        $('fHi').value=MATS[i].hi;
+        recalc();
+      });
+      box.appendChild(b);
+    });
+  }
+
+  /* ---- 図 ---- */
+  function buildTicks(){
+    var g=$('ticks');
+    [0,25,50,75,100].forEach(function(v){
+      var y=205-v*(160/120);
+      g.appendChild(el('line',{x1:268,y1:y,x2:276,y2:y,stroke:'#1F3341','stroke-width':1}));
+      var t=el('text',{x:262,y:y+3.5,'font-size':9,fill:'#5B707E','text-anchor':'end'});
+      t.textContent=v;g.appendChild(t);
+    });
+  }
+  function draw(eta,lo,hi){
+    var dl=$('dynL'), dr=$('dynR');
+    while(dl.firstChild)dl.removeChild(dl.firstChild);
+    while(dr.firstChild)dr.removeChild(dr.firstChild);
+
+    // 右: 限度帯
+    function yOf(v){return 205-Math.max(0,Math.min(120,v))*(160/120)}
+    if(lo!=null&&hi!=null&&hi>lo){
+      dr.appendChild(el('rect',{x:266,y:yOf(hi),width:12,height:(yOf(lo)-yOf(hi)),fill:'#2E9E5B',opacity:0.28}));
+      dr.appendChild(el('line',{x1:262,y1:yOf(lo),x2:282,y2:yOf(lo),stroke:'#2E9E5B','stroke-width':1.6}));
+      dr.appendChild(el('line',{x1:262,y1:yOf(hi),x2:282,y2:yOf(hi),stroke:'#2E9E5B','stroke-width':1.6}));
+      var tl=el('text',{x:287,y:yOf(lo)+3.5,'font-size':9,fill:'#2E9E5B'});
+      tl.textContent='下限'+lo;dr.appendChild(tl);
+      var th=el('text',{x:287,y:yOf(hi)+3.5,'font-size':9,fill:'#2E9E5B'});
+      th.textContent='上限'+hi;dr.appendChild(th);
+    }
+    if(eta!=null&&isFinite(eta)){
+      var y=yOf(eta);
+      dr.appendChild(el('line',{x1:258,y1:y,x2:286,y2:y,stroke:'#D63426','stroke-width':2.2}));
+      var tv=el('text',{x:287,y:y-5,'font-size':11,'font-weight':700,fill:'#D63426',stroke:'#fff','stroke-width':3,'paint-order':'stroke'});
+      tv.textContent=eta.toFixed(1)+'%';dr.appendChild(tv);
+
+      // 左: かみ合い帯(山の頂からηぶん下がった線まで)
+      var h100=95; // 100%の高さ(px)
+      var depth=Math.max(0,Math.min(115,eta))/100*h100;
+      var yLine=75+depth;
+      dl.appendChild(el('rect',{x:25,y:75,width:180,height:depth,fill:'#D63426',opacity:0.16}));
+      dl.appendChild(el('line',{x1:25,y1:yLine.toFixed(1),x2:205,y2:yLine.toFixed(1),stroke:'#D63426','stroke-width':2}));
+      var lt=el('text',{x:210,y:(yLine+4).toFixed(1),'font-size':10,'font-weight':700,fill:'#D63426',stroke:'#fff','stroke-width':3,'paint-order':'stroke'});
+      lt.textContent='下穴の壁';dl.appendChild(lt);
+    }
+  }
+
+  /* ---- 計算 ---- */
+  function recalc(){
+    var dp=curDP();
+    var D=dp.D, P=dp.P;
+    var c=TAPS[tapIdx].c;
+    var lo=num($('fLo').value), hi=num($('fHi').value);
+    var loOk=isFinite(lo), hiOk=isFinite(hi);
+    lastCopy=null;
+
+    var ok=(D>0&&P>0&&P<D);
+    if(!ok){
+      $('etaVal').textContent='―';
+      $('resTxt').textContent='ねじを選んでください';
+      $('resTxt').className='res none';
+      $('judgeSub').textContent='';
+      ['vRec','vBand','vD1','vDP'].forEach(function(id){$(id).textContent='―'});
+      $('statusTxt').textContent=dp.custom?'カスタムのDとPを入力してください':'ねじと下穴を入力してください';
+      draw(null,loOk?lo:null,hiOk?hi:null);
+      return;
+    }
+
+    var name=dp.custom?('M'+D+'×'+P):(SZ[sizeIdx][0]+'×'+P+(pitchIdx===0?'(並目)':'(細目)'));
+    $('vD1').textContent=(D-1.0825*P).toFixed(3);
+    $('vDP').textContent=(D-P).toFixed(2);
+    $('vDPs').textContent='mm(切削で約92%)';
+
+    // 帯 → 下穴範囲
+    if(loOk&&hiOk&&hi>lo){
+      var dHi=D-hi*P/c, dLo=D-lo*P/c;
+      $('vBand').textContent=dHi.toFixed(2)+' 〜 '+dLo.toFixed(2);
+    }else{
+      $('vBand').textContent='―(限度%を入力)';
+    }
+
+    // 目標% → 推奨下穴
+    var etaT=num($('fEta').value);
+    $('vRec').textContent=(etaT>0)?(D-etaT*P/c).toFixed(2):'―';
+
+    // 下穴 → ひっかかり率+判定
+    var drill=num($('fDrill').value);
+    var res=$('resTxt');
+    if(!(drill>0)){
+      $('etaVal').textContent='―';
+      res.textContent='下穴径を入力';
+      res.className='res none';
+      $('judgeSub').textContent='';
+      $('statusTxt').textContent=name+' | '+TAPS[tapIdx].n+': 下穴 = D − η×P/'+c;
+      draw(null,loOk?lo:null,hiOk?hi:null);
+      return;
+    }
+    var eta=(D-drill)*c/P;
+    $('etaVal').textContent=eta.toFixed(1)+'%';
+
+    var sub='', cls='none', txt='限度%を入れると判定';
+    if(eta<=0){
+      cls='ng';txt='掛かりなし';
+      sub='下穴がねじ呼び径以上です';
+    }else if(eta>115){
+      cls='ng';txt='下穴過小';
+      sub='ひっかかり率が過大です(タップ折損のおそれ)。下穴を見直してください';
+    }else if(loOk&&hiOk){
+      if(eta<lo){cls='ng';txt='下限未満';sub='下限'+lo+'%まであと '+(lo-eta).toFixed(1)+'pt(強度不足のおそれ)'}
+      else if(eta>hi){cls='warn';txt='上限超過';sub='上限'+hi+'%を '+(eta-hi).toFixed(1)+'pt 超過(タップ負荷大・むしれ/折損注意)'}
+      else{cls='ok';txt='適正';sub='帯内(下限'+lo+'%/上限'+hi+'%、余裕 −'+(eta-lo).toFixed(1)+'pt/+'+(hi-eta).toFixed(1)+'pt)'}
+    }
+    res.textContent=txt;
+    res.className='res '+cls;
+    $('judgeSub').textContent=sub;
+    $('statusTxt').textContent=name+' | '+TAPS[tapIdx].n+' | η = (D−下穴)×'+c+'/P';
+
+    lastCopy='['+name+' '+TAPS[tapIdx].n+'] 下穴'+drill+' → ひっかかり率'+eta.toFixed(1)+'%'+
+      (loOk&&hiOk?'(限度'+lo+'–'+hi+'%: '+txt+')':'')+
+      (etaT>0?' | 目標'+etaT+'%の推奨下穴='+(D-etaT*P/c).toFixed(2):'');
+
+    draw(eta,loOk?lo:null,hiOk?hi:null);
+    if($('tblWrap').classList.contains('show'))buildTable();
+  }
+
+  /* ---- 下穴表 ---- */
+  function buildTable(){
+    var c=TAPS[tapIdx].c;
+    var lo=num($('fLo').value), hi=num($('fHi').value);
+    var okB=isFinite(lo)&&isFinite(hi)&&hi>lo;
+    var html='<table class="tol"><tr><th>ねじ</th><th>P</th><th>下穴('+(okB?hi+'%':'―')+')</th><th>下穴('+(okB?lo+'%':'―')+')</th><th>D−P</th></tr>';
+    SZ.forEach(function(s,i){
+      if(s[1]==null)return;
+      s[2].forEach(function(p,j){
+        var hit=(i===sizeIdx&&j===pitchIdx);
+        html+='<tr'+(hit?' class="hit"':'')+'><td>'+s[0]+'×'+p+(j===0?'':'(細)')+'</td><td>'+p+'</td>'+
+          '<td>'+(okB?(s[1]-hi*p/c).toFixed(2):'―')+'</td>'+
+          '<td>'+(okB?(s[1]-lo*p/c).toFixed(2):'―')+'</td>'+
+          '<td>'+(s[1]-p).toFixed(2)+'</td></tr>';
+      });
+    });
+    html+='</table>';
+    $('tblWrap').innerHTML=html;
+  }
+
+  /* ---- イベント ---- */
+  ['fDrill','fEta','fLo','fHi','fCD','fCP'].forEach(function(id){$(id).addEventListener('input',recalc)});
+  $('setDP').addEventListener('click',function(){
+    var dp=curDP();
+    if(dp.D>0&&dp.P>0){$('fDrill').value=(dp.D-dp.P).toFixed(2);recalc()}
+    else toast('先にねじを選んでください');
+  });
+  $('tblBtn').addEventListener('click',function(){
+    var w=$('tblWrap');
+    var show=!w.classList.contains('show');
+    w.classList.toggle('show',show);
+    $('tblBtn').textContent=show?'▲ 下穴表を閉じる':'▼ 下穴表を表示(現在の設定で計算)';
+    if(show)buildTable();
+  });
+
+  var toastTimer=null;
+  function toast(msg){
+    var t=$('toast');t.textContent=msg;t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer=setTimeout(function(){t.classList.remove('show')},1600);
+  }
+  $('copyBtn').addEventListener('click',function(){
+    if(!lastCopy){toast('まだ結果がありません');return}
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(lastCopy).then(function(){toast('コピーしました')},function(){toast('コピーできませんでした')});
+    }else{
+      var ta=document.createElement('textarea');
+      ta.value=lastCopy;document.body.appendChild(ta);ta.select();
+      try{document.execCommand('copy');toast('コピーしました')}catch(e){toast('コピーできませんでした')}
+      document.body.removeChild(ta);
+    }
+  });
+
+  buildSizes();
+  buildPitches();
+  buildTaps();
+  buildMats();
+  buildTicks();
+  $('fLo').value=MATS[0].lo;
+  $('fHi').value=MATS[0].hi;
+  recalc();
+})();
+</script>
+</body>
+</html>

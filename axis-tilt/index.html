@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1F3341">
+<meta name="description" content="穴に入れた検査棒の傾きを、ダイヤルゲージ2点読みから角度・勾配・公差判定へ換算します。すき間によるロッキングの理論限界を厳密式で求め、測定が有効かどうかを判定します。計算は端末内で完結します。">
+<title>軸の傾き | 検査計算ツール</title>
+<style>
+  :root{
+    --paper:#F2F4F5; --sheet:#FFFFFF; --ink:#1F3341; --line:#8FA2AF; --red:#D63426;
+    --amber:#B97A1E; --green:#2E9E5B;
+    --dro-bg:#15181A; --dro-red:#FF5A48; --dro-green:#42D77D; --dro-amber:#F0B03C; --dro-dim:#9FB0B8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI",sans-serif;
+    background:var(--paper);color:var(--ink);
+    min-height:100dvh;display:flex;flex-direction:column;align-items:center;
+    padding:0 12px calc(20px + env(safe-area-inset-bottom));
+  }
+  .wrap{width:100%;max-width:480px}
+  header{display:flex;align-items:baseline;justify-content:space-between;padding:14px 2px 8px}
+  header h1{font-size:16px;font-weight:700;letter-spacing:.04em}
+  header h1 small{display:block;font-size:11px;font-weight:400;color:#5B707E;letter-spacing:.08em;margin-top:2px}
+  header a{font-size:12px;color:#5B707E;text-decoration:none}
+
+  .tb-strip{display:flex;background:var(--sheet);border:2px solid var(--ink);font-size:9px;letter-spacing:.06em;margin-bottom:12px}
+  .tb-strip div{padding:4px 8px;border-right:1px solid var(--ink)}
+  .tb-strip div:last-child{border-right:none;margin-left:auto}
+  .tb-strip b{font-weight:700}
+
+  .tabs{display:flex;margin-bottom:12px;border:1px solid var(--ink);background:var(--sheet)}
+  .tabs button{flex:1;padding:10px 4px;font:inherit;font-size:12px;font-weight:600;background:transparent;border:none;border-right:1px solid var(--line);color:#5B707E;cursor:pointer}
+  .tabs button:last-child{border-right:none}
+  .tabs button[aria-selected="true"]{background:var(--ink);color:#fff}
+  .tabs button:focus-visible{outline:2px solid var(--red);outline-offset:-2px}
+
+  .card{background:var(--sheet);border:1px solid #D5DDE2;border-radius:12px;padding:14px;margin-bottom:12px}
+  .card h2{font-size:11px;letter-spacing:.1em;color:#5B707E;font-weight:700;border-bottom:1px solid #E3E9EC;padding-bottom:6px;margin-bottom:10px}
+  .card h2 .tag{float:right;color:var(--red);letter-spacing:0}
+
+  label.f{display:block;font-size:11px;color:#5B707E;margin:0 0 3px 1px}
+  .row{display:flex;gap:8px;margin-bottom:9px}
+  .row>div{flex:1;min-width:0}
+  input[type=number],input[type=text],input[type=date],select{
+    width:100%;padding:9px 8px;font:inherit;font-size:15px;
+    border:1px solid var(--line);border-radius:6px;background:#FBFCFC;color:var(--ink)}
+  input:focus,select:focus{outline:2px solid var(--red);outline-offset:-1px;background:#fff}
+  .hint{font-size:10.5px;color:#7A8C97;line-height:1.65;margin-top:4px}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:9px 12px;font:inherit;font-size:12.5px;font-weight:600;border:1px solid var(--ink);border-radius:6px;background:var(--sheet);color:var(--ink);cursor:pointer}
+  .btn:active{transform:translateY(1px)}
+  .btn.primary{background:var(--ink);color:#fff}
+  .btn.warn{border-color:var(--red);color:var(--red)}
+  .btn.sm{padding:6px 8px;font-size:11.5px}
+  .btn:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+  .btnrow{display:flex;gap:8px;flex-wrap:wrap}
+
+  figure svg{width:100%;height:auto;display:block;background:#FBFCFC;border:1px solid #E3E9EC;border-radius:6px}
+  figcaption{font-size:9.5px;color:#7A8C97;text-align:center;margin-top:3px;letter-spacing:.06em}
+
+  .dro{background:var(--dro-bg);border-radius:10px;padding:12px;color:#fff;font-variant-numeric:tabular-nums}
+  .dro .lbl{font-size:10px;color:var(--dro-dim);letter-spacing:.12em}
+  .dro .big{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:34px;font-weight:600;color:var(--dro-green);line-height:1.15}
+  .dro .big .u{font-size:14px;color:var(--dro-dim);margin-left:4px}
+  .dro .big.amber{color:var(--dro-amber)} .dro .big.red{color:var(--dro-red)}
+  .dro .sub{display:flex;gap:10px;margin-top:8px;border-top:1px solid #2A2F33;padding-top:8px}
+  .dro .sub div{flex:1}
+  .dro .sub .k{font-size:9.5px;color:var(--dro-dim);letter-spacing:.08em}
+  .dro .sub .v{font-family:ui-monospace,Menlo,monospace;font-size:14px;color:#E8EEF1}
+
+  .res{border:1px solid #E3E9EC;border-radius:6px;overflow:hidden}
+  .res div{display:flex;justify-content:space-between;gap:8px;padding:7px 9px;font-size:12.5px;border-bottom:1px solid #EEF2F4}
+  .res div:last-child{border-bottom:none}
+  .res div:nth-child(odd){background:#FAFCFC}
+  .res .k{color:#5B707E}
+  .res .v{font-family:ui-monospace,Menlo,monospace;font-weight:600}
+  .res .v.hl{color:var(--red)}
+  .ok{color:var(--green);font-weight:700}
+  .ng{color:var(--red);font-weight:700}
+  .cau{color:var(--amber);font-weight:700}
+
+  .verdict{border-radius:8px;padding:10px 11px;font-size:12px;line-height:1.65;margin-top:10px;border:1px solid}
+  .verdict b{display:block;font-size:12.5px;margin-bottom:2px}
+  .v-ok{background:#EAF7EF;border-color:#B9E0C7;color:#1D6438}
+  .v-cau{background:#FDF6E7;border-color:#E9D9AE;color:#6B5518}
+  .v-ng{background:#FDECEA;border-color:#F0BDB7;color:#8A2318}
+
+  .banner{font-size:11.5px;line-height:1.7;background:#FDF6E7;border:1px solid #E9D9AE;border-radius:6px;padding:8px 10px;color:#6B5518;margin-bottom:10px}
+
+  table{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}
+  th{background:#EDF1F3;color:#5B707E;font-size:10px;letter-spacing:.06em;font-weight:700;padding:6px 5px;text-align:right;border-bottom:1px solid var(--line)}
+  th:first-child,td:first-child{text-align:left}
+  td{padding:6px 5px;text-align:right;border-bottom:1px solid #EEF2F4;font-family:ui-monospace,Menlo,monospace}
+  .tblwrap{border:1px solid #E3E9EC;border-radius:6px;overflow:hidden}
+  .xbtn{width:22px;height:22px;border:1px solid var(--line);background:#fff;border-radius:5px;color:var(--red);font-size:12px;line-height:1;cursor:pointer}
+
+  details{border-top:1px solid #E3E9EC;margin-top:10px;padding-top:8px}
+  details summary{font-size:11.5px;font-weight:700;color:#5B707E;cursor:pointer;letter-spacing:.04em}
+  details ul{margin:8px 0 0 16px;font-size:11.5px;line-height:1.85;color:#42565F}
+  footer{font-size:10px;color:#8FA2AF;text-align:center;line-height:1.7;padding:6px 0 4px}
+
+  .print-only{display:none}
+  @media print{
+    body{background:#fff;padding:0}
+    .noprint{display:none !important}
+    .print-only{display:block}
+    .card{border:1px solid #333;border-radius:0;break-inside:avoid}
+    .dro{background:#fff;color:#000;border:1px solid #333}
+    .dro .big,.dro .sub .v{color:#000}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="noprint">
+  <h1>軸の傾き<small>2点読みからガタ判定まで</small></h1>
+  <a href="../index.html">≡ ツール一覧</a>
+</header>
+
+<div class="tb-strip">
+  <div><b>TOOL-26</b></div>
+  <div>2点読み</div>
+  <div>ガタ判定</div>
+  <div>端末内計算</div>
+</div>
+
+<div class="card noprint" style="padding:10px 14px">
+  <div class="row" style="margin:0">
+    <div><label class="f">ダイヤルの読みの単位</label>
+      <select id="unit" onchange="allCalc()">
+        <option value="0.001">µm（1000分の1 mm）</option>
+        <option value="1" selected>mm</option>
+      </select>
+    </div>
+    <div><label class="f">測定スパン S（mm）</label><input type="number" id="span" value="200" step="0.1" oninput="allCalc()"></div>
+  </div>
+  <div class="hint">S は「2点の接触位置どうしの、軸に沿った距離」です。全タブ共通で使います。</div>
+</div>
+
+<div class="tabs noprint" role="tablist">
+  <button role="tab" id="tA" aria-selected="true"  onclick="setTab('A')">傾きを出す</button>
+  <button role="tab" id="tB" aria-selected="false" onclick="setTab('B')">ガタの影響</button>
+  <button role="tab" id="tC" aria-selected="false" onclick="setTab('C')">反転法・2軸</button>
+</div>
+
+<!-- ════════ A: 傾きを出す ════════ -->
+<section id="paneA">
+  <div class="card">
+    <h2>2点読み<span class="tag">Δ ⁄ S</span></h2>
+    <div class="row">
+      <div><label class="f">読み r₁（手前）</label><input type="number" id="r1" value="0" step="0.001" oninput="allCalc()"></div>
+      <div><label class="f">読み r₂（先端側）</label><input type="number" id="r2" value="0.15" step="0.001" oninput="allCalc()"></div>
+    </div>
+    <div class="row">
+      <div><label class="f">てこ式の傾き α（°・任意）</label><input type="number" id="alpha" value="0" step="0.5" min="0" max="60" oninput="allCalc()"></div>
+      <div><label class="f">Δ ＝ r₂ − r₁</label><input type="text" id="dShow" readonly style="background:#EDF1F3"></div>
+    </div>
+    <div class="hint">α はてこ式ダイヤルゲージのスタイラスが測定方向となす角。実値＝読み×cos α で補正します。スピンドル式（0°）ならそのまま。</div>
+    <figure style="margin-top:10px"><svg id="figA" viewBox="0 0 300 170" role="img" aria-label="定盤上の検査棒と2点読みの模式図"></svg><figcaption>側 面 図（傾きは誇張）</figcaption></figure>
+  </div>
+
+  <div class="card">
+    <div class="dro">
+      <div class="lbl">傾き θ</div>
+      <div class="big"><span id="aDeg">0.0000</span><span class="u">°</span></div>
+      <div class="sub">
+        <div><div class="k">度 分 秒</div><div class="v" id="aDms">-</div></div>
+        <div><div class="k">mm / m</div><div class="v" id="aMpm">-</div></div>
+      </div>
+      <div class="sub">
+        <div><div class="k">mm / 100mm</div><div class="v" id="aM100">-</div></div>
+        <div><div class="k">こう配 1 :</div><div class="v" id="aRatio">-</div></div>
+      </div>
+    </div>
+    <div class="res" style="margin-top:10px">
+      <div><span class="k">補正後 Δ</span><span class="v" id="aDelta">-</span></div>
+      <div><span class="k">tan θ</span><span class="v" id="aTan">-</span></div>
+      <div><span class="k">θ（ラジアン）</span><span class="v" id="aRad">-</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>長さに換算<span class="tag">ℓ · tan θ</span></h2>
+    <div class="row">
+      <div><label class="f">長さ ℓ（mm）</label><input type="number" id="ell" value="100" step="1" oninput="allCalc()"></div>
+      <div><label class="f">ℓ での振れ量</label><input type="text" id="ellOut" readonly style="background:#EDF1F3"></div>
+    </div>
+    <h2 style="margin-top:14px">公差判定<span class="tag">直角度 / 平行度</span></h2>
+    <div class="row">
+      <div><label class="f">公差 t（Ø または 幅）</label><input type="number" id="tolT" value="0.05" step="0.001" oninput="allCalc()"></div>
+      <div><label class="f">指示長さ ℓ_spec（mm）</label><input type="number" id="tolL" value="100" step="1" oninput="allCalc()"></div>
+    </div>
+    <div class="res">
+      <div><span class="k">許容傾き（t ⁄ ℓ_spec）</span><span class="v" id="tAllowDeg">-</span></div>
+      <div><span class="k">実測の ℓ_spec 上の偏差</span><span class="v hl" id="tDev">-</span></div>
+      <div><span class="k">公差消費率</span><span class="v" id="tUse">-</span></div>
+      <div><span class="k">判定</span><span class="v" id="tJudge">-</span></div>
+    </div>
+    <div class="hint">公差域は最適位置に置ける（位置度と併記されていない）前提で、ℓ_spec にわたる偏差が t 以下なら合格としています。</div>
+
+    <details>
+      <summary>勾配・角度 早見表</summary>
+      <div class="tblwrap" style="margin-top:8px">
+        <table>
+          <thead><tr><th>tan θ</th><th>mm/m</th><th>度</th><th>分</th><th>1:N</th></tr></thead>
+          <tbody id="quickTbl"></tbody>
+        </table>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ════════ B: ガタの影響 ════════ -->
+<section id="paneB" hidden>
+  <div class="card">
+    <h2>すき間ロッキング<span class="tag">これが本題</span></h2>
+    <div class="banner">すき間ばめの丸棒は、穴の中で必ず首を振ります。その最大角より小さい傾きは、測っても意味を持ちません。</div>
+    <div class="row">
+      <div><label class="f">穴径 D</label><input type="number" id="hD" value="20.02" step="0.001" oninput="allCalc()"></div>
+      <div><label class="f">棒径 d</label><input type="number" id="hd" value="20.00" step="0.001" oninput="allCalc()"></div>
+      <div><label class="f">はまり長さ H</label><input type="number" id="hH" value="30" step="0.1" oninput="allCalc()"></div>
+    </div>
+    <figure><svg id="figB" viewBox="0 0 300 160" role="img" aria-label="穴と検査棒のすき間とロッキングの模式図"></svg><figcaption>穴 断 面（すき間は誇張）</figcaption></figure>
+    <div class="res" style="margin-top:10px">
+      <div><span class="k">すき間（D − d）</span><span class="v" id="bGap">-</span></div>
+      <div><span class="k">ロッキング最大角 θmax</span><span class="v hl" id="bTmax">-</span></div>
+      <div><span class="k">S 上に生じる読み差</span><span class="v hl" id="bDmax">-</span></div>
+      <div><span class="k">実測 Δ に対する割合</span><span class="v" id="bRatio">-</span></div>
+      <div><span class="k">穴の傾きの取りうる範囲</span><span class="v" id="bRange">-</span></div>
+    </div>
+    <div id="bVerdict"></div>
+    <div class="hint">θmax ＝ acos(d ⁄ √(D²+H²)) − atan(H ⁄ D)。棒と穴の縁が2点で当たる限界姿勢の厳密解です（近似式 (D−d)⁄H は H が浅いと過大に出ます）。</div>
+  </div>
+
+  <div class="card">
+    <h2>押し付け反転<span class="tag">ガタを消す</span></h2>
+    <div class="banner">棒の先端を<b>上に押し付けて1回</b>、<b>下に押し付けて1回</b>読みます。2つの姿勢はロッキングの両端なので、平均が穴の軸です。</div>
+    <div class="row">
+      <div><label class="f">Δ（上に押し付け）</label><input type="number" id="pUp" step="0.001" oninput="allCalc()"></div>
+      <div><label class="f">Δ（下に押し付け）</label><input type="number" id="pDn" step="0.001" oninput="allCalc()"></div>
+    </div>
+    <div class="res">
+      <div><span class="k">穴の傾き（平均）</span><span class="v hl" id="pMean">-</span></div>
+      <div><span class="k">実測ロッキング（半差）</span><span class="v" id="pHalf">-</span></div>
+      <div><span class="k">理論 θmax との比</span><span class="v" id="pCmp">-</span></div>
+    </div>
+    <div id="pVerdict"></div>
+  </div>
+</section>
+
+<!-- ════════ C: 反転法・2軸 ════════ -->
+<section id="paneC" hidden>
+  <div class="card">
+    <h2>棒の曲がりを分離<span class="tag">180° 反転法</span></h2>
+    <div class="banner">棒を軸まわりに180°回して測り直します。穴の傾きは向きが変わらず、棒自身の曲がりだけ符号が反転します。</div>
+    <div class="row">
+      <div><label class="f">Δ（0°）</label><input type="number" id="rv0" step="0.001" oninput="allCalc()"></div>
+      <div><label class="f">Δ（180°）</label><input type="number" id="rv180" step="0.001" oninput="allCalc()"></div>
+    </div>
+    <div class="res">
+      <div><span class="k">穴の傾き （Δ₀＋Δ₁₈₀）⁄2</span><span class="v hl" id="rvHole">-</span></div>
+      <div><span class="k">棒の曲がり （Δ₀−Δ₁₈₀）⁄2</span><span class="v" id="rvBar">-</span></div>
+      <div><span class="k">棒の曲がり（S 間の振れ量）</span><span class="v" id="rvBarMm">-</span></div>
+    </div>
+    <div class="hint">入れ直しのたびにロッキングの座り方が変わるため、押し付け方向は0°と180°で必ず揃えてください。</div>
+  </div>
+
+  <div class="card">
+    <h2>2軸合成<span class="tag">向きまで出す</span></h2>
+    <div class="banner">1方向だけ測ると、傾きは必ず過小評価になります。直交する2方向で読んでください。</div>
+    <div class="row">
+      <div><label class="f">Δx（X 方向）</label><input type="number" id="cx" value="0.15" step="0.001" oninput="allCalc()"></div>
+      <div><label class="f">Δy（Y 方向）</label><input type="number" id="cy" value="0.08" step="0.001" oninput="allCalc()"></div>
+    </div>
+    <figure><svg id="figC" viewBox="0 0 300 190" role="img" aria-label="傾きの方位図"></svg><figcaption>方 位 図（上が ＋Y）</figcaption></figure>
+    <div class="res" style="margin-top:10px">
+      <div><span class="k">θx / θy</span><span class="v" id="cTh">-</span></div>
+      <div><span class="k">合成傾き θ</span><span class="v hl" id="cRes">-</span></div>
+      <div><span class="k">θ（mm/m）</span><span class="v" id="cMpm">-</span></div>
+      <div><span class="k">方位 φ（＋X から反時計）</span><span class="v" id="cPhi">-</span></div>
+      <div><span class="k">1方向だけの見落とし</span><span class="v" id="cMiss">-</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ 記録表 ════════ -->
+<div class="card">
+  <h2>記録表<span class="tag">印刷 → PDF 保存</span></h2>
+  <div class="row noprint">
+    <div><label class="f">部品名</label><input type="text" id="recName" placeholder="—" oninput="persist()"></div>
+    <div><label class="f">検査日</label><input type="date" id="recDate" oninput="persist()"></div>
+  </div>
+  <div class="row noprint">
+    <div><label class="f">検査者</label><input type="text" id="recBy" placeholder="—" oninput="persist()"></div>
+    <div><label class="f">測定箇所名</label><input type="text" id="recSpot" placeholder="穴A"></div>
+  </div>
+  <div class="print-only" id="recHead" style="font-size:12px;margin-bottom:8px"></div>
+  <div class="tblwrap">
+    <table>
+      <thead><tr><th>箇所</th><th>θ (°)</th><th>mm/m</th><th>ℓ_spec 偏差</th><th>判定</th></tr></thead>
+      <tbody id="recBody"></tbody>
+    </table>
+  </div>
+  <div class="btnrow noprint" style="margin-top:10px">
+    <button class="btn primary" onclick="addRec()">現在の結果を記録</button>
+    <button class="btn" onclick="window.print()">印刷 / PDF</button>
+    <button class="btn warn sm" onclick="wipe()">保存データを消去</button>
+  </div>
+</div>
+
+<div class="card noprint">
+  <details open>
+    <summary>測定時の留意点</summary>
+    <ul>
+      <li>すき間ばめの丸棒では、<b>押し付け反転（上・下）の平均</b>を取らない限り、読みにロッキングが混ざります。片側だけの1回読みは参考値です。</li>
+      <li>棒を差し替えると座り方が変わります。0°／180°の反転法は、押し付け方向を揃えて行ってください。</li>
+      <li>棒の曲がり・径のうねりはそのまま読みに乗ります。反転法で分離し、大きければ棒を交換してください。</li>
+      <li>穴の入口のバリ・面取りに棒が乗ると、はまり長さ H が実質短くなり θmax が跳ね上がります。H は「実際に円筒部が当たっている長さ」で入れてください。</li>
+      <li>穴がテーパになっていると、この計算の前提（真円筒）が崩れます。深さ違いで内径を測って確認してください。</li>
+      <li>棒が長いほど Δ は読みやすくなりますが、ロッキングも同じ比率で拡大します。感度は上がっても精度は上がりません。</li>
+      <li>鋼は 1 K あたり約 11.8 µm/m 伸びます。長い棒の絶対長さが効く場面では温度補正ツールを併用してください。</li>
+      <li>てこ式を使う場合は α の cos 補正を。α=15° で読みは約 3.4 % 大きく出ます。</li>
+    </ul>
+  </details>
+</div>
+
+<footer>
+  検査ミニポータル｜計算はすべてこの端末の中で行われます。入力値は端末のブラウザ内にのみ保存され、消去ボタンで完全に削除できます。
+</footer>
+</div>
+
+<script>
+"use strict";
+var DEG = 180/Math.PI;
+function g(id){ return document.getElementById(id); }
+function n(id){ var v = parseFloat(g(id).value); return isFinite(v)? v : NaN; }
+function U(){ return parseFloat(g("unit").value); }          // 読み → mm
+function f(v,d){ return isFinite(v)? v.toFixed(d==null?4:d) : "-"; }
+
+function dms(deg){
+  if(!isFinite(deg)) return "-";
+  var s = deg<0? "−":"", a=Math.abs(deg);
+  var D=Math.floor(a), M=Math.floor((a-D)*60), Sc=((a-D)*60-M)*60;
+  return s+D+"° "+M+"′ "+Sc.toFixed(1)+"″";
+}
+function slopeLine(t){                                        // tanθ → 表示一式
+  return { deg:Math.atan(t)*DEG, mpm:t*1000, m100:t*100, ratio:(t!==0? 1/Math.abs(t):Infinity) };
+}
+
+/* ═══ A: 傾きを出す ═══ */
+var A = {tan:NaN, deg:NaN, dev:NaN, judge:"—"};
+function calcA(){
+  var S=n("span"), r1=n("r1"), r2=n("r2"), al=n("alpha");
+  var k = (isFinite(al) && al>=0 && al<90)? Math.cos(al/DEG) : 1;
+  var D = (r2-r1)*U()*k;
+  g("dShow").value = isFinite(r2-r1)? ((r2-r1).toFixed(4)+" "+(U()===1?"mm":"µm")) : "-";
+  var t = (isFinite(D)&&isFinite(S)&&S!==0)? D/S : NaN;
+  A.tan = t;
+  var L = slopeLine(t);
+  A.deg = L.deg;
+  g("aDeg").textContent  = f(L.deg,4);
+  g("aDms").textContent  = dms(L.deg);
+  g("aMpm").textContent  = f(L.mpm,3);
+  g("aM100").textContent = f(L.m100,4);
+  g("aRatio").textContent= isFinite(L.ratio)? (L.ratio>99999? "—" : Math.round(L.ratio).toLocaleString()) : "∞";
+  g("aDelta").textContent= isFinite(D)? f(D,4)+" mm":"-";
+  g("aTan").textContent  = isFinite(t)? t.toExponential(4):"-";
+  g("aRad").textContent  = isFinite(t)? Math.atan(t).toExponential(4):"-";
+
+  var ell=n("ell");
+  g("ellOut").value = (isFinite(ell)&&isFinite(t))? (ell*t).toFixed(4)+" mm" : "-";
+
+  var tt=n("tolT"), tl=n("tolL");
+  var allow = (isFinite(tt)&&isFinite(tl)&&tl>0)? tt/tl : NaN;
+  var dev   = (isFinite(t)&&isFinite(tl))? Math.abs(t)*tl : NaN;
+  g("tAllowDeg").textContent = isFinite(allow)? (Math.atan(allow)*DEG).toFixed(4)+"°（"+(allow*1000).toFixed(2)+" mm/m）" : "-";
+  g("tDev").textContent = isFinite(dev)? dev.toFixed(4)+" mm":"-";
+  g("tUse").textContent = (isFinite(dev)&&isFinite(tt)&&tt>0)? (dev/tt*100).toFixed(1)+" %":"-";
+  var j=g("tJudge");
+  if(isFinite(dev)&&isFinite(tt)){ var ok = dev<=tt; A.dev=dev; A.judge= ok?"合格":"不合格"; j.textContent=A.judge; j.className="v "+(ok?"ok":"ng"); }
+  else { A.judge="—"; j.textContent="-"; j.className="v"; }
+
+  drawA(t);
+}
+
+function drawA(t){
+  var s = (!isFinite(t)||t===0)? 0 : (t>0? -0.10 : 0.10);   // 画面上向きが＋
+  var y0 = 100, x0 = 34, x1 = 275;
+  var yAt = function(x){ return y0 + (x-x0)*s; };
+  var h = "";
+  h += '<line x1="8" y1="150" x2="292" y2="150" stroke="#1F3341" stroke-width="3"/>';
+  for(var i=12;i<292;i+=10) h += '<line x1="'+i+'" y1="150" x2="'+(i-5)+'" y2="157" stroke="#8FA2AF" stroke-width="1"/>';
+  h += '<rect x="30" y="58" width="58" height="92" fill="#EEF3F5" stroke="#1F3341" stroke-width="1.6"/>';
+  h += '<line x1="30" y1="'+(y0-7)+'" x2="88" y2="'+(y0-7)+'" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="3 2"/>';
+  h += '<line x1="30" y1="'+(y0+7)+'" x2="88" y2="'+(y0+7)+'" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="3 2"/>';
+  h += '<path d="M '+x0+' '+(yAt(x0)-5).toFixed(1)+' L '+x1+' '+(yAt(x1)-5).toFixed(1)+' L '+x1+' '+(yAt(x1)+5).toFixed(1)+' L '+x0+' '+(yAt(x0)+5).toFixed(1)+' Z" fill="#fff" stroke="#1F3341" stroke-width="1.5"/>';
+  h += '<line x1="'+x0+'" y1="'+yAt(x0).toFixed(1)+'" x2="'+x1+'" y2="'+yAt(x1).toFixed(1)+'" stroke="#8FA2AF" stroke-width="0.8" stroke-dasharray="5 3"/>';
+  [[150,"r₁"],[250,"r₂"]].forEach(function(p){
+    var x=p[0], y=yAt(x)-5;
+    h += '<line x1="'+x+'" y1="'+(y-30)+'" x2="'+x+'" y2="'+(y-3).toFixed(1)+'" stroke="#D63426" stroke-width="1.6"/>';
+    h += '<circle cx="'+x+'" cy="'+y.toFixed(1)+'" r="2.6" fill="#D63426"/>';
+    h += '<text x="'+(x+5)+'" y="'+(y-20)+'" font-size="10" fill="#D63426" font-family="monospace">'+p[1]+'</text>';
+  });
+  h += '<line x1="150" y1="26" x2="250" y2="26" stroke="#1F3341" stroke-width="1"/>';
+  h += '<path d="M150 26 l6 -3 v6 z M250 26 l-6 -3 v6 z" fill="#1F3341"/>';
+  h += '<text x="200" y="21" font-size="10" fill="#1F3341" text-anchor="middle" font-family="monospace">S</text>';
+  if(s!==0){
+    var yr = yAt(250)-5, yf = yAt(150)-5;
+    h += '<line x1="264" y1="'+yf.toFixed(1)+'" x2="264" y2="'+yr.toFixed(1)+'" stroke="#D63426" stroke-width="1.6"/>';
+    h += '<text x="269" y="'+((yf+yr)/2+3).toFixed(1)+'" font-size="10" fill="#D63426" font-family="monospace">Δ</text>';
+  }
+  g("figA").innerHTML=h;
+}
+
+/* ═══ B: ガタ ═══ */
+var B = {tmax:NaN};
+function thetaMax(D,d,H){                                    // rad ─ 厳密解
+  if(!(D>0&&d>0&&H>=0&&d<D)) return NaN;
+  var R=Math.hypot(D,H);
+  if(d/R>1) return NaN;
+  return Math.acos(d/R) - Math.atan2(H,D);
+}
+function calcB(){
+  var D=n("hD"), d=n("hd"), H=n("hH"), S=n("span");
+  var tm = thetaMax(D,d,H); B.tmax = tm;
+  var dmax = (isFinite(tm)&&isFinite(S))? S*Math.tan(tm) : NaN;
+  g("bGap").textContent  = (isFinite(D)&&isFinite(d))? (D-d).toFixed(4)+" mm（"+((D-d)*1000).toFixed(0)+" µm）":"-";
+  g("bTmax").textContent = isFinite(tm)? (tm*DEG).toFixed(4)+"°（"+(tm*DEG*60).toFixed(2)+"′）":"-";
+  g("bDmax").textContent = isFinite(dmax)? "±"+dmax.toFixed(4)+" mm":"-";
+
+  var meas = Math.abs(A.tan)*(isFinite(S)?S:NaN);
+  var ratio = (isFinite(dmax)&&isFinite(meas)&&meas>0)? dmax/meas : NaN;
+  g("bRatio").textContent = isFinite(ratio)? (ratio*100).toFixed(0)+" %":"-";
+
+  var lo = (isFinite(A.tan)&&isFinite(tm))? (Math.atan(A.tan)-tm)*DEG : NaN;
+  var hi = (isFinite(A.tan)&&isFinite(tm))? (Math.atan(A.tan)+tm)*DEG : NaN;
+  g("bRange").textContent = isFinite(lo)? lo.toFixed(4)+"° 〜 "+hi.toFixed(4)+"°":"-";
+
+  var v=g("bVerdict"), h="";
+  if(isFinite(ratio)){
+    if(ratio>=1)      h='<div class="verdict v-ng"><b>ガタだけで説明できます</b>いま読んでいる Δ は、すき間による首振りの範囲に収まっています。この1回読みからは穴の傾きを結論できません。押し付け反転で測り直してください。</div>';
+    else if(ratio>=0.2) h='<div class="verdict v-cau"><b>ガタの影響が無視できません</b>読みの '+(ratio*100).toFixed(0)+' % 相当がロッキングで動きます。押し付け反転の平均を取ってください。</div>';
+    else              h='<div class="verdict v-ok"><b>ガタの影響は小さい</b>ロッキング幅は読みの '+(ratio*100).toFixed(0)+' % 程度です。それでも念のため押し付け方向は固定してください。</div>';
+  }
+  v.innerHTML=h;
+  drawB(D,d,H);
+  calcP();
+}
+function drawB(D,d,H){
+  var ok = (D>0&&d>0&&H>0&&d<D);
+  var x0=70,x1=230,yT=30,yB=140;                             // 穴の断面(誇張)
+  var h='';
+  h+='<rect x="'+x0+'" y="'+yT+'" width="'+(x1-x0)+'" height="'+(yB-yT)+'" fill="#EEF3F5" stroke="#1F3341" stroke-width="1.6"/>';
+  h+='<line x1="20" y1="'+yT+'" x2="'+x0+'" y2="'+yT+'" stroke="#1F3341" stroke-width="1.6"/>';
+  h+='<line x1="'+x1+'" y1="'+yT+'" x2="280" y2="'+yT+'" stroke="#1F3341" stroke-width="1.6"/>';
+  if(ok){
+    var w=(x1-x0)*0.80;                                      // 棒の見かけ幅
+    var tv=0.28;                                            // 見かけの傾き(誇張)
+    var cx=(x0+x1)/2;
+    var p=[[cx-w/2+tv*(yB-yT)/2, yT],[cx+w/2+tv*(yB-yT)/2, yT],[cx+w/2-tv*(yB-yT)/2, yB],[cx-w/2-tv*(yB-yT)/2, yB]];
+    h+='<path d="M'+p.map(function(q){return q[0].toFixed(1)+","+q[1].toFixed(1);}).join(" L")+' Z" fill="#fff" stroke="#1F3341" stroke-width="1.5"/>';
+    h+='<circle cx="'+(x1).toFixed(1)+'" cy="'+yT+'" r="4" fill="none" stroke="#D63426" stroke-width="2"/>';
+    h+='<circle cx="'+(x0).toFixed(1)+'" cy="'+yB+'" r="4" fill="none" stroke="#D63426" stroke-width="2"/>';
+    h+='<text x="'+(x1+8)+'" y="'+(yT+4)+'" font-size="9" fill="#D63426" font-family="monospace">接点</text>';
+    h+='<text x="'+(x0-30)+'" y="'+(yB+4)+'" font-size="9" fill="#D63426" font-family="monospace">接点</text>';
+    h+='<line x1="'+x0+'" y1="152" x2="'+x1+'" y2="152" stroke="#1F3341" stroke-width="1"/>';
+    h+='<text x="'+((x0+x1)/2)+'" y="149" font-size="9" fill="#1F3341" text-anchor="middle" font-family="monospace">D</text>';
+    h+='<line x1="52" y1="'+yT+'" x2="52" y2="'+yB+'" stroke="#1F3341" stroke-width="1"/>';
+    h+='<text x="44" y="'+((yT+yB)/2)+'" font-size="9" fill="#1F3341" text-anchor="end" font-family="monospace">H</text>';
+  }
+  g("figB").innerHTML=h;
+}
+
+/* 押し付け反転 */
+function calcP(){
+  var S=n("span"), up=n("pUp"), dn=n("pDn");
+  if(!(isFinite(S)&&S!==0&&isFinite(up)&&isFinite(dn))){
+    ["pMean","pHalf","pCmp"].forEach(function(i){g(i).textContent="-";}); g("pVerdict").innerHTML=""; return;
+  }
+  var tu=up*U()/S, td=dn*U()/S;
+  var mean=(tu+td)/2, half=Math.abs(tu-td)/2;
+  g("pMean").textContent = (Math.atan(mean)*DEG).toFixed(4)+"°（"+(mean*1000).toFixed(3)+" mm/m）";
+  g("pHalf").textContent = (Math.atan(half)*DEG).toFixed(4)+"°";
+  var r = (isFinite(B.tmax)&&B.tmax>0)? Math.atan(half)/B.tmax : NaN;
+  g("pCmp").textContent = isFinite(r)? (r*100).toFixed(0)+" %":"-";
+  var h="";
+  if(isFinite(r)){
+    if(r<0.5)       h='<div class="verdict v-cau"><b>押し切れていない可能性</b>実測の首振りが理論の半分未満です。棒を確実に両端まで倒してから読み直してください。</div>';
+    else if(r<=1.2) h='<div class="verdict v-ok"><b>妥当な測定です</b>実測の首振りが理論 θmax とほぼ一致しています。上の「平均」を穴の傾きとして採用できます。</div>';
+    else            h='<div class="verdict v-ng"><b>すき間が想定より大きい</b>実測の首振りが理論を超えています。穴径・棒径の再測定、入口のバリや切粉、穴のテーパを疑ってください。</div>';
+  }
+  g("pVerdict").innerHTML=h;
+}
+
+/* ═══ C: 反転法・2軸 ═══ */
+function calcC(){
+  var S=n("span"), a=n("rv0"), b=n("rv180");
+  if(isFinite(S)&&S!==0&&isFinite(a)&&isFinite(b)){
+    var th=(a+b)/2*U()/S, bar=(a-b)/2*U();
+    g("rvHole").textContent = (Math.atan(th)*DEG).toFixed(4)+"°（"+(th*1000).toFixed(3)+" mm/m）";
+    g("rvBar").textContent  = (Math.atan(bar/S)*DEG).toFixed(4)+"°";
+    g("rvBarMm").textContent= bar.toFixed(4)+" mm";
+  } else ["rvHole","rvBar","rvBarMm"].forEach(function(i){g(i).textContent="-";});
+
+  var dx=n("cx"), dy=n("cy");
+  if(isFinite(S)&&S!==0&&isFinite(dx)&&isFinite(dy)){
+    var tx=dx*U()/S, ty=dy*U()/S;
+    var tr=Math.hypot(tx,ty), th2=Math.atan(tr)*DEG;
+    var phi=Math.atan2(ty,tx)*DEG; if(phi<0) phi+=360;
+    var big=Math.max(Math.abs(tx),Math.abs(ty));
+    g("cTh").textContent  = (Math.atan(tx)*DEG).toFixed(4)+"° / "+(Math.atan(ty)*DEG).toFixed(4)+"°";
+    g("cRes").textContent = th2.toFixed(4)+"°";
+    g("cMpm").textContent = (tr*1000).toFixed(3)+" mm/m";
+    g("cPhi").textContent = phi.toFixed(1)+"°";
+    g("cMiss").textContent= (big>0)? "大きい方だけだと "+((1-big/tr)*100).toFixed(1)+" % 過小":"-";
+    drawC(tx,ty,phi);
+  } else { ["cTh","cRes","cMpm","cPhi","cMiss"].forEach(function(i){g(i).textContent="-";}); g("figC").innerHTML=""; }
+}
+function drawC(tx,ty,phi){
+  var cx=150, cy=95, R=68, h="";
+  h+='<circle cx="'+cx+'" cy="'+cy+'" r="'+R+'" fill="#FBFCFC" stroke="#1F3341" stroke-width="1.4"/>';
+  h+='<circle cx="'+cx+'" cy="'+cy+'" r="'+(R/2)+'" fill="none" stroke="#D5DDE2" stroke-width="1" stroke-dasharray="3 3"/>';
+  h+='<line x1="'+(cx-R)+'" y1="'+cy+'" x2="'+(cx+R)+'" y2="'+cy+'" stroke="#8FA2AF" stroke-width="1"/>';
+  h+='<line x1="'+cx+'" y1="'+(cy-R)+'" x2="'+cx+'" y2="'+(cy+R)+'" stroke="#8FA2AF" stroke-width="1"/>';
+  [[cx+R+6,cy+4,"+X"],[cx-4,cy-R-6,"+Y"]].forEach(function(t){ h+='<text x="'+t[0]+'" y="'+t[1]+'" font-size="9" fill="#5B707E" font-family="monospace">'+t[2]+'</text>'; });
+  var tr=Math.hypot(tx,ty);
+  if(tr>0){
+    var ax=cx+Math.cos(phi/DEG)*R*0.86, ay=cy-Math.sin(phi/DEG)*R*0.86;
+    h+='<line x1="'+cx+'" y1="'+cy+'" x2="'+ax.toFixed(1)+'" y2="'+ay.toFixed(1)+'" stroke="#D63426" stroke-width="2.4"/>';
+    h+='<circle cx="'+ax.toFixed(1)+'" cy="'+ay.toFixed(1)+'" r="3.6" fill="#D63426"/>';
+    h+='<text x="'+cx+'" y="'+(cy+R+22)+'" font-size="10" fill="#D63426" text-anchor="middle" font-family="monospace">φ = '+phi.toFixed(1)+'°</text>';
+  }
+  g("figC").innerHTML=h;
+}
+
+/* ═══ 早見表 ═══ */
+(function(){
+  var rows=[0.0001,0.0005,0.001,0.005,0.01], h="";
+  rows.forEach(function(t){
+    var L=slopeLine(t);
+    h+='<tr><td>'+t.toFixed(4)+'</td><td>'+L.mpm.toFixed(1)+'</td><td>'+L.deg.toFixed(5)+'</td><td>'+(L.deg*60).toFixed(3)+'</td><td>'+Math.round(L.ratio).toLocaleString()+'</td></tr>';
+  });
+  g("quickTbl").innerHTML=h;
+})();
+
+/* ═══ 記録表 ═══ */
+var REC=[];
+function addRec(){
+  if(!isFinite(A.deg)){ alert("先に「傾きを出す」タブで読みを入れてください。"); return; }
+  REC.push({spot:g("recSpot").value||"—", deg:A.deg, mpm:A.tan*1000, dev:A.dev, judge:A.judge});
+  g("recSpot").value=""; renderRec(); persist();
+}
+function delRec(i){ REC.splice(i,1); renderRec(); persist(); }
+function renderRec(){
+  var h="";
+  REC.forEach(function(r,i){
+    var cls = r.judge==="合格"?"ok":(r.judge==="不合格"?"ng":"");
+    h+='<tr><td>'+r.spot+' <button class="xbtn noprint" onclick="delRec('+i+')" aria-label="削除">×</button></td>'
+     +'<td>'+r.deg.toFixed(4)+'</td><td>'+r.mpm.toFixed(3)+'</td>'
+     +'<td>'+(isFinite(r.dev)?r.dev.toFixed(4):"—")+'</td>'
+     +'<td class="'+cls+'">'+r.judge+'</td></tr>';
+  });
+  if(!REC.length) h='<tr><td colspan="5" style="text-align:center;color:#8FA2AF;font-family:inherit;padding:12px">「現在の結果を記録」で追加</td></tr>';
+  g("recBody").innerHTML=h;
+  g("recHead").innerHTML = "部品名："+(g("recName").value||"—")+"　／　検査日："+(g("recDate").value||"—")+"　／　検査者："+(g("recBy").value||"—");
+}
+
+/* ═══ 保存 ═══ */
+var KEY="axistilt_v1";
+var IDS=["unit","span","r1","r2","alpha","ell","tolT","tolL","hD","hd","hH","pUp","pDn","rv0","rv180","cx","cy","recName","recDate","recBy"];
+function persist(){
+  try{
+    var o={rec:REC, tab:TAB, v:{}};
+    IDS.forEach(function(i){ o.v[i]=g(i).value; });
+    localStorage.setItem(KEY, JSON.stringify(o));
+  }catch(e){}
+}
+function restore(){
+  try{
+    var o=JSON.parse(localStorage.getItem(KEY)||"null"); if(!o) return;
+    REC=o.rec||[];
+    if(o.v) IDS.forEach(function(i){ if(o.v[i]!=null && o.v[i]!=="") g(i).value=o.v[i]; });
+    if(o.tab) TAB=o.tab;
+  }catch(e){}
+}
+function wipe(){
+  if(!confirm("この端末に保存された入力・記録をすべて消します。よろしいですか？")) return;
+  try{ localStorage.removeItem(KEY); }catch(e){}
+  REC=[]; renderRec();
+}
+
+/* ═══ タブ ═══ */
+var TAB="A";
+function setTab(t){
+  TAB=t;
+  ["A","B","C"].forEach(function(k){
+    g("t"+k).setAttribute("aria-selected", k===t);
+    g("pane"+k).hidden = (k!==t);
+  });
+  allCalc(); persist();
+}
+
+function allCalc(){ calcA(); calcB(); calcC(); renderRec(); persist(); }
+
+/* ═══ 起動 ═══ */
+restore();
+if(!g("recDate").value){
+  var dt=new Date();
+  g("recDate").value = dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0")+"-"+String(dt.getDate()).padStart(2,"0");
+}
+document.querySelectorAll("input,select").forEach(function(el){ el.addEventListener("change", persist); });
+setTab(TAB);
+</script>
+</body>
+</html>

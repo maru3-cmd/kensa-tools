@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1F3341">
+<meta name="description" content="大型溶接フレームの前加工検査。加工面ごとの削り代計算・対角/ねじれチェック・検査記録の印刷(PDF保存)。データは端末内にのみ保存され、どこにも送信されません。">
+<title>フレーム削り代検査 | 検査計算ツール</title>
+<style>
+  :root{
+    --paper:#F2F4F5;
+    --sheet:#FFFFFF;
+    --ink:#1F3341;
+    --line:#8FA2AF;
+    --red:#D63426;
+    --amber:#B97A1E;
+    --green:#2E9E5B;
+    --dro-bg:#15181A;
+    --dro-red:#FF5A48;
+    --dro-green:#42D77D;
+    --dro-dim:#9FB0B8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI",sans-serif;
+    background:var(--paper);color:var(--ink);
+    min-height:100dvh;display:flex;flex-direction:column;align-items:center;
+    padding:0 12px calc(16px + env(safe-area-inset-bottom));
+  }
+  .wrap{width:100%;max-width:480px}
+
+  header{display:flex;align-items:baseline;justify-content:space-between;padding:14px 2px 8px}
+  header h1{font-size:16px;font-weight:700;letter-spacing:.04em}
+  header h1 small{display:block;font-size:11px;font-weight:400;color:#5B707E;letter-spacing:.08em;margin-top:2px}
+  header a{font-size:12px;color:#5B707E;text-decoration:none}
+
+  .tb-strip{
+    display:flex;background:var(--sheet);border:2px solid var(--ink);
+    font-size:9px;letter-spacing:.06em;margin-bottom:12px;
+  }
+  .tb-strip div{padding:4px 8px;border-right:1px solid var(--ink)}
+  .tb-strip div:last-child{border-right:none;margin-left:auto}
+  .tb-strip b{font-weight:700}
+
+  .card{
+    background:var(--sheet);border:1px solid #D5DDE2;border-radius:12px;
+    padding:12px;margin-bottom:12px;
+  }
+  .card h2{
+    font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.1em;
+    margin-bottom:10px;display:flex;align-items:center;gap:6px;
+  }
+  .card h2::before{content:'';width:4px;height:14px;background:var(--ink);border-radius:2px}
+
+  .row{
+    display:grid;grid-template-columns:1fr 120px 30px;
+    align-items:center;gap:8px;padding:6px 0;
+  }
+  .row label{font-size:13px;font-weight:600}
+  .row label small{display:block;font-size:10px;font-weight:400;color:#5B707E}
+  input.f{
+    width:100%;font-size:17px;font-weight:600;text-align:right;
+    font-variant-numeric:tabular-nums;
+    border:none;border-bottom:2px solid var(--ink);
+    background:transparent;color:var(--ink);
+    padding:2px 4px;border-radius:0;outline:none;
+  }
+  input.f:focus{border-bottom-color:var(--red)}
+  input.ft{text-align:left;font-size:15px}
+  .unit{font-size:12px;color:#5B707E}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px}
+  .grid2 .row{grid-template-columns:1fr 78px 22px}
+
+  /* 加工面カード */
+  .sfcard{
+    border:1.5px solid var(--ink);border-radius:10px;
+    padding:10px;margin-bottom:10px;background:#FBFCFD;
+  }
+  .sfhead{display:flex;gap:8px;align-items:center;margin-bottom:6px}
+  .sfhead input.f{flex:1}
+  .ttoggle{display:inline-flex;border:1px solid var(--ink);border-radius:7px;overflow:hidden;flex:none}
+  .ttoggle button{font-size:11px;padding:5px 8px;border:none;background:var(--sheet);color:var(--ink);font-weight:700}
+  .ttoggle button.on{background:var(--ink);color:#fff}
+  .sfdel{border:none;background:none;color:#B4C1C9;font-size:19px;font-weight:700;padding:0 4px;flex:none}
+  .sfdel:active{color:var(--red)}
+  .ptadd{display:flex;gap:8px;margin-top:8px}
+  .ptadd input.f{flex:1;font-size:19px}
+  .ptbtn{
+    flex:none;font-size:13px;font-weight:700;padding:8px 14px;border-radius:8px;
+    border:none;background:var(--ink);color:#fff;
+  }
+  .ptbtn:active{background:#3A5468}
+  .pts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .pt{
+    display:inline-flex;align-items:center;gap:5px;
+    border:1px solid #C9D3DA;border-radius:7px;padding:4px 6px 4px 9px;
+    font-size:13px;font-variant-numeric:tabular-nums;background:var(--sheet);
+  }
+  .pt b{font-weight:700}
+  .pt b.ok{color:var(--green)}
+  .pt b.ng{color:var(--red)}
+  .pt .px{border:none;background:none;color:#B4C1C9;font-size:15px;font-weight:700;padding:0 2px}
+  .pt .px:active{color:var(--red)}
+  .sfsum{
+    margin-top:9px;padding-top:8px;border-top:1px dashed #D5DDE2;
+    font-size:12.5px;line-height:1.7;font-variant-numeric:tabular-nums;
+  }
+  .sfsum b.ok{color:var(--green)}
+  .sfsum b.ng{color:var(--red)}
+  .addSurf{
+    width:100%;font-size:13px;font-weight:700;padding:11px 4px;
+    border:1.5px dashed var(--ink);border-radius:10px;
+    background:var(--sheet);color:var(--ink);letter-spacing:.05em;
+  }
+  .addSurf:active{background:var(--ink);color:#fff}
+
+  .calcline{
+    padding-top:8px;margin-top:6px;border-top:1px dashed #D5DDE2;
+    font-size:12.5px;line-height:1.8;font-variant-numeric:tabular-nums;
+  }
+  .calcline b.ok{color:var(--green)}
+  .calcline b.ng{color:var(--red)}
+
+  /* 総合判定 */
+  .dro{
+    background:var(--dro-bg);border-radius:12px;
+    padding:16px 18px 12px;box-shadow:inset 0 2px 8px rgba(0,0,0,.5);
+    margin-bottom:12px;
+  }
+  .judge{display:flex;align-items:baseline;justify-content:space-between;gap:10px;min-height:40px}
+  .judge .lab{color:#7d8a91;font-size:13px;font-weight:700;letter-spacing:.1em}
+  .judge .res{font-size:28px;font-weight:800;letter-spacing:.15em}
+  .judge .res.ok{color:var(--dro-green);text-shadow:0 0 12px rgba(66,215,125,.4)}
+  .judge .res.ng{color:var(--dro-red);text-shadow:0 0 12px rgba(255,90,72,.45)}
+  .judge .res.none{color:#4a555b;font-size:15px;font-weight:600;letter-spacing:.04em}
+  .dro-grid{
+    display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;
+    border-top:1px solid #2a3034;margin-top:10px;padding-top:10px;
+  }
+  .cellv{display:flex;flex-direction:column;align-items:flex-end;padding:4px 8px}
+  .cellv .k{color:#7d8a91;font-size:11px;font-weight:700;letter-spacing:.06em;align-self:flex-start}
+  .cellv .v{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-variant-numeric:tabular-nums;font-size:18px;font-weight:600;color:var(--dro-dim);
+  }
+  .cellv .s{color:#5d6a71;font-size:10px}
+  .dro-foot{
+    color:#5d6a71;font-size:11px;letter-spacing:.02em;
+    margin-top:10px;border-top:1px solid #2a3034;padding-top:9px;
+  }
+
+  /* 留意点 */
+  details.guide{
+    background:var(--sheet);border:1px solid #D5DDE2;border-radius:12px;
+    padding:12px;margin-bottom:12px;
+  }
+  details.guide summary{
+    font-size:13px;font-weight:700;color:var(--ink);letter-spacing:.05em;
+    cursor:pointer;
+  }
+  .guide-body{font-size:12.5px;line-height:1.9;margin-top:10px;color:#33475299}
+  .guide-body{color:#334752}
+  .guide-body h3{font-size:12px;color:#5B707E;margin:10px 0 3px;letter-spacing:.08em}
+  .guide-body ul{padding-left:18px}
+  .guide-body li{margin-bottom:2px}
+  .guide-body .fm{
+    font-variant-numeric:tabular-nums;background:#F2F4F5;border-radius:6px;
+    padding:6px 10px;margin-top:4px;font-size:12px;line-height:1.9;
+  }
+
+  .btnrow{display:flex;gap:8px;margin-bottom:8px}
+  .printBtn{
+    flex:1;font-size:14px;font-weight:700;padding:13px 4px;border-radius:10px;
+    border:none;background:var(--ink);color:#fff;letter-spacing:.08em;
+  }
+  .printBtn:active{background:#3A5468}
+  .clearBtn{
+    flex:1;font-size:13px;font-weight:700;padding:13px 4px;
+    border:1.5px solid #C9D3DA;border-radius:10px;
+    background:var(--sheet);color:#5B707E;letter-spacing:.05em;
+  }
+  .clearBtn.arm{border-color:var(--red);color:var(--red);background:#FCF0EF}
+
+  footer{margin-top:10px;font-size:11px;color:#5B707E;line-height:1.7;text-align:center;letter-spacing:.03em}
+
+  .toast{
+    position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);
+    background:var(--ink);color:#fff;font-size:13px;
+    padding:9px 20px;border-radius:20px;opacity:0;pointer-events:none;
+    transition:opacity .25s,transform .25s;z-index:9;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+
+  .print-sign{display:none}
+
+  /* ======== 印刷(PDF保存)レイアウト ======== */
+  @media print{
+    body{background:#fff;padding:0;display:block}
+    .wrap{max-width:none}
+    .no-print{display:none !important}
+    header a{display:none}
+    .card,.sfcard,details.guide{
+      border:1.2px solid #000;border-radius:0;box-shadow:none;
+      page-break-inside:avoid;background:#fff;
+    }
+    .tb-strip{border-color:#000}
+    input.f{border-bottom:1px solid #888;color:#000}
+    .dro{background:#fff;border:2px solid #000;box-shadow:none;border-radius:0}
+    .judge .lab,.cellv .k,.cellv .s,.dro-foot{color:#333}
+    .cellv .v{color:#000}
+    .judge .res.ok{color:#000;text-shadow:none}
+    .judge .res.ng{color:#000;text-shadow:none;text-decoration:underline}
+    .judge .res.none{color:#333}
+    .pt b.ok,.sfsum b.ok,.calcline b.ok{color:#000}
+    .pt b.ng,.sfsum b.ng,.calcline b.ng{color:#000;text-decoration:underline}
+    .pt .px,.sfdel{display:none}
+    .print-sign{
+      display:flex;gap:0;margin-top:14px;page-break-inside:avoid;
+    }
+    .print-sign div{
+      width:90px;height:74px;border:1px solid #000;margin-left:-1px;
+      font-size:10px;padding:4px;text-align:center;
+    }
+    .toast{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>フレーム削り代検査<small>大型溶接フレームの前加工検査・記録</small></h1>
+    <a href="../index.html" class="no-print">≡ ツール一覧</a>
+  </header>
+
+  <div class="tb-strip">
+    <div><b>書類</b> 削り代検査記録</div>
+    <div><b>方式</b> 高さ実測</div>
+    <div>TOOL-08</div>
+  </div>
+
+  <!-- 記録情報 -->
+  <div class="card">
+    <h2>記録情報</h2>
+    <div class="row">
+      <label for="iNo">管理番号<small>任意の呼び名でOK</small></label>
+      <input class="f ft" id="iNo" type="text" autocomplete="off" placeholder="―">
+      <span></span>
+    </div>
+    <div class="row">
+      <label for="iInsp">検査者</label>
+      <input class="f ft" id="iInsp" type="text" autocomplete="off" placeholder="―">
+      <span></span>
+    </div>
+    <div class="row">
+      <label for="iDate">日付</label>
+      <input class="f ft" id="iDate" type="text" autocomplete="off">
+      <span></span>
+    </div>
+    <div class="row">
+      <label for="iRef">測定基準メモ<small>例: レーザーレベル・床上+500</small></label>
+      <input class="f ft" id="iRef" type="text" autocomplete="off" placeholder="―">
+      <span></span>
+    </div>
+  </div>
+
+  <!-- 判定設定 -->
+  <div class="card">
+    <h2>判定設定</h2>
+    <div class="row">
+      <label for="sMin">最低削り代<small>全点でこれ以上あればOK</small></label>
+      <input class="f" id="sMin" type="text" inputmode="decimal" autocomplete="off" value="3">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row">
+      <label for="sDiag">対角差の許容<small>任意。空欄なら値のみ表示</small></label>
+      <input class="f" id="sDiag" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+    </div>
+  </div>
+
+  <!-- 加工面 -->
+  <div class="card">
+    <h2>加工面ごとの削り代(基準面からの高さを入力)</h2>
+    <div id="surfList"></div>
+    <button class="addSurf no-print" type="button" id="addSurf">+ 加工面を追加</button>
+  </div>
+
+  <!-- 全体形状 -->
+  <div class="card">
+    <h2>全体形状チェック(任意)</h2>
+    <div class="grid2">
+      <div class="row"><label for="oL">長さ L</label><input class="f" id="oL" type="text" inputmode="decimal" autocomplete="off" placeholder="―"><span class="unit">mm</span></div>
+      <div class="row"><label for="oW">幅 W</label><input class="f" id="oW" type="text" inputmode="decimal" autocomplete="off" placeholder="―"><span class="unit">mm</span></div>
+      <div class="row"><label for="oD1">対角 D1<small>実測</small></label><input class="f" id="oD1" type="text" inputmode="decimal" autocomplete="off" placeholder="―"><span class="unit">mm</span></div>
+      <div class="row"><label for="oD2">対角 D2<small>実測</small></label><input class="f" id="oD2" type="text" inputmode="decimal" autocomplete="off" placeholder="―"><span class="unit">mm</span></div>
+    </div>
+    <div class="calcline" id="diagOut">対角: L・W を入れると理論値、D1・D2 を入れると対角差を表示</div>
+    <div class="grid2" style="margin-top:6px">
+      <div class="row"><label for="h1">隅① 高さ<small>左手前</small></label><input class="f" id="h1" type="text" inputmode="decimal" autocomplete="off" placeholder="―"><span class="unit">mm</span></div>
+      <div class="row"><label for="h2">隅② 高さ<small>右手前</small></label><input class="f" id="h2" type="text" inputmode="decimal" autocomplete="off" placeholder="―"><span class="unit">mm</span></div>
+      <div class="row"><label for="h4">隅④ 高さ<small>左奥</small></label><input class="f" id="h4" type="text" inputmode="decimal" autocomplete="off" placeholder="―"><span class="unit">mm</span></div>
+      <div class="row"><label for="h3">隅③ 高さ<small>右奥</small></label><input class="f" id="h3" type="text" inputmode="decimal" autocomplete="off" placeholder="―"><span class="unit">mm</span></div>
+    </div>
+    <div class="calcline" id="twistOut">ねじれ: 4隅の高さを入れると (①+③)−(②+④) を表示</div>
+  </div>
+
+  <!-- 総合判定 -->
+  <div class="dro">
+    <div class="judge">
+      <span class="lab">総合判定</span>
+      <span class="res none" id="resTxt">測定点を入力してください</span>
+    </div>
+    <div class="dro-grid">
+      <div class="cellv"><span class="k">最小削り代(全体)</span><span class="v" id="vMin">―</span><span class="s">mm</span></div>
+      <div class="cellv"><span class="k">面数 / 測定点</span><span class="v" id="vCnt">0 / 0</span><span class="s"></span></div>
+      <div class="cellv"><span class="k">対角差</span><span class="v" id="vDiag">―</span><span class="s">mm</span></div>
+      <div class="cellv"><span class="k">ねじれ(対角和の差)</span><span class="v" id="vTwist">―</span><span class="s">mm</span></div>
+    </div>
+    <div class="dro-foot" id="statusTxt">判定は「最低削り代」(+入力があれば対角差の許容)に基づきます</div>
+  </div>
+
+  <!-- 留意点ガイド -->
+  <details class="guide no-print">
+    <summary>▼ フレーム検査の留意点と計算式(タップで開閉)</summary>
+    <div class="guide-body">
+      <h3>■ 測定前(段取りが精度の8割)</h3>
+      <ul>
+        <li>支持は<b>3点支持+補助ジャッキ</b>が基本。4点で無理に水平を作るとフレームが拘束されて歪んだまま測ることになる</li>
+        <li>溶接直後・搬入直後は<b>温度をなじませてから</b>。直射日光が当たる場所は片側だけ伸びるので避ける</li>
+        <li>レベル出し後に基準面(レーザーレベル・オートレベル・水盛り)を設定したら、<b>測定完了まで動かさない</b></li>
+        <li>どこを加工基準にするかを<b>加工者と事前に合意</b>しておく(検査の基準=加工の基準に)</li>
+      </ul>
+      <h3>■ 測定中</h3>
+      <ul>
+        <li>各加工面は<b>最低4隅+中央</b>。長い面は1〜2m間隔で点を追加(溶接歪みは中央が凹凸しやすい)</li>
+        <li>スパッタ・ビード・黒皮の局所的な高い所の上では測らない(削り代を過大評価してしまう)</li>
+        <li><b>いちばん少ない点の削り代が全てを決める</b>。1点でも不足すると加工後に黒皮が残る</li>
+      </ul>
+      <h3>■ 判定・段取りへの引き継ぎ</h3>
+      <ul>
+        <li>上下両面を加工する場合は取り代の<b>振り分け</b>を決める(片側に寄せすぎると反対面が不足する)</li>
+        <li>対角差で直角を確認してから罫書きに進む</li>
+        <li>測定点の位置図(スケッチや写真)を記録に添えると、再測定や加工時の照合が楽</li>
+      </ul>
+      <h3>■ 計算式</h3>
+      <div class="fm">
+        削り代(上面)= 実測高さ − 仕上がり高さ<br>
+        削り代(下面)= 仕上がり高さ − 実測高さ<br>
+        理論対角 = √(L² + W²)<br>
+        対角差 = |D1 − D2|(小さいほど直角に近い)<br>
+        ねじれ = (①+③) − (②+④)(0に近いほどねじれが小さい)
+      </div>
+    </div>
+  </details>
+
+  <div class="btnrow no-print">
+    <button class="printBtn" type="button" id="printBtn">印刷 / PDF保存</button>
+    <button class="clearBtn" type="button" id="clearBtn">すべて消去</button>
+  </div>
+
+  <div class="print-sign">
+    <div>検査</div><div>確認</div><div>承認</div>
+  </div>
+
+  <footer>
+    入力値はどこにも送信されません。記録はこの端末のブラウザ内にのみ保存され、「すべて消去」で完全に削除できます。<br>
+    <span class="no-print">PDF保存: iPhoneは[印刷/PDF保存]→共有→"プリント"からPDF化、PCはCtrl+P→「PDFに保存」。</span>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var KEY='frame-check-v1';
+  var state={
+    info:{no:'',insp:'',date:'',ref:''},
+    minAllow:'3', diagTol:'',
+    surfaces:[],
+    overall:{L:'',W:'',D1:'',D2:'',h1:'',h2:'',h3:'',h4:''}
+  };
+
+  function today(){
+    var d=new Date();
+    return d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate();
+  }
+  function num(v){
+    if(v==null)return NaN;
+    v=String(v).replace(/[０-９．−]/g,function(c){
+      if(c==='−')return '-';
+      return String.fromCharCode(c.charCodeAt(0)-0xFEE0);
+    }).replace(/。/g,'.').replace(/[,，、\s]/g,'').trim();
+    if(v==='')return NaN;
+    return Number(v);
+  }
+  function fmt(v){return (Math.round(v*100)/100).toFixed(2).replace(/\.?0+$/,'').replace(/^-0$/,'0')}
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
+  function load(){
+    try{
+      var raw=localStorage.getItem(KEY);
+      if(!raw)return false;
+      var s=JSON.parse(raw);
+      if(s&&s.surfaces){state=s;return true}
+    }catch(e){}
+    return false;
+  }
+
+  /* ---- 加工面の計算 ---- */
+  function surfCalc(s){
+    var fin=num(s.fin);
+    var minA=num(state.minAllow);
+    var res={valid:false,allows:[],min:null,max:null,ok:null};
+    if(isNaN(fin)||!s.pts.length)return res;
+    res.valid=true;
+    s.pts.forEach(function(p){
+      var a=(s.type==='bottom')?(fin-p):(p-fin);
+      res.allows.push(a);
+    });
+    res.min=Math.min.apply(null,res.allows);
+    res.max=Math.max.apply(null,res.allows);
+    if(!isNaN(minA))res.ok=(res.min>=minA-1e-9);
+    return res;
+  }
+
+  /* ---- 加工面リストの構築(構造変更時のみ) ---- */
+  function buildSurfaces(){
+    var box=$('surfList');
+    box.innerHTML='';
+    state.surfaces.forEach(function(s,si){
+      var d=document.createElement('div');
+      d.className='sfcard';
+      d.innerHTML=
+        '<div class="sfhead">'+
+          '<input class="f ft" data-si="'+si+'" data-f="name" type="text" autocomplete="off" placeholder="面の名前(例: 上面A)">'+
+          '<div class="ttoggle no-print">'+
+            '<button type="button" data-si="'+si+'" data-t="top"'+(s.type!=='bottom'?' class="on"':'')+'>上面</button>'+
+            '<button type="button" data-si="'+si+'" data-t="bottom"'+(s.type==='bottom'?' class="on"':'')+'>下面</button>'+
+          '</div>'+
+          '<button class="sfdel no-print" type="button" data-del="'+si+'" aria-label="この面を削除">×</button>'+
+        '</div>'+
+        '<div class="row" style="padding:2px 0">'+
+          '<label>仕上がり高さ<small>'+(s.type==='bottom'?'下面: 代 = 仕上がり − 実測':'上面: 代 = 実測 − 仕上がり')+'</small></label>'+
+          '<input class="f" data-si="'+si+'" data-f="fin" type="text" inputmode="decimal" autocomplete="off" placeholder="―">'+
+          '<span class="unit">mm</span>'+
+        '</div>'+
+        '<div class="ptadd no-print">'+
+          '<input class="f" id="ptin-'+si+'" type="text" inputmode="decimal" autocomplete="off" placeholder="実測高さを入力">'+
+          '<button class="ptbtn" type="button" data-add="'+si+'">点を追加</button>'+
+        '</div>'+
+        '<div class="pts" id="pts-'+si+'"></div>'+
+        '<div class="sfsum" id="sum-'+si+'"></div>';
+      box.appendChild(d);
+      // 値の書き込み(フォーカスに配慮:構築時のみ)
+      d.querySelector('[data-f="name"]').value=s.name;
+      d.querySelector('[data-f="fin"]').value=s.fin;
+    });
+    updateComputed();
+  }
+
+  /* ---- 計算表示の更新(入力は触らない) ---- */
+  function updateComputed(){
+    var minA=num(state.minAllow);
+    var globalMin=null, totalPts=0, activeSurf=0, allOk=true, anyJudged=false;
+
+    state.surfaces.forEach(function(s,si){
+      var r=surfCalc(s);
+      var pbox=$('pts-'+si), sbox=$('sum-'+si);
+      if(!pbox)return;
+      pbox.innerHTML='';
+      s.pts.forEach(function(p,pi){
+        var chip=document.createElement('span');
+        chip.className='pt';
+        var inner='P'+(pi+1)+' '+fmt(p);
+        if(r.valid){
+          var a=r.allows[pi];
+          var cls=(!isNaN(minA))?(a>=minA-1e-9?'ok':'ng'):'';
+          inner+=' <b class="'+cls+'">代'+(a>=0?'+':'')+fmt(a)+'</b>';
+        }
+        chip.innerHTML=inner+'<button class="px no-print" type="button" data-psi="'+si+'" data-pi="'+pi+'" aria-label="この点を削除">×</button>';
+        pbox.appendChild(chip);
+      });
+      if(r.valid){
+        activeSurf++;totalPts+=s.pts.length;
+        if(globalMin==null||r.min<globalMin)globalMin=r.min;
+        var line='最小 '+fmt(r.min)+' / 最大 '+fmt(r.max)+' / 面内差 '+fmt(r.max-r.min)+' mm';
+        if(r.ok!=null){
+          anyJudged=true;
+          if(!r.ok)allOk=false;
+          line+=' → <b class="'+(r.ok?'ok':'ng')+'">'+(r.ok?'OK':'NG(削り代不足)')+'</b>';
+        }
+        sbox.innerHTML=line;
+      }else{
+        sbox.innerHTML=(s.pts.length?'仕上がり高さを入力してください':'測定点を追加してください');
+      }
+    });
+
+    /* 全体形状 */
+    var o=state.overall;
+    var L=num(o.L),W=num(o.W),D1=num(o.D1),D2=num(o.D2);
+    var dt=num(state.diagTol);
+    var diagTxt='', diagDiff=null, diagOk=null;
+    if(L>0&&W>0)diagTxt+='理論対角 √(L²+W²) = '+fmt(Math.sqrt(L*L+W*W))+' mm';
+    if(!isNaN(D1)&&!isNaN(D2)){
+      diagDiff=Math.abs(D1-D2);
+      if(diagTxt)diagTxt+='<br>';
+      diagTxt+='対角差 |D1−D2| = '+fmt(diagDiff)+' mm';
+      if(!isNaN(dt)&&dt>0){
+        diagOk=(diagDiff<=dt+1e-9);
+        diagTxt+=' → <b class="'+(diagOk?'ok':'ng')+'">'+(diagOk?'OK':'NG(許容超え)')+'</b>';
+      }
+    }
+    $('diagOut').innerHTML=diagTxt||'対角: L・W を入れると理論値、D1・D2 を入れると対角差を表示';
+
+    var h1=num(o.h1),h2=num(o.h2),h3=num(o.h3),h4=num(o.h4);
+    var twist=null;
+    if(!isNaN(h1)&&!isNaN(h2)&&!isNaN(h3)&&!isNaN(h4)){
+      twist=(h1+h3)-(h2+h4);
+      $('twistOut').innerHTML='ねじれ (①+③)−(②+④) = '+(twist>=0?'+':'')+fmt(twist)+' mm(0に近いほど良)';
+    }else{
+      $('twistOut').textContent='ねじれ: 4隅の高さを入れると (①+③)−(②+④) を表示';
+    }
+
+    /* 総合判定 */
+    $('vMin').textContent=(globalMin!=null)?fmt(globalMin):'―';
+    $('vCnt').textContent=activeSurf+' / '+totalPts;
+    $('vDiag').textContent=(diagDiff!=null)?fmt(diagDiff):'―';
+    $('vTwist').textContent=(twist!=null)?((twist>=0?'+':'')+fmt(twist)):'―';
+
+    var res=$('resTxt');
+    if(!anyJudged){
+      res.textContent='測定点を入力してください';res.className='res none';
+    }else{
+      var ok=allOk&&(diagOk!==false);
+      res.textContent=ok?'合格':'不合格';
+      res.className='res '+(ok?'ok':'ng');
+    }
+    save();
+  }
+
+  /* ---- イベント(委譲) ---- */
+  $('surfList').addEventListener('input',function(e){
+    var t=e.target;
+    var si=t.getAttribute('data-si'), f=t.getAttribute('data-f');
+    if(si==null||!f)return;
+    if(f==='name')state.surfaces[si].name=t.value;
+    if(f==='fin')state.surfaces[si].fin=t.value;
+    updateComputed();
+  });
+  $('surfList').addEventListener('click',function(e){
+    var t=e.target;
+    if(t.getAttribute('data-add')!=null){
+      var si=Number(t.getAttribute('data-add'));
+      var inp=$('ptin-'+si);
+      var v=num(inp.value);
+      if(!(isFinite(v))){toast('実測高さを入力してください');return}
+      state.surfaces[si].pts.push(v);
+      inp.value='';inp.focus();
+      updateComputed();
+      return;
+    }
+    if(t.getAttribute('data-t')){
+      var si2=Number(t.getAttribute('data-si'));
+      state.surfaces[si2].type=t.getAttribute('data-t');
+      buildSurfaces();
+      return;
+    }
+    if(t.getAttribute('data-del')!=null){
+      state.surfaces.splice(Number(t.getAttribute('data-del')),1);
+      buildSurfaces();
+      return;
+    }
+    if(t.getAttribute('data-psi')!=null){
+      state.surfaces[Number(t.getAttribute('data-psi'))].pts.splice(Number(t.getAttribute('data-pi')),1);
+      updateComputed();
+      return;
+    }
+  });
+  $('surfList').addEventListener('keydown',function(e){
+    if(e.key!=='Enter')return;
+    var t=e.target;
+    if(t.id&&t.id.indexOf('ptin-')===0){
+      e.preventDefault();
+      var si=Number(t.id.slice(5));
+      var v=num(t.value);
+      if(!(isFinite(v))){toast('実測高さを入力してください');return}
+      state.surfaces[si].pts.push(v);
+      t.value='';
+      updateComputed();
+    }
+  });
+  $('addSurf').addEventListener('click',function(){
+    state.surfaces.push({name:'',fin:'',type:'top',pts:[]});
+    buildSurfaces();
+  });
+
+  /* 記録情報・設定・全体形状 */
+  [['iNo','info','no'],['iInsp','info','insp'],['iDate','info','date'],['iRef','info','ref']].forEach(function(a){
+    $(a[0]).addEventListener('input',function(){state[a[1]][a[2]]=$(a[0]).value;save()});
+  });
+  $('sMin').addEventListener('input',function(){state.minAllow=$('sMin').value;updateComputed()});
+  $('sDiag').addEventListener('input',function(){state.diagTol=$('sDiag').value;updateComputed()});
+  ['L','W','D1','D2'].forEach(function(k){
+    $('o'+k).addEventListener('input',function(){state.overall[k]=$('o'+k).value;updateComputed()});
+  });
+  ['h1','h2','h3','h4'].forEach(function(k){
+    $(k).addEventListener('input',function(){state.overall[k]=$(k).value;updateComputed()});
+  });
+
+  /* 印刷・消去 */
+  $('printBtn').addEventListener('click',function(){
+    var orig=document.title;
+    var no=(state.info.no||'記録').replace(/[\\/:*?"<>|]/g,'-');
+    var dt=(state.info.date||today()).replace(/\//g,'-');
+    document.title='削り代検査_'+no+'_'+dt;
+    var restore=function(){document.title=orig;window.removeEventListener('afterprint',restore)};
+    window.addEventListener('afterprint',restore);
+    setTimeout(restore,3000);
+    window.print();
+  });
+  var armTimer=null;
+  $('clearBtn').addEventListener('click',function(){
+    var b=$('clearBtn');
+    if(!b.classList.contains('arm')){
+      b.classList.add('arm');b.textContent='もう一度で消去';
+      armTimer=setTimeout(function(){b.classList.remove('arm');b.textContent='すべて消去'},3000);
+      return;
+    }
+    clearTimeout(armTimer);
+    state={info:{no:'',insp:'',date:today(),ref:''},minAllow:'3',diagTol:'',
+      surfaces:[{name:'',fin:'',type:'top',pts:[]}],
+      overall:{L:'',W:'',D1:'',D2:'',h1:'',h2:'',h3:'',h4:''}};
+    try{localStorage.removeItem(KEY)}catch(e){}
+    b.classList.remove('arm');b.textContent='すべて消去';
+    initFields();buildSurfaces();
+    toast('すべて消去しました');
+  });
+
+  var toastTimer=null;
+  function toast(msg){
+    var t=$('toast');t.textContent=msg;t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer=setTimeout(function(){t.classList.remove('show')},1600);
+  }
+
+  function initFields(){
+    $('iNo').value=state.info.no;$('iInsp').value=state.info.insp;
+    $('iDate').value=state.info.date||today();state.info.date=$('iDate').value;
+    $('iRef').value=state.info.ref;
+    $('sMin').value=state.minAllow;$('sDiag').value=state.diagTol;
+    ['L','W','D1','D2'].forEach(function(k){$('o'+k).value=state.overall[k]});
+    ['h1','h2','h3','h4'].forEach(function(k){$(k).value=state.overall[k]});
+  }
+
+  /* 起動 */
+  var had=load();
+  if(!state.surfaces.length)state.surfaces.push({name:'',fin:'',type:'top',pts:[]});
+  initFields();
+  buildSurfaces();
+  if(had&&state.surfaces.some(function(s){return s.pts.length}))toast('前回の記録を読み込みました('+(state.info.date||'日付不明')+')');
+})();
+</script>
+</body>
+</html>

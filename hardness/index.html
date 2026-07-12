@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1F3341">
+<meta name="description" content="鋼の硬さ換算(HRC・HV・HB)。規格系の換算表を内蔵し、中間値は補間。引張強さの目安も表示。計算は端末内で完結します。">
+<title>硬さ換算 | 検査計算ツール</title>
+<style>
+  :root{
+    --paper:#F2F4F5;
+    --sheet:#FFFFFF;
+    --ink:#1F3341;
+    --line:#8FA2AF;
+    --red:#D63426;
+    --dro-bg:#15181A;
+    --dro-red:#FF5A48;
+    --dro-dim:#9FB0B8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI",sans-serif;
+    background:var(--paper);color:var(--ink);
+    min-height:100dvh;display:flex;flex-direction:column;align-items:center;
+    padding:0 12px calc(16px + env(safe-area-inset-bottom));
+  }
+  .wrap{width:100%;max-width:480px}
+
+  header{display:flex;align-items:baseline;justify-content:space-between;padding:14px 2px 10px}
+  header h1{font-size:16px;font-weight:700;letter-spacing:.04em}
+  header h1 small{display:block;font-size:11px;font-weight:400;color:#5B707E;letter-spacing:.08em;margin-top:2px}
+  header a{font-size:12px;color:#5B707E;text-decoration:none}
+
+  .sheet{background:var(--sheet);border:2px solid var(--ink);padding:5px}
+  .sheet-inner{border:1px solid var(--ink)}
+  .sheet svg{display:block;width:100%;height:auto}
+  .titleblock{display:flex;border-top:1px solid var(--ink);font-size:9px;letter-spacing:.06em}
+  .titleblock div{padding:3px 8px;border-right:1px solid var(--ink)}
+  .titleblock div:last-child{border-right:none;margin-left:auto}
+  .titleblock b{font-weight:700}
+
+  .chips{display:flex;gap:6px;margin-top:12px}
+  .chip{
+    flex:1;font-size:14px;font-weight:700;padding:10px 4px;
+    border:1.5px solid var(--ink);border-radius:8px;
+    background:var(--sheet);color:var(--ink);
+  }
+  .chip.on{background:var(--ink);color:#fff}
+
+  .inputs{margin-top:10px}
+  .row{
+    display:grid;grid-template-columns:26px 1fr 130px 40px;
+    align-items:center;gap:8px;
+    background:var(--sheet);border:1px solid #D5DDE2;border-radius:10px;
+    padding:10px 12px;
+  }
+  .badge{
+    width:22px;height:22px;border-radius:50%;
+    background:var(--ink);color:#fff;font-size:12px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .row label{font-size:13px;font-weight:600}
+  .row label small{display:block;font-size:10px;font-weight:400;color:#5B707E}
+  .row input{
+    width:100%;font-size:22px;font-weight:600;text-align:right;
+    font-variant-numeric:tabular-nums;
+    border:none;border-bottom:2px solid var(--ink);
+    background:transparent;color:var(--ink);
+    padding:2px 4px;border-radius:0;outline:none;
+  }
+  .row input:focus{border-bottom-color:var(--red)}
+  .unit{font-size:12px;color:#5B707E}
+
+  .dro{
+    margin-top:14px;background:var(--dro-bg);border-radius:12px;
+    padding:14px 16px 12px;box-shadow:inset 0 2px 8px rgba(0,0,0,.5);
+  }
+  .dro-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  .cellv{display:flex;flex-direction:column;align-items:flex-end;padding:6px 8px;border-radius:8px}
+  .cellv:active{background:#1e2327}
+  .cellv .k{color:#7d8a91;font-size:12px;font-weight:700;letter-spacing:.1em;align-self:flex-start}
+  .cellv .v{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:24px;font-weight:600;letter-spacing:.01em;
+  }
+  .cellv .v.led{color:var(--dro-red);text-shadow:0 0 9px rgba(255,90,72,.35)}
+  .cellv .v.dim{color:var(--dro-dim)}
+  .dro-sub{
+    text-align:right;color:#7d8a91;font-size:13px;margin-top:10px;
+    font-variant-numeric:tabular-nums;border-top:1px solid #2a3034;padding-top:10px;
+  }
+  .dro-sub b{color:var(--dro-dim);font-family:ui-monospace,Consolas,monospace;font-size:16px}
+  .dro-foot{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-top:10px;border-top:1px solid #2a3034;padding-top:9px;gap:8px;
+  }
+  .statusTxt{color:#5d6a71;font-size:11px;letter-spacing:.02em}
+  .statusTxt.err{color:#FF8A7E}
+  .copy{
+    font-size:12px;font-weight:700;color:#c9d2d7;background:#252b2f;
+    border:1px solid #3a4247;border-radius:7px;padding:6px 14px;flex:none;
+  }
+  .copy:active{background:#31383d}
+
+  .tbl-btn{
+    margin-top:14px;width:100%;
+    font-size:13px;font-weight:700;padding:11px 4px;
+    border:1.5px solid var(--ink);border-radius:9px;
+    background:var(--sheet);color:var(--ink);letter-spacing:.05em;
+  }
+  .tbl-btn:active{background:var(--ink);color:#fff}
+  .tblWrap{margin-top:10px;display:none}
+  .tblWrap.show{display:block}
+  table.tol{
+    width:100%;border-collapse:collapse;background:var(--sheet);
+    border:2px solid var(--ink);font-size:13px;
+    font-variant-numeric:tabular-nums;
+  }
+  table.tol th,table.tol td{border:1px solid var(--ink);padding:5px 8px;text-align:right}
+  table.tol th{background:#E8EDF0;font-size:11px;font-weight:700;text-align:center}
+  table.tol tr.hit td{background:#FCE9E7;font-weight:700}
+
+  footer{margin-top:16px;font-size:11px;color:#5B707E;line-height:1.7;text-align:center;letter-spacing:.03em}
+
+  .toast{
+    position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);
+    background:var(--ink);color:#fff;font-size:13px;
+    padding:9px 20px;border-radius:20px;opacity:0;pointer-events:none;
+    transition:opacity .25s,transform .25s;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>硬さ換算<small>HRC ⇔ HV ⇔ HB(鋼)</small></h1>
+    <a href="../index.html">≡ ツール一覧</a>
+  </header>
+
+  <!-- ノモグラム -->
+  <div class="sheet">
+    <div class="sheet-inner">
+      <svg id="dwg" viewBox="0 0 340 250" role="img" aria-label="HRC・HV・HBの3本の目盛と現在値を結ぶ換算ノモグラム">
+        <g id="axes"></g>
+        <g id="dyn"></g>
+      </svg>
+      <div class="titleblock">
+        <div><b>品名</b> 硬さ換算</div>
+        <div><b>方式</b> 換算表+補間</div>
+        <div>TOOL-16</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chips" id="scChips"></div>
+
+  <div class="inputs">
+    <div class="row">
+      <span class="badge">1</span>
+      <label for="fV" id="inLbl">HRC<small id="inRange">対応範囲: 20 〜 68</small></label>
+      <input id="fV" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit" id="inUnit"></span>
+    </div>
+  </div>
+
+  <!-- 結果 -->
+  <div class="dro">
+    <div class="dro-grid">
+      <div class="cellv" id="cC"><span class="k">HRC</span><span class="v dim" id="vC">―</span></div>
+      <div class="cellv" id="cV"><span class="k">HV</span><span class="v dim" id="vV">―</span></div>
+      <div class="cellv" id="cB"><span class="k">HB</span><span class="v dim" id="vB">―</span></div>
+    </div>
+    <div class="dro-sub">引張強さの目安(≈3.2×HB): <b id="vTs">―</b> MPa</div>
+    <div class="dro-foot">
+      <span class="statusTxt" id="statusTxt">入力の硬さ種類を選んで値を入力</span>
+      <button class="copy" type="button" id="copyBtn">結果コピー</button>
+    </div>
+  </div>
+
+  <button class="tbl-btn" type="button" id="tblBtn">▼ 換算表を表示</button>
+  <div class="tblWrap" id="tblWrap"></div>
+
+  <footer>
+    このページは計算のみを行います。入力値の送信・保存は一切ありません(端末内で完結)。<br>
+    換算は鋼を対象とした規格系(SAE J417 / ASTM E140)の代表値で、硬さ換算はそもそも近似です。<br>
+    受渡し・合否判定は図面指定の試験方法で行い、運用前に手元の換算表と数点照合してください。<br>
+    HRC20未満(軟らかい材料・HRB域)は未対応です。
+  </footer>
+</div>
+
+<div class="toast" id="toast">コピーしました</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var NS='http://www.w3.org/2000/svg';
+
+  // 換算表(鋼): [HRC, HV, HB(3000kgf) or null]
+  var T=[
+    [68,940,null],[67,900,null],[66,865,null],[65,832,null],[64,800,null],
+    [63,772,null],[62,746,null],[61,720,null],[60,697,null],[59,674,null],
+    [58,653,615],[57,633,595],[56,613,577],[55,595,560],[54,577,543],
+    [53,560,525],[52,544,512],[51,528,496],[50,513,481],[49,498,469],
+    [48,484,455],[47,471,443],[46,458,432],[45,446,421],[44,434,409],
+    [43,423,400],[42,412,390],[41,402,381],[40,392,371],[39,382,362],
+    [38,372,353],[37,363,344],[36,354,336],[35,345,327],[34,336,319],
+    [33,327,311],[32,318,301],[31,310,294],[30,302,286],[29,294,279],
+    [28,286,271],[27,279,264],[26,272,258],[25,266,253],[24,260,247],
+    [23,254,243],[22,248,237],[21,243,231],[20,238,226]
+  ];
+  var SCALES=[
+    {id:0,n:'HRC',min:20,max:68,dec:1},
+    {id:1,n:'HV', min:238,max:940,dec:0},
+    {id:2,n:'HB', min:226,max:615,dec:0}
+  ];
+  var sc=0;         // 入力スケール
+  var lastRes=null;
+
+  function num(v){
+    if(v==null)return NaN;
+    v=String(v).replace(/[０-９．]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0)}).replace(/。/g,'.').replace(/[,，、\s]/g,'').trim();
+    if(v==='')return NaN;
+    return Number(v);
+  }
+  function el(name,attrs){
+    var e=document.createElementNS(NS,name);
+    for(var k in attrs)e.setAttribute(k,attrs[k]);
+    return e;
+  }
+
+  // 補間変換: 入力スケールidxの値 → {c,v,b(or null)}
+  function convert(idx,val){
+    var rows=(idx===2)?T.filter(function(r){return r[2]!=null}):T;
+    var top=rows[0][idx], bot=rows[rows.length-1][idx];
+    if(val>top||val<bot)return null;
+    for(var i=0;i<rows.length-1;i++){
+      var hi=rows[i], lo=rows[i+1];
+      if(val<=hi[idx]&&val>=lo[idx]){
+        var t=(hi[idx]===lo[idx])?0:(val-lo[idx])/(hi[idx]-lo[idx]);
+        var c=lo[0]+t*(hi[0]-lo[0]);
+        var v=lo[1]+t*(hi[1]-lo[1]);
+        var b=(hi[2]!=null&&lo[2]!=null)?(lo[2]+t*(hi[2]-lo[2])):null;
+        return {c:c,v:v,b:b};
+      }
+    }
+    return null;
+  }
+
+  /* ---- ノモグラム ---- */
+  var AX=[{x:70,n:'HRC',ticks:[20,30,40,50,60,68]},
+          {x:170,n:'HV',ticks:[238,302,392,513,697,940]},
+          {x:270,n:'HB',ticks:[226,286,371,481,615]}];
+  var TOP=42,BOT=212;
+  function yOf(idx,val){
+    var s=SCALES[idx];
+    return BOT-(val-s.min)/(s.max-s.min)*(BOT-TOP);
+  }
+  function buildAxes(){
+    var g=$('axes');
+    AX.forEach(function(a,idx){
+      g.appendChild(el('line',{x1:a.x,y1:TOP,x2:a.x,y2:BOT,stroke:'#1F3341','stroke-width':1.6}));
+      var t=el('text',{x:a.x,y:TOP-14,'font-size':12,'font-weight':700,fill:'#1F3341','text-anchor':'middle'});
+      t.textContent=a.n;g.appendChild(t);
+      a.ticks.forEach(function(tv){
+        var y=yOf(idx,tv);
+        g.appendChild(el('line',{x1:a.x-4,y1:y,x2:a.x+4,y2:y,stroke:'#1F3341','stroke-width':1}));
+        var lt=el('text',{x:a.x-8,y:y+3.5,'font-size':9,fill:'#5B707E','text-anchor':'end'});
+        lt.textContent=tv;g.appendChild(lt);
+      });
+    });
+    var note=el('text',{x:170,y:240,'font-size':10,fill:'#5B707E','text-anchor':'middle'});
+    note.textContent='硬い ↑ / 軟らかい ↓(HBは615=HRC58相当まで)';
+    g.appendChild(note);
+  }
+  function drawMark(res){
+    var dyn=$('dyn');
+    while(dyn.firstChild)dyn.removeChild(dyn.firstChild);
+    if(!res)return;
+    var pts=[{x:AX[0].x,y:yOf(0,res.c),ok:true},
+             {x:AX[1].x,y:yOf(1,res.v),ok:true},
+             {x:AX[2].x,y:res.b!=null?yOf(2,res.b):TOP,ok:res.b!=null}];
+    // 結線
+    dyn.appendChild(el('line',{x1:pts[0].x,y1:pts[0].y,x2:pts[1].x,y2:pts[1].y,stroke:'#D63426','stroke-width':1.6}));
+    dyn.appendChild(el('line',{x1:pts[1].x,y1:pts[1].y,x2:pts[2].x,y2:pts[2].y,stroke:'#D63426','stroke-width':1.6,'stroke-dasharray':pts[2].ok?'':'4 4'}));
+    pts.forEach(function(p,i){
+      if(p.ok){
+        dyn.appendChild(el('circle',{cx:p.x,cy:p.y,r:4,fill:'#D63426'}));
+      }else{
+        var xt=el('text',{x:p.x,y:p.y+4,'font-size':12,'font-weight':700,fill:'#8FA2AF','text-anchor':'middle'});
+        xt.textContent='×';dyn.appendChild(xt);
+      }
+    });
+    // 値ラベル
+    var labels=[res.c.toFixed(1),Math.round(res.v),res.b!=null?Math.round(res.b):'範囲外'];
+    pts.forEach(function(p,i){
+      var t=el('text',{x:p.x+8,y:p.y-7,'font-size':11,'font-weight':700,fill:p.ok?'#D63426':'#8FA2AF','text-anchor':'start',stroke:'#fff','stroke-width':3.5,'paint-order':'stroke'});
+      t.textContent=labels[i];
+      dyn.appendChild(t);
+    });
+  }
+
+  /* ---- UI ---- */
+  function buildChips(){
+    var box=$('scChips');box.innerHTML='';
+    SCALES.forEach(function(s,i){
+      var b=document.createElement('button');
+      b.type='button';b.className='chip'+(i===sc?' on':'');
+      b.textContent=s.n+'から';
+      b.addEventListener('click',function(){
+        sc=i;buildChips();
+        $('inLbl').childNodes[0].textContent=s.n;
+        var rows=(i===2)?T.filter(function(r){return r[2]!=null}):T;
+        $('inRange').textContent='対応範囲: '+rows[rows.length-1][i]+' 〜 '+rows[0][i];
+        recalc();
+      });
+      box.appendChild(b);
+    });
+  }
+
+  function recalc(){
+    var val=num($('fV').value);
+    lastRes=null;
+    var res=isNaN(val)?null:convert(sc,val);
+    if(!res){
+      ['vC','vV','vB'].forEach(function(id){$(id).textContent='―';$(id).className='v dim'});
+      $('vTs').textContent='―';
+      drawMark(null);
+      if(isNaN(val)){
+        $('statusTxt').textContent='入力の硬さ種類を選んで値を入力';
+        $('statusTxt').className='statusTxt';
+      }else{
+        var rows=(sc===2)?T.filter(function(r){return r[2]!=null}):T;
+        $('statusTxt').textContent=SCALES[sc].n+' は '+rows[rows.length-1][sc]+' 〜 '+rows[0][sc]+' の範囲で入力してください';
+        $('statusTxt').className='statusTxt err';
+      }
+      if($('tblWrap').classList.contains('show'))buildTable(null);
+      return;
+    }
+    lastRes=res;
+    var outs=[[res.c.toFixed(1),0],[String(Math.round(res.v)),1],[res.b!=null?String(Math.round(res.b)):'―',2]];
+    $('vC').textContent=outs[0][0];
+    $('vV').textContent=outs[1][0];
+    $('vB').textContent=outs[2][0];
+    ['vC','vV','vB'].forEach(function(id,i){
+      $(id).className='v '+(i===sc?'dim':'led');
+    });
+    $('vTs').textContent=res.b!=null?String(Math.round(res.b*3.2/10)*10):'―(HB範囲外)';
+    $('statusTxt').textContent=(res.b==null)?'この硬さ域ではHB試験は一般に非適用です(圧子が持たない領域)':'表の中間値は直線補間しています';
+    $('statusTxt').className='statusTxt';
+    drawMark(res);
+    if($('tblWrap').classList.contains('show'))buildTable(res);
+  }
+
+  function buildTable(res){
+    var html='<table class="tol"><tr><th>HRC</th><th>HV</th><th>HB</th><th>引張目安 MPa</th></tr>';
+    var hitC=(res)?Math.round(res.c):null;
+    T.forEach(function(r){
+      html+='<tr'+(hitC===r[0]?' class="hit"':'')+'><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+(r[2]!=null?r[2]:'―')+'</td><td>'+(r[2]!=null?Math.round(r[2]*3.2/10)*10:'―')+'</td></tr>';
+    });
+    html+='</table>';
+    $('tblWrap').innerHTML=html;
+  }
+
+  $('fV').addEventListener('input',recalc);
+  $('tblBtn').addEventListener('click',function(){
+    var w=$('tblWrap');
+    var show=!w.classList.contains('show');
+    w.classList.toggle('show',show);
+    $('tblBtn').textContent=show?'▲ 換算表を閉じる':'▼ 換算表を表示';
+    if(show)buildTable(lastRes);
+  });
+
+  var toastTimer=null;
+  function toast(msg){
+    var t=$('toast');t.textContent=msg;t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer=setTimeout(function(){t.classList.remove('show')},1600);
+  }
+  $('copyBtn').addEventListener('click',function(){
+    if(!lastRes){toast('まだ値がありません');return}
+    var s='HRC '+lastRes.c.toFixed(1)+' / HV '+Math.round(lastRes.v)+' / HB '+(lastRes.b!=null?Math.round(lastRes.b):'―')+
+      (lastRes.b!=null?' / 引張目安 '+(Math.round(lastRes.b*3.2/10)*10)+'MPa':'');
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(s).then(function(){toast('コピーしました')},function(){toast('コピーできませんでした')});
+    }else{
+      var ta=document.createElement('textarea');
+      ta.value=s;document.body.appendChild(ta);ta.select();
+      try{document.execCommand('copy');toast('コピーしました')}catch(e){toast('コピーできませんでした')}
+      document.body.removeChild(ta);
+    }
+  });
+
+  buildAxes();
+  buildChips();
+  recalc();
+})();
+</script>
+</body>
+</html>

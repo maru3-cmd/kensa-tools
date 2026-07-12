@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1F3341">
+<meta name="description" content="等配でない2〜8穴(半径・角度がそれぞれ異なる)の穴間距離を総当たりで計算。計算は端末内で完結し、入力値はどこにも送信されません。">
+<title>多穴間距離 | 検査計算ツール</title>
+<style>
+  :root{
+    --paper:#F2F4F5;
+    --sheet:#FFFFFF;
+    --ink:#1F3341;
+    --line:#8FA2AF;
+    --red:#D63426;
+    --dro-bg:#15181A;
+    --dro-red:#FF5A48;
+    --dro-dim:#9FB0B8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI",sans-serif;
+    background:var(--paper);color:var(--ink);
+    min-height:100dvh;display:flex;flex-direction:column;align-items:center;
+    padding:0 12px calc(16px + env(safe-area-inset-bottom));
+  }
+  .wrap{width:100%;max-width:480px}
+
+  header{display:flex;align-items:baseline;justify-content:space-between;padding:14px 2px 10px}
+  header h1{font-size:16px;font-weight:700;letter-spacing:.04em}
+  header h1 small{display:block;font-size:11px;font-weight:400;color:#5B707E;letter-spacing:.08em;margin-top:2px}
+  header a{font-size:12px;color:#5B707E;text-decoration:none}
+
+  .sheet{background:var(--sheet);border:2px solid var(--ink);padding:5px}
+  .sheet-inner{border:1px solid var(--ink)}
+  .sheet svg{display:block;width:100%;height:auto}
+  .titleblock{display:flex;border-top:1px solid var(--ink);font-size:9px;letter-spacing:.06em}
+  .titleblock div{padding:3px 8px;border-right:1px solid var(--ink)}
+  .titleblock div:last-child{border-right:none;margin-left:auto}
+  .titleblock b{font-weight:700}
+
+  .ctrl{
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    margin-top:12px;
+  }
+  .ctrl .lab{font-size:13px;font-weight:600}
+  .chips{display:flex;gap:6px}
+  .chip{
+    width:38px;height:38px;font-size:15px;font-weight:700;
+    border:1.5px solid var(--ink);border-radius:8px;
+    background:var(--sheet);color:var(--ink);
+    font-variant-numeric:tabular-nums;
+  }
+  .chip.on{background:var(--ink);color:#fff}
+  .mode{display:inline-flex;border:1px solid var(--ink);border-radius:7px;overflow:hidden;margin-left:auto}
+  .mode button{font-size:11px;padding:6px 9px;border:none;background:var(--sheet);color:var(--ink);font-weight:600}
+  .mode button.on{background:var(--ink);color:#fff}
+
+  .hint{margin-top:8px;font-size:11px;color:#5B707E;line-height:1.7;padding:0 2px}
+
+  .inputs{margin-top:10px;display:flex;flex-direction:column;gap:8px}
+  .hrow{
+    display:grid;grid-template-columns:26px 1fr 1fr;
+    align-items:center;gap:8px;
+    background:var(--sheet);border:1px solid #D5DDE2;border-radius:10px;
+    padding:9px 12px;
+  }
+  .badge{
+    width:22px;height:22px;border-radius:50%;
+    background:var(--ink);color:#fff;font-size:12px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .fld{display:flex;align-items:baseline;gap:5px}
+  .fld .fl{font-size:11px;color:#5B707E;font-weight:600;flex:none}
+  .fld input{
+    width:100%;font-size:18px;font-weight:600;text-align:right;
+    font-variant-numeric:tabular-nums;
+    border:none;border-bottom:2px solid var(--ink);
+    background:transparent;color:var(--ink);
+    padding:2px 3px;border-radius:0;outline:none;min-width:0;
+  }
+  .fld input:focus{border-bottom-color:var(--red)}
+  .fld .u{font-size:11px;color:#5B707E;flex:none}
+  .baseTag{
+    font-size:11px;font-weight:700;color:#5B707E;
+    text-align:center;letter-spacing:.03em;
+    border:1px dashed #C9D3DA;border-radius:6px;padding:5px 2px;
+  }
+
+  .dro{
+    margin-top:14px;background:var(--dro-bg);border-radius:12px;
+    padding:14px 16px 12px;box-shadow:inset 0 2px 8px rgba(0,0,0,.5);
+  }
+  .dro-line{display:flex;align-items:baseline;gap:10px;justify-content:flex-end}
+  .dro-label{color:#7d8a91;font-size:14px;font-weight:700;letter-spacing:.06em}
+  .dro-val{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:34px;font-weight:600;color:var(--dro-red);
+    text-shadow:0 0 10px rgba(255,90,72,.35);letter-spacing:.02em;
+  }
+  .dro-unit{color:#7d8a91;font-size:13px;font-weight:600}
+  .pairs{
+    border-top:1px solid #2a3034;margin-top:10px;padding-top:6px;
+    display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;
+  }
+  .pr{
+    display:flex;justify-content:space-between;align-items:baseline;
+    padding:6px 8px;border-radius:7px;
+    font-variant-numeric:tabular-nums;
+  }
+  .pr .pk{color:#7d8a91;font-size:12px;font-weight:700}
+  .pr .pv{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    color:var(--dro-dim);font-size:15px;font-weight:600;
+  }
+  .pr.sel{background:#2a1e1c}
+  .pr.sel .pk{color:var(--dro-red)}
+  .pr.sel .pv{color:var(--dro-red)}
+  .dro-foot{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-top:8px;border-top:1px solid #2a3034;padding-top:9px;gap:8px;
+  }
+  .statusTxt{color:#5d6a71;font-size:11px;letter-spacing:.02em}
+  .copy{
+    font-size:12px;font-weight:700;color:#c9d2d7;background:#252b2f;
+    border:1px solid #3a4247;border-radius:7px;padding:6px 14px;flex:none;
+  }
+  .copy:active{background:#31383d}
+
+  details.xy{
+    background:var(--sheet);border:1px solid #D5DDE2;border-radius:12px;
+    padding:10px 12px;margin-top:10px;
+  }
+  details.xy summary{font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.06em}
+  table.xyt{
+    width:100%;border-collapse:collapse;margin-top:8px;
+    font-size:13px;font-variant-numeric:tabular-nums;
+  }
+  table.xyt th{font-size:10px;color:#5B707E;text-align:right;padding:3px 6px;border-bottom:1px solid var(--ink)}
+  table.xyt th:first-child{text-align:center}
+  table.xyt td{text-align:right;padding:5px 6px;border-bottom:1px solid #E4EAEE}
+  table.xyt td:first-child{text-align:center;color:#5B707E;font-size:12px}
+
+  footer{margin-top:16px;font-size:11px;color:#5B707E;line-height:1.7;text-align:center;letter-spacing:.03em}
+
+  .toast{
+    position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);
+    background:var(--ink);color:#fff;font-size:13px;
+    padding:9px 20px;border-radius:20px;opacity:0;pointer-events:none;
+    transition:opacity .25s,transform .25s;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>多穴間距離<small>等配でない2〜8穴の総当たり距離</small></h1>
+    <a href="../index.html">≡ ツール一覧</a>
+  </header>
+
+  <!-- 図面シート -->
+  <div class="sheet">
+    <div class="sheet-inner">
+      <svg id="dwg" viewBox="0 0 340 250" role="img" aria-label="中心から任意の半径・角度に配置された穴と、選択中の穴間距離を示す図">
+        <defs>
+          <marker id="arRed" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L8,3 L0,6 z" fill="#D63426"/>
+          </marker>
+        </defs>
+        <!-- 中心十字 -->
+        <line x1="60" y1="130" x2="280" y2="130" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="12 3 2 3"/>
+        <line x1="170" y1="20" x2="170" y2="240" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="12 3 2 3"/>
+        <circle cx="170" cy="130" r="2.5" fill="#1F3341"/>
+        <!-- 0°基準線 -->
+        <line x1="170" y1="130" x2="300" y2="130" stroke="#1F3341" stroke-width="1.2"/>
+        <text x="303" y="134" font-size="10" fill="#5B707E">0°</text>
+        <text x="8" y="14" font-size="10" fill="#5B707E" id="dirNote">角度: 0°基準から反時計回り</text>
+        <g id="dyn"></g>
+      </svg>
+      <div class="titleblock">
+        <div><b>品名</b> 多穴間距離</div>
+        <div><b>方式</b> 極座標→余弦定理</div>
+        <div>TOOL-09</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 穴数・回転方向 -->
+  <div class="ctrl">
+    <span class="lab">穴数</span>
+    <div class="chips" id="nChips"></div>
+    <div class="mode" role="group" aria-label="角度の回り方向(図示用)">
+      <button type="button" id="mCcw" class="on">反時計</button>
+      <button type="button" id="mCw">時計</button>
+    </div>
+  </div>
+  <div class="hint">
+    <b>穴1が角度の基準(0°)</b>です。穴1は半径 r だけ入力し、穴2以降は「<b>前の穴からの角度</b>」と、その穴の<b>中心からの半径 r</b> を入力します(図面の穴間角度をそのまま順に入れられます)。角度は <b>22.5</b> でも <b>22 30</b>(度 分)でも <b>22 30 15</b>(度 分 秒)でも可。逆回りは <b>−30</b> のようにマイナスで。回り方向の切替は図の見た目だけで、距離の計算結果は変わりません。
+  </div>
+
+  <!-- 穴入力 -->
+  <div class="inputs" id="holeList"></div>
+
+  <!-- 結果 -->
+  <div class="dro">
+    <div class="dro-line">
+      <span class="dro-label" id="selLbl">―</span>
+      <span class="dro-val" id="out">―.―――</span>
+      <span class="dro-unit">mm</span>
+    </div>
+    <div class="pairs" id="pairList"></div>
+    <div class="dro-foot">
+      <span class="statusTxt" id="statusTxt">各穴の r と θ を入力してください</span>
+      <button class="copy" type="button" id="copyBtn">全結果コピー</button>
+    </div>
+  </div>
+
+  <details class="xy">
+    <summary>▼ XY座標(中心→穴1 を X軸とした座標・CMM照合用)</summary>
+    <table class="xyt">
+      <thead><tr><th>穴</th><th>X</th><th>Y</th></tr></thead>
+      <tbody id="xyBody"></tbody>
+    </table>
+  </details>
+
+  <footer>
+    このページは計算のみを行います。<br>
+    入力値の送信・保存は一切ありません(端末内で完結)。
+  </footer>
+</div>
+
+<div class="toast" id="toast">コピーしました</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var NS='http://www.w3.org/2000/svg';
+  var CX=170, CY=130, RMAXPX=100;
+  var n=3;
+  var holes=[];          // {r:'', a:''} 文字列のまま保持
+  for(var i=0;i<8;i++)holes.push({r:'',a:''});
+  var cw=false;          // 図示の回り方向
+  var selIdx=0;          // 選択中ペア
+  var pairs=[];          // {i,j,L}
+
+  function zen(v){
+    return String(v).replace(/[０-９．−]/g,function(c){
+      if(c==='−')return '-';
+      return String.fromCharCode(c.charCodeAt(0)-0xFEE0);
+    }).replace(/。/g,'.');
+  }
+  function num(v){
+    if(v==null)return NaN;
+    v=zen(v).replace(/[,，、]/g,'').trim();
+    if(v==='')return NaN;
+    return Number(v);
+  }
+  // 角度: "22.5" / "22 30" / "22 30 15" / "22°30′15″" を受付
+  function parseAngle(v){
+    if(v==null)return NaN;
+    var s=zen(v).replace(/[°度]/g,' ').replace(/[′’'分]/g,' ').replace(/[″”"秒]/g,' ').trim();
+    if(s==='')return NaN;
+    var parts=s.split(/\s+/);
+    if(parts.length===1)return Number(parts[0]);
+    var d=Number(parts[0]), m=Number(parts[1]||0), sec=Number(parts[2]||0);
+    if(isNaN(d)||isNaN(m)||isNaN(sec))return NaN;
+    var sign=(d<0||/^\s*-/.test(parts[0]))?-1:1;
+    return sign*(Math.abs(d)+m/60+sec/3600);
+  }
+  function el(name,attrs){
+    var e=document.createElementNS(NS,name);
+    for(var k in attrs)e.setAttribute(k,attrs[k]);
+    return e;
+  }
+
+  /* ---- 穴入力行の構築(穴数変更時のみ) ---- */
+  function buildRows(){
+    var box=$('holeList');
+    box.innerHTML='';
+    for(var i=0;i<n;i++){
+      var d=document.createElement('div');
+      d.className='hrow';
+      if(i===0){
+        d.innerHTML=
+          '<span class="badge">1</span>'+
+          '<span class="fld"><span class="fl">r</span>'+
+            '<input data-i="0" data-f="r" type="text" inputmode="decimal" autocomplete="off" placeholder="―">'+
+            '<span class="u">mm</span></span>'+
+          '<span class="baseTag">角度の基準(0°)</span>';
+        box.appendChild(d);
+        d.querySelector('[data-f="r"]').value=holes[0].r;
+      }else{
+        d.innerHTML=
+          '<span class="badge">'+(i+1)+'</span>'+
+          '<span class="fld"><span class="fl">r</span>'+
+            '<input data-i="'+i+'" data-f="r" type="text" inputmode="decimal" autocomplete="off" placeholder="―">'+
+            '<span class="u">mm</span></span>'+
+          '<span class="fld"><span class="fl">穴'+i+'から</span>'+
+            '<input data-i="'+i+'" data-f="a" type="text" inputmode="decimal" autocomplete="off" placeholder="±―">'+
+            '<span class="u">°</span></span>';
+        box.appendChild(d);
+        d.querySelector('[data-f="r"]').value=holes[i].r;
+        d.querySelector('[data-f="a"]').value=holes[i].a;
+      }
+    }
+  }
+
+  function buildChips(){
+    var box=$('nChips');
+    box.innerHTML='';
+    [2,3,4,5,6,7,8].forEach(function(k){
+      var b=document.createElement('button');
+      b.type='button';b.className='chip'+(k===n?' on':'');
+      b.textContent=k;
+      b.addEventListener('click',function(){
+        n=k;buildChips();buildRows();recalc();
+      });
+      box.appendChild(b);
+    });
+  }
+
+  /* ---- 計算 ---- */
+  // 穴1を基準(0°)とし、穴iの絶対角 = Δθ2 + Δθ3 + … + Δθi
+  function absAngle(i){
+    var sum=0;
+    for(var k=1;k<=i;k++){
+      var d=parseAngle(holes[k].a);
+      if(isNaN(d))return NaN;
+      sum+=d;
+    }
+    return sum;
+  }
+  function holeXY(i){
+    var r=num(holes[i].r);
+    if(isNaN(r)||r<0)return null;
+    var a=absAngle(i);
+    if(isNaN(a))return null;
+    var rad=a*Math.PI/180;
+    return {x:r*Math.cos(rad), y:r*Math.sin(rad), r:r, a:a,
+            da:(i===0?0:parseAngle(holes[i].a))};
+  }
+
+  function recalc(){
+    var pts=[];
+    for(var i=0;i<n;i++)pts.push(holeXY(i));
+
+    pairs=[];
+    for(var i2=0;i2<n;i2++){
+      for(var j=i2+1;j<n;j++){
+        if(pts[i2]&&pts[j]){
+          var dx=pts[i2].x-pts[j].x, dy=pts[i2].y-pts[j].y;
+          pairs.push({i:i2,j:j,L:Math.sqrt(dx*dx+dy*dy)});
+        }
+      }
+    }
+    if(selIdx>=pairs.length)selIdx=0;
+
+    /* ペア一覧 */
+    var pl=$('pairList');
+    pl.innerHTML='';
+    pairs.forEach(function(p,k){
+      var d=document.createElement('div');
+      d.className='pr'+(k===selIdx?' sel':'');
+      d.innerHTML='<span class="pk">穴'+(p.i+1)+'–穴'+(p.j+1)+'</span><span class="pv">'+p.L.toFixed(3)+'</span>';
+      d.addEventListener('click',function(){selIdx=k;recalc()});
+      pl.appendChild(d);
+    });
+
+    /* 選択中の大表示 */
+    if(pairs.length){
+      var sp=pairs[selIdx];
+      $('selLbl').textContent='穴'+(sp.i+1)+'–穴'+(sp.j+1);
+      $('out').textContent=sp.L.toFixed(3);
+      $('statusTxt').textContent='一覧をタップすると図の赤線が切り替わります';
+    }else{
+      $('selLbl').textContent='―';
+      $('out').textContent='―.―――';
+      $('statusTxt').textContent='穴1のr、穴2以降は「前の穴からの角度」とrを入力してください';
+    }
+
+    /* XY座標 */
+    var xb=$('xyBody');
+    xb.innerHTML='';
+    for(var i3=0;i3<n;i3++){
+      var tr=document.createElement('tr');
+      var p=pts[i3];
+      tr.innerHTML='<td>'+(i3+1)+'</td><td>'+(p?p.x.toFixed(3):'―')+'</td><td>'+(p?p.y.toFixed(3):'―')+'</td>';
+      xb.appendChild(tr);
+    }
+
+    draw(pts);
+  }
+
+  /* ---- 作図 ---- */
+  function draw(pts){
+    var dyn=$('dyn');
+    while(dyn.firstChild)dyn.removeChild(dyn.firstChild);
+
+    var maxR=0;
+    pts.forEach(function(p){if(p&&p.r>maxR)maxR=p.r});
+    if(maxR<=0)return;
+    var s=RMAXPX/maxR;
+    var ySign=cw?1:-1;
+
+    function px(p){return {x:CX+p.x*s, y:CY+ySign*p.y*s}}
+
+    // 全ペアの薄い線
+    pairs.forEach(function(p,k){
+      if(k===selIdx)return;
+      var A=px(pts[p.i]), B=px(pts[p.j]);
+      dyn.appendChild(el('line',{x1:A.x.toFixed(1),y1:A.y.toFixed(1),x2:B.x.toFixed(1),y2:B.y.toFixed(1),stroke:'#C9D3DA','stroke-width':1}));
+    });
+
+    // 半径線(薄) / 穴1は基準線として濃く
+    pts.forEach(function(p,i){
+      if(!p)return;
+      var P=px(p);
+      if(i===0){
+        dyn.appendChild(el('line',{x1:CX,y1:CY,x2:P.x.toFixed(1),y2:P.y.toFixed(1),stroke:'#1F3341','stroke-width':1.6,'stroke-dasharray':'10 3 2 3'}));
+        var bt=el('text',{x:((CX+P.x)/2).toFixed(1),y:((CY+P.y)/2-7).toFixed(1),'font-size':10,'font-weight':700,fill:'#1F3341','text-anchor':'middle',stroke:'#fff','stroke-width':3,'paint-order':'stroke'});
+        bt.textContent='基準 0°';
+        dyn.appendChild(bt);
+      }else{
+        dyn.appendChild(el('line',{x1:CX,y1:CY,x2:P.x.toFixed(1),y2:P.y.toFixed(1),stroke:'#E1E7EB','stroke-width':1}));
+      }
+    });
+
+    // 選択ペア(赤)
+    if(pairs.length){
+      var sp=pairs[selIdx];
+      var A=px(pts[sp.i]), B=px(pts[sp.j]);
+      var dx=B.x-A.x, dy=B.y-A.y, len=Math.sqrt(dx*dx+dy*dy)||1;
+      var ux=dx/len, uy=dy/len, hr=8;
+      var sx=A.x+ux*hr, sy=A.y+uy*hr, ex=B.x-ux*hr, ey=B.y-uy*hr;
+      if(len>hr*2.2){
+        dyn.appendChild(el('line',{x1:sx.toFixed(1),y1:sy.toFixed(1),x2:ex.toFixed(1),y2:ey.toFixed(1),stroke:'#D63426','stroke-width':1.7,'marker-start':'url(#arRed)','marker-end':'url(#arRed)'}));
+      }
+      var mx=(A.x+B.x)/2, my=(A.y+B.y)/2;
+      var nx=-uy, ny=ux;
+      // 中心から遠い側にオフセット
+      if((mx-CX)*nx+(my-CY)*ny<0){nx=-nx;ny=-ny}
+      var lx=mx+nx*14, ly=my+ny*14;
+      var rot=Math.atan2(dy,dx)*180/Math.PI;
+      if(rot>90)rot-=180;if(rot<-90)rot+=180;
+      var t=el('text',{x:0,y:4,'font-size':13,'font-weight':700,fill:'#D63426','text-anchor':'middle',stroke:'#fff','stroke-width':4,'paint-order':'stroke'});
+      t.textContent=pairs[selIdx].L.toFixed(3);
+      var g=el('g',{transform:'translate('+lx.toFixed(1)+','+ly.toFixed(1)+') rotate('+rot.toFixed(1)+')'});
+      g.appendChild(t);
+      dyn.appendChild(g);
+    }
+
+    // 点と番号
+    pts.forEach(function(p,i){
+      if(!p)return;
+      var P=px(p);
+      dyn.appendChild(el('circle',{cx:P.x.toFixed(1),cy:P.y.toFixed(1),r:8,fill:'#fff',stroke:'#1F3341','stroke-width':1.6}));
+      var tn=el('text',{x:P.x.toFixed(1),y:(P.y+3.5).toFixed(1),'font-size':10,'font-weight':700,fill:'#1F3341','text-anchor':'middle'});
+      tn.textContent=String(i+1);
+      dyn.appendChild(tn);
+    });
+  }
+
+  /* ---- イベント ---- */
+  $('holeList').addEventListener('input',function(e){
+    var t=e.target;
+    var i=t.getAttribute('data-i'), f=t.getAttribute('data-f');
+    if(i==null||!f)return;
+    holes[i][f]=t.value;
+    recalc();
+  });
+
+  function setCw(v){
+    cw=v;
+    $('mCcw').classList.toggle('on',!v);
+    $('mCw').classList.toggle('on',v);
+    $('dirNote').textContent='角度: 0°基準から'+(v?'時計回り':'反時計回り');
+    recalc();
+  }
+  $('mCcw').addEventListener('click',function(){setCw(false)});
+  $('mCw').addEventListener('click',function(){setCw(true)});
+
+  var toastTimer=null;
+  function toast(msg){
+    var t=$('toast');t.textContent=msg;t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer=setTimeout(function(){t.classList.remove('show')},1600);
+  }
+  $('copyBtn').addEventListener('click',function(){
+    if(!pairs.length){toast('まだ結果がありません');return}
+    var lines=['[多穴間距離]'];
+    for(var i=0;i<n;i++){
+      var p=holeXY(i);
+      if(p)lines.push((i+1)+': r='+p.r+(i===0?' (基準0°)':' 前穴から'+(p.da>=0?'+':'')+p.da+'° → 累計'+p.a.toFixed(3)+'°')+' (X='+p.x.toFixed(3)+', Y='+p.y.toFixed(3)+')');
+    }
+    pairs.forEach(function(p){
+      lines.push((p.i+1)+'–'+(p.j+1)+': '+p.L.toFixed(3));
+    });
+    var s=lines.join('\n');
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(s).then(function(){toast('コピーしました')},function(){toast('コピーできませんでした')});
+    }else{
+      var ta=document.createElement('textarea');
+      ta.value=s;document.body.appendChild(ta);ta.select();
+      try{document.execCommand('copy');toast('コピーしました')}catch(e){toast('コピーできませんでした')}
+      document.body.removeChild(ta);
+    }
+  });
+
+  buildChips();
+  buildRows();
+  recalc();
+})();
+</script>
+</body>
+</html>

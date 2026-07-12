@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1F3341">
+<meta name="description" content="現場のための検査計算・記録ツール集。穴ピッチ・PCD・公差判定・またぎ歯厚・数取りなど。すべて端末内で計算され、入力値はどこにも送信されません。">
+<title>検査ミニポータル | 検査計算ツール</title>
+<style>
+  :root{
+    --paper:#F2F4F5;
+    --sheet:#FFFFFF;
+    --ink:#1F3341;
+    --line:#8FA2AF;
+    --red:#D63426;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI",sans-serif;
+    background:var(--paper);color:var(--ink);
+    min-height:100dvh;display:flex;flex-direction:column;align-items:center;
+    padding:14px 12px calc(20px + env(safe-area-inset-bottom));
+  }
+  .wrap{width:100%;max-width:480px}
+
+  /* 表紙(図面台帳風) */
+  .cover{
+    background:var(--sheet);border:2px solid var(--ink);
+    padding:5px;margin-bottom:16px;
+  }
+  .cover-inner{border:1px solid var(--ink);padding:18px 16px 0}
+  .cover h1{font-size:24px;font-weight:800;letter-spacing:.12em}
+  .cover .sub{
+    font-size:11px;color:#5B707E;letter-spacing:.22em;margin-top:4px;
+    text-transform:uppercase;
+  }
+  .cover .desc{font-size:12px;color:#33475299;color:#334752;margin:12px 0 14px;line-height:1.7}
+  .cover .strip{
+    display:flex;border-top:1px solid var(--ink);margin:0 -16px;
+    font-size:9px;letter-spacing:.06em;
+  }
+  .cover .strip div{padding:4px 10px;border-right:1px solid var(--ink)}
+  .cover .strip div:last-child{border-right:none;margin-left:auto}
+  .cover .strip b{font-weight:700}
+
+  h2{
+    font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.12em;
+    margin:16px 2px 8px;display:flex;align-items:center;gap:6px;
+  }
+  h2::before{content:'';width:4px;height:14px;background:var(--ink);border-radius:2px}
+
+  a.tool{
+    display:grid;grid-template-columns:50px 1fr 30px 14px;gap:10px;align-items:center;
+    background:var(--sheet);border:1.5px solid var(--ink);border-radius:10px;
+    padding:10px 12px;margin-bottom:8px;
+    text-decoration:none;color:var(--ink);
+  }
+  a.tool:active{background:#E8EDF0}
+  a.tool.hide{display:none}
+  .pin{
+    width:32px;height:32px;border:none;border-radius:50%;
+    background:transparent;font-size:19px;line-height:1;padding:0;
+    color:#B8C4CC;
+  }
+  .pin.on{color:var(--ink)}
+  .pin:active{background:#E8EDF0}
+
+  .searchBox{margin-bottom:4px}
+  .searchBox input{
+    width:100%;font-size:16px;padding:11px 14px;
+    border:1.5px solid var(--ink);border-radius:10px;
+    background:var(--sheet);color:var(--ink);outline:none;
+    -webkit-appearance:none;appearance:none;
+  }
+  .searchBox input:focus{border-color:var(--red)}
+  .searchBox input::placeholder{color:#9AA9B2}
+  .nohit{
+    text-align:center;font-size:12px;color:#5B707E;
+    padding:22px 4px;line-height:1.7;
+  }
+  .icon{width:50px;height:50px}
+  .icon svg{display:block;width:100%;height:100%}
+  .no{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-size:10px;color:#5B707E;letter-spacing:.08em;
+  }
+  .nm{font-size:15px;font-weight:700;margin:1px 0 2px}
+  .ds{font-size:11px;color:#5B707E;line-height:1.5}
+  .chev{color:#8FA2AF;font-size:20px;font-weight:700}
+
+  .note{
+    background:var(--sheet);border:1px solid #D5DDE2;border-radius:12px;
+    padding:12px;margin-top:16px;font-size:12px;line-height:1.9;color:#334752;
+  }
+  .note b{font-weight:700}
+
+  footer{
+    margin-top:16px;font-size:11px;color:#5B707E;line-height:1.7;
+    text-align:center;letter-spacing:.03em;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="cover">
+    <div class="cover-inner">
+      <h1>検査ミニポータル</h1>
+      <div class="sub">INSPECTION MINI TOOLS</div>
+      <div class="desc">
+        現場のための計算・記録ツール集。すべての計算はこの端末の中で行われ、入力値がネットに送信されることはありません。
+      </div>
+      <div class="strip">
+        <div><b>構成</b> 26ツール</div>
+        <div><b>通信</b> なし(端末内計算)</div>
+        <div>REV 2026-07</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="searchBox">
+    <input id="q" type="search" placeholder="🔎 ツール名・用途で検索(例: 歯車、下穴、角度)" autocomplete="off" aria-label="ツールを検索">
+  </div>
+
+  <h2 id="favHead" style="display:none">★ お気に入り(この端末のみ)</h2>
+  <div id="favBox"></div>
+
+  <div id="noHit" class="nohit" style="display:none">該当するツールがありません。<br>別の言葉で試してください(例: ねじ / 角度 / 公差 / 歯車)</div>
+
+  <h2>穴・位置の測定</h2>
+
+  <a class="tool" href="pitch-radius/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <line x1="7" y1="37" x2="17" y2="12" stroke="#1F3341" stroke-width="1.4"/>
+      <line x1="7" y1="37" x2="32" y2="25" stroke="#1F3341" stroke-width="1.4"/>
+      <circle cx="7" cy="37" r="1.8" fill="#1F3341"/>
+      <circle cx="18" cy="10" r="4" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+      <circle cx="34" cy="24" r="4.5" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+      <line x1="21.5" y1="13" x2="30.5" y2="21" stroke="#D63426" stroke-width="1.8"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-01</span>
+      <div class="nm">穴間ピッチ</div>
+      <div class="ds">同半径(角度)を既定に、異半径の余弦定理もタブで切替</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  <a class="tool" href="pcd-pitch/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <circle cx="22" cy="22" r="14" fill="none" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="6 2 1.5 2"/>
+      <circle cx="22" cy="8" r="2.6" fill="#fff" stroke="#1F3341" stroke-width="1.4"/>
+      <circle cx="34.1" cy="15" r="2.6" fill="#fff" stroke="#1F3341" stroke-width="1.4"/>
+      <circle cx="34.1" cy="29" r="2.6" fill="#fff" stroke="#1F3341" stroke-width="1.4"/>
+      <circle cx="22" cy="36" r="2.6" fill="#fff" stroke="#1F3341" stroke-width="1.4"/>
+      <circle cx="9.9" cy="29" r="2.6" fill="#fff" stroke="#1F3341" stroke-width="1.4"/>
+      <circle cx="9.9" cy="15" r="2.6" fill="#fff" stroke="#1F3341" stroke-width="1.4"/>
+      <line x1="24.5" y1="9.5" x2="31.7" y2="13.6" stroke="#D63426" stroke-width="1.8"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-02</span>
+      <div class="nm">PCD穴ピッチ</div>
+      <div class="ds">PCDと穴数から穴間ピッチ。実測ピッチからPCDの逆算も</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  <a class="tool" href="angle-dim/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <line x1="8" y1="37" x2="38" y2="37" stroke="#1F3341" stroke-width="2"/>
+      <line x1="8" y1="37" x2="8" y2="8" stroke="#1F3341" stroke-width="2"/>
+      <line x1="8" y1="37" x2="30" y2="13" stroke="#1F3341" stroke-width="1.3"/>
+      <circle cx="31" cy="12" r="3.4" fill="#fff" stroke="#1F3341" stroke-width="1.5"/>
+      <path d="M 17 37 A 9 9 0 0 0 14.2 30.6" fill="none" stroke="#D63426" stroke-width="1.8"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-03</span>
+      <div class="nm">穴位置と角度</div>
+      <div class="ds">X・Y・斜め距離・角度のうち2つ入力で残りを自動計算</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  <a class="tool" href="multi-hole/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <circle cx="8" cy="36" r="1.8" fill="#1F3341"/>
+      <line x1="8" y1="36" x2="15" y2="13" stroke="#1F3341" stroke-width="1.2"/>
+      <circle cx="16" cy="11" r="3.6" fill="#fff" stroke="#1F3341" stroke-width="1.5"/>
+      <line x1="8" y1="36" x2="33" y2="25.5" stroke="#1F3341" stroke-width="1.2"/>
+      <line x1="31" y1="19" x2="36.5" y2="32" stroke="#1F3341" stroke-width="2.6"/>
+      <line x1="19" y1="13.5" x2="31.5" y2="22.5" stroke="#D63426" stroke-width="1.8"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-09</span>
+      <div class="nm">多穴間距離</div>
+      <div class="ds">等配でない2〜6穴(半径・角度ばらばら)を総当たりで距離計算</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  <a class="tool" href="true-position/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <line x1="5" y1="22" x2="39" y2="22" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="6 2 1.5 2"/>
+      <line x1="22" y1="5" x2="22" y2="39" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="6 2 1.5 2"/>
+      <circle cx="22" cy="22" r="13" fill="#D9E2E8" stroke="#1F3341" stroke-width="1.5"/>
+      <line x1="22" y1="22" x2="28.5" y2="16" stroke="#D63426" stroke-width="1.5"/>
+      <circle cx="28.5" cy="16" r="3" fill="#D63426"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-13</span>
+      <div class="nm">真位置度判定</div>
+      <div class="ds">2√(ΔX²+ΔY²)で合否判定。公差円に実測位置を図示、Ⓜ対応</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  <a class="tool" href="phase-shift/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <circle cx="22" cy="24" r="15" fill="none" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="5 2 1.5 2"/>
+      <circle cx="22" cy="24" r="1.6" fill="#1F3341"/>
+      <circle cx="22" cy="9" r="4" fill="#fff" stroke="#1F3341" stroke-width="1.5"/>
+      <circle cx="32.6" cy="13.4" r="4" fill="none" stroke="#D63426" stroke-width="1.7"/>
+      <path d="M 26 9.6 A 15 15 0 0 1 29.8 11.2" fill="none" stroke="#D63426" stroke-width="1.8"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-17</span>
+      <div class="nm">位相ズレ</div>
+      <div class="ds">クロッキング: 位相角⇔円周ズレ量。等配穴の折返し、傾斜計2点入力</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
+
+  <a class="tool" href="hole-builder/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <circle cx="11" cy="30" r="2" fill="#1F3341"/>
+      <circle cx="33" cy="14" r="2" fill="#1F3341"/>
+      <line x1="11" y1="30" x2="33" y2="14" stroke="#C9D3DA" stroke-width="1.2" stroke-dasharray="3 2"/>
+      <circle cx="8" cy="22" r="4" fill="#fff" stroke="#1F3341" stroke-width="1.4"/>
+      <circle cx="18" cy="36" r="4" fill="#fff" stroke="#1F3341" stroke-width="1.4"/>
+      <circle cx="30" cy="24" r="4" fill="#fff" stroke="#1F3341" stroke-width="1.4"/>
+      <circle cx="38" cy="8" r="4" fill="#fff" stroke="#1F3341" stroke-width="1.4"/>
+      <line x1="8" y1="22" x2="30" y2="24" stroke="#D63426" stroke-width="1.5"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-22</span>
+      <div class="nm">穴位置ビルダー</div>
+      <div class="ds">複数の中心を持つ穴配置の座標算出。実測距離から位置(縦横)も逆算</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
+
+  <a class="tool" href="right-triangle/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <polygon points="7,35 37,35 37,12" fill="#EFF2F4" stroke="#1F3341" stroke-width="1.7"/>
+      <polyline points="32,35 32,30 37,30" fill="none" stroke="#1F3341" stroke-width="1.2"/>
+      <path d="M 15 35 A 8 8 0 0 0 14.5 31.8" fill="none" stroke="#D63426" stroke-width="1.5"/>
+      <text x="18" y="33" font-size="8" font-weight="700" fill="#D63426">α</text>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-24</span>
+      <div class="nm">直角三角形</div>
+      <div class="ds">辺と角のうち2つを入れると残りが出る。面積・勾配・度分秒も</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  <a class="tool" href="corner-dist/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <path d="M 8 16 L 14 10 L 36 10 L 30 16 Z" fill="#fff" stroke="#1F3341" stroke-width="1.5"/>
+      <rect x="8" y="16" width="22" height="20" fill="#fff" stroke="#1F3341" stroke-width="1.5"/>
+      <path d="M 30 36 L 36 30 L 36 10" fill="none" stroke="#1F3341" stroke-width="1.5"/>
+      <line x1="8" y1="36" x2="36" y2="10" stroke="#D63426" stroke-width="1.8"/>
+      <circle cx="8" cy="36" r="2" fill="#D63426"/>
+      <circle cx="36" cy="10" r="2" fill="#D63426"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-25</span>
+      <div class="nm">角－角 距離</div>
+      <div class="ds">直方体の対角。隅切り・切欠きなど凹み形状の全頂点間距離にも対応</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  <a class="tool" href="axis-tilt/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <line x1="6" y1="34" x2="38" y2="34" stroke="#1F3341" stroke-width="2"/>
+      <rect x="9" y="18" width="11" height="16" fill="#fff" stroke="#1F3341" stroke-width="1.4"/>
+      <path d="M 12 27 L 39 21 L 39 25 L 12 31 Z" fill="#fff" stroke="#1F3341" stroke-width="1.3"/>
+      <line x1="12" y1="29" x2="39" y2="29" stroke="#8FA2AF" stroke-width="0.9" stroke-dasharray="3 2"/>
+      <path d="M 30 10 v 8" stroke="#D63426" stroke-width="1.6"/>
+      <circle cx="30" cy="23" r="1.8" fill="#D63426"/>
+      <path d="M 36 19 a 12 12 0 0 0 -5 -6" fill="none" stroke="#D63426" stroke-width="1.3"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-26</span>
+      <div class="nm">軸の傾き</div>
+      <div class="ds">検査棒の2点読みから角度・勾配・直角度判定。すき間ロッキングの有効性判定つき</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
+
+  <h2>円弧・曲げ</h2>
+
+  <a class="tool" href="chord-r/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <path d="M 5 32 Q 22 2 39 32" fill="none" stroke="#1F3341" stroke-width="1.8"/>
+      <line x1="10" y1="23.5" x2="34" y2="23.5" stroke="#1F3341" stroke-width="1.4"/>
+      <circle cx="10" cy="23.5" r="1.6" fill="#1F3341"/>
+      <circle cx="34" cy="23.5" r="1.6" fill="#1F3341"/>
+      <line x1="22" y1="23.5" x2="22" y2="10.8" stroke="#D63426" stroke-width="1.8"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-04</span>
+      <div class="nm">弦・矢高とR</div>
+      <div class="ds">定規を当てて弦と矢高から大きなRを計算。期待矢高の逆算も</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  <a class="tool" href="bend-guide/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <path d="M 9 38 L 9 18 A 9 9 0 0 1 27 18 L 27 26" fill="none" stroke="#1F3341" stroke-width="2.4" stroke-linecap="round"/>
+      <circle cx="9" cy="38" r="2.2" fill="#1F3341"/>
+      <circle cx="27" cy="26" r="2.2" fill="#fff" stroke="#1F3341" stroke-width="1.5"/>
+      <line x1="10.5" y1="36.5" x2="25.5" y2="27.5" stroke="#D63426" stroke-width="1.6" stroke-dasharray="3.5 2.5"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-10</span>
+      <div class="nm">曲げガイド計算</div>
+      <div class="ds">パイプ・チューブの曲げ形状を作図し、展開長・端点間距離を計算</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  <a class="tool" href="bend-guide-3d/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <path d="M 9 38 L 9 20 Q 9 12 17 12 L 25 12 Q 31 12 33 18 L 36 27" fill="none" stroke="#1F3341" stroke-width="2.4" stroke-linecap="round"/>
+      <circle cx="9" cy="38" r="2.2" fill="#1F3341"/>
+      <circle cx="36" cy="27" r="2.2" fill="#fff" stroke="#1F3341" stroke-width="1.5"/>
+      <line x1="11" y1="36.5" x2="34" y2="28.5" stroke="#D63426" stroke-width="1.6" stroke-dasharray="3.5 2.5"/>
+      <line x1="35" y1="8" x2="41" y2="8" stroke="#8FA2AF" stroke-width="1.2"/>
+      <line x1="35" y1="8" x2="35" y2="2" stroke="#8FA2AF" stroke-width="1.2"/>
+      <line x1="35" y1="8" x2="31" y2="11" stroke="#8FA2AF" stroke-width="1.2"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-11</span>
+      <div class="nm">曲げガイド計算(3D)</div>
+      <div class="ds">ひねり(回転)付きの立体曲げ。三面図で確認、XYZ座標も算出</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
+
+  <h2>ねじ・歯車</h2>
+
+  <a class="tool" href="tolerance/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <line x1="4" y1="24" x2="40" y2="24" stroke="#1F3341" stroke-width="1.2" stroke-dasharray="6 2 1.5 2"/>
+      <rect x="16" y="10" width="13" height="11" fill="#D9E2E8" stroke="#1F3341" stroke-width="1.4"/>
+      <line x1="12" y1="16" x2="33" y2="16" stroke="#D63426" stroke-width="1.8"/>
+      <circle cx="33" cy="16" r="2" fill="#D63426"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-05</span>
+      <div class="nm">公差判定・公差表</div>
+      <div class="ds">JISはめあい公差(h7・H7など)。実測値の合否を即判定</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  <a class="tool" href="gear-w/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <path d="M 4 34 L 8 34 L 10.5 21 L 17.5 21 L 20 34
+               L 24 34 L 26.5 21 L 33.5 21 L 36 34 L 40 34" fill="#fff" stroke="#1F3341" stroke-width="1.7"/>
+      <line x1="8.5" y1="15" x2="35.5" y2="15" stroke="#D63426" stroke-width="1.8"/>
+      <line x1="8.5" y1="12.5" x2="8.5" y2="17.5" stroke="#D63426" stroke-width="1.4"/>
+      <line x1="35.5" y1="12.5" x2="35.5" y2="17.5" stroke="#D63426" stroke-width="1.4"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-06</span>
+      <div class="nm">またぎ歯厚</div>
+      <div class="ds">平歯車のW寸法。またぎ歯数は自動算出、転位にも対応</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  <a class="tool" href="over-pin/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <path d="M 6 16 L 14 7 L 22 16 L 30 7 L 38 16" fill="none" stroke="#1F3341" stroke-width="1.6"/>
+      <path d="M 6 28 L 14 37 L 22 28 L 30 37 L 38 28" fill="none" stroke="#1F3341" stroke-width="1.6"/>
+      <circle cx="22" cy="11" r="5" fill="#fff" stroke="#1F3341" stroke-width="1.4"/>
+      <circle cx="22" cy="33" r="5" fill="#fff" stroke="#1F3341" stroke-width="1.4"/>
+      <line x1="41" y1="6" x2="41" y2="38" stroke="#D63426" stroke-width="1.7"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-15</span>
+      <div class="nm">オーバーピン径</div>
+      <div class="ds">歯車のピン挟み測定値。偶数/奇数歯を自動判別、転位対応</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  <a class="tool" href="pin-wire/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <path d="M 5 31 L 13 13 L 21 31 L 29 13 L 37 31" fill="none" stroke="#1F3341" stroke-width="1.7"/>
+      <circle cx="21" cy="22.5" r="6.5" fill="#fff" stroke="#1F3341" stroke-width="1.5"/>
+      <line x1="41" y1="16" x2="41" y2="36" stroke="#D63426" stroke-width="1.7"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-14</span>
+      <div class="nm">ピン・三針測定</div>
+      <div class="ds">ねじ有効径(三針法)・アリ溝・V溝・平行溝のピン換算</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  <a class="tool" href="pipe-thread/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <line x1="4" y1="14" x2="20" y2="14" stroke="#1F3341" stroke-width="1.8"/>
+      <line x1="4" y1="30" x2="20" y2="30" stroke="#1F3341" stroke-width="1.8"/>
+      <path d="M 20 14 L 24 17 L 28 13.5 L 32 16.5 L 36 13 L 40 16" fill="none" stroke="#1F3341" stroke-width="1.5"/>
+      <path d="M 20 30 L 24 27 L 28 30.5 L 32 27.5 L 36 31 L 40 28" fill="none" stroke="#1F3341" stroke-width="1.5"/>
+      <line x1="4" y1="22" x2="40" y2="22" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="5 2 1.5 2"/>
+      <circle cx="10" cy="22" r="4.5" fill="none" stroke="#D63426" stroke-width="1.7"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-19</span>
+      <div class="nm">管用ねじ</div>
+      <div class="ds">R/Rc・G/Rpの下穴目安と基準寸法、実測からのサイズ推定(NPT判別)</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  <a class="tool" href="tap-drill/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <path d="M 4 30 L 12 12 L 20 30 L 28 12 L 36 30" fill="none" stroke="#1F3341" stroke-width="1.6"/>
+      <rect x="4" y="12" width="32" height="9" fill="#D63426" opacity="0.18"/>
+      <line x1="4" y1="21" x2="36" y2="21" stroke="#D63426" stroke-width="1.8"/>
+      <line x1="41" y1="10" x2="41" y2="34" stroke="#1F3341" stroke-width="1.4"/>
+      <rect x="39" y="16" width="4" height="10" fill="#2E9E5B" opacity="0.5"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-20</span>
+      <div class="nm">ねじ下穴・ひっかかり率</div>
+      <div class="ds">並目/細目・切削/転造。材質別の限度%(編集可)で下穴を判定</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
+
+  <h2>円すい・寸法補正</h2>
+
+  <a class="tool" href="taper/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <line x1="4" y1="22" x2="40" y2="22" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="5 2 1.5 2"/>
+      <path d="M 8 10 L 36 17 L 36 27 L 8 34 Z" fill="#EFF2F4" stroke="#1F3341" stroke-width="1.6"/>
+      <line x1="8" y1="10" x2="26" y2="10" stroke="#C9D3DA" stroke-width="1" stroke-dasharray="3 2"/>
+      <path d="M 21 10 A 13 13 0 0 1 20.6 13.2" fill="none" stroke="#D63426" stroke-width="1.7"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-18</span>
+      <div class="nm">テーパ計算</div>
+      <div class="ds">比・勾配・角度・MT等の標準テーパ、サインバー高さ、実測から推定</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  <a class="tool" href="temp-comp/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <rect x="6" y="11" width="24" height="8" fill="none" stroke="#8FA2AF" stroke-width="1.3" stroke-dasharray="4 3"/>
+      <rect x="6" y="25" width="30" height="8" fill="#EFF2F4" stroke="#1F3341" stroke-width="1.5"/>
+      <line x1="30" y1="15" x2="30" y2="30" stroke="#C9D3DA" stroke-width="1" stroke-dasharray="3 2"/>
+      <line x1="30" y1="21.5" x2="36" y2="21.5" stroke="#D63426" stroke-width="1.8"/>
+      <line x1="40" y1="8" x2="40" y2="17" stroke="#1F3341" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="40" cy="20.5" r="3.2" fill="#D63426"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-12</span>
+      <div class="nm">温度補正</div>
+      <div class="ds">測定値の20℃換算。金属・樹脂の材質別、測定器側の補正も</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
+
+  <h2>機構・カム</h2>
+
+  <a class="tool" href="cam-profile/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <line x1="5" y1="34" x2="39" y2="34" stroke="#C9D3DA" stroke-width="1"/>
+      <path d="M 5 34 Q 13 34 17 18 Q 20 6 23 18 Q 27 34 31 34 L 39 34" fill="none" stroke="#1F3341" stroke-width="1.8"/>
+      <line x1="20" y1="6" x2="20" y2="38" stroke="#D63426" stroke-width="1" stroke-dasharray="3 2"/>
+      <circle cx="20" cy="11" r="2.4" fill="#D63426"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-23</span>
+      <div class="nm">カム変位線図</div>
+      <div class="ds">板カムの区間ごとの運動曲線→リフト・速度・加速度と任意角の照合</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
+
+  <h2>材料・品質</h2>
+
+  <a class="tool" href="hardness/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <line x1="10" y1="8" x2="10" y2="36" stroke="#1F3341" stroke-width="1.5"/>
+      <line x1="22" y1="8" x2="22" y2="36" stroke="#1F3341" stroke-width="1.5"/>
+      <line x1="34" y1="8" x2="34" y2="36" stroke="#1F3341" stroke-width="1.5"/>
+      <polyline points="10,24 22,19 34,26" fill="none" stroke="#D63426" stroke-width="1.6"/>
+      <circle cx="10" cy="24" r="2.6" fill="#D63426"/>
+      <circle cx="22" cy="19" r="2.6" fill="#D63426"/>
+      <circle cx="34" cy="26" r="2.6" fill="#D63426"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-16</span>
+      <div class="nm">硬さ換算</div>
+      <div class="ds">HRC⇔HV⇔HB(鋼)。中間値は補間、引張強さの目安付き</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  <a class="tool" href="cpk/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <line x1="5" y1="36" x2="39" y2="36" stroke="#1F3341" stroke-width="1.4"/>
+      <rect x="12" y="24" width="4.5" height="12" fill="#8FA2AF" opacity="0.65"/>
+      <rect x="17.5" y="16" width="4.5" height="20" fill="#8FA2AF" opacity="0.65"/>
+      <rect x="23" y="20" width="4.5" height="16" fill="#8FA2AF" opacity="0.65"/>
+      <rect x="28.5" y="29" width="4.5" height="7" fill="#8FA2AF" opacity="0.65"/>
+      <path d="M 7 35 Q 20 2 37 35" fill="none" stroke="#1F3341" stroke-width="1.5"/>
+      <line x1="9" y1="8" x2="9" y2="38" stroke="#D63426" stroke-width="1.7"/>
+      <line x1="35" y1="8" x2="35" y2="38" stroke="#D63426" stroke-width="1.7"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-21</span>
+      <div class="nm">Cpk電卓</div>
+      <div class="ds">実測値を貼り付けて工程能力Cp/Cpk・分布図・予測不良率を計算</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
+
+  <h2>記録ツール(端末内に保存)</h2>
+
+  <a class="tool" href="scale-count/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <line x1="8" y1="18" x2="36" y2="18" stroke="#1F3341" stroke-width="2.2"/>
+      <path d="M 15 18 L 29 18 L 26 36 L 18 36 Z" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+      <circle cx="14.5" cy="13.5" r="3.4" fill="#fff" stroke="#1F3341" stroke-width="1.5"/>
+      <circle cx="22" cy="13.5" r="3.4" fill="#fff" stroke="#1F3341" stroke-width="1.5"/>
+      <circle cx="29.5" cy="13.5" r="3.4" fill="#fff" stroke="#D63426" stroke-width="1.8"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-07</span>
+      <div class="nm">はかり数取器</div>
+      <div class="ds">単重から総個数を計算。小分け計量の記録・合計・秤量警告</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  <a class="tool" href="frame-check/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <path d="M 7 17 L 13 10 L 39 10 L 33 17 Z" fill="#fff" stroke="#1F3341" stroke-width="1.5"/>
+      <rect x="7" y="17" width="26" height="17" fill="#fff" stroke="#1F3341" stroke-width="1.5"/>
+      <path d="M 33 34 L 39 27 L 39 10" fill="none" stroke="#1F3341" stroke-width="1.5"/>
+      <line x1="9.5" y1="13.5" x2="35.5" y2="13.5" stroke="#D63426" stroke-width="1.8"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-08</span>
+      <div class="nm">フレーム削り代検査</div>
+      <div class="ds">加工面ごとの削り代判定・対角/ねじれ・PDF記録の出力</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  <!-- TOOL-08 ここまで -->
+
+  <div class="note">
+    <b>使い方のヒント</b><br>
+    ・ブラウザの「ホーム画面に追加」で、アプリのようにワンタップで開けます<br>
+    ・すべての計算はこの端末の中で行われます(ページを開いた後の通信はありません)<br>
+    ・記録ツールのデータはこの端末のブラウザ内にのみ保存され、各ツールの消去ボタンで完全に削除できます
+  </div>
+
+  <footer>
+    検査ミニポータル | 計算式とJIS規格値のみで構成。図面・品番などの固有情報は含みません。<br>
+    ★お気に入りはこの端末のブラウザ内にのみ保存されます(送信なし)。
+  </footer>
+</div>
+
+<script>
+(function(){
+  // 検索用の追加キーワード(名前・説明に出てこない言い回しを補完)
+  var KW={
+    'pitch-radius/':'余弦定理 2穴 ピッチ 距離 はんけい 弦 同半径 異半径 角度',
+    'pcd-pitch/':'PCD ピッチ円 ボルト穴 等配 弦 穴とび',
+    'angle-dim/':'XY 座標 三角関数 タンジェント 斜め 位置',
+    'chord-r/':'アール 半径 弦 矢高 コード 円弧 R測定',
+    'right-triangle/':'直角三角形 三平方 ピタゴラス 斜辺 底辺 高さ サイン コサイン タンジェント 勾配 角度 三角比',
+    'tolerance/':'はめあい 公差 H7 h7 g6 js k m p s 軸 穴 合否 寸法許容差',
+    'gear-w/':'歯車 またぎ歯厚 W寸法 モジュール 転位 歯厚マイクロ',
+    'multi-hole/':'多穴 座標 総当たり 三次元測定 CMM 穴1基準 相対角度',
+    'hole-builder/':'穴位置 中心 データム 座標 三辺測量 逆算 縦横 位置 XY 割り出し',
+    'bend-guide/':'パイプ チューブ 曲げ 展開長 R曲げ ベンダー',
+    'bend-guide-3d/':'3D 立体 ひねり 回転 三面図 YBC パイプ',
+    'temp-comp/':'温度 熱膨張 20度 線膨張 樹脂 補正 20℃',
+    'true-position/':'位置度 真位置 MMC ボーナス公差 幾何公差 最大実体',
+    'pin-wire/':'三針 ピン測定 アリ溝 V溝 有効径 溝幅 ダブテール',
+    'over-pin/':'オーバーピン 歯車 ピン径 ビトウィーン',
+    'hardness/':'硬さ HRC HV HB ロックウェル ビッカース ブリネル 引張強さ 焼入れ',
+    'phase-shift/':'位相 クロッキング フランジ 傾斜計 等配 回転ズレ',
+    'taper/':'テーパ 勾配 サインバー モールス MT BT NT 角度 円すい',
+    'pipe-thread/':'管用 ねじ R Rc Rp G PT PF PS 下穴 NPT 配管 継手',
+    'tap-drill/':'下穴 タップ ひっかかり率 引っかかり メートルねじ 並目 細目 転造 SUS ドリル',
+    'cpk/':'Cpk Cp 工程能力 標準偏差 シグマ ヒストグラム 統計 ばらつき 不良率',
+    'cam-profile/':'カム 板カム 変位線図 リフト 揚程 サイクロイド 単弦 等加速度 修正台形 速度 加速度 回転角',
+    'scale-count/':'はかり 数取器 単重 個数 計数 秤',
+    'frame-check/':'フレーム 削り代 溶接 対角 ねじれ 検査成績書 前加工',
+    'corner-dist/':'角 かど 対角 直方体 箱物 角物 隅切り 面取り 切欠き ノッチ L字 凹み 頂点 座標 空間対角 対角差 直角度 立方体',
+    'axis-tilt/':'傾き 傾斜 軸 検査棒 テストピース 芯 直角度 直角 スコヤ ダイヤルゲージ 2点読み 定盤 ガタ すき間 ロッキング 首振り 反転法 勾配 mm/m 度分秒 デジタル傾斜計 てこ式'
+  };
+  var FAVKEY='kensa-fav';
+
+  function loadFav(){
+    try{
+      var v=JSON.parse(localStorage.getItem(FAVKEY)||'[]');
+      return Array.isArray(v)?v:[];
+    }catch(e){return []}
+  }
+  function saveFav(){
+    try{localStorage.setItem(FAVKEY,JSON.stringify(favs))}catch(e){}
+  }
+  // 検索用正規化: 小文字化+全角英数→半角+ひらがな→カタカナ
+  function norm(s){
+    return String(s).toLowerCase()
+      .replace(/[０-９ａ-ｚＡ-Ｚ]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0)})
+      .replace(/[ぁ-ん]/g,function(c){return String.fromCharCode(c.charCodeAt(0)+0x60)});
+  }
+
+  var favs=loadFav();
+  var wrap=document.querySelector('.wrap');
+  var cards=[].slice.call(document.querySelectorAll('.wrap > a.tool'));
+  var favHead=document.getElementById('favHead');
+  var favBox=document.getElementById('favBox');
+  var noHit=document.getElementById('noHit');
+  var qInput=document.getElementById('q');
+  var h2s=[].slice.call(document.querySelectorAll('.wrap > h2')).filter(function(h){return h.id!=='favHead'});
+
+  // ピンを全カードに注入(chevの前)
+  cards.forEach(function(a){
+    var b=document.createElement('button');
+    b.type='button';
+    b.className='pin';
+    b.setAttribute('aria-label','お気に入りに追加/解除');
+    b.textContent='☆';
+    a.insertBefore(b,a.querySelector('.chev'));
+  });
+
+  function updatePins(){
+    [].slice.call(document.querySelectorAll('a.tool')).forEach(function(a){
+      var p=a.querySelector('.pin');
+      if(!p)return;
+      var on=favs.indexOf(a.getAttribute('href'))>=0;
+      p.textContent=on?'★':'☆';
+      if(on)p.classList.add('on');else p.classList.remove('on');
+    });
+  }
+  function renderFav(){
+    favBox.innerHTML='';
+    favs.forEach(function(h){
+      var src=document.querySelector('.wrap > a.tool[href="'+h+'"]');
+      if(src)favBox.appendChild(src.cloneNode(true));
+    });
+    updatePins();
+    applyFilter();
+  }
+  function toggleFav(href){
+    var i=favs.indexOf(href);
+    if(i>=0)favs.splice(i,1);else favs.push(href);
+    saveFav();
+    renderFav();
+  }
+
+  function applyFilter(){
+    var terms=norm(qInput.value).split(/\s+/).filter(function(t){return t!==''});
+    var visible=0;
+    cards.forEach(function(a){
+      var txt=norm(a.textContent+' '+(KW[a.getAttribute('href')]||''));
+      var hit=true;
+      for(var i=0;i<terms.length;i++){
+        if(txt.indexOf(terms[i])<0){hit=false;break}
+      }
+      if(terms.length&&!hit)a.classList.add('hide');else a.classList.remove('hide');
+      if(!terms.length||hit)visible++;
+    });
+    // セクション見出し: 中身が全部隠れたら見出しも隠す
+    h2s.forEach(function(h){
+      var any=false, el=h.nextElementSibling;
+      while(el&&el.tagName!=='H2'){
+        if(el.classList&&el.classList.contains('tool')&&!el.classList.contains('hide'))any=true;
+        el=el.nextElementSibling;
+      }
+      h.style.display=any?'':'none';
+    });
+    // お気に入りは検索中は隠す(本体側に出るため)
+    var showFav=favs.length>0&&terms.length===0;
+    favHead.style.display=showFav?'':'none';
+    favBox.style.display=showFav?'':'none';
+    noHit.style.display=(terms.length>0&&visible===0)?'':'none';
+  }
+
+  // ピンのタップ(カードへの遷移を止める)
+  document.addEventListener('click',function(e){
+    var p=e.target&&e.target.closest?e.target.closest('.pin'):null;
+    if(!p)return;
+    e.preventDefault();
+    e.stopPropagation();
+    var a=p.closest('a.tool');
+    if(a)toggleFav(a.getAttribute('href'));
+  });
+  qInput.addEventListener('input',applyFilter);
+
+  renderFav();
+})();
+</script>
+</body>
+</html>

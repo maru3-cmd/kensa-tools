@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1F3341">
+<meta name="description" content="直角三角形の各辺と角度のうち2つを入力すると、残りをすべて計算します。度分秒対応。計算は端末内で完結します。">
+<title>直角三角形 | 検査計算ツール</title>
+<style>
+  :root{
+    --paper:#F2F4F5;--sheet:#FFFFFF;--ink:#1F3341;--line:#8FA2AF;--red:#D63426;
+    --dro-bg:#15181A;--dro-red:#FF5A48;--dro-dim:#9FB0B8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI",sans-serif;background:var(--paper);color:var(--ink);min-height:100dvh;display:flex;flex-direction:column;align-items:center;padding:0 12px calc(16px + env(safe-area-inset-bottom))}
+  .wrap{width:100%;max-width:480px}
+  header{display:flex;align-items:baseline;justify-content:space-between;padding:14px 2px 10px}
+  header h1{font-size:16px;font-weight:700;letter-spacing:.04em}
+  header h1 small{display:block;font-size:11px;font-weight:400;color:#5B707E;letter-spacing:.08em;margin-top:2px}
+  header a{font-size:12px;color:#5B707E;text-decoration:none}
+
+  .sheet{background:var(--sheet);border:2px solid var(--ink);padding:5px}
+  .sheet-inner{border:1px solid var(--ink)}
+  .sheet svg{display:block;width:100%;height:auto}
+  .titleblock{display:flex;border-top:1px solid var(--ink);font-size:9px;letter-spacing:.06em}
+  .titleblock div{padding:3px 8px;border-right:1px solid var(--ink)}
+  .titleblock div:last-child{border-right:none;margin-left:auto}
+  .titleblock b{font-weight:700}
+
+  .hint{margin-top:10px;font-size:11px;color:#5B707E;line-height:1.7;padding:0 2px}
+  .hint b{color:var(--ink)}
+
+  .inputs{margin-top:10px;display:flex;flex-direction:column;gap:9px}
+  .row{display:grid;grid-template-columns:30px 1fr 130px 40px;align-items:center;gap:8px;background:var(--sheet);border:1px solid #D5DDE2;border-radius:10px;padding:10px 12px}
+  .row.computed{border-color:#F0C4BF;background:#FFFCFC}
+  .badge{width:26px;height:26px;border-radius:7px;background:var(--ink);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .row.computed .badge{background:var(--red)}
+  .row label{font-size:13px;font-weight:600}
+  .row label small{display:block;font-size:10px;font-weight:400;color:#5B707E}
+  .row input{width:100%;font-size:20px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums;border:none;border-bottom:2px solid var(--ink);background:transparent;color:var(--ink);padding:2px 4px;outline:none}
+  .row input:focus{border-bottom-color:var(--red)}
+  .row.computed input{color:var(--red);border-bottom-color:#F0C4BF}
+  .unit{font-size:12px;color:#5B707E}
+  .clearBtn{margin-top:10px;width:100%;font-size:12px;font-weight:700;padding:10px 4px;border:1.5px solid #C9D3DA;border-radius:9px;background:var(--sheet);color:#5B707E}
+  .clearBtn:active{border-color:var(--red);color:var(--red)}
+
+  .dro{margin-top:14px;background:var(--dro-bg);border-radius:12px;padding:14px 16px 12px;box-shadow:inset 0 2px 8px rgba(0,0,0,.5)}
+  .dro-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}
+  .cellv{display:flex;flex-direction:column;align-items:flex-end;padding:4px 8px;border-radius:8px}
+  .cellv:active{background:#1e2327}
+  .cellv .k{color:#7d8a91;font-size:11px;font-weight:700;letter-spacing:.06em;align-self:flex-start}
+  .cellv .v{font-family:ui-monospace,Consolas,monospace;font-variant-numeric:tabular-nums;font-size:17px;font-weight:600;color:var(--dro-dim)}
+  .cellv .s{color:#5d6a71;font-size:10px}
+  .dro-foot{display:flex;align-items:center;justify-content:space-between;margin-top:10px;border-top:1px solid #2a3034;padding-top:9px;gap:8px}
+  .statusTxt{color:#5d6a71;font-size:11px;letter-spacing:.02em;line-height:1.6}
+  .statusTxt.err{color:#FF8A7E}
+  .copy{font-size:12px;font-weight:700;color:#c9d2d7;background:#252b2f;border:1px solid #3a4247;border-radius:7px;padding:6px 14px;flex:none}
+  .copy:active{background:#31383d}
+
+  footer{margin-top:16px;font-size:11px;color:#5B707E;line-height:1.7;text-align:center;letter-spacing:.03em}
+  .toast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);background:var(--ink);color:#fff;font-size:13px;padding:9px 20px;border-radius:20px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>直角三角形<small>2つ入れれば残りが出る</small></h1>
+    <a href="../index.html">≡ ツール一覧</a>
+  </header>
+
+  <div class="sheet">
+    <div class="sheet-inner">
+      <svg viewBox="0 0 340 250" role="img" aria-label="直角三角形の底辺a・高さb・斜辺c・角度α・βの関係図">
+        <defs>
+          <marker id="ar" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L8,3 L0,6 z" fill="#1F3341"/></marker>
+        </defs>
+        <!-- 三角形本体(動的) -->
+        <polygon id="tri" points="50,200 280,200 280,80" fill="#EFF2F4" stroke="#1F3341" stroke-width="1.9"/>
+        <!-- 直角記号 -->
+        <polyline id="rightMark" points="264,200 264,184 280,184" fill="none" stroke="#1F3341" stroke-width="1.4"/>
+        <!-- 角α(左下) -->
+        <path id="arcA" d="M 85 200 A 35 35 0 0 0 82.4 186.5" fill="none" stroke="#D63426" stroke-width="1.4"/>
+        <text id="lblA" x="92" y="192" font-size="12" font-weight="700" fill="#D63426" stroke="#fff" stroke-width="3" paint-order="stroke">α</text>
+        <!-- 角β(右上) -->
+        <path id="arcB" d="M 280 110 A 30 30 0 0 1 274 96" fill="none" stroke="#D63426" stroke-width="1.4"/>
+        <text id="lblB" x="258" y="108" font-size="12" font-weight="700" fill="#D63426" stroke="#fff" stroke-width="3" paint-order="stroke">β</text>
+        <!-- 辺ラベル -->
+        <text id="lblAside" x="165" y="220" font-size="13" font-weight="700" fill="#1F3341" text-anchor="middle" stroke="#fff" stroke-width="3.5" paint-order="stroke">a</text>
+        <text id="lblBside" x="300" y="142" font-size="13" font-weight="700" fill="#1F3341" text-anchor="middle" stroke="#fff" stroke-width="3.5" paint-order="stroke">b</text>
+        <text id="lblCside" x="155" y="130" font-size="13" font-weight="700" fill="#1F3341" text-anchor="middle" stroke="#fff" stroke-width="3.5" paint-order="stroke">c</text>
+        <text x="30" y="26" font-size="11" fill="#5B707E">a=底辺 / b=高さ / c=斜辺 / α+β=90°</text>
+        <text x="30" y="42" font-size="11" fill="#5B707E">赤字=計算で求まった値</text>
+      </svg>
+      <div class="titleblock">
+        <div><b>品名</b> 直角三角形</div>
+        <div><b>方式</b> 三平方・三角比</div>
+        <div>TOOL-24</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hint">
+    <b>5つのうち2つ</b>(辺を1つ以上含む)を入力すると、残りが自動で赤字表示されます。3つ目を入力すると、いちばん古い入力が計算値に切り替わります。角度は <b>30.5</b> でも <b>30 30</b>(度 分)でも入力可。
+  </div>
+
+  <div class="inputs">
+    <div class="row" id="rowA">
+      <span class="badge">a</span>
+      <label for="fa">底辺 a<small>直角をはさむ辺(横)</small></label>
+      <input id="fa" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row" id="rowB">
+      <span class="badge">b</span>
+      <label for="fb">高さ b<small>直角をはさむ辺(縦)</small></label>
+      <input id="fb" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row" id="rowC">
+      <span class="badge">c</span>
+      <label for="fc">斜辺 c<small>いちばん長い辺</small></label>
+      <input id="fc" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row" id="rowAl">
+      <span class="badge">α</span>
+      <label for="fal">角 α<small>底辺aと斜辺cの間</small></label>
+      <input id="fal" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">°</span>
+    </div>
+    <div class="row" id="rowBe">
+      <span class="badge">β</span>
+      <label for="fbe">角 β<small>高さbと斜辺cの間</small></label>
+      <input id="fbe" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">°</span>
+    </div>
+  </div>
+  <button class="clearBtn" type="button" id="clearBtn">すべてクリア</button>
+
+  <div class="dro">
+    <div class="dro-grid">
+      <div class="cellv"><span class="k">角 α</span><span class="v" id="vAl">―</span><span class="s" id="vAlS">度分秒</span></div>
+      <div class="cellv"><span class="k">角 β</span><span class="v" id="vBe">―</span><span class="s" id="vBeS">度分秒</span></div>
+      <div class="cellv"><span class="k">面積</span><span class="v" id="vArea">―</span><span class="s">mm²</span></div>
+      <div class="cellv"><span class="k">周長</span><span class="v" id="vPeri">―</span><span class="s">mm</span></div>
+      <div class="cellv"><span class="k">勾配 b/a</span><span class="v" id="vSlope">―</span><span class="s">(1/x 表示)</span></div>
+      <div class="cellv"><span class="k">斜辺からの高さ</span><span class="v" id="vH">―</span><span class="s">mm(垂線)</span></div>
+    </div>
+    <div class="dro-foot">
+      <span class="statusTxt" id="statusTxt">辺を1つ以上ふくむ2つの値を入力してください</span>
+      <button class="copy" type="button" id="copyBtn">結果コピー</button>
+    </div>
+  </div>
+
+  <footer>
+    このページは計算のみを行います。入力値の送信・保存は一切ありません(端末内で完結)。<br>
+    角度2つ(α・β)だけでは大きさが決まりません。辺を1つ以上ふくめてください。
+  </footer>
+</div>
+
+<div class="toast" id="toast">コピーしました</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var KEYS=['a','b','c','al','be'];
+  var IDS={a:'fa',b:'fb',c:'fc',al:'fal',be:'fbe'};
+  var ROWS={a:'rowA',b:'rowB',c:'rowC',al:'rowAl',be:'rowBe'};
+  var queue=[];       // 手入力の順(最大2)
+  var lastCopy=null;
+
+  function zen(v){return String(v).replace(/[０-９．]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0)}).replace(/。/g,'.')}
+  function num(v){if(v==null)return NaN;v=zen(v).replace(/[,，、\s]/g,'').trim();if(v==='')return NaN;return Number(v)}
+  function parseAngle(v){
+    if(v==null)return NaN;
+    var s=zen(v).replace(/[°度]/g,' ').replace(/[′’'分]/g,' ').replace(/[″”"秒]/g,' ').trim();
+    if(s==='')return NaN;
+    var p=s.split(/\s+/);if(p.length===1)return Number(p[0]);
+    var d=Number(p[0]),m=Number(p[1]||0),sec=Number(p[2]||0);
+    if(isNaN(d)||isNaN(m)||isNaN(sec))return NaN;
+    return Math.abs(d)+m/60+sec/3600;
+  }
+  function dms(v){
+    var d=Math.floor(v),r=(v-d)*60,m=Math.floor(r),s=Math.round((r-m)*60*10)/10;
+    if(s>=60){s-=60;m+=1} if(m>=60){m-=60;d+=1}
+    return d+'°'+m+'′'+s+'″';
+  }
+  function isComputed(k){return $(ROWS[k]).classList.contains('computed')}
+  function setComputed(k,val,dec){
+    var f=$(IDS[k]);
+    f.value=(val==null)?'':val.toFixed(dec==null?3:dec);
+    $(ROWS[k]).classList.add('computed');
+  }
+  function clearComputedAll(){
+    KEYS.forEach(function(k){
+      if(isComputed(k)){$(IDS[k]).value='';$(ROWS[k]).classList.remove('computed')}
+    });
+  }
+  function readInputs(){
+    var v={};
+    KEYS.forEach(function(k){
+      if(isComputed(k)){v[k]=NaN;return}
+      var raw=$(IDS[k]).value;
+      v[k]=(k==='al'||k==='be')?parseAngle(raw):num(raw);
+    });
+    return v;
+  }
+
+  function recalc(){
+    lastCopy=null;
+    clearComputedAll();
+    var v=readInputs();
+    var given=queue.filter(function(k){return !isNaN(v[k])});
+    if(given.length<2){
+      ['vAl','vBe','vArea','vPeri','vSlope','vH'].forEach(function(id){$(id).textContent='―'});
+      $('vAlS').textContent='度分秒';$('vBeS').textContent='度分秒';
+      $('statusTxt').textContent='辺を1つ以上ふくむ2つの値を入力してください';
+      $('statusTxt').className='statusTxt';
+      drawTri(null);
+      return;
+    }
+    var g=given.slice(-2);
+    var sides=g.filter(function(k){return k==='a'||k==='b'||k==='c'});
+    var angs=g.filter(function(k){return k==='al'||k==='be'});
+
+    var err=null,a=NaN,b=NaN,c=NaN,al=NaN,be=NaN;
+    // 角度は0<θ<90
+    angs.forEach(function(k){var t=v[k];if(!(t>0&&t<90))err='角度は 0°より大きく 90°未満で入力してください'});
+    sides.forEach(function(k){if(!(v[k]>0))err='辺は正の値で入力してください'});
+
+    if(!err){
+      if(sides.length===0){err='角度だけでは大きさが決まりません。辺を1つ以上入力してください'}
+      else if(sides.length===2){
+        if(g.indexOf('a')>=0&&g.indexOf('b')>=0){a=v.a;b=v.b;c=Math.sqrt(a*a+b*b)}
+        else if(g.indexOf('a')>=0&&g.indexOf('c')>=0){
+          a=v.a;c=v.c;
+          if(c<=a)err='斜辺 c は 底辺 a より大きい必要があります';
+          else b=Math.sqrt(c*c-a*a);
+        }else{
+          b=v.b;c=v.c;
+          if(c<=b)err='斜辺 c は 高さ b より大きい必要があります';
+          else a=Math.sqrt(c*c-b*b);
+        }
+        if(!err){al=Math.atan2(b,a)*180/Math.PI;be=90-al}
+      }else{
+        // 辺1 + 角1
+        var sk=sides[0], ak=angs[0];
+        var A=(ak==='al')?v.al:(90-v.be);   // αに正規化
+        al=A;be=90-A;
+        var ar=A*Math.PI/180;
+        if(sk==='a'){a=v.a;b=a*Math.tan(ar);c=a/Math.cos(ar)}
+        else if(sk==='b'){b=v.b;a=b/Math.tan(ar);c=b/Math.sin(ar)}
+        else{c=v.c;a=c*Math.cos(ar);b=c*Math.sin(ar)}
+      }
+    }
+
+    if(err){
+      ['vAl','vBe','vArea','vPeri','vSlope','vH'].forEach(function(id){$(id).textContent='―'});
+      $('statusTxt').textContent='⚠ '+err;
+      $('statusTxt').className='statusTxt err';
+      drawTri(null);
+      return;
+    }
+
+    // 未入力欄に計算値を書き戻す(手入力中の欄は触らない)
+    var vals={a:a,b:b,c:c,al:al,be:be};
+    KEYS.forEach(function(k){
+      if(g.indexOf(k)>=0)return;
+      setComputed(k,vals[k],(k==='al'||k==='be')?4:3);
+    });
+
+    $('vAl').textContent=al.toFixed(4);$('vAlS').textContent=dms(al);
+    $('vBe').textContent=be.toFixed(4);$('vBeS').textContent=dms(be);
+    $('vArea').textContent=(a*b/2).toFixed(3);
+    $('vPeri').textContent=(a+b+c).toFixed(3);
+    var sl=b/a;
+    $('vSlope').textContent=sl.toFixed(4)+' (1/'+(1/sl).toFixed(3)+')';
+    $('vH').textContent=(a*b/c).toFixed(3);
+
+    $('statusTxt').textContent='入力: '+g.map(function(k){return k==='al'?'α':k==='be'?'β':k}).join(' と ')+' → 残りを計算';
+    $('statusTxt').className='statusTxt';
+
+    lastCopy='[直角三角形] a='+a.toFixed(3)+' b='+b.toFixed(3)+' c='+c.toFixed(3)+
+      ' α='+al.toFixed(4)+'°('+dms(al)+') β='+be.toFixed(4)+'°('+dms(be)+')'+
+      ' 面積'+(a*b/2).toFixed(3)+' 勾配1/'+(1/sl).toFixed(3);
+
+    drawTri({a:a,b:b,c:c,al:al,be:be});
+  }
+
+  function drawTri(t){
+    var tri=$('tri');
+    if(!t){
+      tri.setAttribute('points','50,200 280,200 280,80');
+      $('lblAside').textContent='a';$('lblBside').textContent='b';$('lblCside').textContent='c';
+      $('lblA').textContent='α';$('lblB').textContent='β';
+      return;
+    }
+    // 図の枠に合わせてスケール(最大幅230, 最大高120)
+    var s=Math.min(230/t.a, 120/t.b);
+    var w=t.a*s, h=t.b*s;
+    var x0=170-w/2, y0=200;
+    var pts=[[x0,y0],[x0+w,y0],[x0+w,y0-h]];
+    tri.setAttribute('points',pts.map(function(p){return p[0].toFixed(1)+','+p[1].toFixed(1)}).join(' '));
+    // 直角記号
+    var m=Math.min(16,w*0.15,h*0.15);
+    $('rightMark').setAttribute('points',(x0+w-m).toFixed(1)+','+y0+' '+(x0+w-m).toFixed(1)+','+(y0-m).toFixed(1)+' '+(x0+w).toFixed(1)+','+(y0-m).toFixed(1));
+    // ラベル
+    $('lblAside').setAttribute('x',(x0+w/2).toFixed(1));$('lblAside').setAttribute('y',(y0+20).toFixed(1));
+    $('lblAside').textContent='a = '+t.a.toFixed(2);
+    $('lblBside').setAttribute('x',(x0+w+22).toFixed(1));$('lblBside').setAttribute('y',(y0-h/2).toFixed(1));
+    $('lblBside').textContent='b = '+t.b.toFixed(2);
+    $('lblCside').setAttribute('x',(x0+w/2-14).toFixed(1));$('lblCside').setAttribute('y',(y0-h/2-6).toFixed(1));
+    $('lblCside').textContent='c = '+t.c.toFixed(2);
+    // 角弧
+    var ra=Math.min(34,w*0.3), rb=Math.min(30,h*0.3);
+    var arA=t.al*Math.PI/180;
+    $('arcA').setAttribute('d','M '+(x0+ra).toFixed(1)+' '+y0+' A '+ra+' '+ra+' 0 0 0 '+(x0+ra*Math.cos(arA)).toFixed(1)+' '+(y0-ra*Math.sin(arA)).toFixed(1));
+    $('lblA').setAttribute('x',(x0+ra+6).toFixed(1));$('lblA').setAttribute('y',(y0-8).toFixed(1));
+    $('lblA').textContent='α '+t.al.toFixed(2)+'°';
+    var arB=t.be*Math.PI/180;
+    $('arcB').setAttribute('d','M '+(x0+w).toFixed(1)+' '+(y0-h+rb).toFixed(1)+' A '+rb+' '+rb+' 0 0 1 '+(x0+w-rb*Math.sin(arB)).toFixed(1)+' '+(y0-h+rb*Math.cos(arB)).toFixed(1));
+    $('lblB').setAttribute('x',(x0+w-30).toFixed(1));$('lblB').setAttribute('y',(y0-h+24).toFixed(1));
+    $('lblB').textContent='β '+t.be.toFixed(2)+'°';
+  }
+
+  KEYS.forEach(function(k){
+    $(IDS[k]).addEventListener('input',function(){
+      $(ROWS[k]).classList.remove('computed');
+      queue=queue.filter(function(q){return q!==k});
+      if($(IDS[k]).value.trim()!=='')queue.push(k);
+      while(queue.length>2)queue.shift();
+      recalc();
+    });
+  });
+  $('clearBtn').addEventListener('click',function(){
+    queue=[];
+    KEYS.forEach(function(k){$(IDS[k]).value='';$(ROWS[k]).classList.remove('computed')});
+    recalc();
+  });
+
+  var toastTimer=null;
+  function toast(msg){var t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(function(){t.classList.remove('show')},1600)}
+  $('copyBtn').addEventListener('click',function(){
+    if(!lastCopy){toast('まだ結果がありません');return}
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(lastCopy).then(function(){toast('コピーしました')},function(){toast('コピーできませんでした')})}
+    else{var ta=document.createElement('textarea');ta.value=lastCopy;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('コピーしました')}catch(e){toast('コピーできませんでした')}document.body.removeChild(ta)}
+  });
+
+  recalc();
+})();
+</script>
+</body>
+</html>

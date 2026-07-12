@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1F3341">
+<meta name="description" content="工程能力指数Cp・Cpkの計算。実測値を貼り付けると平均・σ・Cp/Cpk・公差線入りの分布図・予測不良率を表示。計算は端末内で完結します。">
+<title>Cpk電卓 | 検査計算ツール</title>
+<style>
+  :root{
+    --paper:#F2F4F5;
+    --sheet:#FFFFFF;
+    --ink:#1F3341;
+    --line:#8FA2AF;
+    --red:#D63426;
+    --green:#2E9E5B;
+    --dro-bg:#15181A;
+    --dro-red:#FF5A48;
+    --dro-green:#42D77D;
+    --dro-amber:#E8B34B;
+    --dro-dim:#9FB0B8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI",sans-serif;
+    background:var(--paper);color:var(--ink);
+    min-height:100dvh;display:flex;flex-direction:column;align-items:center;
+    padding:0 12px calc(16px + env(safe-area-inset-bottom));
+  }
+  .wrap{width:100%;max-width:480px}
+
+  header{display:flex;align-items:baseline;justify-content:space-between;padding:14px 2px 10px}
+  header h1{font-size:16px;font-weight:700;letter-spacing:.04em}
+  header h1 small{display:block;font-size:11px;font-weight:400;color:#5B707E;letter-spacing:.08em;margin-top:2px}
+  header a{font-size:12px;color:#5B707E;text-decoration:none}
+
+  .sheet{background:var(--sheet);border:2px solid var(--ink);padding:5px}
+  .sheet-inner{border:1px solid var(--ink)}
+  .sheet svg{display:block;width:100%;height:auto}
+  .titleblock{display:flex;border-top:1px solid var(--ink);font-size:9px;letter-spacing:.06em}
+  .titleblock div{padding:3px 8px;border-right:1px solid var(--ink)}
+  .titleblock div:last-child{border-right:none;margin-left:auto}
+  .titleblock b{font-weight:700}
+
+  h2{
+    font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.1em;
+    margin:12px 2px 8px;display:flex;align-items:center;gap:6px;
+  }
+  h2::before{content:'';width:4px;height:14px;background:var(--ink);border-radius:2px}
+
+  .inputs{margin-top:8px;display:flex;flex-direction:column;gap:10px}
+  .trio{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:8px}
+  .fldbox{
+    background:var(--sheet);border:1px solid #D5DDE2;border-radius:10px;
+    padding:8px 10px;
+  }
+  .fldbox .fl{font-size:10px;color:#5B707E;font-weight:600;display:block}
+  .fldbox input{
+    width:100%;font-size:18px;font-weight:600;text-align:right;
+    font-variant-numeric:tabular-nums;
+    border:none;border-bottom:2px solid var(--ink);
+    background:transparent;color:var(--ink);
+    padding:2px 3px;border-radius:0;outline:none;
+  }
+  .fldbox input:focus{border-bottom-color:var(--red)}
+
+  .dataBox{
+    background:var(--sheet);border:1px solid #D5DDE2;border-radius:10px;
+    padding:10px 12px;
+  }
+  .dataBox .head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px}
+  .dataBox .head label{font-size:13px;font-weight:600}
+  .dataBox .head label small{font-size:10px;font-weight:400;color:#5B707E;margin-left:6px}
+  .dataBox .cnt{font-size:12px;font-weight:700;color:#5B707E;font-variant-numeric:tabular-nums}
+  textarea{
+    width:100%;min-height:110px;resize:vertical;
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-size:16px;line-height:1.6;
+    border:1.5px solid var(--ink);border-radius:8px;
+    padding:8px 10px;color:var(--ink);background:#FDFDFD;outline:none;
+    font-variant-numeric:tabular-nums;
+  }
+  textarea:focus{border-color:var(--red)}
+  .dataBox .foot{display:flex;justify-content:flex-end;margin-top:6px}
+  .clearBtn{
+    font-size:12px;font-weight:700;padding:6px 12px;
+    border:1.5px solid #C9D3DA;border-radius:7px;
+    background:var(--sheet);color:#5B707E;
+  }
+  .clearBtn:active{border-color:var(--red);color:var(--red)}
+
+  .dro{
+    margin-top:14px;background:var(--dro-bg);border-radius:12px;
+    padding:14px 16px 12px;box-shadow:inset 0 2px 8px rgba(0,0,0,.5);
+  }
+  .judge{display:flex;align-items:baseline;justify-content:space-between;gap:10px;min-height:44px}
+  .judge .pos{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-variant-numeric:tabular-nums;
+    color:#c9d2d7;font-size:30px;font-weight:600;
+  }
+  .judge .pos small{color:#7d8a91;font-size:11px;font-weight:700;letter-spacing:.06em;display:block}
+  .judge .res{font-size:24px;font-weight:800;letter-spacing:.1em;text-align:right}
+  .judge .res.ok{color:var(--dro-green);text-shadow:0 0 12px rgba(66,215,125,.4)}
+  .judge .res.ng{color:var(--dro-red);text-shadow:0 0 12px rgba(255,90,72,.45)}
+  .judge .res.warn{color:var(--dro-amber);text-shadow:0 0 12px rgba(232,179,75,.4)}
+  .judge .res.none{color:#4a555b;font-size:14px;font-weight:600;letter-spacing:.04em}
+  .judge-sub{
+    text-align:right;color:#7d8a91;font-size:12px;min-height:16px;
+    font-variant-numeric:tabular-nums;margin-top:2px;
+  }
+  .dro-grid{
+    display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;
+    border-top:1px solid #2a3034;margin-top:10px;padding-top:10px;
+  }
+  .cellv{display:flex;flex-direction:column;align-items:flex-end;padding:4px 8px;border-radius:8px}
+  .cellv:active{background:#1e2327}
+  .cellv .k{color:#7d8a91;font-size:11px;font-weight:700;letter-spacing:.06em;align-self:flex-start}
+  .cellv .v{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:18px;font-weight:600;color:var(--dro-dim);
+  }
+  .cellv .s{color:#5d6a71;font-size:10px}
+  .dro-foot{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-top:10px;border-top:1px solid #2a3034;padding-top:9px;gap:8px;
+  }
+  .statusTxt{color:#5d6a71;font-size:11px;letter-spacing:.02em;line-height:1.6}
+  .statusTxt.err{color:#FF8A7E}
+  .copy{
+    font-size:12px;font-weight:700;color:#c9d2d7;background:#252b2f;
+    border:1px solid #3a4247;border-radius:7px;padding:6px 14px;flex:none;
+  }
+  .copy:active{background:#31383d}
+
+  footer{margin-top:16px;font-size:11px;color:#5B707E;line-height:1.7;text-align:center;letter-spacing:.03em}
+
+  .toast{
+    position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);
+    background:var(--ink);color:#fff;font-size:13px;
+    padding:9px 20px;border-radius:20px;opacity:0;pointer-events:none;
+    transition:opacity .25s,transform .25s;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Cpk電卓<small>工程能力指数: 平均・σ・分布・予測不良率</small></h1>
+    <a href="../index.html">≡ ツール一覧</a>
+  </header>
+
+  <!-- 分布図シート -->
+  <div class="sheet">
+    <div class="sheet-inner">
+      <svg id="dwg" viewBox="0 0 340 250" role="img" aria-label="実測値のヒストグラムと公差線・正規分布曲線">
+        <g id="dyn"></g>
+        <text id="emptyMsg" x="170" y="128" font-size="11" fill="#8FA2AF" text-anchor="middle">公差と測定値を入れると分布図が描かれます</text>
+      </svg>
+      <div class="titleblock">
+        <div><b>品名</b> 工程能力</div>
+        <div><b>方式</b> Cp/Cpk(σはn−1)</div>
+        <div>TOOL-21</div>
+      </div>
+    </div>
+  </div>
+
+  <h2>公差(片側だけなら空欄でOK)</h2>
+  <div class="trio">
+    <div class="fldbox">
+      <span class="fl">基準値(呼び)</span>
+      <input id="fNom" type="text" inputmode="decimal" autocomplete="off" placeholder="50">
+    </div>
+    <div class="fldbox">
+      <span class="fl">上の許容差</span>
+      <input id="fUp" type="text" inputmode="decimal" autocomplete="off" placeholder="+0.05">
+    </div>
+    <div class="fldbox">
+      <span class="fl">下の許容差</span>
+      <input id="fLow" type="text" inputmode="decimal" autocomplete="off" placeholder="-0.05">
+    </div>
+  </div>
+
+  <h2>測定値</h2>
+  <div class="dataBox">
+    <div class="head">
+      <label for="fData">実測値<small>スペース・改行・カンマ区切り。Excelから貼り付けOK</small></label>
+      <span class="cnt" id="cnt">0個</span>
+    </div>
+    <textarea id="fData" inputmode="decimal" placeholder="50.02 50.03 50.01 50.04 …"></textarea>
+    <div class="foot"><button class="clearBtn" type="button" id="clearBtn">クリア</button></div>
+  </div>
+
+  <!-- 結果 -->
+  <div class="dro">
+    <div class="judge">
+      <span class="pos"><small>Cpk</small><span id="cpkVal">―</span></span>
+      <span class="res none" id="resTxt">値を入力してください</span>
+    </div>
+    <div class="judge-sub" id="judgeSub"></div>
+    <div class="dro-grid">
+      <div class="cellv"><span class="k">Cp(ばらつきのみ)</span><span class="v" id="vCp">―</span><span class="s">≧1.33が目安</span></div>
+      <div class="cellv"><span class="k">予測不良率</span><span class="v" id="vNg">―</span><span class="s">正規分布と仮定</span></div>
+      <div class="cellv"><span class="k">平均</span><span class="v" id="vMean">―</span><span class="s" id="vMeanS">mm</span></div>
+      <div class="cellv"><span class="k">σ(n−1)</span><span class="v" id="vSd">―</span><span class="s">mm</span></div>
+      <div class="cellv"><span class="k">n / 公差外の実測</span><span class="v" id="vN">―</span><span class="s">個</span></div>
+      <div class="cellv"><span class="k">最小 / 最大</span><span class="v" id="vMinMax">―</span><span class="s">mm</span></div>
+    </div>
+    <div class="dro-foot">
+      <span class="statusTxt" id="statusTxt">Cpk = 平均の寄りも含めた実力 / Cp = ばらつきだけの実力</span>
+      <button class="copy" type="button" id="copyBtn">結果コピー</button>
+    </div>
+  </div>
+
+  <footer>
+    このページは計算のみを行います。入力値の送信・保存は一切ありません(端末内で完結)。<br>
+    判定目安: 1.67≦十分すぎる / 1.33≦十分 / 1.00≦まずまず(管理を) / 1.00未満は不足。<br>
+    評価はn≧20〜30が望ましく、少ないデータでは参考値です。予測不良率は正規分布を仮定した理論値です。
+  </footer>
+</div>
+
+<div class="toast" id="toast">コピーしました</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var NS='http://www.w3.org/2000/svg';
+  var lastCopy=null;
+
+  function zen(v){
+    return String(v).replace(/[０-９．−＋]/g,function(c){
+      if(c==='−')return '-';
+      if(c==='＋')return '+';
+      return String.fromCharCode(c.charCodeAt(0)-0xFEE0);
+    }).replace(/。/g,'.');
+  }
+  function num(v){
+    if(v==null)return NaN;
+    v=zen(v).replace(/[,，、]/g,'').trim();
+    if(v==='')return NaN;
+    return Number(v);
+  }
+  function el(name,attrs){
+    var e=document.createElementNS(NS,name);
+    for(var k in attrs)e.setAttribute(k,attrs[k]);
+    return e;
+  }
+  // 標準正規分布の下側確率(Abramowitz-Stegun 26.2.17)
+  function phi(z){
+    var t=1/(1+0.2316419*Math.abs(z));
+    var d=0.3989422804*Math.exp(-z*z/2);
+    var p=d*t*(0.31938153+t*(-0.356563782+t*(1.781477937+t*(-1.821255978+t*1.330274429))));
+    return z>0?1-p:p;
+  }
+  function parseData(){
+    var raw=zen($('fData').value);
+    var toks=raw.split(/[\s,、，\t\n\r]+/).filter(function(t){return t!==''});
+    var vals=[],bad=0;
+    toks.forEach(function(t){
+      var v=Number(t);
+      if(isFinite(v))vals.push(v);else bad++;
+    });
+    return {vals:vals,bad:bad};
+  }
+  function fmtRate(p){
+    if(!(p>0))return '≈0';
+    if(p>=0.0001)return (p*100).toFixed(p>=0.01?1:2)+'%';
+    return Math.round(p*1e6)+'ppm';
+  }
+
+  /* ---- 分布図 ---- */
+  function draw(vals,mean,sd,usl,lsl){
+    var dyn=$('dyn');
+    while(dyn.firstChild)dyn.removeChild(dyn.firstChild);
+    var has=vals&&vals.length>=2;
+    $('emptyMsg').style.display=has?'none':'';
+    if(!has)return;
+
+    var dmin=Math.min.apply(null,vals), dmax=Math.max.apply(null,vals);
+    var lo=dmin, hi=dmax;
+    if(isFinite(lsl))lo=Math.min(lo,lsl);
+    if(isFinite(usl))hi=Math.max(hi,usl);
+    if(isFinite(sd)&&sd>0){lo=Math.min(lo,mean-3.5*sd);hi=Math.max(hi,mean+3.5*sd)}
+    var span=hi-lo||1;
+    lo-=span*0.06;hi+=span*0.06;span=hi-lo;
+
+    var X0=28,X1=326,Y0=205,Y1=44;
+    function px(x){return X0+(x-lo)/span*(X1-X0)}
+
+    // ビン
+    var n=vals.length;
+    var k=Math.max(5,Math.min(12,Math.ceil(1+Math.log(n)/Math.LN2)));
+    var bw=span/k;
+    var bins=[];
+    for(var i=0;i<k;i++)bins.push(0);
+    vals.forEach(function(v){
+      var b=Math.floor((v-lo)/bw);
+      if(b<0)b=0;if(b>=k)b=k-1;
+      bins[b]++;
+    });
+    var maxC=Math.max.apply(null,bins)||1;
+    // 正規曲線の最大も考慮してスケール
+    var curveMax=(sd>0)?n*bw*0.3989423/sd:0;
+    var scaleMax=Math.max(maxC,curveMax);
+    function py(c){return Y0-c/scaleMax*(Y0-Y1)}
+
+    // 軸
+    dyn.appendChild(el('line',{x1:X0,y1:Y0,x2:X1,y2:Y0,stroke:'#1F3341','stroke-width':1.4}));
+
+    // バー
+    for(i=0;i<k;i++){
+      if(!bins[i])continue;
+      var xL=X0+i*(X1-X0)/k, w=(X1-X0)/k;
+      var c=lo+(i+0.5)*bw;
+      var ng=(isFinite(usl)&&c>usl)||(isFinite(lsl)&&c<lsl);
+      dyn.appendChild(el('rect',{x:(xL+1).toFixed(1),y:py(bins[i]).toFixed(1),width:(w-2).toFixed(1),height:(Y0-py(bins[i])).toFixed(1),
+        fill:ng?'#D63426':'#8FA2AF',opacity:ng?0.75:0.6,stroke:'#1F3341','stroke-width':0.8}));
+    }
+
+    // 正規曲線
+    if(sd>0){
+      var d='';
+      for(i=0;i<=80;i++){
+        var x=lo+span*i/80;
+        var y=n*bw*Math.exp(-Math.pow((x-mean)/sd,2)/2)*0.3989423/sd;
+        d+=(i?' L ':'M ')+px(x).toFixed(1)+' '+py(y).toFixed(1);
+      }
+      dyn.appendChild(el('path',{d:d,fill:'none',stroke:'#1F3341','stroke-width':1.6}));
+    }
+
+    // 平均線
+    dyn.appendChild(el('line',{x1:px(mean).toFixed(1),y1:Y1-4,x2:px(mean).toFixed(1),y2:Y0,stroke:'#1F3341','stroke-width':1.2,'stroke-dasharray':'5 3'}));
+    var tm=el('text',{x:px(mean).toFixed(1),y:Y1-9,'font-size':10,fill:'#1F3341','text-anchor':'middle',stroke:'#fff','stroke-width':3,'paint-order':'stroke'});
+    tm.textContent='平均';dyn.appendChild(tm);
+
+    // 公差線
+    [[usl,'上限'],[lsl,'下限']].forEach(function(a){
+      if(!isFinite(a[0]))return;
+      var x=px(a[0]);
+      dyn.appendChild(el('line',{x1:x.toFixed(1),y1:Y1-4,x2:x.toFixed(1),y2:Y0+6,stroke:'#D63426','stroke-width':1.8}));
+      var t=el('text',{x:x.toFixed(1),y:Y0+18,'font-size':10,'font-weight':700,fill:'#D63426','text-anchor':'middle',stroke:'#fff','stroke-width':3,'paint-order':'stroke'});
+      t.textContent=a[1];dyn.appendChild(t);
+    });
+
+    // 端の目盛
+    [[lo,'start'],[hi,'end']].forEach(function(a){
+      var t=el('text',{x:(a[1]==='start'?X0:X1),y:Y0+18,'font-size':9,fill:'#5B707E','text-anchor':a[1],stroke:'#fff','stroke-width':3,'paint-order':'stroke'});
+      t.textContent=a[0].toFixed(3);
+      dyn.appendChild(t);
+    });
+  }
+
+  /* ---- 計算 ---- */
+  function recalc(){
+    var nom=num($('fNom').value);
+    var up=num($('fUp').value), low=num($('fLow').value);
+    var usl=(isFinite(nom)&&isFinite(up))?nom+up:NaN;
+    var lsl=(isFinite(nom)&&isFinite(low))?nom+low:NaN;
+    var pd=parseData();
+    var vals=pd.vals, n=vals.length;
+    $('cnt').textContent=n+'個'+(pd.bad?'(読めない値'+pd.bad+'件を無視)':'');
+    lastCopy=null;
+
+    var res=$('resTxt');
+    if(n<2){
+      $('cpkVal').textContent='―';
+      res.textContent='測定値を2個以上';
+      res.className='res none';
+      $('judgeSub').textContent='';
+      ['vCp','vNg','vMean','vSd','vN','vMinMax'].forEach(function(id){$(id).textContent='―'});
+      $('statusTxt').textContent='Cpk = 平均の寄りも含めた実力 / Cp = ばらつきだけの実力';
+      $('statusTxt').className='statusTxt';
+      draw(null);
+      return;
+    }
+
+    var sum=0;
+    vals.forEach(function(v){sum+=v});
+    var mean=sum/n;
+    var ss=0;
+    vals.forEach(function(v){ss+=(v-mean)*(v-mean)});
+    var sd=Math.sqrt(ss/(n-1));
+    var dmin=Math.min.apply(null,vals), dmax=Math.max.apply(null,vals);
+
+    var ngCount=0;
+    vals.forEach(function(v){
+      if((isFinite(usl)&&v>usl)||(isFinite(lsl)&&v<lsl))ngCount++;
+    });
+
+    $('vMean').textContent=mean.toFixed(4);
+    $('vSd').textContent=(sd>0)?sd.toFixed(4):'0(全て同値)';
+    $('vN').textContent=n+' / '+ngCount;
+    $('vMinMax').textContent=dmin.toFixed(3)+' / '+dmax.toFixed(3);
+
+    var hasU=isFinite(usl), hasL=isFinite(lsl);
+    if(!hasU&&!hasL){
+      $('cpkVal').textContent='―';
+      $('vCp').textContent='―';$('vNg').textContent='―';
+      res.textContent='公差を入れると判定';
+      res.className='res none';
+      $('judgeSub').textContent='';
+      $('statusTxt').textContent='統計量のみ表示中。基準値と許容差を入力するとCp/Cpkを計算します';
+      $('statusTxt').className='statusTxt';
+      draw(vals,mean,sd,NaN,NaN);
+      return;
+    }
+    if(hasU&&hasL&&usl<=lsl){
+      $('cpkVal').textContent='―';
+      res.textContent='公差エラー';
+      res.className='res ng';
+      $('judgeSub').textContent='上限が下限以下になっています(許容差の符号を確認)';
+      $('statusTxt').textContent='下の許容差はマイナス符号を付けて入力してください(例: -0.05)';
+      $('statusTxt').className='statusTxt err';
+      draw(vals,mean,sd,NaN,NaN);
+      return;
+    }
+
+    var cp=null,cpk=null,pNg=0;
+    if(sd>0){
+      var cu=hasU?(usl-mean)/(3*sd):Infinity;
+      var cl=hasL?(mean-lsl)/(3*sd):Infinity;
+      cpk=Math.min(cu,cl);
+      cp=(hasU&&hasL)?(usl-lsl)/(6*sd):null;
+      if(hasU)pNg+=1-phi((usl-mean)/sd);
+      if(hasL)pNg+=phi((lsl-mean)/sd);
+    }else{
+      var inside=(!hasU||mean<=usl)&&(!hasL||mean>=lsl);
+      cpk=inside?Infinity:-Infinity;
+      cp=(hasU&&hasL)?Infinity:null;
+      pNg=inside?0:1;
+    }
+
+    $('cpkVal').textContent=isFinite(cpk)?cpk.toFixed(2):(cpk>0?'∞':'―');
+    $('vCp').textContent=(cp==null)?'―(片側公差)':(isFinite(cp)?cp.toFixed(2):'∞');
+    $('vNg').textContent=fmtRate(pNg);
+
+    var band,cls;
+    if(cpk>=1.67){band='十分すぎる';cls='ok'}
+    else if(cpk>=1.33){band='十分';cls='ok'}
+    else if(cpk>=1.0){band='まずまず(管理を)';cls='warn'}
+    else if(cpk>=0.67){band='不足';cls='ng'}
+    else{band='大幅に不足';cls='ng'}
+    res.textContent=band;
+    res.className='res '+cls;
+
+    var subs=[];
+    if(isFinite(cpk)&&sd>0){
+      var side=(hasU&&hasL)?((usl-mean)<(mean-lsl)?'上限側':'下限側'):(hasU?'上限側':'下限側');
+      subs.push('厳しいのは'+side);
+      if(cp!=null&&isFinite(cp)&&cp-cpk>0.2)subs.push('平均の寄りが主因(Cp '+cp.toFixed(2)+'に対しCpk '+cpk.toFixed(2)+')');
+    }
+    if(ngCount>0)subs.push('実測で公差外 '+ngCount+'個');
+    $('judgeSub').textContent=subs.join(' / ');
+
+    var st=(n<10)?'⚠ n='+n+' は少なめです。評価はn≧20〜30が望ましい(参考値)':'σは標本標準偏差(n−1)で計算';
+    $('statusTxt').textContent=st;
+    $('statusTxt').className='statusTxt';
+
+    lastCopy='[工程能力] n='+n+' 平均'+mean.toFixed(4)+' σ'+sd.toFixed(4)+
+      (cp!=null?' Cp='+(isFinite(cp)?cp.toFixed(2):'∞'):'')+
+      ' Cpk='+(isFinite(cpk)?cpk.toFixed(2):'∞')+'('+band+')'+
+      ' 予測不良率'+fmtRate(pNg)+
+      ' 公差'+(isFinite(nom)?nom:'')+(hasU?' +'+up:'')+(hasL?' '+low:'')+
+      ' 公差外実測'+ngCount+'個';
+
+    draw(vals,mean,sd,usl,lsl);
+  }
+
+  ['fNom','fUp','fLow','fData'].forEach(function(id){$(id).addEventListener('input',recalc)});
+  $('clearBtn').addEventListener('click',function(){$('fData').value='';recalc()});
+
+  var toastTimer=null;
+  function toast(msg){
+    var t=$('toast');t.textContent=msg;t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer=setTimeout(function(){t.classList.remove('show')},1600);
+  }
+  $('copyBtn').addEventListener('click',function(){
+    if(!lastCopy){toast('まだ結果がありません');return}
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(lastCopy).then(function(){toast('コピーしました')},function(){toast('コピーできませんでした')});
+    }else{
+      var ta=document.createElement('textarea');
+      ta.value=lastCopy;document.body.appendChild(ta);ta.select();
+      try{document.execCommand('copy');toast('コピーしました')}catch(e){toast('コピーできませんでした')}
+      document.body.removeChild(ta);
+    }
+  });
+
+  recalc();
+})();
+</script>
+</body>
+</html>

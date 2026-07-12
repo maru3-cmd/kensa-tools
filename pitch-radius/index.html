@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1F3341">
+<meta name="description" content="穴間ピッチの計算。同半径2穴を角度から求める弦の公式(既定)と、半径違いの2穴の余弦定理をタブで切替。計算は端末内で完結します。">
+<title>穴間ピッチ | 検査計算ツール</title>
+<style>
+  :root{
+    --paper:#F2F4F5;      /* 背景(図面台紙) */
+    --sheet:#FFFFFF;      /* 図面シート */
+    --ink:#1F3341;        /* 製図インク(青黒) */
+    --line:#8FA2AF;       /* 寸法補助線グレー */
+    --red:#D63426;        /* 検査赤(結果のみ) */
+    --dro-bg:#15181A;     /* 表示器パネル */
+    --dro-red:#FF5A48;    /* 表示器LED */
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI",sans-serif;
+    background:var(--paper);color:var(--ink);
+    min-height:100dvh;display:flex;flex-direction:column;align-items:center;
+    padding:0 12px calc(16px + env(safe-area-inset-bottom));
+  }
+  .wrap{width:100%;max-width:480px}
+
+  header{
+    display:flex;align-items:baseline;justify-content:space-between;
+    padding:14px 2px 10px;
+  }
+  header h1{font-size:16px;font-weight:700;letter-spacing:.04em}
+  header h1 small{display:block;font-size:11px;font-weight:400;color:#5B707E;letter-spacing:.08em;margin-top:2px}
+  header a{font-size:12px;color:#5B707E;text-decoration:none}
+
+  /* ---- 図面シート ---- */
+  .sheet{
+    background:var(--sheet);
+    border:2px solid var(--ink);
+    padding:5px;
+  }
+  .sheet-inner{border:1px solid var(--ink)}
+  .sheet svg{display:block;width:100%;height:auto}
+  .titleblock{
+    display:flex;border-top:1px solid var(--ink);
+    font-size:9px;letter-spacing:.06em;color:var(--ink);
+  }
+  .titleblock div{padding:3px 8px;border-right:1px solid var(--ink)}
+  .titleblock div:last-child{border-right:none;margin-left:auto}
+  .titleblock b{font-weight:700}
+
+  /* ---- 入力 ---- */
+  .inputs{margin-top:14px;display:flex;flex-direction:column;gap:10px}
+  .row{
+    display:grid;grid-template-columns:26px 1fr 130px 34px;
+    align-items:center;gap:8px;
+    background:var(--sheet);border:1px solid #D5DDE2;border-radius:10px;
+    padding:10px 12px;
+  }
+  .badge{
+    width:22px;height:22px;border-radius:50%;
+    background:var(--ink);color:#fff;
+    font-size:12px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .row label{font-size:13px;font-weight:600}
+  .row label small{display:block;font-size:10px;font-weight:400;color:#5B707E}
+  .row input{
+    width:100%;font-size:20px;font-weight:600;text-align:right;
+    font-variant-numeric:tabular-nums;
+    border:none;border-bottom:2px solid var(--ink);
+    background:transparent;color:var(--ink);
+    padding:2px 4px;border-radius:0;outline:none;
+  }
+  .row input:focus{border-bottom-color:var(--red)}
+  .unit{font-size:12px;color:#5B707E}
+
+  /* 角度モード切替 */
+  .mode{
+    display:inline-flex;border:1px solid var(--ink);border-radius:7px;overflow:hidden;
+    margin-left:auto;
+  }
+  .mode button{
+    font-size:11px;padding:4px 9px;border:none;background:var(--sheet);
+    color:var(--ink);font-weight:600;
+  }
+  .mode button.on{background:var(--ink);color:#fff}
+  .dms-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+  .dms-grid .cell{display:flex;align-items:baseline;gap:3px}
+  .dms-grid input{font-size:18px}
+  .dms-grid .u{font-size:11px;color:#5B707E}
+  .hidden{display:none !important}
+  .angle-head{display:flex;align-items:center;gap:8px}
+
+  /* ---- 結果表示器 ---- */
+  .dro{
+    margin-top:16px;background:var(--dro-bg);border-radius:12px;
+    padding:16px 18px 14px;
+    box-shadow:inset 0 2px 8px rgba(0,0,0,.5);
+  }
+  .dro-line{display:flex;align-items:baseline;gap:10px;justify-content:flex-end}
+  .dro-label{color:#7d8a91;font-size:14px;font-weight:700;letter-spacing:.1em}
+  .dro-val{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:38px;font-weight:600;color:var(--dro-red);
+    text-shadow:0 0 10px rgba(255,90,72,.35);
+    letter-spacing:.02em;
+  }
+  .dro-unit{color:#7d8a91;font-size:14px;font-weight:600}
+  .dro-foot{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-top:10px;border-top:1px solid #2a3034;padding-top:9px;
+  }
+  .formula{color:#5d6a71;font-size:11px;letter-spacing:.03em}
+  .copy{
+    font-size:12px;font-weight:700;color:#c9d2d7;background:#252b2f;
+    border:1px solid #3a4247;border-radius:7px;padding:6px 14px;
+  }
+  .copy:active{background:#31383d}
+
+  footer{
+    margin-top:18px;font-size:11px;color:#5B707E;line-height:1.7;
+    text-align:center;letter-spacing:.03em;
+  }
+
+  .toast{
+    position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);
+    background:var(--ink);color:#fff;font-size:13px;
+    padding:9px 20px;border-radius:20px;opacity:0;pointer-events:none;
+    transition:opacity .25s,transform .25s;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+  .mode-lg{
+    display:grid;grid-template-columns:1fr 1fr;
+    border:1.5px solid var(--ink);border-radius:9px;overflow:hidden;margin-bottom:10px;
+  }
+  .mode-lg button{
+    font-size:13px;font-weight:700;padding:10px 4px;border:none;
+    background:var(--sheet);color:var(--ink);letter-spacing:.03em;
+  }
+  .mode-lg button.on{background:var(--ink);color:#fff}
+  .dro-sub{
+    display:flex;justify-content:space-between;gap:10px;
+    border-top:1px solid #2a3034;margin-top:10px;padding-top:9px;
+    color:#7d8a91;font-size:11.5px;font-variant-numeric:tabular-nums;
+  }
+  .dro-sub b{color:#9FB0B8;font-family:ui-monospace,Consolas,monospace;font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>穴間ピッチ<small>同半径(角度)/ 異半径</small></h1>
+    <a href="../index.html">≡ ツール一覧</a>
+  </header>
+
+  <div class="mode-lg" role="group" aria-label="計算方式">
+    <button type="button" id="tSame" class="on">同半径(角度)</button>
+    <button type="button" id="tDiff">異半径</button>
+  </div>
+
+  <!-- 図面シート -->
+  <div class="sheet">
+    <div class="sheet-inner">
+      <svg viewBox="0 0 340 250" role="img" aria-label="中心Oから半径r1とr2の位置にある2つの穴と、その間の角度θ、求める穴間距離Lを示した図">
+        <defs>
+          <marker id="ar" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L8,3 L0,6 z" fill="#1F3341"/>
+          </marker>
+          <marker id="arRed" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L8,3 L0,6 z" fill="#D63426"/>
+          </marker>
+        </defs>
+
+        <!-- ===== 同半径モードの図 ===== -->
+        <g id="gSame">
+          <!-- 中心Oの十字 -->
+          <line x1="138" y1="205" x2="202" y2="205" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="9 3 2 3"/>
+          <line x1="170" y1="178" x2="170" y2="232" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="9 3 2 3"/>
+          <circle cx="170" cy="205" r="2.5" fill="#1F3341"/>
+          <text x="152" y="226" font-size="11" fill="#1F3341">O</text>
+
+          <!-- ピッチ円(参考) -->
+          <path d="M 60.7 155 A 125 125 0 0 1 279.3 155" fill="none" stroke="#C9D3DA" stroke-width="1" stroke-dasharray="9 3 2 3"/>
+
+          <!-- 半径線 r (O→穴A / O→穴B) 同じ長さ -->
+          <line x1="170" y1="205" x2="82.6" y2="117.6" stroke="#1F3341" stroke-width="1.2" marker-end="url(#ar)"/>
+          <line x1="170" y1="205" x2="257.4" y2="117.6" stroke="#1F3341" stroke-width="1.2" marker-end="url(#ar)"/>
+
+          <!-- 角度θの円弧 -->
+          <path d="M 134.6 169.6 A 50 50 0 0 1 205.4 169.6" fill="none" stroke="#1F3341" stroke-width="1.2" marker-start="url(#ar)" marker-end="url(#ar)"/>
+          <text x="170" y="166" font-size="14" fill="#1F3341" text-anchor="middle" stroke="#fff" stroke-width="3.5" paint-order="stroke">θ</text>
+          <circle cx="192" cy="150" r="8.5" fill="#1F3341" stroke="#fff" stroke-width="2"/>
+          <text x="192" y="154" font-size="10.5" font-weight="700" fill="#fff" text-anchor="middle">2</text>
+
+          <!-- 穴A / 穴B -->
+          <circle cx="76.9" cy="111.9" r="13" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+          <line x1="58" y1="111.9" x2="96" y2="111.9" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="8 3 2 3"/>
+          <line x1="76.9" y1="93" x2="76.9" y2="131" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="8 3 2 3"/>
+          <circle cx="263.1" cy="111.9" r="13" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+          <line x1="244" y1="111.9" x2="282" y2="111.9" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="8 3 2 3"/>
+          <line x1="263.1" y1="93" x2="263.1" y2="131" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="8 3 2 3"/>
+
+          <!-- ①r ラベル -->
+          <circle cx="106" cy="176" r="8.5" fill="#1F3341" stroke="#fff" stroke-width="2"/>
+          <text x="106" y="180" font-size="10.5" font-weight="700" fill="#fff" text-anchor="middle">1</text>
+          <text x="120" y="181" font-size="13" fill="#1F3341" stroke="#fff" stroke-width="3.5" paint-order="stroke">r</text>
+          <text x="232" y="181" font-size="13" fill="#1F3341" stroke="#fff" stroke-width="3.5" paint-order="stroke">r</text>
+
+          <!-- 結果 L(赤・弦) -->
+          <line x1="90" y1="111.9" x2="250.1" y2="111.9" stroke="#D63426" stroke-width="1.7" marker-start="url(#arRed)" marker-end="url(#arRed)"/>
+          <text id="svgLs" x="170" y="103" font-size="14" font-weight="700" fill="#D63426" text-anchor="middle"
+                stroke="#fff" stroke-width="4" paint-order="stroke">L = ―</text>
+          <text x="170" y="58" font-size="11" fill="#5B707E" text-anchor="middle">同じ半径 r の2穴を、間の角度 θ でつないだ弦</text>
+        </g>
+
+        <!-- ===== 異半径モードの図 ===== -->
+        <g id="gDiff" style="display:none">
+        <!-- 中心Oの十字(一点鎖線) -->
+        <line x1="18" y1="215" x2="82" y2="215" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="9 3 2 3"/>
+        <line x1="50" y1="188" x2="50" y2="242" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="9 3 2 3"/>
+        <circle cx="50" cy="215" r="2.5" fill="#1F3341"/>
+        <text x="30" y="236" font-size="11" fill="#1F3341">O</text>
+
+        <!-- 半径線 r1 (O→穴A) -->
+        <line x1="50" y1="215" x2="126.5" y2="71.1" stroke="#1F3341" stroke-width="1.2" marker-end="url(#ar)"/>
+        <!-- 半径線 r2 (O→穴B) -->
+        <line x1="50" y1="215" x2="275" y2="167.2" stroke="#1F3341" stroke-width="1.2" marker-end="url(#ar)"/>
+
+        <!-- 角度θの円弧 -->
+        <path d="M 103.8 203.6 A 55 55 0 0 0 75.8 166.4" fill="none" stroke="#1F3341" stroke-width="1.2" marker-start="url(#ar)" marker-end="url(#ar)"/>
+
+        <!-- 穴A -->
+        <circle cx="132.2" cy="60.5" r="12" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+        <line x1="115" y1="60.5" x2="149" y2="60.5" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="8 3 2 3"/>
+        <line x1="132.2" y1="43" x2="132.2" y2="78" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="8 3 2 3"/>
+
+        <!-- 穴B -->
+        <circle cx="289.6" cy="164.1" r="15" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+        <line x1="269" y1="164.1" x2="310" y2="164.1" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="8 3 2 3"/>
+        <line x1="289.6" y1="143" x2="289.6" y2="185" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="8 3 2 3"/>
+
+        <!-- 結果 L(赤・穴A→穴B) -->
+        <line x1="142.2" y1="67.1" x2="277.1" y2="155.9" stroke="#D63426" stroke-width="1.6" marker-start="url(#arRed)" marker-end="url(#arRed)"/>
+        <text id="svgL" x="209.7" y="101" font-size="14" font-weight="700" fill="#D63426"
+              text-anchor="middle" transform="rotate(33.4 209.7 111.5)"
+              stroke="#fff" stroke-width="4" paint-order="stroke">L = ―</text>
+
+        <!-- ラベル ①r1 -->
+        <circle cx="56" cy="126" r="8.5" fill="#1F3341" stroke="#fff" stroke-width="2"/>
+        <text x="56" y="130" font-size="10.5" font-weight="700" fill="#fff" text-anchor="middle">1</text>
+        <text x="70" y="131" font-size="13" fill="#1F3341" stroke="#fff" stroke-width="3.5" paint-order="stroke">r<tspan dy="3" font-size="9">1</tspan></text>
+
+        <!-- ラベル ②r2 -->
+        <circle cx="152" cy="201" r="8.5" fill="#1F3341" stroke="#fff" stroke-width="2"/>
+        <text x="152" y="205" font-size="10.5" font-weight="700" fill="#fff" text-anchor="middle">2</text>
+        <text x="166" y="206" font-size="13" fill="#1F3341" stroke="#fff" stroke-width="3.5" paint-order="stroke">r<tspan dy="3" font-size="9">2</tspan></text>
+
+        <!-- ラベル ③θ -->
+        <text x="103" y="176" font-size="14" fill="#1F3341" stroke="#fff" stroke-width="3.5" paint-order="stroke">θ</text>
+        <circle cx="124" cy="172" r="8.5" fill="#1F3341" stroke="#fff" stroke-width="2"/>
+        <text x="124" y="176" font-size="10.5" font-weight="700" fill="#fff" text-anchor="middle">3</text>
+        </g>
+      </svg>
+      <div class="titleblock">
+        <div><b>品名</b> <span id="tbName">穴間ピッチ(同半径)</span></div>
+        <div><b>方式</b> <span id="tbMethod">弦の公式</span></div>
+        <div>TOOL-01</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 入力 -->
+  <div class="inputs">
+    <div class="row" id="rowSame">
+      <span class="badge">1</span>
+      <label for="rS">半径 r<small>中心Oから各穴まで(同じ)</small></label>
+      <input id="rS" type="text" inputmode="decimal" autocomplete="off" placeholder="0.000">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row" id="rowR1" style="display:none">
+      <span class="badge">1</span>
+      <label for="r1">半径 r₁<small>中心Oから穴Aまで</small></label>
+      <input id="r1" type="text" inputmode="decimal" autocomplete="off" placeholder="0.000">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row" id="rowR2" style="display:none">
+      <span class="badge">2</span>
+      <label for="r2">半径 r₂<small>中心Oから穴Bまで</small></label>
+      <input id="r2" type="text" inputmode="decimal" autocomplete="off" placeholder="0.000">
+      <span class="unit">mm</span>
+    </div>
+
+    <!-- 角度:10進 / 度分秒 切替 -->
+    <div class="row" style="grid-template-columns:26px 1fr;row-gap:8px">
+      <span class="badge" id="angBadge">2</span>
+      <div class="angle-head">
+        <label for="deg">角度 θ<small>2つの半径線の間</small></label>
+        <div class="mode" role="group" aria-label="角度の入力形式">
+          <button type="button" id="mDec" class="on">10進</button>
+          <button type="button" id="mDms">度分秒</button>
+        </div>
+      </div>
+      <span></span>
+      <div id="decBox" style="display:flex;align-items:baseline;gap:6px">
+        <input id="deg" type="text" inputmode="decimal" autocomplete="off" placeholder="0.000" style="font-size:20px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums;border:none;border-bottom:2px solid var(--ink);background:transparent;color:var(--ink);padding:2px 4px;width:100%;outline:none">
+        <span class="unit">°</span>
+      </div>
+      <div id="dmsBox" class="dms-grid hidden">
+        <div class="cell"><input id="dmsD" type="text" inputmode="numeric" autocomplete="off" placeholder="0" style="border:none;border-bottom:2px solid var(--ink);background:transparent;text-align:right;width:100%;font-weight:600;outline:none"><span class="u">度</span></div>
+        <div class="cell"><input id="dmsM" type="text" inputmode="numeric" autocomplete="off" placeholder="0" style="border:none;border-bottom:2px solid var(--ink);background:transparent;text-align:right;width:100%;font-weight:600;outline:none"><span class="u">分</span></div>
+        <div class="cell"><input id="dmsS" type="text" inputmode="decimal" autocomplete="off" placeholder="0" style="border:none;border-bottom:2px solid var(--ink);background:transparent;text-align:right;width:100%;font-weight:600;outline:none"><span class="u">秒</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 結果 -->
+  <div class="dro">
+    <div class="dro-line">
+      <span class="dro-label">L</span>
+      <span class="dro-val" id="out">―.―――</span>
+      <span class="dro-unit">mm</span>
+    </div>
+    <div class="dro-sub" id="subBox">
+      <span>弧長 s = r×θ: <b id="vArc">―</b> mm</span>
+      <span>PCD: <b id="vPcd">―</b> mm</span>
+    </div>
+    <div class="dro-foot">
+      <span class="formula" id="formulaTxt">L = 2·r·sin(θ/2)</span>
+      <button class="copy" id="copyBtn" type="button">コピー</button>
+    </div>
+  </div>
+
+  <footer>
+    このページは計算のみを行います。<br>
+    入力値の送信・保存は一切ありません(端末内で完結)。
+  </footer>
+</div>
+
+<div class="toast" id="toast">コピーしました</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var mode='dec';       // 角度入力形式
+  var tab='same';       // same:同半径 / diff:異半径
+  var lastResult=null;
+
+  function num(v){
+    if(v==null)return NaN;
+    v=String(v).replace(/[０-９．]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0)}).replace(/。/g,'.').trim();
+    if(v==='')return NaN;
+    return Number(v);
+  }
+
+  function angleDeg(){
+    if(mode==='dec')return num($('deg').value);
+    var d=num($('dmsD').value), m=num($('dmsM').value), s=num($('dmsS').value);
+    if(isNaN(d)&&isNaN(m)&&isNaN(s))return NaN;
+    return (isNaN(d)?0:d)+(isNaN(m)?0:m)/60+(isNaN(s)?0:s)/3600;
+  }
+
+  function recalc(){
+    var th=angleDeg();
+    var angOk=!isNaN(th)&&th>0&&th<360;
+    lastResult=null;
+
+    if(tab==='same'){
+      var r=num($('rS').value);
+      var ok=r>0&&angOk;
+      if(!ok){
+        $('out').textContent='―.―――';
+        $('svgLs').textContent='L = ―';
+        $('vArc').textContent='―';$('vPcd').textContent='―';
+        return;
+      }
+      var rad=th*Math.PI/180;
+      var L=2*r*Math.sin(rad/2);
+      lastResult=L.toFixed(3);
+      $('out').textContent=lastResult;
+      $('svgLs').textContent='L = '+lastResult;
+      $('vArc').textContent=(r*rad).toFixed(3);
+      $('vPcd').textContent=(2*r).toFixed(3);
+    }else{
+      var r1=num($('r1').value), r2=num($('r2').value);
+      var ok2=r1>0&&r2>0&&angOk;
+      if(!ok2){
+        $('out').textContent='―.―――';
+        $('svgL').textContent='L = ―';
+        return;
+      }
+      var rad2=th*Math.PI/180;
+      var L2=Math.sqrt(r1*r1+r2*r2-2*r1*r2*Math.cos(rad2));
+      lastResult=L2.toFixed(3);
+      $('out').textContent=lastResult;
+      $('svgL').textContent='L = '+lastResult;
+    }
+  }
+
+  function setTab(t){
+    tab=t;
+    var same=(t==='same');
+    $('tSame').classList.toggle('on',same);
+    $('tDiff').classList.toggle('on',!same);
+    $('gSame').style.display=same?'':'none';
+    $('gDiff').style.display=same?'none':'';
+    $('rowSame').style.display=same?'':'none';
+    $('rowR1').style.display=same?'none':'';
+    $('rowR2').style.display=same?'none':'';
+    $('subBox').style.display=same?'':'none';
+    $('angBadge').textContent=same?'2':'3';
+    $('tbName').textContent=same?'穴間ピッチ(同半径)':'穴間距離(異半径)';
+    $('tbMethod').textContent=same?'弦の公式':'余弦定理';
+    $('formulaTxt').textContent=same?'L = 2·r·sin(θ/2)':'L = √(r₁² + r₂² − 2·r₁·r₂·cosθ)';
+    recalc();
+  }
+  $('tSame').addEventListener('click',function(){setTab('same')});
+  $('tDiff').addEventListener('click',function(){setTab('diff')});
+
+  ['rS','r1','r2','deg','dmsD','dmsM','dmsS'].forEach(function(id){
+    $(id).addEventListener('input',recalc);
+  });
+
+  $('mDec').addEventListener('click',function(){
+    mode='dec';
+    $('mDec').classList.add('on');$('mDms').classList.remove('on');
+    $('decBox').classList.remove('hidden');$('dmsBox').classList.add('hidden');
+    recalc();
+  });
+  $('mDms').addEventListener('click',function(){
+    mode='dms';
+    $('mDms').classList.add('on');$('mDec').classList.remove('on');
+    $('dmsBox').classList.remove('hidden');$('decBox').classList.add('hidden');
+    recalc();
+  });
+
+  var toastTimer=null;
+  function toast(msg){
+    var t=$('toast');t.textContent=msg;t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer=setTimeout(function(){t.classList.remove('show')},1600);
+  }
+
+  $('copyBtn').addEventListener('click',function(){
+    if(lastResult==null){toast('先に半径と角度を入力してください');return}
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(lastResult).then(function(){toast('コピーしました')},function(){toast('コピーできませんでした')});
+    }else{
+      var ta=document.createElement('textarea');
+      ta.value=lastResult;document.body.appendChild(ta);ta.select();
+      try{document.execCommand('copy');toast('コピーしました')}catch(e){toast('コピーできませんでした')}
+      document.body.removeChild(ta);
+    }
+  });
+
+  setTab('same');
+})();
+</script>
+</body>
+</html>

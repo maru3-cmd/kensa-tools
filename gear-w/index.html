@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1F3341">
+<meta name="description" content="平歯車のまたぎ歯厚(W寸法)を計算。またぎ歯数は自動算出、転位係数にも対応。計算は端末内で完結し、入力値はどこにも送信されません。">
+<title>またぎ歯厚 | 検査計算ツール</title>
+<style>
+  :root{
+    --paper:#F2F4F5;
+    --sheet:#FFFFFF;
+    --ink:#1F3341;
+    --line:#8FA2AF;
+    --red:#D63426;
+    --dro-bg:#15181A;
+    --dro-red:#FF5A48;
+    --dro-dim:#9FB0B8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI",sans-serif;
+    background:var(--paper);color:var(--ink);
+    min-height:100dvh;display:flex;flex-direction:column;align-items:center;
+    padding:0 12px calc(16px + env(safe-area-inset-bottom));
+  }
+  .wrap{width:100%;max-width:480px}
+
+  header{display:flex;align-items:baseline;justify-content:space-between;padding:14px 2px 10px}
+  header h1{font-size:16px;font-weight:700;letter-spacing:.04em}
+  header h1 small{display:block;font-size:11px;font-weight:400;color:#5B707E;letter-spacing:.08em;margin-top:2px}
+  header a{font-size:12px;color:#5B707E;text-decoration:none}
+
+  .sheet{background:var(--sheet);border:2px solid var(--ink);padding:5px}
+  .sheet-inner{border:1px solid var(--ink)}
+  .sheet svg{display:block;width:100%;height:auto}
+  .titleblock{display:flex;border-top:1px solid var(--ink);font-size:9px;letter-spacing:.06em}
+  .titleblock div{padding:3px 8px;border-right:1px solid var(--ink)}
+  .titleblock div:last-child{border-right:none;margin-left:auto}
+  .titleblock b{font-weight:700}
+
+  .inputs{margin-top:14px;display:flex;flex-direction:column;gap:10px}
+  .row{
+    display:grid;grid-template-columns:26px 1fr 120px 34px;
+    align-items:center;gap:8px;
+    background:var(--sheet);border:1px solid #D5DDE2;border-radius:10px;
+    padding:10px 12px;
+  }
+  .badge{
+    width:22px;height:22px;border-radius:50%;
+    background:var(--ink);color:#fff;font-size:12px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .row label{font-size:13px;font-weight:600}
+  .row label small{display:block;font-size:10px;font-weight:400;color:#5B707E}
+  .row input{
+    width:100%;font-size:20px;font-weight:600;text-align:right;
+    font-variant-numeric:tabular-nums;
+    border:none;border-bottom:2px solid var(--ink);
+    background:transparent;color:var(--ink);
+    padding:2px 4px;border-radius:0;outline:none;
+  }
+  .row input:focus{border-bottom-color:var(--red)}
+  .row input.computed{color:var(--red)}
+  .unit{font-size:12px;color:#5B707E}
+  .k-wrap{display:flex;align-items:center;gap:6px}
+  .autoBtn{
+    flex:none;font-size:11px;font-weight:700;padding:6px 10px;
+    border:1.5px solid var(--ink);border-radius:7px;
+    background:var(--sheet);color:var(--ink);
+  }
+  .autoBtn.on{background:var(--ink);color:#fff}
+
+  .dro{
+    margin-top:16px;background:var(--dro-bg);border-radius:12px;
+    padding:16px 18px 12px;box-shadow:inset 0 2px 8px rgba(0,0,0,.5);
+  }
+  .dro-line{display:flex;align-items:baseline;gap:10px;justify-content:flex-end}
+  .dro-label{color:#7d8a91;font-size:14px;font-weight:700;letter-spacing:.1em}
+  .dro-val{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:38px;font-weight:600;color:var(--dro-red);
+    text-shadow:0 0 10px rgba(255,90,72,.35);letter-spacing:.02em;
+  }
+  .dro-unit{color:#7d8a91;font-size:14px;font-weight:600}
+  .dro-grid{
+    display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;
+    border-top:1px solid #2a3034;margin-top:12px;padding-top:10px;
+  }
+  .cellv{display:flex;flex-direction:column;align-items:flex-end;padding:4px 8px;border-radius:8px}
+  .cellv:active{background:#1e2327}
+  .cellv .k{color:#7d8a91;font-size:11px;font-weight:700;letter-spacing:.06em;align-self:flex-start}
+  .cellv .v{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:18px;font-weight:600;color:var(--dro-dim);letter-spacing:.01em;
+  }
+  .cellv .s{color:#5d6a71;font-size:10px}
+  .dro-foot{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-top:10px;border-top:1px solid #2a3034;padding-top:9px;gap:8px;
+  }
+  .statusTxt{color:#5d6a71;font-size:11px;letter-spacing:.02em}
+  .statusTxt.err{color:#FF8A7E}
+  .taphint{color:#5d6a71;font-size:11px;flex:none}
+
+  footer{margin-top:18px;font-size:11px;color:#5B707E;line-height:1.7;text-align:center;letter-spacing:.03em}
+
+  .toast{
+    position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);
+    background:var(--ink);color:#fff;font-size:13px;
+    padding:9px 20px;border-radius:20px;opacity:0;pointer-events:none;
+    transition:opacity .25s,transform .25s;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>またぎ歯厚<small>平歯車のW寸法(標準・転位対応)</small></h1>
+    <a href="../index.html">≡ ツール一覧</a>
+  </header>
+
+  <!-- 図面シート -->
+  <div class="sheet">
+    <div class="sheet-inner">
+      <svg viewBox="0 0 340 250" role="img" aria-label="歯車の歯を複数枚またいでマイクロメータで測るまたぎ歯厚Wの模式図">
+        <defs>
+          <marker id="ar" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L8,3 L0,6 z" fill="#1F3341"/>
+          </marker>
+          <marker id="arRed" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L8,3 L0,6 z" fill="#D63426"/>
+          </marker>
+        </defs>
+
+        <!-- 歯車本体 -->
+        <rect x="30" y="170" width="280" height="28" fill="#EFF2F4" stroke="none"/>
+        <line x1="30" y1="198" x2="310" y2="198" stroke="#C9D3DA" stroke-width="1.2"/>
+
+        <!-- 歯(模式・4枚) -->
+        <path d="M 30 170 L 50 170 L 58 125 L 82 125 L 90 170
+                 L 112 170 L 120 125 L 144 125 L 152 170
+                 L 174 170 L 182 125 L 206 125 L 214 170
+                 L 236 170 L 244 125 L 268 125 L 276 170
+                 L 310 170" fill="#fff" stroke="#1F3341" stroke-width="2"/>
+
+        <!-- またぐ歯の番号 -->
+        <text x="70" y="120" font-size="9" fill="#5B707E" text-anchor="middle">1</text>
+        <text x="132" y="120" font-size="9" fill="#5B707E" text-anchor="middle">2</text>
+        <text x="194" y="120" font-size="9" fill="#5B707E" text-anchor="middle">3</text>
+
+        <!-- 測定子(マイクロメータのアンビル) -->
+        <line x1="52" y1="168" x2="60" y2="123" stroke="#5B707E" stroke-width="5" stroke-linecap="round"/>
+        <line x1="216" y1="168" x2="208" y2="123" stroke="#5B707E" stroke-width="5" stroke-linecap="round"/>
+
+        <!-- W寸法(赤) -->
+        <line x1="57" y1="124" x2="57" y2="112" stroke="#D63426" stroke-width="1"/>
+        <line x1="211" y1="124" x2="211" y2="112" stroke="#D63426" stroke-width="1"/>
+        <line x1="57" y1="110" x2="211" y2="110" stroke="#D63426" stroke-width="1.6"
+              marker-start="url(#arRed)" marker-end="url(#arRed)"/>
+        <text id="svgW" x="134" y="103" font-size="14" font-weight="700" fill="#D63426" text-anchor="middle"
+              stroke="#fff" stroke-width="4" paint-order="stroke">W = ―</text>
+
+        <!-- 凡例 -->
+        <circle cx="40" cy="220" r="8.5" fill="#1F3341" stroke="#fff" stroke-width="2"/>
+        <text x="40" y="224" font-size="10.5" font-weight="700" fill="#fff" text-anchor="middle">5</text>
+        <text id="kLegend" x="54" y="224" font-size="12" fill="#1F3341"
+              stroke="#fff" stroke-width="3.5" paint-order="stroke">またぎ歯数 k = 3 枚(図は模式図)</text>
+        <text x="310" y="242" font-size="9" fill="#5B707E" text-anchor="end">測定子は歯面に平行に当たります</text>
+      </svg>
+      <div class="titleblock">
+        <div><b>品名</b> またぎ歯厚</div>
+        <div><b>方式</b> インボリュート</div>
+        <div>TOOL-06</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 入力 -->
+  <div class="inputs">
+    <div class="row">
+      <span class="badge">1</span>
+      <label for="fM">モジュール m<small>歯の大きさ</small></label>
+      <input id="fM" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row">
+      <span class="badge">2</span>
+      <label for="fZ">歯数 z<small>歯の総数</small></label>
+      <input id="fZ" type="text" inputmode="numeric" autocomplete="off" placeholder="―">
+      <span class="unit">枚</span>
+    </div>
+    <div class="row">
+      <span class="badge">3</span>
+      <label for="fA">圧力角 α<small>通常は20°(旧規格14.5°)</small></label>
+      <input id="fA" type="text" inputmode="decimal" autocomplete="off" value="20">
+      <span class="unit">°</span>
+    </div>
+    <div class="row">
+      <span class="badge">4</span>
+      <label for="fX">転位係数 x<small>標準歯車は 0</small></label>
+      <input id="fX" type="text" inputmode="decimal" autocomplete="off" value="0">
+      <span class="unit"></span>
+    </div>
+    <div class="row" style="grid-template-columns:26px 1fr 158px 0px">
+      <span class="badge">5</span>
+      <label for="fK">またぎ歯数 k<small>赤字=自動算出。手入力で変更可</small></label>
+      <div class="k-wrap">
+        <input id="fK" type="text" inputmode="numeric" autocomplete="off" placeholder="―">
+        <button class="autoBtn on" type="button" id="kAuto">自動</button>
+      </div>
+      <span></span>
+    </div>
+    <div class="row">
+      <span class="badge">6</span>
+      <label for="fW">実測W<small>任意。理論値との差を表示</small></label>
+      <input id="fW" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+    </div>
+  </div>
+
+  <!-- 結果 -->
+  <div class="dro">
+    <div class="dro-line">
+      <span class="dro-label">W</span>
+      <span class="dro-val" id="out">―.―――</span>
+      <span class="dro-unit">mm</span>
+    </div>
+    <div class="dro-grid">
+      <div class="cellv" id="cD"><span class="k">基準円 d</span><span class="v" id="vD">―</span><span class="s">mm</span></div>
+      <div class="cellv" id="cDb"><span class="k">基礎円 db</span><span class="v" id="vDb">―</span><span class="s">mm</span></div>
+      <div class="cellv" id="cDa"><span class="k">歯先円 da</span><span class="v" id="vDa">―</span><span class="s">mm</span></div>
+      <div class="cellv" id="cInv"><span class="k">inv α</span><span class="v" id="vInv">―</span><span class="s"></span></div>
+      <div class="cellv" id="cK2"><span class="k">またぎ歯数 k</span><span class="v" id="vK2">―</span><span class="s">枚</span></div>
+      <div class="cellv" id="cDelta"><span class="k">実測との差 Δ</span><span class="v" id="vDelta">―</span><span class="s">mm</span></div>
+    </div>
+    <div class="dro-foot">
+      <span class="statusTxt" id="statusTxt">m・z を入力してください</span>
+      <span class="taphint">値をタップでコピー</span>
+    </div>
+  </div>
+
+  <footer>
+    このページは計算のみを行います。入力値の送信・保存は一切ありません(端末内で完結)。<br>
+    対応: 平歯車(インボリュート・標準/転位)。はすば歯車は非対応です。<br>
+    W = m·cosα·[π(k−0.5) + z·invα] + 2·x·m·sinα
+  </footer>
+</div>
+
+<div class="toast" id="toast">コピーしました</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var kMode='auto';
+  var vals={W:null,d:null,db:null,da:null,inv:null,k:null,delta:null};
+
+  function num(v){
+    if(v==null)return NaN;
+    v=String(v).replace(/[０-９．−]/g,function(c){
+      if(c==='−')return '-';
+      return String.fromCharCode(c.charCodeAt(0)-0xFEE0);
+    }).replace(/。/g,'.').trim();
+    if(v==='')return NaN;
+    return Number(v);
+  }
+  function intVal(v){
+    var x=num(v);
+    return (isFinite(x)&&x===Math.floor(x))?x:NaN;
+  }
+  function setStatus(msg,isErr){
+    var s=$('statusTxt');s.textContent=msg;
+    s.className='statusTxt'+(isErr?' err':'');
+  }
+
+  // またぎ歯数の自動算出(転位対応: zm = z·K(f) + 0.5, f = x/z)
+  function autoK(z,aRad,x){
+    var f=x/z;
+    var K=(1/Math.PI)*(
+      Math.sqrt((1+2*f)*(1+2*f)-Math.cos(aRad)*Math.cos(aRad))/Math.cos(aRad)
+      -(Math.tan(aRad)-aRad)
+      -2*f*Math.tan(aRad)
+    );
+    var zm=z*K+0.5;
+    return {k:Math.max(2,Math.round(zm+1e-9)), raw:zm};
+  }
+
+  function recalc(){
+    var m=num($('fM').value);
+    var z=intVal($('fZ').value);
+    var a=num($('fA').value);
+    var xRaw=$('fX').value.trim();
+    var x=(xRaw==='')?0:num($('fX').value);
+    var meas=num($('fW').value);
+
+    vals={W:null,d:null,db:null,da:null,inv:null,k:null,delta:null};
+
+    var base=!isNaN(z)&&z>=4&&!isNaN(a)&&a>0&&a<45&&!isNaN(x);
+
+    // またぎ歯数
+    var k=NaN, kraw=null;
+    if(base){
+      var aRad=a*Math.PI/180;
+      if(kMode==='auto'){
+        var ak=autoK(z,aRad,x);
+        k=ak.k;kraw=ak.raw;
+        $('fK').value=k;
+        $('fK').classList.add('computed');
+      }else{
+        k=intVal($('fK').value);
+        $('fK').classList.remove('computed');
+      }
+    }else if(kMode==='auto'){
+      $('fK').value='';
+    }
+
+    var ok=base&&m>0&&!isNaN(k)&&k>=2&&k<=z;
+    if(!ok){
+      $('out').textContent='―.―――';
+      $('svgW').textContent='W = ―';
+      $('kLegend').textContent='またぎ歯数 k = ―(図は模式図)';
+      ['vD','vDb','vDa','vInv','vK2','vDelta'].forEach(function(id){$(id).textContent='―'});
+      if(!base){
+        if(isNaN(z)||isNaN(m))setStatus('m・z を入力してください',false);
+        else if(z<4)setStatus('歯数 z は 4 以上で入力してください',true);
+        else if(!(a>0&&a<45))setStatus('圧力角 α は 0°〜45° の間で入力してください',true);
+        else setStatus('転位係数 x を確認してください',true);
+      }else if(m<=0||isNaN(m)){
+        setStatus('モジュール m を入力してください',false);
+      }else{
+        setStatus('またぎ歯数 k は 2〜z の整数で入力してください',true);
+      }
+      return;
+    }
+
+    var aRad=a*Math.PI/180;
+    var inv=Math.tan(aRad)-aRad;
+    var W=m*Math.cos(aRad)*(Math.PI*(k-0.5)+z*inv)+2*x*m*Math.sin(aRad);
+    var d=m*z;
+    var db=m*z*Math.cos(aRad);
+    var da=m*(z+2)+2*x*m;
+
+    vals.W=W;vals.d=d;vals.db=db;vals.da=da;vals.inv=inv;vals.k=k;
+
+    $('out').textContent=W.toFixed(3);
+    $('svgW').textContent='W = '+W.toFixed(3);
+    $('kLegend').textContent='またぎ歯数 k = '+k+' 枚(図は模式図)';
+    $('vD').textContent=d.toFixed(3);
+    $('vDb').textContent=db.toFixed(3);
+    $('vDa').textContent=da.toFixed(3);
+    $('vInv').textContent=inv.toFixed(6);
+    $('vK2').textContent=String(k);
+
+    if(!isNaN(meas)){
+      var delta=meas-W;
+      vals.delta=delta;
+      $('vDelta').textContent=(delta>0?'+':'')+delta.toFixed(3)+'('+(delta>0?'+':'')+(delta*1000).toFixed(0)+'µm)';
+    }else{
+      $('vDelta').textContent='―';
+    }
+
+    var st='';
+    if(kMode==='auto'&&kraw!=null)st='自動またぎ歯数: '+kraw.toFixed(2)+' → '+k+' 枚';
+    else st='またぎ歯数 k = '+k+'(手動)';
+    if(Math.abs(x)>1)st+=' | x の絶対値が大きい点に注意';
+    setStatus(st,false);
+  }
+
+  ['fM','fZ','fA','fX','fW'].forEach(function(id){$(id).addEventListener('input',recalc)});
+  $('fK').addEventListener('input',function(){
+    kMode='manual';
+    $('kAuto').classList.remove('on');
+    recalc();
+  });
+  $('kAuto').addEventListener('click',function(){
+    kMode='auto';
+    $('kAuto').classList.add('on');
+    recalc();
+  });
+
+  var toastTimer=null;
+  function toast(msg){
+    var t=$('toast');t.textContent=msg;t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer=setTimeout(function(){t.classList.remove('show')},1600);
+  }
+  [['cD','d',3],['cDb','db',3],['cDa','da',3],['cInv','inv',6],['cK2','k',0],['cDelta','delta',3]].forEach(function(a){
+    $(a[0]).addEventListener('click',function(){
+      var v=vals[a[1]];
+      if(v==null){toast('まだ値がありません');return}
+      copyText(a[2]===0?String(v):v.toFixed(a[2]));
+    });
+  });
+  document.querySelector('.dro-line').addEventListener('click',function(){
+    if(vals.W==null){toast('まだ値がありません');return}
+    copyText(vals.W.toFixed(3));
+  });
+  function copyText(s){
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(s).then(function(){toast('コピーしました')},function(){toast('コピーできませんでした')});
+    }else{
+      var ta=document.createElement('textarea');
+      ta.value=s;document.body.appendChild(ta);ta.select();
+      try{document.execCommand('copy');toast('コピーしました')}catch(e){toast('コピーできませんでした')}
+      document.body.removeChild(ta);
+    }
+  }
+
+  recalc();
+})();
+</script>
+</body>
+</html>
