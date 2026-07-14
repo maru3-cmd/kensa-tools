@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1F3341">
+<meta name="description" content="平板の基準点・基準線から指示された穴位置を、図面のまま入力して端面（左右上下）からの読みに換算します。穴から角度指定の連鎖穴にも対応。コンベックス測定向けに穴の縁読みも表示。計算は端末内で完結します。">
+<title>端面からの穴位置 | 検査計算ツール</title>
+<style>
+  :root{
+    --paper:#F2F4F5; --sheet:#FFFFFF; --ink:#1F3341; --line:#8FA2AF; --red:#D63426;
+    --amber:#B97A1E; --green:#2E9E5B;
+    --dro-bg:#15181A; --dro-red:#FF5A48; --dro-green:#42D77D; --dro-dim:#9FB0B8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI",sans-serif;
+    background:var(--paper);color:var(--ink);
+    min-height:100dvh;display:flex;flex-direction:column;align-items:center;
+    padding:0 12px calc(20px + env(safe-area-inset-bottom));
+  }
+  .wrap{width:100%;max-width:480px}
+  header{display:flex;align-items:baseline;justify-content:space-between;padding:14px 2px 8px}
+  header h1{font-size:16px;font-weight:700;letter-spacing:.04em}
+  header h1 small{display:block;font-size:11px;font-weight:400;color:#5B707E;letter-spacing:.08em;margin-top:2px}
+  header a{font-size:12px;color:#5B707E;text-decoration:none}
+
+  .tb-strip{display:flex;background:var(--sheet);border:2px solid var(--ink);font-size:9px;letter-spacing:.06em;margin-bottom:12px}
+  .tb-strip div{padding:4px 8px;border-right:1px solid var(--ink)}
+  .tb-strip div:last-child{border-right:none;margin-left:auto}
+  .tb-strip b{font-weight:700}
+
+  .card{background:var(--sheet);border:1px solid #D5DDE2;border-radius:12px;padding:14px;margin-bottom:12px}
+  .card h2{font-size:11px;letter-spacing:.1em;color:#5B707E;font-weight:700;border-bottom:1px solid #E3E9EC;padding-bottom:6px;margin-bottom:10px}
+  .card h2 .tag{float:right;color:var(--red);letter-spacing:0}
+
+  label.f{display:block;font-size:11px;color:#5B707E;margin:0 0 3px 1px}
+  .row{display:flex;gap:8px;margin-bottom:9px}
+  .row>div{flex:1;min-width:0}
+  input[type=number],input[type=text],input[type=date],select{
+    width:100%;padding:9px 8px;font:inherit;font-size:15px;
+    border:1px solid var(--line);border-radius:6px;background:#FBFCFC;color:var(--ink)}
+  input:focus,select:focus{outline:2px solid var(--red);outline-offset:-1px;background:#fff}
+  .hint{font-size:10.5px;color:#7A8C97;line-height:1.65;margin-top:4px}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:9px 12px;font:inherit;font-size:12.5px;font-weight:600;border:1px solid var(--ink);border-radius:6px;background:var(--sheet);color:var(--ink);cursor:pointer}
+  .btn:active{transform:translateY(1px)}
+  .btn.primary{background:var(--ink);color:#fff}
+  .btn.warn{border-color:var(--red);color:var(--red)}
+  .btn.sm{padding:6px 8px;font-size:11.5px}
+  .btn:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+  .btnrow{display:flex;gap:8px;flex-wrap:wrap}
+
+  figure svg{width:100%;height:auto;display:block;background:#FBFCFC;border:1px solid #E3E9EC;border-radius:6px}
+  figcaption{font-size:9.5px;color:#7A8C97;text-align:center;margin-top:3px;letter-spacing:.06em}
+
+  .hole{border:1px solid #D5DDE2;border-radius:8px;padding:10px 10px 6px;margin-bottom:8px;background:#FCFDFD}
+  .hole .hd{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .hole .hd .nm{font-family:ui-monospace,Menlo,monospace;font-weight:700;font-size:13px;color:var(--ink);min-width:30px}
+  .hole .hd select{flex:1}
+  .xbtn{width:28px;height:28px;border:1px solid var(--line);background:#fff;border-radius:6px;color:var(--red);font-size:14px;line-height:1;cursor:pointer;flex:none}
+  .hole .err{font-size:10.5px;color:var(--red);font-weight:700;margin:2px 0 4px}
+
+  .dro{background:var(--dro-bg);border-radius:10px;padding:12px;color:#fff;font-variant-numeric:tabular-nums}
+  .dro .lbl{font-size:10px;color:var(--dro-dim);letter-spacing:.12em}
+  .dro .pair{font-family:ui-monospace,Menlo,monospace;font-size:13px;color:var(--dro-red);margin-bottom:2px}
+  .dro .big{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:26px;font-weight:600;color:var(--dro-green);line-height:1.2}
+  .dro .big .u{font-size:13px;color:var(--dro-dim);margin:0 4px}
+  .dro .sub{display:flex;gap:10px;margin-top:8px;border-top:1px solid #2A2F33;padding-top:8px}
+  .dro .sub div{flex:1}
+  .dro .sub .k{font-size:9.5px;color:var(--dro-dim);letter-spacing:.08em}
+  .dro .sub .v{font-family:ui-monospace,Menlo,monospace;font-size:14px;color:#E8EEF1}
+
+  table{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}
+  th{background:#EDF1F3;color:#5B707E;font-size:10px;letter-spacing:.06em;font-weight:700;padding:6px 5px;text-align:right;border-bottom:1px solid var(--line)}
+  th:first-child,td:first-child{text-align:left}
+  td{padding:6px 5px;text-align:right;border-bottom:1px solid #EEF2F4;font-family:ui-monospace,Menlo,monospace}
+  tbody tr{cursor:pointer}
+  tbody tr[aria-selected="true"]{background:#FDECEA}
+  tbody tr[aria-selected="true"] td:first-child{color:var(--red);font-weight:700}
+  .tblwrap{border:1px solid #E3E9EC;border-radius:6px;overflow:auto}
+  td.ng{color:var(--red);font-weight:700}
+  .ok{color:var(--green);font-weight:700}
+  .ngt{color:var(--red);font-weight:700}
+  td input{padding:4px 5px;font-size:12px;text-align:right;border-radius:4px}
+
+  .banner{font-size:11.5px;line-height:1.7;background:#FDF6E7;border:1px solid #E9D9AE;border-radius:6px;padding:8px 10px;color:#6B5518;margin-bottom:10px}
+  .banner.on{background:#EAF3FB;border-color:#BFD9EE;color:#1E4E79}
+
+  details{border-top:1px solid #E3E9EC;margin-top:10px;padding-top:8px}
+  details summary{font-size:11.5px;font-weight:700;color:#5B707E;cursor:pointer;letter-spacing:.04em}
+  details ul{margin:8px 0 0 16px;font-size:11.5px;line-height:1.85;color:#42565F}
+  footer{font-size:10px;color:#8FA2AF;text-align:center;line-height:1.7;padding:6px 0 4px}
+
+  .print-only{display:none}
+  @media print{
+    body{background:#fff;padding:0}
+    .noprint{display:none !important}
+    .print-only{display:block}
+    .card{border:1px solid #333;border-radius:0;break-inside:avoid}
+    .dro{background:#fff;color:#000;border:1px solid #333}
+    .dro .big,.dro .sub .v{color:#000}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="noprint">
+  <h1>端面からの穴位置<small>基準点・基準線 → 端面読みに換算</small></h1>
+  <a href="../index.html">≡ ツール一覧</a>
+</header>
+
+<div class="tb-strip">
+  <div><b>TOOL-27</b></div>
+  <div>連鎖穴対応</div>
+  <div>縁読み表示</div>
+  <div>端末内計算</div>
+</div>
+
+<div class="card">
+  <h2>板と基準<span class="tag">図面のとおり</span></h2>
+  <div class="row">
+    <div><label class="f">板の長さ L（左右）</label><input type="number" id="pL" value="1000" step="0.1" oninput="calc()"></div>
+    <div><label class="f">板の幅 W（上下）</label><input type="number" id="pW" value="600" step="0.1" oninput="calc()"></div>
+  </div>
+  <div class="row">
+    <div><label class="f">基準点：左端から ex</label><input type="number" id="pEx" value="500" step="0.1" oninput="calc()"></div>
+    <div><label class="f">基準点：下端から ey</label><input type="number" id="pEy" value="300" step="0.1" oninput="calc()"></div>
+    <div><label class="f">基準線の傾き φ（°）</label><input type="number" id="pPhi" value="0" step="0.1" oninput="calc()"></div>
+  </div>
+  <div class="hint">φ は下端面に対する基準線の傾き（反時計回り＋）。端面と平行なら 0 のままで構いません。</div>
+  <div class="row" style="margin-top:8px">
+    <div><label class="f">実測補正 ex（任意）</label><input type="number" id="pExm" step="0.1" placeholder="現物の実測" oninput="calc()"></div>
+    <div><label class="f">実測補正 ey（任意）</label><input type="number" id="pEym" step="0.1" placeholder="現物の実測" oninput="calc()"></div>
+  </div>
+  <div class="hint">現物の基準点（けがき交点や基準穴）を端面からコンベックスで実測して入れると、以降の全穴の読みが<b>現物基準</b>に置き換わります。端面の仕上がり誤差をここで吸収できます。</div>
+</div>
+
+<div class="card">
+  <h2>穴の入力<span class="tag" id="hCount">0 穴</span></h2>
+  <div class="banner">図面の指示のまま入れてください。角度は<b>基準線方向が 0°・反時計回りが＋</b>です。連鎖（穴から角度）の穴は、参照する穴より後に追加してください。</div>
+  <div id="holeBox"></div>
+  <div class="btnrow">
+    <button class="btn primary sm" onclick="addHole('xy')">＋ 基準からXY</button>
+    <button class="btn sm" onclick="addHole('pol')">＋ 基準から r・θ</button>
+    <button class="btn sm" onclick="addHole('chn')">＋ 穴から連鎖</button>
+  </div>
+</div>
+
+<div class="card">
+  <h2>図<span class="tag">タップで選択と連動</span></h2>
+  <figure><svg id="fig" viewBox="0 0 300 220" role="img" aria-label="板と穴位置の平面図"></svg><figcaption>平 面 図（下端・左端が原点）</figcaption></figure>
+</div>
+
+<div class="card">
+  <h2>端面からの読み<span class="tag">単位 mm</span></h2>
+  <div class="banner on" id="mBanner" style="display:none">端面実測補正 適用中：現物の基準点位置で換算しています</div>
+  <div class="tblwrap">
+    <table>
+      <thead><tr><th>穴</th><th>左から</th><th>下から</th><th>右から</th><th>上から</th></tr></thead>
+      <tbody id="outBody"></tbody>
+    </table>
+  </div>
+  <div class="hint">行をタップすると下の表示器と図に反映されます。板の外に出る値は赤で表示します（入力ミスの検出に）。</div>
+
+  <div class="dro" style="margin-top:10px">
+    <div class="pair" id="dName">—</div>
+    <div class="lbl">左端から ／ 下端から</div>
+    <div class="big"><span id="dL">-</span><span class="u">／</span><span id="dB">-</span><span class="u">mm</span></div>
+    <div class="sub">
+      <div><div class="k">右端から</div><div class="v" id="dR">-</div></div>
+      <div><div class="k">上端から</div><div class="v" id="dT">-</div></div>
+    </div>
+    <div class="sub">
+      <div><div class="k">基準X</div><div class="v" id="dX">-</div></div>
+      <div><div class="k">基準Y</div><div class="v" id="dY">-</div></div>
+    </div>
+    <div class="sub" id="rimRow" style="display:none">
+      <div><div class="k">左→縁読み（手前/奥）</div><div class="v" id="dRimL">-</div></div>
+      <div><div class="k">下→縁読み（手前/奥）</div><div class="v" id="dRimB">-</div></div>
+    </div>
+  </div>
+  <div class="btnrow noprint" style="margin-top:10px">
+    <button class="btn primary" onclick="addRec()">選択中の穴を記録表へ</button>
+  </div>
+</div>
+
+<div class="card">
+  <h2>記録表<span class="tag">印刷 → PDF 保存</span></h2>
+  <div class="row noprint">
+    <div><label class="f">部品名</label><input type="text" id="recName" placeholder="—" oninput="persist()"></div>
+    <div><label class="f">検査日</label><input type="date" id="recDate" oninput="persist()"></div>
+  </div>
+  <div class="row noprint">
+    <div><label class="f">検査者</label><input type="text" id="recBy" placeholder="—" oninput="persist()"></div>
+    <div><label class="f">公差 ±</label><input type="number" id="recTol" value="1.0" step="0.1" oninput="renderRec();persist()"></div>
+  </div>
+  <div class="print-only" id="recHead" style="font-size:12px;margin-bottom:8px"></div>
+  <div class="tblwrap">
+    <table>
+      <thead><tr><th>穴</th><th>理論 左/下</th><th>実測 左</th><th>実測 下</th><th>差</th><th>判定</th></tr></thead>
+      <tbody id="recBody"></tbody>
+    </table>
+  </div>
+  <div class="btnrow noprint" style="margin-top:10px">
+    <button class="btn" onclick="window.print()">印刷 / PDF</button>
+    <button class="btn warn sm" onclick="wipe()">保存データを消去</button>
+  </div>
+</div>
+
+<div class="card noprint">
+  <details>
+    <summary>測定時の留意点</summary>
+    <ul>
+      <li>コンベックスの読みは<b>穴の中心を狙わず、縁で読んで</b>ください。穴径を入れておけば「手前縁／奥縁」の理論読みが表示器に出ます。</li>
+      <li>合否を見るときは、基準点（けがき交点・基準穴）も同じ端面から実測し、<b>実測補正</b>に入れてください。端面の切断誤差・直角度が読みから相殺されます。</li>
+      <li>コンベックスの爪は引っかけ測定と突き当て測定でガタの分だけ動く構造です。測り始めに定規等で読み合わせを。JIS 1級で許容差は約 ±(0.2＋0.1×測定長m) mm です。</li>
+      <li>連鎖の「相対角」は、参照穴に入ってくる線（親の穴 → 参照穴）を 0° とします。親を持たない穴を参照した場合は、基準点 → 参照穴 の向きが 0° です。</li>
+      <li>基準線が端面に対して振れている図面（φ≠0）では、端面からの読みは基準座標と一致しません。この画面の換算値をそのまま使ってください。</li>
+      <li>大板は温度で伸びます（鋼 1 K あたり約 11.8 µm/m）。コンベックス精度の範囲では通常無視できますが、精密判定は測定機で行ってください。</li>
+    </ul>
+  </details>
+</div>
+
+<footer>
+  検査ミニポータル｜計算はすべてこの端末の中で行われます。入力値は端末のブラウザ内にのみ保存され、消去ボタンで完全に削除できます。
+</footer>
+</div>
+
+<script>
+"use strict";
+var RAD=Math.PI/180;
+function g(id){ return document.getElementById(id); }
+function n(id){ var v=parseFloat(g(id).value); return isFinite(v)? v : NaN; }
+function f1(v){ return isFinite(v)? v.toFixed(1) : "-"; }
+
+/* 状態: holes[i] = {mode:'xy'|'pol'|'chn', X,Y, r,th, ref,d,ca,cref:'abs'|'rel', dia} */
+var S={holes:[], sel:-1, rec:[]};
+
+/* ═══ 穴エディタ ═══ */
+function addHole(mode){
+  if(S.holes.length>=15){ alert("穴は 15 までです。"); return; }
+  S.holes.push({mode:mode, X:0,Y:0, r:0,th:0, ref:-1,d:0,ca:0,cref:"abs", dia:NaN});
+  S.sel=S.holes.length-1;
+  renderHoles(); calc(); persist();
+}
+function delHole(i){
+  S.holes.splice(i,1);
+  for(var j=0;j<S.holes.length;j++){
+    var h=S.holes[j];
+    if(h.mode==="chn"){
+      if(h.ref===i) h.ref=-1;
+      else if(h.ref>i) h.ref--;
+    }
+  }
+  if(S.sel>=S.holes.length) S.sel=S.holes.length-1;
+  renderHoles(); calc(); persist();
+}
+function upd(i,k,el){
+  var v=el.value;
+  if(k==="mode"||k==="cref"){ S.holes[i][k]=v; if(k==="mode"){renderHoles();} }
+  else if(k==="ref"){ S.holes[i].ref=parseInt(v,10); }
+  else S.holes[i][k]=parseFloat(v);
+  calc(); persist();
+}
+function refOpts(i,cur){
+  var h='';
+  for(var k=0;k<i;k++) h+='<option value="'+k+'"'+(k===cur?' selected':'')+'>H'+(k+1)+'</option>';
+  if(i===0) h='<option value="-1">（先に穴を追加）</option>';
+  else if(cur<0) h='<option value="-1" selected>選択</option>'+h;
+  return h;
+}
+function renderHoles(){
+  var box=g("holeBox"), h="";
+  g("hCount").textContent=S.holes.length+" 穴";
+  S.holes.forEach(function(o,i){
+    var mo=function(v,l){ return '<option value="'+v+'"'+(o.mode===v?' selected':'')+'>'+l+'</option>'; };
+    h+='<div class="hole"><div class="hd"><span class="nm">H'+(i+1)+'</span>'
+      +'<select onchange="upd('+i+',\'mode\',this)">'+mo('xy','基準からXY')+mo('pol','基準から r・θ')+mo('chn','穴から連鎖')+'</select>'
+      +'<button class="xbtn" onclick="delHole('+i+')" aria-label="H'+(i+1)+'を削除">×</button></div>';
+    if(o.mode==="xy"){
+      h+='<div class="row"><div><label class="f">基準からX</label><input type="number" step="0.1" value="'+(isFinite(o.X)?o.X:"")+'" oninput="upd('+i+',\'X\',this)"></div>'
+        +'<div><label class="f">基準からY</label><input type="number" step="0.1" value="'+(isFinite(o.Y)?o.Y:"")+'" oninput="upd('+i+',\'Y\',this)"></div>'
+        +'<div><label class="f">穴径（任意）</label><input type="number" step="0.1" value="'+(isFinite(o.dia)?o.dia:"")+'" oninput="upd('+i+',\'dia\',this)"></div></div>';
+    } else if(o.mode==="pol"){
+      h+='<div class="row"><div><label class="f">距離 r</label><input type="number" step="0.1" value="'+(isFinite(o.r)?o.r:"")+'" oninput="upd('+i+',\'r\',this)"></div>'
+        +'<div><label class="f">角度 θ（°）</label><input type="number" step="0.1" value="'+(isFinite(o.th)?o.th:"")+'" oninput="upd('+i+',\'th\',this)"></div>'
+        +'<div><label class="f">穴径（任意）</label><input type="number" step="0.1" value="'+(isFinite(o.dia)?o.dia:"")+'" oninput="upd('+i+',\'dia\',this)"></div></div>';
+    } else {
+      var co=function(v,l){ return '<option value="'+v+'"'+(o.cref===v?' selected':'')+'>'+l+'</option>'; };
+      h+='<div class="row"><div><label class="f">参照穴</label><select onchange="upd('+i+',\'ref\',this)">'+refOpts(i,o.ref)+'</select></div>'
+        +'<div><label class="f">距離 d</label><input type="number" step="0.1" value="'+(isFinite(o.d)?o.d:"")+'" oninput="upd('+i+',\'d\',this)"></div>'
+        +'<div><label class="f">角度 θ（°）</label><input type="number" step="0.1" value="'+(isFinite(o.ca)?o.ca:"")+'" oninput="upd('+i+',\'ca\',this)"></div></div>'
+        +'<div class="row"><div style="flex:2"><label class="f">角度の基準</label><select onchange="upd('+i+',\'cref\',this)">'+co('abs','基準線から（絶対角）')+co('rel','前の線から（相対角）')+'</select></div>'
+        +'<div><label class="f">穴径（任意）</label><input type="number" step="0.1" value="'+(isFinite(o.dia)?o.dia:"")+'" oninput="upd('+i+',\'dia\',this)"></div></div>';
+    }
+    h+='<div class="err" id="hErr'+i+'" style="display:none"></div></div>';
+  });
+  if(!S.holes.length) h='<div class="hint" style="padding:6px 2px 10px">下のボタンから穴を追加してください。図面の指示形式に合わせて選べます。</div>';
+  box.innerHTML=h;
+}
+
+/* ═══ 解決: 基準座標 → 端面座標 ═══ */
+function resolve(){
+  var out=[];
+  S.holes.forEach(function(h,i){
+    var P=null, parent=-1, err="";
+    if(h.mode==="xy"){
+      if(isFinite(h.X)&&isFinite(h.Y)) P={x:h.X,y:h.Y};
+      else err="X・Y を入れてください";
+    } else if(h.mode==="pol"){
+      if(isFinite(h.r)&&isFinite(h.th)) P={x:h.r*Math.cos(h.th*RAD), y:h.r*Math.sin(h.th*RAD)};
+      else err="r・θ を入れてください";
+    } else {
+      var k=h.ref;
+      if(!(k>=0 && k<i && out[k] && out[k].P)) err="参照穴が正しくありません";
+      else if(!(isFinite(h.d)&&isFinite(h.ca))) err="d・θ を入れてください";
+      else{
+        var base=out[k].P, head;
+        if(h.cref==="rel"){
+          var vx,vy;
+          if(out[k].parent>=0 && out[out[k].parent] && out[out[k].parent].P){
+            vx=base.x-out[out[k].parent].P.x; vy=base.y-out[out[k].parent].P.y;
+          } else { vx=base.x; vy=base.y; }             // 基準点→参照穴
+          if(vx===0&&vy===0){ err="相対角の向きが定まりません（参照穴が基準点上）"; }
+          else head=Math.atan2(vy,vx)+h.ca*RAD;
+        } else head=h.ca*RAD;
+        if(!err){ P={x:base.x+h.d*Math.cos(head), y:base.y+h.d*Math.sin(head)}; parent=k; }
+      }
+    }
+    out.push({P:P, parent:parent, err:err, dia:h.dia});
+  });
+  return out;
+}
+function plate(){
+  var exm=n("pExm"), eym=n("pEym");
+  var mAdj = isFinite(exm)||isFinite(eym);
+  return {
+    L:n("pL"), W:n("pW"), phi:(isFinite(n("pPhi"))?n("pPhi"):0)*RAD,
+    ex: isFinite(exm)? exm : n("pEx"),
+    ey: isFinite(eym)? eym : n("pEy"),
+    exNom:n("pEx"), eyNom:n("pEy"), mAdj:mAdj
+  };
+}
+function toEdge(P,pl){
+  var c=Math.cos(pl.phi), s=Math.sin(pl.phi);
+  return { x: pl.ex + P.x*c - P.y*s, y: pl.ey + P.x*s + P.y*c };
+}
+
+/* ═══ 計算・表示 ═══ */
+var R=[];           // R[i] = {E:{x,y}|null, err, dia, parent}
+function calc(){
+  var pl=plate(), res=resolve();
+  R=res.map(function(o){
+    var E=(o.P && isFinite(pl.ex)&&isFinite(pl.ey))? toEdge(o.P,pl) : null;
+    return {P:o.P, E:E, err:o.err, dia:o.dia, parent:o.parent};
+  });
+  S.holes.forEach(function(h,i){
+    var e=g("hErr"+i); if(!e) return;
+    e.textContent=R[i].err; e.style.display=R[i].err? "":"none";
+  });
+  g("mBanner").style.display = pl.mAdj? "":"none";
+
+  var tb=g("outBody"), h="";
+  R.forEach(function(o,i){
+    if(!o.E){ h+='<tr data-i="'+i+'"><td>H'+(i+1)+'</td><td colspan="4" style="text-align:center;color:#8FA2AF">'+(o.err||"—")+'</td></tr>'; return; }
+    var l=o.E.x, b=o.E.y, r=pl.L-o.E.x, t=pl.W-o.E.y;
+    var c=function(v){ return '<td class="'+((v<0||!isFinite(v))?'ng':'')+'">'+f1(v)+'</td>'; };
+    h+='<tr data-i="'+i+'" aria-selected="'+(S.sel===i?"true":"false")+'"><td>H'+(i+1)+'</td>'+c(l)+c(b)+c(r)+c(t)+'</tr>';
+  });
+  if(!R.length) h='<tr><td colspan="5" style="text-align:center;color:#8FA2AF;font-family:inherit;padding:12px">穴を追加すると読みが出ます</td></tr>';
+  tb.innerHTML=h;
+
+  renderDRO(pl); drawFig(pl); renderRec();
+}
+document.addEventListener("click",function(e){
+  var tr=e.target.closest? e.target.closest("#outBody tr[data-i]"):null;
+  if(!tr) return;
+  S.sel=parseInt(tr.getAttribute("data-i"),10);
+  calc(); persist();
+});
+
+function renderDRO(pl){
+  var o=(S.sel>=0)? R[S.sel] : null;
+  if(!o||!o.E){
+    g("dName").textContent="—";
+    ["dL","dB","dR","dT","dX","dY"].forEach(function(i){g(i).textContent="-";});
+    g("rimRow").style.display="none"; return;
+  }
+  g("dName").textContent="H"+(S.sel+1);
+  g("dL").textContent=f1(o.E.x); g("dB").textContent=f1(o.E.y);
+  g("dR").textContent=f1(pl.L-o.E.x); g("dT").textContent=f1(pl.W-o.E.y);
+  g("dX").textContent=f1(o.P.x); g("dY").textContent=f1(o.P.y);
+  if(isFinite(o.dia)&&o.dia>0){
+    var r=o.dia/2;
+    g("dRimL").textContent=f1(o.E.x-r)+" / "+f1(o.E.x+r);
+    g("dRimB").textContent=f1(o.E.y-r)+" / "+f1(o.E.y+r);
+    g("rimRow").style.display="";
+  } else g("rimRow").style.display="none";
+}
+
+function drawFig(pl){
+  var svg=g("fig");
+  if(!(pl.L>0&&pl.W>0)){ svg.innerHTML=""; return; }
+  var Wv=300,Hv=220,pad=22;
+  var s=Math.min((Wv-2*pad)/pl.L,(Hv-2*pad)/pl.W);
+  var ox=(Wv-pl.L*s)/2, oy=(Hv-pl.W*s)/2;
+  function M(x,y){ return [ox+x*s, Hv-oy-y*s]; }
+  var p0=M(0,pl.W), h="";
+  h+='<defs><clipPath id="pc"><rect x="'+p0[0].toFixed(1)+'" y="'+p0[1].toFixed(1)+'" width="'+(pl.L*s).toFixed(1)+'" height="'+(pl.W*s).toFixed(1)+'"/></clipPath></defs>';
+  h+='<rect x="'+p0[0].toFixed(1)+'" y="'+p0[1].toFixed(1)+'" width="'+(pl.L*s).toFixed(1)+'" height="'+(pl.W*s).toFixed(1)+'" fill="#fff" stroke="#1F3341" stroke-width="1.8"/>';
+  if(isFinite(pl.ex)&&isFinite(pl.ey)){
+    var dp=M(pl.ex,pl.ey);
+    var dl=pl.L+pl.W;
+    var a=M(pl.ex-dl*Math.cos(pl.phi), pl.ey-dl*Math.sin(pl.phi));
+    var b=M(pl.ex+dl*Math.cos(pl.phi), pl.ey+dl*Math.sin(pl.phi));
+    h+='<line x1="'+a[0].toFixed(1)+'" y1="'+a[1].toFixed(1)+'" x2="'+b[0].toFixed(1)+'" y2="'+b[1].toFixed(1)+'" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="6 2 1.5 2" clip-path="url(#pc)"/>';
+    h+='<line x1="'+(dp[0]-6)+'" y1="'+dp[1].toFixed(1)+'" x2="'+(dp[0]+6)+'" y2="'+dp[1].toFixed(1)+'" stroke="#1F3341" stroke-width="1.6"/>';
+    h+='<line x1="'+dp[0].toFixed(1)+'" y1="'+(dp[1]-6)+'" x2="'+dp[0].toFixed(1)+'" y2="'+(dp[1]+6)+'" stroke="#1F3341" stroke-width="1.6"/>';
+    h+='<circle cx="'+dp[0].toFixed(1)+'" cy="'+dp[1].toFixed(1)+'" r="3" fill="none" stroke="#1F3341" stroke-width="1.2"/>';
+  }
+  R.forEach(function(o,i){
+    if(!o.E) return;
+    if(o.parent>=0 && R[o.parent] && R[o.parent].E){
+      var pa=M(R[o.parent].E.x,R[o.parent].E.y), pb=M(o.E.x,o.E.y);
+      h+='<line x1="'+pa[0].toFixed(1)+'" y1="'+pa[1].toFixed(1)+'" x2="'+pb[0].toFixed(1)+'" y2="'+pb[1].toFixed(1)+'" stroke="#C9D3DA" stroke-width="1" stroke-dasharray="3 2"/>';
+    }
+  });
+  R.forEach(function(o,i){
+    if(!o.E) return;
+    var q=M(o.E.x,o.E.y);
+    var rr=(isFinite(o.dia)&&o.dia>0)? Math.max(2.5,Math.min(8,o.dia/2*s)) : 3;
+    var sel=(i===S.sel);
+    h+='<circle cx="'+q[0].toFixed(1)+'" cy="'+q[1].toFixed(1)+'" r="'+rr.toFixed(1)+'" fill="'+(sel?"#D63426":"#fff")+'" stroke="'+(sel?"#D63426":"#1F3341")+'" stroke-width="1.4"/>';
+    h+='<text x="'+(q[0]+rr+3).toFixed(1)+'" y="'+(q[1]-3).toFixed(1)+'" font-size="9" fill="'+(sel?"#D63426":"#5B707E")+'" font-family="monospace">H'+(i+1)+'</text>';
+    if(sel){
+      var eL=M(0,o.E.y), eB=M(o.E.x,0);
+      h+='<line x1="'+eL[0].toFixed(1)+'" y1="'+eL[1].toFixed(1)+'" x2="'+q[0].toFixed(1)+'" y2="'+q[1].toFixed(1)+'" stroke="#D63426" stroke-width="1.3"/>';
+      h+='<line x1="'+q[0].toFixed(1)+'" y1="'+q[1].toFixed(1)+'" x2="'+eB[0].toFixed(1)+'" y2="'+eB[1].toFixed(1)+'" stroke="#D63426" stroke-width="1.3"/>';
+      h+='<text x="'+((eL[0]+q[0])/2).toFixed(1)+'" y="'+(q[1]-4).toFixed(1)+'" font-size="9" fill="#D63426" text-anchor="middle" font-family="monospace" stroke="#fff" stroke-width="3" paint-order="stroke">'+f1(o.E.x)+'</text>';
+      h+='<text x="'+(q[0]+4).toFixed(1)+'" y="'+((eB[1]+q[1])/2).toFixed(1)+'" font-size="9" fill="#D63426" font-family="monospace" stroke="#fff" stroke-width="3" paint-order="stroke">'+f1(o.E.y)+'</text>';
+    }
+  });
+  svg.innerHTML=h;
+}
+
+/* ═══ 記録表 ═══ */
+function addRec(){
+  if(!(S.sel>=0 && R[S.sel] && R[S.sel].E)){ alert("読みの表から穴を1つ選んでください。"); return; }
+  var nm="H"+(S.sel+1);
+  if(S.rec.some(function(r){return r.nm===nm;})){ return; }
+  S.rec.push({nm:nm, ml:"", mb:""});
+  renderRec(); persist();
+}
+function delRec(i){ S.rec.splice(i,1); renderRec(); persist(); }
+function editRec(i,k,el){ S.rec[i][k]=el.value; renderRec(); persist(); }
+function renderRec(){
+  var tb=g("recBody"), tol=n("recTol"), h="";
+  S.rec.forEach(function(r,i){
+    var idx=parseInt(r.nm.substring(1),10)-1;
+    var o=(idx>=0&&R[idx])? R[idx] : null;
+    var tl=(o&&o.E)? o.E.x:NaN, tb2=(o&&o.E)? o.E.y:NaN;
+    var ml=parseFloat(r.ml), mb=parseFloat(r.mb);
+    var dl=(isFinite(ml)&&isFinite(tl))? ml-tl:NaN, db=(isFinite(mb)&&isFinite(tb2))? mb-tb2:NaN;
+    var dmax=Math.max(Math.abs(isFinite(dl)?dl:0), Math.abs(isFinite(db)?db:0));
+    var has=isFinite(dl)||isFinite(db);
+    var jd="—", cls="";
+    if(has&&isFinite(tol)){ var ok=dmax<=tol; jd=ok?"合":"否"; cls=ok?"ok":"ngt"; }
+    var dTxt=(isFinite(dl)?(dl>0?"+":"")+dl.toFixed(1):"—")+" / "+(isFinite(db)?(db>0?"+":"")+db.toFixed(1):"—");
+    h+='<tr><td>'+r.nm+' <button class="xbtn noprint" style="width:20px;height:20px;font-size:11px" onclick="delRec('+i+')" aria-label="削除">×</button></td>'
+      +'<td>'+f1(tl)+' / '+f1(tb2)+'</td>'
+      +'<td><input type="number" step="0.5" value="'+r.ml+'" oninput="editRec('+i+',\'ml\',this)" style="width:62px"></td>'
+      +'<td><input type="number" step="0.5" value="'+r.mb+'" oninput="editRec('+i+',\'mb\',this)" style="width:62px"></td>'
+      +'<td>'+dTxt+'</td><td class="'+cls+'">'+jd+'</td></tr>';
+  });
+  if(!S.rec.length) h='<tr><td colspan="6" style="text-align:center;color:#8FA2AF;font-family:inherit;padding:12px">穴を選んで「記録表へ」</td></tr>';
+  tb.innerHTML=h;
+  g("recHead").innerHTML="部品名："+(g("recName").value||"—")+"　／　検査日："+(g("recDate").value||"—")+"　／　検査者："+(g("recBy").value||"—")+"　／　公差 ±"+(isFinite(tol)?tol:"—")+" mm";
+}
+
+/* ═══ 保存 ═══ */
+var KEY="datumedge_v1";
+var IDS=["pL","pW","pEx","pEy","pPhi","pExm","pEym","recName","recDate","recBy","recTol"];
+function persist(){
+  try{
+    var o={holes:S.holes, sel:S.sel, rec:S.rec, v:{}};
+    IDS.forEach(function(i){ o.v[i]=g(i).value; });
+    localStorage.setItem(KEY, JSON.stringify(o));
+  }catch(e){}
+}
+function restore(){
+  try{
+    var o=JSON.parse(localStorage.getItem(KEY)||"null"); if(!o) return;
+    S.holes=o.holes||[]; S.sel=(typeof o.sel==="number")?o.sel:-1; S.rec=o.rec||[];
+    if(o.v) IDS.forEach(function(i){ if(o.v[i]!=null&&o.v[i]!=="") g(i).value=o.v[i]; });
+  }catch(e){}
+}
+function wipe(){
+  if(!confirm("この端末に保存された入力・記録をすべて消します。よろしいですか？")) return;
+  try{ localStorage.removeItem(KEY); }catch(e){}
+  S.holes=[]; S.sel=-1; S.rec=[];
+  renderHoles(); calc();
+}
+
+/* ═══ 起動 ═══ */
+restore();
+if(!g("recDate").value){
+  var dt=new Date();
+  g("recDate").value=dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0")+"-"+String(dt.getDate()).padStart(2,"0");
+}
+renderHoles(); calc();
+</script>
+</body>
+</html>

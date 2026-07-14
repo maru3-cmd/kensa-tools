@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#1F3341">
 <meta name="description" content="現場のための検査計算・記録ツール集。穴ピッチ・PCD・公差判定・またぎ歯厚・数取りなど。すべて端末内で計算され、入力値はどこにも送信されません。">
+<link rel="manifest" href="./manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="検査ツール">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
 <title>検査ミニポータル | 検査計算ツール</title>
 <style>
   :root{
@@ -112,7 +119,7 @@
         現場のための計算・記録ツール集。すべての計算はこの端末の中で行われ、入力値がネットに送信されることはありません。
       </div>
       <div class="strip">
-        <div><b>構成</b> 26ツール</div>
+        <div><b>構成</b> 28ツール</div>
         <div><b>通信</b> なし(端末内計算)</div>
         <div>REV 2026-07</div>
       </div>
@@ -289,6 +296,40 @@
       <span class="no">TOOL-26</span>
       <div class="nm">軸の傾き</div>
       <div class="ds">検査棒の2点読みから角度・勾配・直角度判定。すき間ロッキングの有効性判定つき</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  <a class="tool" href="datum-edge/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <rect x="5" y="9" width="34" height="26" fill="#fff" stroke="#1F3341" stroke-width="1.5"/>
+      <line x1="7" y1="26" x2="37" y2="18" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="5 2 1.5 2"/>
+      <line x1="18" y1="22" x2="26" y2="22" stroke="#1F3341" stroke-width="1.5"/>
+      <line x1="22" y1="18" x2="22" y2="26" stroke="#1F3341" stroke-width="1.5"/>
+      <circle cx="31" cy="14" r="3" fill="#fff" stroke="#1F3341" stroke-width="1.4"/>
+      <line x1="5" y1="14" x2="28" y2="14" stroke="#D63426" stroke-width="1.7"/>
+      <line x1="31" y1="35" x2="31" y2="17" stroke="#D63426" stroke-width="1.2" stroke-dasharray="3 2"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-27</span>
+      <div class="nm">端面からの穴位置</div>
+      <div class="ds">基準点・基準線の図面指示を端面からの読みに換算。穴から角度の連鎖対応</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  <a class="tool" href="pitch-row/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <path d="M 9 12 V 32 M 9 32 l -3 4 M 9 27 l -3 4" stroke="#1F3341" stroke-width="1.5" fill="none"/>
+      <line x1="9" y1="22" x2="38" y2="22" stroke="#8FA2AF" stroke-width="1"/>
+      <circle cx="16" cy="22" r="2.4" fill="#fff" stroke="#1F3341" stroke-width="1.3"/>
+      <circle cx="25" cy="22" r="2.4" fill="#fff" stroke="#1F3341" stroke-width="1.3"/>
+      <circle cx="35" cy="22" r="2.4" fill="#D63426" stroke="#D63426" stroke-width="1.3"/>
+      <path d="M 16 30 H 25 M 16 30 l 3 -1.5 v 3 z M 25 30 l -3 -1.5 v 3 z" stroke="#D63426" stroke-width="1" fill="#D63426"/>
+      <path d="M 25 34 H 35 M 25 34 l 3 -1.5 v 3 z M 35 34 l -3 -1.5 v 3 z" stroke="#D63426" stroke-width="1" fill="#D63426"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-28</span>
+      <div class="nm">並び寸法ピッチ</div>
+      <div class="ds">端面からの並び寸法を入れると隣接ピッチ・任意2穴間・等ピッチのズレを一括計算</div>
     </span>
     <span class="chev">›</span>
   </a>
@@ -596,7 +637,9 @@
     'scale-count/':'はかり 数取器 単重 個数 計数 秤',
     'frame-check/':'フレーム 削り代 溶接 対角 ねじれ 検査成績書 前加工',
     'corner-dist/':'角 かど 対角 直方体 箱物 角物 隅切り 面取り 切欠き ノッチ L字 凹み 頂点 座標 空間対角 対角差 直角度 立方体',
-    'axis-tilt/':'傾き 傾斜 軸 検査棒 テストピース 芯 直角度 直角 スコヤ ダイヤルゲージ 2点読み 定盤 ガタ すき間 ロッキング 首振り 反転法 勾配 mm/m 度分秒 デジタル傾斜計 てこ式'
+    'axis-tilt/':'傾き 傾斜 軸 検査棒 テストピース 芯 直角度 直角 スコヤ ダイヤルゲージ 2点読み 定盤 ガタ すき間 ロッキング 首振り 反転法 勾配 mm/m 度分秒 デジタル傾斜計 てこ式',
+    'datum-edge/':'基準点 基準線 データム 端面 平板 大板 板 コンベックス スケール メジャー 換算 連鎖 極座標 けがき 罫書き 墨出し 左端 下端 縁読み 座標変換',
+    'pitch-row/':'ピッチ 穴間 並び 並び寸法 累進 累積 逐次 端面 端面から 間隔 等ピッチ 等間隔 穴ピッチ 引き算 差 コンベックス スケール 連続寸法'
   };
   var FAVKEY='kensa-fav';
 
@@ -700,6 +743,47 @@
   qInput.addEventListener('input',applyFilter);
 
   renderFav();
+})();
+</script>
+
+<!-- オフライン対応（Service Worker）: 一度オンラインで開くと全ツールが端末に保存され、以降は機内モードでも動作します -->
+<div id="offlineNote" style="display:none;position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));max-width:456px;margin:0 auto;background:#1F3341;color:#fff;font-size:12.5px;line-height:1.6;padding:10px 12px;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.25);z-index:9999">
+  <span id="offlineNoteMsg"></span>
+  <button onclick="document.getElementById('offlineNote').style.display='none'" style="float:right;background:none;border:none;color:#9FB0B8;font-size:16px;line-height:1;cursor:pointer;padding:0 0 0 8px">×</button>
+</div>
+<script>
+(function(){
+  function toast(msg){
+    var n=document.getElementById('offlineNote');
+    document.getElementById('offlineNoteMsg').textContent=msg;
+    n.style.display='block';
+    setTimeout(function(){ n.style.display='none'; }, 6000);
+  }
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('./sw.js').then(function(reg){
+        // 初回インストール完了の検知
+        if(reg.installing || reg.waiting){
+          var sw=reg.installing||reg.waiting;
+          sw.addEventListener('statechange', function(){
+            if(sw.state==='activated' && !navigator.serviceWorker.controller){
+              toast('オフライン準備が完了しました。機内モードでも全ツールが使えます。');
+            }
+          });
+        }
+        // 新バージョン検知（CACHE番号を上げて再アップロードしたとき）
+        reg.addEventListener('updatefound', function(){
+          var nw=reg.installing;
+          if(!nw) return;
+          nw.addEventListener('statechange', function(){
+            if(nw.state==='installed' && navigator.serviceWorker.controller){
+              toast('新しいバージョンを取得しました。次に開いたときに反映されます。');
+            }
+          });
+        });
+      }).catch(function(){ /* 登録不可時は通常動作 */ });
+    });
+  }
 })();
 </script>
 </body>
