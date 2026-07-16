@@ -2,24 +2,22 @@
  * オフライン専用機向け：全ツールを事前キャッシュし、キャッシュ優先で即表示。
  * 更新時は下の CACHE のバージョン(v1→v2…)を上げるだけ。古いキャッシュは自動削除。
  */
-var CACHE = "kensa-tools-v1";
+var CACHE = "kensa-tools-v8";
+
+/* プリキャッシュで取りこぼしたURLの記録先。ページからの診断に使う（外部通信はしない） */
+var FAILKEY = "./__precache_failed";
 
 var PRECACHE = [
   "./",
-  "./index.html",
-  "./manifest.json",
-  "./icon-192.png",
-  "./icon-512.png",
-  "./icon-512-maskable.png",
-  "./apple-touch-icon.png",
   "./angle-dim/",
   "./angle-dim/index.html",
+  "./apple-touch-icon.png",
   "./axis-tilt/",
   "./axis-tilt/index.html",
-  "./bend-guide/",
-  "./bend-guide/index.html",
   "./bend-guide-3d/",
   "./bend-guide-3d/index.html",
+  "./bend-guide/",
+  "./bend-guide/index.html",
   "./cam-profile/",
   "./cam-profile/index.html",
   "./chord-r/",
@@ -38,10 +36,17 @@ var PRECACHE = [
   "./hardness/index.html",
   "./hole-builder/",
   "./hole-builder/index.html",
+  "./icon-192.png",
+  "./icon-512-maskable.png",
+  "./icon-512.png",
+  "./index.html",
+  "./manifest.json",
   "./multi-hole/",
   "./multi-hole/index.html",
   "./over-pin/",
   "./over-pin/index.html",
+  "./pcd-multi/",
+  "./pcd-multi/index.html",
   "./pcd-pitch/",
   "./pcd-pitch/index.html",
   "./phase-shift/",
@@ -73,11 +78,34 @@ var PRECACHE = [
 self.addEventListener("install", function(e){
   e.waitUntil(
     caches.open(CACHE).then(function(c){
-      // 1件失敗で全体を巻き込まないよう個別に投入
+      // 1件失敗で全体を巻き込まないよう個別に投入。ただし失敗は握り潰さず記録する
+      var failed = [];
       return Promise.all(PRECACHE.map(function(u){
-        return c.add(new Request(u, {cache:"reload"})).catch(function(){ /* 取得不可はスキップ */ });
-      }));
+        return c.add(new Request(u, {cache:"reload"})).catch(function(){ failed.push(u); });
+      })).then(function(){
+        return c.put(FAILKEY, new Response(JSON.stringify(failed), {
+          headers:{"Content-Type":"application/json"}
+        }));
+      });
     }).then(function(){ return self.skipWaiting(); })
+  );
+});
+
+/* ページからの「ちゃんと保存できているか」の問い合わせに答える */
+self.addEventListener("message", function(e){
+  if(!e.data || e.data.type !== "STATUS") return;
+  e.waitUntil(
+    caches.open(CACHE).then(function(c){
+      return Promise.all([c.keys(), c.match(FAILKEY)]).then(function(r){
+        var keys = r[0], fr = r[1];
+        var saved = keys.filter(function(rq){ return rq.url.indexOf("__precache_failed") < 0; }).length;
+        return (fr ? fr.json() : Promise.resolve(null)).then(function(failed){
+          var msg = {type:"STATUS", cache:CACHE, saved:saved, total:PRECACHE.length, failed:failed || []};
+          if(e.ports && e.ports[0]) e.ports[0].postMessage(msg);
+          else if(e.source) e.source.postMessage(msg);
+        });
+      });
+    })
   );
 });
 

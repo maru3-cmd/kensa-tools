@@ -84,6 +84,12 @@
 
   details.dtl{background:var(--sheet);border:1px solid #D5DDE2;border-radius:12px;padding:10px 12px;margin-top:10px}
   details.dtl summary{font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.06em}
+  .orgBox{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:8px}
+  .orgLb{font-size:11px;color:#5B707E;font-weight:700}
+  .orgBox select,.orgBox input{padding:6px 7px;font:inherit;font-size:13px;border:1px solid var(--line);border-radius:6px;background:#FBFCFC;color:var(--ink);min-width:0}
+  .orgBox input{width:74px}
+  .orgNow{font-size:11px;font-weight:700;color:#42565F;margin-top:6px}
+  .orgNote{font-size:10.5px;color:#7A8C97;line-height:1.6;margin-top:8px}
   table.dt{width:100%;border-collapse:collapse;margin-top:8px;font-size:12.5px;font-variant-numeric:tabular-nums}
   table.dt th{font-size:10px;color:#5B707E;text-align:right;padding:3px 6px;border-bottom:1px solid var(--ink)}
   table.dt th:first-child{text-align:left}
@@ -171,8 +177,22 @@
   </div>
 
   <details class="dtl">
-    <summary>▼ 全穴の絶対座標(基準=P1/中心A)</summary>
+    <summary>▼ 全穴の座標(加工用・検査では通常不要)</summary>
+    <div class="orgBox">
+      <span class="orgLb">原点</span>
+      <select id="orgKind">
+        <option value="def">既定(P1／中心A)</option>
+        <option value="hole">穴を原点に</option>
+        <option value="xy">指定した点</option>
+      </select>
+      <select id="orgHole" style="display:none"></select>
+      <input id="orgX" type="text" inputmode="decimal" autocomplete="off" placeholder="X" style="display:none">
+      <input id="orgY" type="text" inputmode="decimal" autocomplete="off" placeholder="Y" style="display:none">
+    </div>
+    <div class="orgNow" id="orgNow"></div>
     <table class="dt"><thead><tr><th>穴</th><th>X</th><th>Y</th></tr></thead><tbody id="coBody"></tbody></table>
+    <div class="orgNote">原点を変えても穴間の距離・ΔX・ΔY は変わりません(平行移動のため)。検査の判定には影響しません。<br>
+      値は入力から計算した理論値です。加工に使う場合も<b>図面が正</b>で、この画面は控えとして扱ってください。</div>
   </details>
 
   <footer>
@@ -350,13 +370,43 @@
     });
   }
 
+  /* 座標表の原点。表示だけに効き、内部の計算・判定には一切触れない */
+  var lastPts=[], ORG={kind:'def',key:''};
+  function orgPt(){
+    if(ORG.kind==='xy'){
+      var x=parseFloat($('orgX').value), y=parseFloat($('orgY').value);
+      x=isFinite(x)?x:0; y=isFinite(y)?y:0;
+      return {x:x,y:y,lb:'指定した点 ('+f3(x)+', '+f3(y)+')'};
+    }
+    if(ORG.kind==='hole'){
+      for(var i=0;i<lastPts.length;i++) if(lastPts[i].name===ORG.key)
+        return {x:lastPts[i].x, y:lastPts[i].y, lb:'穴 '+ORG.key};
+    }
+    return {x:0,y:0,lb:'既定(P1／中心A)'};
+  }
+  function syncOrgUI(){
+    var sh=$('orgHole');
+    if(ORG.kind==='hole' && lastPts.length){
+      if(!lastPts.some(function(p){return p.name===ORG.key})) ORG.key=lastPts[0].name;
+      var h='';
+      lastPts.forEach(function(p){ h+='<option value="'+p.name+'">'+p.name+'</option>' });
+      if(sh.innerHTML!==h) sh.innerHTML=h;
+      sh.value=ORG.key;
+    }
+    sh.style.display   = (ORG.kind==='hole')?'':'none';
+    $('orgX').style.display = (ORG.kind==='xy')?'':'none';
+    $('orgY').style.display = (ORG.kind==='xy')?'':'none';
+  }
   function fillCoTable(pts){
-    var b=$('coBody');b.innerHTML='';
-    pts.forEach(function(p){
+    lastPts = pts||[];
+    syncOrgUI();
+    var O=orgPt(), b=$('coBody');b.innerHTML='';
+    lastPts.forEach(function(p){
       var tr=document.createElement('tr');
-      tr.innerHTML='<td>'+p.name+'</td><td>'+f3(p.x)+'</td><td>'+f3(p.y)+'</td>';
+      tr.innerHTML='<td>'+p.name+'</td><td>'+f3(p.x-O.x)+'</td><td>'+f3(p.y-O.y)+'</td>';
       b.appendChild(tr);
     });
+    $('orgNow').textContent = lastPts.length? ('原点：'+O.lb) : '';
   }
 
   /* ===== 再計算 ===== */
@@ -385,8 +435,8 @@
         cells=[{k:'穴数',v:String(pts.length),s:'点'}];
       }
       $('cellGrid').innerHTML='';cells.forEach(function(c){var d=document.createElement('div');d.className='cellv';d.innerHTML='<span class="k">'+c.k+'</span><span class="v">'+c.v+'</span><span class="s">'+(c.s||'')+'</span>';$('cellGrid').appendChild(d)});
-      if(!lastCopy){var co=[];pts.forEach(function(p){co.push(p.name+'('+f3(p.x)+', '+f3(p.y)+')')});lastCopy='[穴座標] '+co.join(' ')}
-      $('statusTxt').textContent=(pts.length<1)?'中心と穴を入力してください':'中心Aが原点。全穴の絶対座標を座標表に表示中';
+      if(!lastCopy){var O0=orgPt();var co=[];pts.forEach(function(p){co.push(p.name+'('+f3(p.x-O0.x)+', '+f3(p.y-O0.y)+')')});lastCopy='[穴座標 原点='+O0.lb+'] '+co.join(' ')}
+      $('statusTxt').textContent=(pts.length<1)?'中心と穴を入力してください':'全穴の座標を座標表に表示中(原点は座標表で選べます)';
       $('statusTxt').className='statusTxt';
     }else{
       var r2=computeSolve();
@@ -464,6 +514,10 @@
     lastNames='';
     recalc();
   }
+  $('orgKind').addEventListener('change',function(){ORG.kind=this.value;recalc()});
+  $('orgHole').addEventListener('change',function(){ORG.key=this.value;recalc()});
+  $('orgX').addEventListener('input',recalc);
+  $('orgY').addEventListener('input',recalc);
   $('mBuild').addEventListener('click',function(){setMode('build')});
   $('mSolve').addEventListener('click',function(){setMode('solve')});
 
@@ -478,6 +532,155 @@
   buildCtrRows();
   buildSolveRows();
   recalc();
+})();
+</script>
+
+<!-- ═══ 数字入力の補助（共通スニペット / 全ツール同一） ═══
+     ・数字キーパッド固定（inputmode）／全角数字・句点の自動半角化
+     ・数字以外（かな・英字・記号）の混入を自動で除去
+     ・± ボタン … 数字キーパッドに無いマイナスを入力
+     ・✕ ボタン … 欄をまとめて消去
+     ・「5 43」のような度分秒のスペース区切りはそのまま通します
+     ・DOM構造は変更しません（再描画するツールでも壊れません）        -->
+<style>
+  .kt-aid{
+    position:absolute;z-index:9998;display:none;gap:4px;
+    background:#1F3341;border-radius:8px;padding:3px;
+    box-shadow:0 3px 10px rgba(0,0,0,.28);
+  }
+  .kt-aid.on{display:flex}
+  .kt-aid button{
+    -webkit-appearance:none;appearance:none;border:none;
+    background:#2C4353;color:#fff;font:inherit;font-size:14px;font-weight:700;
+    line-height:1;padding:8px 12px;border-radius:5px;cursor:pointer;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  .kt-aid button:active{background:#D63426}
+  @media print{.kt-aid{display:none !important}}
+</style>
+<script>
+(function(){
+  "use strict";
+
+  /* ── 対象の判定 ── */
+  function mode(el){
+    return (el && el.tagName==="INPUT" && !el.readOnly && !el.disabled)
+      ? (el.getAttribute("inputmode")||"") : "";
+  }
+  function isNum(el){ var m=mode(el); return m==="decimal"||m==="numeric"; }
+  function isDec(el){ return mode(el)==="decimal"; }
+
+  /* ── 全角→半角（かなキーボードで打たれた場合の救済） ── */
+  function toHalf(v){
+    return v
+      .replace(/[０-９]/g, function(c){ return String.fromCharCode(c.charCodeAt(0)-65248); })
+      .replace(/[．。･・]/g, ".")
+      .replace(/[－−―ーｰ‐–—]/g, "-")
+      .replace(/[\u3000]/g, " ");
+  }
+
+  /* ── 数字だけに整える（空白区切りは温存＝度分秒入力を壊さない） ── */
+  function clean(v, dec){
+    var toks = toHalf(v).split(" "), out = [], i, t, neg, k;
+    for(i=0;i<toks.length;i++){
+      t = toks[i];
+      neg = (i===0) && t.charAt(0)==="-";
+      t = t.replace(/[^0-9.]/g, "");
+      if(!dec) t = t.replace(/\./g, "");
+      else {
+        k = t.indexOf(".");
+        if(k>=0) t = t.slice(0,k+1) + t.slice(k+1).replace(/\./g,"");
+      }
+      out.push((neg?"-":"") + t);
+    }
+    return out.join(" ");
+  }
+
+  /* ── 入力の監視（捕捉フェーズ＝各ツールの計算処理より先に整える） ── */
+  document.addEventListener("input", function(e){
+    var el = e.target;
+    if(!isNum(el)) return;
+    var v = el.value, c = clean(v, isDec(el));
+    if(c === v) return;
+    var p = el.selectionStart, d = v.length - c.length;
+    el.value = c;
+    try{ el.setSelectionRange(Math.max(0,p-d), Math.max(0,p-d)); }catch(err){}
+  }, true);
+
+  /* ── ± / ✕ の浮動ボタン（DOMを包まないので再描画に強い） ── */
+  var bar=null, cur=null, sign=null;
+
+  function notify(el){
+    var ev;
+    try{ ev = new Event("input", {bubbles:true}); }
+    catch(err){ ev = document.createEvent("Event"); ev.initEvent("input", true, false); }
+    el.dispatchEvent(ev);
+    try{ ev = new Event("change", {bubbles:true}); }
+    catch(err){ ev = document.createEvent("Event"); ev.initEvent("change", true, false); }
+    el.dispatchEvent(ev);
+  }
+  /* 押した瞬間に実行する。既定動作を止めることで入力欄のフォーカス（＝
+     数字キーパッド）を保ったまま操作でき、ゴーストクリックも防げる。   */
+  function act(e){
+    e.preventDefault();
+    var b = e.target, a, v;
+    while(b && b !== bar && b.tagName !== "BUTTON") b = b.parentNode;
+    if(!b || b === bar || !cur) return;
+    a = b.getAttribute("data-a");
+    if(a === "clr") cur.value = "";
+    else {
+      v = cur.value;
+      cur.value = (v.charAt(0) === "-") ? v.slice(1) : ("-" + v);
+    }
+    notify(cur);
+    try{ cur.focus(); }catch(err){}
+    place();
+  }
+
+  function build(){
+    bar = document.createElement("div");
+    bar.className = "kt-aid";
+    bar.innerHTML =
+      '<button type="button" data-a="sign" aria-label="符号を反転">±</button>'+
+      '<button type="button" data-a="clr" aria-label="この欄を消去">✕</button>';
+    document.body.appendChild(bar);
+    sign = bar.querySelector('[data-a="sign"]');
+    if(window.PointerEvent){
+      bar.addEventListener("pointerdown", act);
+    } else {
+      bar.addEventListener("mousedown", act);
+      bar.addEventListener("touchstart", act, {passive:false});
+    }
+  }
+
+  function hide(){ if(bar) bar.className = "kt-aid"; cur = null; }
+
+  function place(){
+    if(!cur || !bar) return;
+    if(!document.contains(cur)){ hide(); return; }   /* 再描画で消えた場合 */
+    bar.className = "kt-aid on";
+    var r = cur.getBoundingClientRect();
+    var bw = bar.offsetWidth, bh = bar.offsetHeight;
+    var top = r.top - bh - 6;
+    if(top < 4) top = r.bottom + 6;
+    var left = r.right - bw;
+    if(left < 4) left = 4;
+    bar.style.left = (left + (window.pageXOffset||0)) + "px";
+    bar.style.top  = (top  + (window.pageYOffset||0)) + "px";
+  }
+
+  document.addEventListener("focusin", function(e){
+    if(!isNum(e.target)){ hide(); return; }
+    cur = e.target;
+    if(!bar) build();
+    sign.style.display = isDec(cur) ? "" : "none";   /* 整数欄には ± を出さない */
+    place();
+  });
+  document.addEventListener("focusout", function(){
+    setTimeout(function(){ if(document.activeElement !== cur) hide(); }, 0);
+  });
+  window.addEventListener("scroll", function(){ if(cur) place(); }, true);
+  window.addEventListener("resize", function(){ if(cur) place(); });
 })();
 </script>
 </body>

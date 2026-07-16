@@ -137,7 +137,7 @@
         <option value="1" selected>mm</option>
       </select>
     </div>
-    <div><label class="f">測定スパン S（mm）</label><input type="number" id="span" value="200" step="0.1" oninput="allCalc()"></div>
+    <div><label class="f">測定スパン S（mm）</label><input type="text" inputmode="decimal" autocomplete="off" id="span" value="200" oninput="allCalc()"></div>
   </div>
   <div class="hint">S は「2点の接触位置どうしの、軸に沿った距離」です。全タブ共通で使います。</div>
 </div>
@@ -153,11 +153,11 @@
   <div class="card">
     <h2>2点読み<span class="tag">Δ ⁄ S</span></h2>
     <div class="row">
-      <div><label class="f">読み r₁（手前）</label><input type="number" id="r1" value="0" step="0.001" oninput="allCalc()"></div>
-      <div><label class="f">読み r₂（先端側）</label><input type="number" id="r2" value="0.15" step="0.001" oninput="allCalc()"></div>
+      <div><label class="f">読み r₁（手前）</label><input type="text" inputmode="decimal" autocomplete="off" id="r1" value="0" oninput="allCalc()"></div>
+      <div><label class="f">読み r₂（先端側）</label><input type="text" inputmode="decimal" autocomplete="off" id="r2" value="0.15" oninput="allCalc()"></div>
     </div>
     <div class="row">
-      <div><label class="f">てこ式の傾き α（°・任意）</label><input type="number" id="alpha" value="0" step="0.5" min="0" max="60" oninput="allCalc()"></div>
+      <div><label class="f">てこ式の傾き α（°・任意）</label><input type="text" inputmode="decimal" autocomplete="off" id="alpha" value="0" min="0" max="60" oninput="allCalc()"></div>
       <div><label class="f">Δ ＝ r₂ − r₁</label><input type="text" id="dShow" readonly style="background:#EDF1F3"></div>
     </div>
     <div class="hint">α はてこ式ダイヤルゲージのスタイラスが測定方向となす角。実値＝読み×cos α で補正します。スピンドル式（0°）ならそのまま。</div>
@@ -187,13 +187,13 @@
   <div class="card">
     <h2>長さに換算<span class="tag">ℓ · tan θ</span></h2>
     <div class="row">
-      <div><label class="f">長さ ℓ（mm）</label><input type="number" id="ell" value="100" step="1" oninput="allCalc()"></div>
+      <div><label class="f">長さ ℓ（mm）</label><input type="text" inputmode="decimal" autocomplete="off" id="ell" value="100" oninput="allCalc()"></div>
       <div><label class="f">ℓ での振れ量</label><input type="text" id="ellOut" readonly style="background:#EDF1F3"></div>
     </div>
     <h2 style="margin-top:14px">公差判定<span class="tag">直角度 / 平行度</span></h2>
     <div class="row">
-      <div><label class="f">公差 t（Ø または 幅）</label><input type="number" id="tolT" value="0.05" step="0.001" oninput="allCalc()"></div>
-      <div><label class="f">指示長さ ℓ_spec（mm）</label><input type="number" id="tolL" value="100" step="1" oninput="allCalc()"></div>
+      <div><label class="f">公差 t（Ø または 幅）</label><input type="text" inputmode="decimal" autocomplete="off" id="tolT" value="0.05" oninput="allCalc()"></div>
+      <div><label class="f">指示長さ ℓ_spec（mm）</label><input type="text" inputmode="decimal" autocomplete="off" id="tolL" value="100" oninput="allCalc()"></div>
     </div>
     <div class="res">
       <div><span class="k">許容傾き（t ⁄ ℓ_spec）</span><span class="v" id="tAllowDeg">-</span></div>
@@ -221,9 +221,9 @@
     <h2>すき間ロッキング<span class="tag">これが本題</span></h2>
     <div class="banner">すき間ばめの丸棒は、穴の中で必ず首を振ります。その最大角より小さい傾きは、測っても意味を持ちません。</div>
     <div class="row">
-      <div><label class="f">穴径 D</label><input type="number" id="hD" value="20.02" step="0.001" oninput="allCalc()"></div>
-      <div><label class="f">棒径 d</label><input type="number" id="hd" value="20.00" step="0.001" oninput="allCalc()"></div>
-      <div><label class="f">はまり長さ H</label><input type="number" id="hH" value="30" step="0.1" oninput="allCalc()"></div>
+      <div><label class="f">穴径 D</label><input type="text" inputmode="decimal" autocomplete="off" id="hD" value="20.02" oninput="allCalc()"></div>
+      <div><label class="f">棒径 d</label><input type="text" inputmode="decimal" autocomplete="off" id="hd" value="20.00" oninput="allCalc()"></div>
+      <div><label class="f">はまり長さ H</label><input type="text" inputmode="decimal" autocomplete="off" id="hH" value="30" oninput="allCalc()"></div>
     </div>
     <figure><svg id="figB" viewBox="0 0 300 160" role="img" aria-label="穴と検査棒のすき間とロッキングの模式図"></svg><figcaption>穴 断 面（すき間は誇張）</figcaption></figure>
     <div class="res" style="margin-top:10px">
@@ -241,8 +241,8 @@
     <h2>押し付け反転<span class="tag">ガタを消す</span></h2>
     <div class="banner">棒の先端を<b>上に押し付けて1回</b>、<b>下に押し付けて1回</b>読みます。2つの姿勢はロッキングの両端なので、平均が穴の軸です。</div>
     <div class="row">
-      <div><label class="f">Δ（上に押し付け）</label><input type="number" id="pUp" step="0.001" oninput="allCalc()"></div>
-      <div><label class="f">Δ（下に押し付け）</label><input type="number" id="pDn" step="0.001" oninput="allCalc()"></div>
+      <div><label class="f">Δ（上に押し付け）</label><input type="text" inputmode="decimal" autocomplete="off" id="pUp" oninput="allCalc()"></div>
+      <div><label class="f">Δ（下に押し付け）</label><input type="text" inputmode="decimal" autocomplete="off" id="pDn" oninput="allCalc()"></div>
     </div>
     <div class="res">
       <div><span class="k">穴の傾き（平均）</span><span class="v hl" id="pMean">-</span></div>
@@ -259,8 +259,8 @@
     <h2>棒の曲がりを分離<span class="tag">180° 反転法</span></h2>
     <div class="banner">棒を軸まわりに180°回して測り直します。穴の傾きは向きが変わらず、棒自身の曲がりだけ符号が反転します。</div>
     <div class="row">
-      <div><label class="f">Δ（0°）</label><input type="number" id="rv0" step="0.001" oninput="allCalc()"></div>
-      <div><label class="f">Δ（180°）</label><input type="number" id="rv180" step="0.001" oninput="allCalc()"></div>
+      <div><label class="f">Δ（0°）</label><input type="text" inputmode="decimal" autocomplete="off" id="rv0" oninput="allCalc()"></div>
+      <div><label class="f">Δ（180°）</label><input type="text" inputmode="decimal" autocomplete="off" id="rv180" oninput="allCalc()"></div>
     </div>
     <div class="res">
       <div><span class="k">穴の傾き （Δ₀＋Δ₁₈₀）⁄2</span><span class="v hl" id="rvHole">-</span></div>
@@ -274,8 +274,8 @@
     <h2>2軸合成<span class="tag">向きまで出す</span></h2>
     <div class="banner">1方向だけ測ると、傾きは必ず過小評価になります。直交する2方向で読んでください。</div>
     <div class="row">
-      <div><label class="f">Δx（X 方向）</label><input type="number" id="cx" value="0.15" step="0.001" oninput="allCalc()"></div>
-      <div><label class="f">Δy（Y 方向）</label><input type="number" id="cy" value="0.08" step="0.001" oninput="allCalc()"></div>
+      <div><label class="f">Δx（X 方向）</label><input type="text" inputmode="decimal" autocomplete="off" id="cx" value="0.15" oninput="allCalc()"></div>
+      <div><label class="f">Δy（Y 方向）</label><input type="text" inputmode="decimal" autocomplete="off" id="cy" value="0.08" oninput="allCalc()"></div>
     </div>
     <figure><svg id="figC" viewBox="0 0 300 190" role="img" aria-label="傾きの方位図"></svg><figcaption>方 位 図（上が ＋Y）</figcaption></figure>
     <div class="res" style="margin-top:10px">
@@ -340,10 +340,11 @@ var DEG = 180/Math.PI;
 function g(id){ return document.getElementById(id); }
 function n(id){ var v = parseFloat(g(id).value); return isFinite(v)? v : NaN; }
 function U(){ return parseFloat(g("unit").value); }          // 読み → mm
-function f(v,d){ return isFinite(v)? v.toFixed(d==null?4:d) : "-"; }
+function numOK(v){ return typeof v==="number" && isFinite(v); }  /* isFinite(null)===true なので型も見る */
+function f(v,d){ return numOK(v)? v.toFixed(d==null?4:d) : "-"; }
 
 function dms(deg){
-  if(!isFinite(deg)) return "-";
+  if(!numOK(deg)) return "-";
   var s = deg<0? "−":"", a=Math.abs(deg);
   var D=Math.floor(a), M=Math.floor((a-D)*60), Sc=((a-D)*60-M)*60;
   return s+D+"° "+M+"′ "+Sc.toFixed(1)+"″";
@@ -561,8 +562,8 @@ function renderRec(){
   REC.forEach(function(r,i){
     var cls = r.judge==="合格"?"ok":(r.judge==="不合格"?"ng":"");
     h+='<tr><td>'+r.spot+' <button class="xbtn noprint" onclick="delRec('+i+')" aria-label="削除">×</button></td>'
-     +'<td>'+r.deg.toFixed(4)+'</td><td>'+r.mpm.toFixed(3)+'</td>'
-     +'<td>'+(isFinite(r.dev)?r.dev.toFixed(4):"—")+'</td>'
+     +'<td>'+(numOK(r.deg)?r.deg.toFixed(4):"—")+'</td><td>'+(numOK(r.mpm)?r.mpm.toFixed(3):"—")+'</td>'
+     +'<td>'+(numOK(r.dev)?r.dev.toFixed(4):"—")+'</td>'
      +'<td class="'+cls+'">'+r.judge+'</td></tr>';
   });
   if(!REC.length) h='<tr><td colspan="5" style="text-align:center;color:#8FA2AF;font-family:inherit;padding:12px">「現在の結果を記録」で追加</td></tr>';
@@ -583,7 +584,11 @@ function persist(){
 function restore(){
   try{
     var o=JSON.parse(localStorage.getItem(KEY)||"null"); if(!o) return;
-    REC=o.rec||[];
+    /* JSON保存では NaN が null に化けるため、数値以外は NaN に戻す */
+    REC=(o.rec||[]).map(function(r){
+      return { spot:r.spot||"—", deg:numOK(r.deg)?r.deg:NaN, mpm:numOK(r.mpm)?r.mpm:NaN,
+               dev:numOK(r.dev)?r.dev:NaN, judge:r.judge||"—" };
+    });
     if(o.v) IDS.forEach(function(i){ if(o.v[i]!=null && o.v[i]!=="") g(i).value=o.v[i]; });
     if(o.tab) TAB=o.tab;
   }catch(e){}
@@ -615,6 +620,155 @@ if(!g("recDate").value){
 }
 document.querySelectorAll("input,select").forEach(function(el){ el.addEventListener("change", persist); });
 setTab(TAB);
+</script>
+
+<!-- ═══ 数字入力の補助（共通スニペット / 全ツール同一） ═══
+     ・数字キーパッド固定（inputmode）／全角数字・句点の自動半角化
+     ・数字以外（かな・英字・記号）の混入を自動で除去
+     ・± ボタン … 数字キーパッドに無いマイナスを入力
+     ・✕ ボタン … 欄をまとめて消去
+     ・「5 43」のような度分秒のスペース区切りはそのまま通します
+     ・DOM構造は変更しません（再描画するツールでも壊れません）        -->
+<style>
+  .kt-aid{
+    position:absolute;z-index:9998;display:none;gap:4px;
+    background:#1F3341;border-radius:8px;padding:3px;
+    box-shadow:0 3px 10px rgba(0,0,0,.28);
+  }
+  .kt-aid.on{display:flex}
+  .kt-aid button{
+    -webkit-appearance:none;appearance:none;border:none;
+    background:#2C4353;color:#fff;font:inherit;font-size:14px;font-weight:700;
+    line-height:1;padding:8px 12px;border-radius:5px;cursor:pointer;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  .kt-aid button:active{background:#D63426}
+  @media print{.kt-aid{display:none !important}}
+</style>
+<script>
+(function(){
+  "use strict";
+
+  /* ── 対象の判定 ── */
+  function mode(el){
+    return (el && el.tagName==="INPUT" && !el.readOnly && !el.disabled)
+      ? (el.getAttribute("inputmode")||"") : "";
+  }
+  function isNum(el){ var m=mode(el); return m==="decimal"||m==="numeric"; }
+  function isDec(el){ return mode(el)==="decimal"; }
+
+  /* ── 全角→半角（かなキーボードで打たれた場合の救済） ── */
+  function toHalf(v){
+    return v
+      .replace(/[０-９]/g, function(c){ return String.fromCharCode(c.charCodeAt(0)-65248); })
+      .replace(/[．。･・]/g, ".")
+      .replace(/[－−―ーｰ‐–—]/g, "-")
+      .replace(/[\u3000]/g, " ");
+  }
+
+  /* ── 数字だけに整える（空白区切りは温存＝度分秒入力を壊さない） ── */
+  function clean(v, dec){
+    var toks = toHalf(v).split(" "), out = [], i, t, neg, k;
+    for(i=0;i<toks.length;i++){
+      t = toks[i];
+      neg = (i===0) && t.charAt(0)==="-";
+      t = t.replace(/[^0-9.]/g, "");
+      if(!dec) t = t.replace(/\./g, "");
+      else {
+        k = t.indexOf(".");
+        if(k>=0) t = t.slice(0,k+1) + t.slice(k+1).replace(/\./g,"");
+      }
+      out.push((neg?"-":"") + t);
+    }
+    return out.join(" ");
+  }
+
+  /* ── 入力の監視（捕捉フェーズ＝各ツールの計算処理より先に整える） ── */
+  document.addEventListener("input", function(e){
+    var el = e.target;
+    if(!isNum(el)) return;
+    var v = el.value, c = clean(v, isDec(el));
+    if(c === v) return;
+    var p = el.selectionStart, d = v.length - c.length;
+    el.value = c;
+    try{ el.setSelectionRange(Math.max(0,p-d), Math.max(0,p-d)); }catch(err){}
+  }, true);
+
+  /* ── ± / ✕ の浮動ボタン（DOMを包まないので再描画に強い） ── */
+  var bar=null, cur=null, sign=null;
+
+  function notify(el){
+    var ev;
+    try{ ev = new Event("input", {bubbles:true}); }
+    catch(err){ ev = document.createEvent("Event"); ev.initEvent("input", true, false); }
+    el.dispatchEvent(ev);
+    try{ ev = new Event("change", {bubbles:true}); }
+    catch(err){ ev = document.createEvent("Event"); ev.initEvent("change", true, false); }
+    el.dispatchEvent(ev);
+  }
+  /* 押した瞬間に実行する。既定動作を止めることで入力欄のフォーカス（＝
+     数字キーパッド）を保ったまま操作でき、ゴーストクリックも防げる。   */
+  function act(e){
+    e.preventDefault();
+    var b = e.target, a, v;
+    while(b && b !== bar && b.tagName !== "BUTTON") b = b.parentNode;
+    if(!b || b === bar || !cur) return;
+    a = b.getAttribute("data-a");
+    if(a === "clr") cur.value = "";
+    else {
+      v = cur.value;
+      cur.value = (v.charAt(0) === "-") ? v.slice(1) : ("-" + v);
+    }
+    notify(cur);
+    try{ cur.focus(); }catch(err){}
+    place();
+  }
+
+  function build(){
+    bar = document.createElement("div");
+    bar.className = "kt-aid";
+    bar.innerHTML =
+      '<button type="button" data-a="sign" aria-label="符号を反転">±</button>'+
+      '<button type="button" data-a="clr" aria-label="この欄を消去">✕</button>';
+    document.body.appendChild(bar);
+    sign = bar.querySelector('[data-a="sign"]');
+    if(window.PointerEvent){
+      bar.addEventListener("pointerdown", act);
+    } else {
+      bar.addEventListener("mousedown", act);
+      bar.addEventListener("touchstart", act, {passive:false});
+    }
+  }
+
+  function hide(){ if(bar) bar.className = "kt-aid"; cur = null; }
+
+  function place(){
+    if(!cur || !bar) return;
+    if(!document.contains(cur)){ hide(); return; }   /* 再描画で消えた場合 */
+    bar.className = "kt-aid on";
+    var r = cur.getBoundingClientRect();
+    var bw = bar.offsetWidth, bh = bar.offsetHeight;
+    var top = r.top - bh - 6;
+    if(top < 4) top = r.bottom + 6;
+    var left = r.right - bw;
+    if(left < 4) left = 4;
+    bar.style.left = (left + (window.pageXOffset||0)) + "px";
+    bar.style.top  = (top  + (window.pageYOffset||0)) + "px";
+  }
+
+  document.addEventListener("focusin", function(e){
+    if(!isNum(e.target)){ hide(); return; }
+    cur = e.target;
+    if(!bar) build();
+    sign.style.display = isDec(cur) ? "" : "none";   /* 整数欄には ± を出さない */
+    place();
+  });
+  document.addEventListener("focusout", function(){
+    setTimeout(function(){ if(document.activeElement !== cur) hide(); }, 0);
+  });
+  window.addEventListener("scroll", function(){ if(cur) place(); }, true);
+  window.addEventListener("resize", function(){ if(cur) place(); });
+})();
 </script>
 </body>
 </html>

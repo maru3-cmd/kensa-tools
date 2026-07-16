@@ -123,18 +123,18 @@
 <div class="card">
   <h2>板と基準<span class="tag">図面のとおり</span></h2>
   <div class="row">
-    <div><label class="f">板の長さ L（左右）</label><input type="number" id="pL" value="1000" step="0.1" oninput="calc()"></div>
-    <div><label class="f">板の幅 W（上下）</label><input type="number" id="pW" value="600" step="0.1" oninput="calc()"></div>
+    <div><label class="f">板の長さ L（左右）</label><input type="text" inputmode="decimal" autocomplete="off" id="pL" value="1000" oninput="calc()"></div>
+    <div><label class="f">板の幅 W（上下）</label><input type="text" inputmode="decimal" autocomplete="off" id="pW" value="600" oninput="calc()"></div>
   </div>
   <div class="row">
-    <div><label class="f">基準点：左端から ex</label><input type="number" id="pEx" value="500" step="0.1" oninput="calc()"></div>
-    <div><label class="f">基準点：下端から ey</label><input type="number" id="pEy" value="300" step="0.1" oninput="calc()"></div>
-    <div><label class="f">基準線の傾き φ（°）</label><input type="number" id="pPhi" value="0" step="0.1" oninput="calc()"></div>
+    <div><label class="f">基準点：左端から ex</label><input type="text" inputmode="decimal" autocomplete="off" id="pEx" value="500" oninput="calc()"></div>
+    <div><label class="f">基準点：下端から ey</label><input type="text" inputmode="decimal" autocomplete="off" id="pEy" value="300" oninput="calc()"></div>
+    <div><label class="f">基準線の傾き φ（°）</label><input type="text" inputmode="decimal" autocomplete="off" id="pPhi" value="0" oninput="calc()"></div>
   </div>
   <div class="hint">φ は下端面に対する基準線の傾き（反時計回り＋）。端面と平行なら 0 のままで構いません。</div>
   <div class="row" style="margin-top:8px">
-    <div><label class="f">実測補正 ex（任意）</label><input type="number" id="pExm" step="0.1" placeholder="現物の実測" oninput="calc()"></div>
-    <div><label class="f">実測補正 ey（任意）</label><input type="number" id="pEym" step="0.1" placeholder="現物の実測" oninput="calc()"></div>
+    <div><label class="f">実測補正 ex（任意）</label><input type="text" inputmode="decimal" autocomplete="off" id="pExm" placeholder="現物の実測" oninput="calc()"></div>
+    <div><label class="f">実測補正 ey（任意）</label><input type="text" inputmode="decimal" autocomplete="off" id="pEym" placeholder="現物の実測" oninput="calc()"></div>
   </div>
   <div class="hint">現物の基準点（けがき交点や基準穴）を端面からコンベックスで実測して入れると、以降の全穴の読みが<b>現物基準</b>に置き換わります。端面の仕上がり誤差をここで吸収できます。</div>
 </div>
@@ -196,7 +196,7 @@
   </div>
   <div class="row noprint">
     <div><label class="f">検査者</label><input type="text" id="recBy" placeholder="—" oninput="persist()"></div>
-    <div><label class="f">公差 ±</label><input type="number" id="recTol" value="1.0" step="0.1" oninput="renderRec();persist()"></div>
+    <div><label class="f">公差 ±</label><input type="text" inputmode="decimal" autocomplete="off" id="recTol" value="1.0" oninput="renderRec();persist()"></div>
   </div>
   <div class="print-only" id="recHead" style="font-size:12px;margin-bottom:8px"></div>
   <div class="tblwrap">
@@ -235,7 +235,8 @@
 var RAD=Math.PI/180;
 function g(id){ return document.getElementById(id); }
 function n(id){ var v=parseFloat(g(id).value); return isFinite(v)? v : NaN; }
-function f1(v){ return isFinite(v)? v.toFixed(1) : "-"; }
+function numOK(v){ return typeof v==="number" && isFinite(v); }  /* isFinite(null)===true なので型も見る */
+function f1(v){ return numOK(v)? v.toFixed(1) : "-"; }
 
 /* 状態: holes[i] = {mode:'xy'|'pol'|'chn', X,Y, r,th, ref,d,ca,cref:'abs'|'rel', dia} */
 var S={holes:[], sel:-1, rec:[]};
@@ -282,20 +283,20 @@ function renderHoles(){
       +'<select onchange="upd('+i+',\'mode\',this)">'+mo('xy','基準からXY')+mo('pol','基準から r・θ')+mo('chn','穴から連鎖')+'</select>'
       +'<button class="xbtn" onclick="delHole('+i+')" aria-label="H'+(i+1)+'を削除">×</button></div>';
     if(o.mode==="xy"){
-      h+='<div class="row"><div><label class="f">基準からX</label><input type="number" step="0.1" value="'+(isFinite(o.X)?o.X:"")+'" oninput="upd('+i+',\'X\',this)"></div>'
-        +'<div><label class="f">基準からY</label><input type="number" step="0.1" value="'+(isFinite(o.Y)?o.Y:"")+'" oninput="upd('+i+',\'Y\',this)"></div>'
-        +'<div><label class="f">穴径（任意）</label><input type="number" step="0.1" value="'+(isFinite(o.dia)?o.dia:"")+'" oninput="upd('+i+',\'dia\',this)"></div></div>';
+      h+='<div class="row"><div><label class="f">基準からX</label><input type="text" inputmode="decimal" autocomplete="off" value="'+(isFinite(o.X)?o.X:"")+'" oninput="upd('+i+',\'X\',this)"></div>'
+        +'<div><label class="f">基準からY</label><input type="text" inputmode="decimal" autocomplete="off" value="'+(isFinite(o.Y)?o.Y:"")+'" oninput="upd('+i+',\'Y\',this)"></div>'
+        +'<div><label class="f">穴径（任意）</label><input type="text" inputmode="decimal" autocomplete="off" value="'+(numOK(o.dia)?o.dia:"")+'" oninput="upd('+i+',\'dia\',this)"></div></div>';
     } else if(o.mode==="pol"){
-      h+='<div class="row"><div><label class="f">距離 r</label><input type="number" step="0.1" value="'+(isFinite(o.r)?o.r:"")+'" oninput="upd('+i+',\'r\',this)"></div>'
-        +'<div><label class="f">角度 θ（°）</label><input type="number" step="0.1" value="'+(isFinite(o.th)?o.th:"")+'" oninput="upd('+i+',\'th\',this)"></div>'
-        +'<div><label class="f">穴径（任意）</label><input type="number" step="0.1" value="'+(isFinite(o.dia)?o.dia:"")+'" oninput="upd('+i+',\'dia\',this)"></div></div>';
+      h+='<div class="row"><div><label class="f">距離 r</label><input type="text" inputmode="decimal" autocomplete="off" value="'+(isFinite(o.r)?o.r:"")+'" oninput="upd('+i+',\'r\',this)"></div>'
+        +'<div><label class="f">角度 θ（°）</label><input type="text" inputmode="decimal" autocomplete="off" value="'+(isFinite(o.th)?o.th:"")+'" oninput="upd('+i+',\'th\',this)"></div>'
+        +'<div><label class="f">穴径（任意）</label><input type="text" inputmode="decimal" autocomplete="off" value="'+(numOK(o.dia)?o.dia:"")+'" oninput="upd('+i+',\'dia\',this)"></div></div>';
     } else {
       var co=function(v,l){ return '<option value="'+v+'"'+(o.cref===v?' selected':'')+'>'+l+'</option>'; };
       h+='<div class="row"><div><label class="f">参照穴</label><select onchange="upd('+i+',\'ref\',this)">'+refOpts(i,o.ref)+'</select></div>'
-        +'<div><label class="f">距離 d</label><input type="number" step="0.1" value="'+(isFinite(o.d)?o.d:"")+'" oninput="upd('+i+',\'d\',this)"></div>'
-        +'<div><label class="f">角度 θ（°）</label><input type="number" step="0.1" value="'+(isFinite(o.ca)?o.ca:"")+'" oninput="upd('+i+',\'ca\',this)"></div></div>'
+        +'<div><label class="f">距離 d</label><input type="text" inputmode="decimal" autocomplete="off" value="'+(isFinite(o.d)?o.d:"")+'" oninput="upd('+i+',\'d\',this)"></div>'
+        +'<div><label class="f">角度 θ（°）</label><input type="text" inputmode="decimal" autocomplete="off" value="'+(isFinite(o.ca)?o.ca:"")+'" oninput="upd('+i+',\'ca\',this)"></div></div>'
         +'<div class="row"><div style="flex:2"><label class="f">角度の基準</label><select onchange="upd('+i+',\'cref\',this)">'+co('abs','基準線から（絶対角）')+co('rel','前の線から（相対角）')+'</select></div>'
-        +'<div><label class="f">穴径（任意）</label><input type="number" step="0.1" value="'+(isFinite(o.dia)?o.dia:"")+'" oninput="upd('+i+',\'dia\',this)"></div></div>';
+        +'<div><label class="f">穴径（任意）</label><input type="text" inputmode="decimal" autocomplete="off" value="'+(numOK(o.dia)?o.dia:"")+'" oninput="upd('+i+',\'dia\',this)"></div></div>';
     }
     h+='<div class="err" id="hErr'+i+'" style="display:none"></div></div>';
   });
@@ -309,15 +310,15 @@ function resolve(){
   S.holes.forEach(function(h,i){
     var P=null, parent=-1, err="";
     if(h.mode==="xy"){
-      if(isFinite(h.X)&&isFinite(h.Y)) P={x:h.X,y:h.Y};
+      if(numOK(h.X)&&numOK(h.Y)) P={x:h.X,y:h.Y};
       else err="X・Y を入れてください";
     } else if(h.mode==="pol"){
-      if(isFinite(h.r)&&isFinite(h.th)) P={x:h.r*Math.cos(h.th*RAD), y:h.r*Math.sin(h.th*RAD)};
+      if(numOK(h.r)&&numOK(h.th)) P={x:h.r*Math.cos(h.th*RAD), y:h.r*Math.sin(h.th*RAD)};
       else err="r・θ を入れてください";
     } else {
       var k=h.ref;
       if(!(k>=0 && k<i && out[k] && out[k].P)) err="参照穴が正しくありません";
-      else if(!(isFinite(h.d)&&isFinite(h.ca))) err="d・θ を入れてください";
+      else if(!(numOK(h.d)&&numOK(h.ca))) err="d・θ を入れてください";
       else{
         var base=out[k].P, head;
         if(h.cref==="rel"){
@@ -394,7 +395,7 @@ function renderDRO(pl){
   g("dL").textContent=f1(o.E.x); g("dB").textContent=f1(o.E.y);
   g("dR").textContent=f1(pl.L-o.E.x); g("dT").textContent=f1(pl.W-o.E.y);
   g("dX").textContent=f1(o.P.x); g("dY").textContent=f1(o.P.y);
-  if(isFinite(o.dia)&&o.dia>0){
+  if(numOK(o.dia)&&o.dia>0){
     var r=o.dia/2;
     g("dRimL").textContent=f1(o.E.x-r)+" / "+f1(o.E.x+r);
     g("dRimB").textContent=f1(o.E.y-r)+" / "+f1(o.E.y+r);
@@ -432,7 +433,7 @@ function drawFig(pl){
   R.forEach(function(o,i){
     if(!o.E) return;
     var q=M(o.E.x,o.E.y);
-    var rr=(isFinite(o.dia)&&o.dia>0)? Math.max(2.5,Math.min(8,o.dia/2*s)) : 3;
+    var rr=(numOK(o.dia)&&o.dia>0)? Math.max(2.5,Math.min(8,o.dia/2*s)) : 3;
     var sel=(i===S.sel);
     h+='<circle cx="'+q[0].toFixed(1)+'" cy="'+q[1].toFixed(1)+'" r="'+rr.toFixed(1)+'" fill="'+(sel?"#D63426":"#fff")+'" stroke="'+(sel?"#D63426":"#1F3341")+'" stroke-width="1.4"/>';
     h+='<text x="'+(q[0]+rr+3).toFixed(1)+'" y="'+(q[1]-3).toFixed(1)+'" font-size="9" fill="'+(sel?"#D63426":"#5B707E")+'" font-family="monospace">H'+(i+1)+'</text>';
@@ -472,8 +473,8 @@ function renderRec(){
     var dTxt=(isFinite(dl)?(dl>0?"+":"")+dl.toFixed(1):"—")+" / "+(isFinite(db)?(db>0?"+":"")+db.toFixed(1):"—");
     h+='<tr><td>'+r.nm+' <button class="xbtn noprint" style="width:20px;height:20px;font-size:11px" onclick="delRec('+i+')" aria-label="削除">×</button></td>'
       +'<td>'+f1(tl)+' / '+f1(tb2)+'</td>'
-      +'<td><input type="number" step="0.5" value="'+r.ml+'" oninput="editRec('+i+',\'ml\',this)" style="width:62px"></td>'
-      +'<td><input type="number" step="0.5" value="'+r.mb+'" oninput="editRec('+i+',\'mb\',this)" style="width:62px"></td>'
+      +'<td><input type="text" inputmode="decimal" autocomplete="off" value="'+r.ml+'" oninput="editRec('+i+',\'ml\',this)" style="width:62px"></td>'
+      +'<td><input type="text" inputmode="decimal" autocomplete="off" value="'+r.mb+'" oninput="editRec('+i+',\'mb\',this)" style="width:62px"></td>'
       +'<td>'+dTxt+'</td><td class="'+cls+'">'+jd+'</td></tr>';
   });
   if(!S.rec.length) h='<tr><td colspan="6" style="text-align:center;color:#8FA2AF;font-family:inherit;padding:12px">穴を選んで「記録表へ」</td></tr>';
@@ -494,7 +495,16 @@ function persist(){
 function restore(){
   try{
     var o=JSON.parse(localStorage.getItem(KEY)||"null"); if(!o) return;
-    S.holes=o.holes||[]; S.sel=(typeof o.sel==="number")?o.sel:-1; S.rec=o.rec||[];
+    /* JSON保存では NaN が null に化けるため、数値以外は NaN に戻す */
+    S.holes=(o.holes||[]).map(function(h){
+      return { mode:h.mode||"xy",
+               X:numOK(h.X)?h.X:NaN, Y:numOK(h.Y)?h.Y:NaN,
+               r:numOK(h.r)?h.r:NaN, th:numOK(h.th)?h.th:NaN,
+               ref:(typeof h.ref==="number")?h.ref:-1,
+               d:numOK(h.d)?h.d:NaN, ca:numOK(h.ca)?h.ca:NaN,
+               cref:h.cref||"abs", dia:numOK(h.dia)?h.dia:NaN };
+    });
+    S.sel=(typeof o.sel==="number")?o.sel:-1; S.rec=o.rec||[];
     if(o.v) IDS.forEach(function(i){ if(o.v[i]!=null&&o.v[i]!=="") g(i).value=o.v[i]; });
   }catch(e){}
 }
@@ -512,6 +522,155 @@ if(!g("recDate").value){
   g("recDate").value=dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0")+"-"+String(dt.getDate()).padStart(2,"0");
 }
 renderHoles(); calc();
+</script>
+
+<!-- ═══ 数字入力の補助（共通スニペット / 全ツール同一） ═══
+     ・数字キーパッド固定（inputmode）／全角数字・句点の自動半角化
+     ・数字以外（かな・英字・記号）の混入を自動で除去
+     ・± ボタン … 数字キーパッドに無いマイナスを入力
+     ・✕ ボタン … 欄をまとめて消去
+     ・「5 43」のような度分秒のスペース区切りはそのまま通します
+     ・DOM構造は変更しません（再描画するツールでも壊れません）        -->
+<style>
+  .kt-aid{
+    position:absolute;z-index:9998;display:none;gap:4px;
+    background:#1F3341;border-radius:8px;padding:3px;
+    box-shadow:0 3px 10px rgba(0,0,0,.28);
+  }
+  .kt-aid.on{display:flex}
+  .kt-aid button{
+    -webkit-appearance:none;appearance:none;border:none;
+    background:#2C4353;color:#fff;font:inherit;font-size:14px;font-weight:700;
+    line-height:1;padding:8px 12px;border-radius:5px;cursor:pointer;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  .kt-aid button:active{background:#D63426}
+  @media print{.kt-aid{display:none !important}}
+</style>
+<script>
+(function(){
+  "use strict";
+
+  /* ── 対象の判定 ── */
+  function mode(el){
+    return (el && el.tagName==="INPUT" && !el.readOnly && !el.disabled)
+      ? (el.getAttribute("inputmode")||"") : "";
+  }
+  function isNum(el){ var m=mode(el); return m==="decimal"||m==="numeric"; }
+  function isDec(el){ return mode(el)==="decimal"; }
+
+  /* ── 全角→半角（かなキーボードで打たれた場合の救済） ── */
+  function toHalf(v){
+    return v
+      .replace(/[０-９]/g, function(c){ return String.fromCharCode(c.charCodeAt(0)-65248); })
+      .replace(/[．。･・]/g, ".")
+      .replace(/[－−―ーｰ‐–—]/g, "-")
+      .replace(/[\u3000]/g, " ");
+  }
+
+  /* ── 数字だけに整える（空白区切りは温存＝度分秒入力を壊さない） ── */
+  function clean(v, dec){
+    var toks = toHalf(v).split(" "), out = [], i, t, neg, k;
+    for(i=0;i<toks.length;i++){
+      t = toks[i];
+      neg = (i===0) && t.charAt(0)==="-";
+      t = t.replace(/[^0-9.]/g, "");
+      if(!dec) t = t.replace(/\./g, "");
+      else {
+        k = t.indexOf(".");
+        if(k>=0) t = t.slice(0,k+1) + t.slice(k+1).replace(/\./g,"");
+      }
+      out.push((neg?"-":"") + t);
+    }
+    return out.join(" ");
+  }
+
+  /* ── 入力の監視（捕捉フェーズ＝各ツールの計算処理より先に整える） ── */
+  document.addEventListener("input", function(e){
+    var el = e.target;
+    if(!isNum(el)) return;
+    var v = el.value, c = clean(v, isDec(el));
+    if(c === v) return;
+    var p = el.selectionStart, d = v.length - c.length;
+    el.value = c;
+    try{ el.setSelectionRange(Math.max(0,p-d), Math.max(0,p-d)); }catch(err){}
+  }, true);
+
+  /* ── ± / ✕ の浮動ボタン（DOMを包まないので再描画に強い） ── */
+  var bar=null, cur=null, sign=null;
+
+  function notify(el){
+    var ev;
+    try{ ev = new Event("input", {bubbles:true}); }
+    catch(err){ ev = document.createEvent("Event"); ev.initEvent("input", true, false); }
+    el.dispatchEvent(ev);
+    try{ ev = new Event("change", {bubbles:true}); }
+    catch(err){ ev = document.createEvent("Event"); ev.initEvent("change", true, false); }
+    el.dispatchEvent(ev);
+  }
+  /* 押した瞬間に実行する。既定動作を止めることで入力欄のフォーカス（＝
+     数字キーパッド）を保ったまま操作でき、ゴーストクリックも防げる。   */
+  function act(e){
+    e.preventDefault();
+    var b = e.target, a, v;
+    while(b && b !== bar && b.tagName !== "BUTTON") b = b.parentNode;
+    if(!b || b === bar || !cur) return;
+    a = b.getAttribute("data-a");
+    if(a === "clr") cur.value = "";
+    else {
+      v = cur.value;
+      cur.value = (v.charAt(0) === "-") ? v.slice(1) : ("-" + v);
+    }
+    notify(cur);
+    try{ cur.focus(); }catch(err){}
+    place();
+  }
+
+  function build(){
+    bar = document.createElement("div");
+    bar.className = "kt-aid";
+    bar.innerHTML =
+      '<button type="button" data-a="sign" aria-label="符号を反転">±</button>'+
+      '<button type="button" data-a="clr" aria-label="この欄を消去">✕</button>';
+    document.body.appendChild(bar);
+    sign = bar.querySelector('[data-a="sign"]');
+    if(window.PointerEvent){
+      bar.addEventListener("pointerdown", act);
+    } else {
+      bar.addEventListener("mousedown", act);
+      bar.addEventListener("touchstart", act, {passive:false});
+    }
+  }
+
+  function hide(){ if(bar) bar.className = "kt-aid"; cur = null; }
+
+  function place(){
+    if(!cur || !bar) return;
+    if(!document.contains(cur)){ hide(); return; }   /* 再描画で消えた場合 */
+    bar.className = "kt-aid on";
+    var r = cur.getBoundingClientRect();
+    var bw = bar.offsetWidth, bh = bar.offsetHeight;
+    var top = r.top - bh - 6;
+    if(top < 4) top = r.bottom + 6;
+    var left = r.right - bw;
+    if(left < 4) left = 4;
+    bar.style.left = (left + (window.pageXOffset||0)) + "px";
+    bar.style.top  = (top  + (window.pageYOffset||0)) + "px";
+  }
+
+  document.addEventListener("focusin", function(e){
+    if(!isNum(e.target)){ hide(); return; }
+    cur = e.target;
+    if(!bar) build();
+    sign.style.display = isDec(cur) ? "" : "none";   /* 整数欄には ± を出さない */
+    place();
+  });
+  document.addEventListener("focusout", function(){
+    setTimeout(function(){ if(document.activeElement !== cur) hide(); }, 0);
+  });
+  window.addEventListener("scroll", function(){ if(cur) place(); }, true);
+  window.addEventListener("resize", function(){ if(cur) place(); });
+})();
 </script>
 </body>
 </html>

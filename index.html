@@ -106,6 +106,15 @@
     margin-top:16px;font-size:11px;color:#5B707E;line-height:1.7;
     text-align:center;letter-spacing:.03em;
   }
+  .diag{margin-top:10px}
+  .diag button{
+    font-family:inherit;font-size:11px;color:#5B707E;background:none;
+    border:1px solid #C6D2DA;border-radius:6px;padding:5px 12px;cursor:pointer;
+  }
+  .diag button:active{background:#E6EBEF}
+  .diagOut{margin-top:6px;font-size:11px;line-height:1.6;word-break:break-all}
+  .diagOut.ng{color:#D63426}
+  .diagOut.ok{color:#2E7D4F}
 </style>
 </head>
 <body>
@@ -119,7 +128,7 @@
         現場のための計算・記録ツール集。すべての計算はこの端末の中で行われ、入力値がネットに送信されることはありません。
       </div>
       <div class="strip">
-        <div><b>構成</b> 28ツール</div>
+        <div><b>構成</b> 29ツール</div>
         <div><b>通信</b> なし(端末内計算)</div>
         <div>REV 2026-07</div>
       </div>
@@ -171,6 +180,23 @@
     </span>
     <span class="chev">›</span>
   </a>
+  <a class="tool" href="pcd-multi/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <circle cx="19" cy="22" r="13" fill="none" stroke="#8FA2AF" stroke-width="1.2" stroke-dasharray="5 2 1.2 2"/>
+      <circle cx="30" cy="22" r="8" fill="none" stroke="#8FA2AF" stroke-width="1.2" stroke-dasharray="5 2 1.2 2"/>
+      <circle cx="19" cy="9"  r="2.6" fill="#fff" stroke="#1F3341" stroke-width="1.4"/>
+      <circle cx="30" cy="30" r="2.6" fill="#fff" stroke="#1F3341" stroke-width="1.4"/>
+      <circle cx="8"  cy="26" r="2.6" fill="#fff" stroke="#1F3341" stroke-width="1.4"/>
+      <circle cx="38" cy="22" r="2.6" fill="#D63426" stroke="#D63426" stroke-width="1.4"/>
+      <line x1="19" y1="9" x2="38" y2="22" stroke="#D63426" stroke-width="1.6"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-29</span>
+      <div class="nm">PCD 複合</div>
+      <div class="ds">複数のPCDを同心・偏心で重ねて全穴の座標と穴間ピッチ。起点角・不等配にも対応</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
   <a class="tool" href="angle-dim/">
     <span class="icon"><svg viewBox="0 0 44 44">
       <line x1="8" y1="37" x2="38" y2="37" stroke="#1F3341" stroke-width="2"/>
@@ -198,7 +224,7 @@
     <span>
       <span class="no">TOOL-09</span>
       <div class="nm">多穴間距離</div>
-      <div class="ds">等配でない2〜6穴(半径・角度ばらばら)を総当たりで距離計算</div>
+      <div class="ds">等配でない2〜8穴(半径・角度ばらばら)を総当たりで距離計算。座標は原点を選んで出力</div>
     </span>
     <span class="chev">›</span>
   </a>
@@ -605,6 +631,10 @@
   <footer>
     検査ミニポータル | 計算式とJIS規格値のみで構成。図面・品番などの固有情報は含みません。<br>
     ★お気に入りはこの端末のブラウザ内にのみ保存されます(送信なし)。
+    <div class="diag">
+      <button type="button" id="diagBtn">オフライン診断</button>
+      <div id="diagOut" class="diagOut"></div>
+    </div>
   </footer>
 </div>
 
@@ -619,7 +649,7 @@
     'right-triangle/':'直角三角形 三平方 ピタゴラス 斜辺 底辺 高さ サイン コサイン タンジェント 勾配 角度 三角比',
     'tolerance/':'はめあい 公差 H7 h7 g6 js k m p s 軸 穴 合否 寸法許容差',
     'gear-w/':'歯車 またぎ歯厚 W寸法 モジュール 転位 歯厚マイクロ',
-    'multi-hole/':'多穴 座標 総当たり 三次元測定 CMM 穴1基準 相対角度',
+    'multi-hole/':'多穴 座標 総当たり 三次元測定 CMM 穴1基準 相対角度 原点 ワーク原点 加工',
     'hole-builder/':'穴位置 中心 データム 座標 三辺測量 逆算 縦横 位置 XY 割り出し',
     'bend-guide/':'パイプ チューブ 曲げ 展開長 R曲げ ベンダー',
     'bend-guide-3d/':'3D 立体 ひねり 回転 三面図 YBC パイプ',
@@ -639,7 +669,8 @@
     'corner-dist/':'角 かど 対角 直方体 箱物 角物 隅切り 面取り 切欠き ノッチ L字 凹み 頂点 座標 空間対角 対角差 直角度 立方体',
     'axis-tilt/':'傾き 傾斜 軸 検査棒 テストピース 芯 直角度 直角 スコヤ ダイヤルゲージ 2点読み 定盤 ガタ すき間 ロッキング 首振り 反転法 勾配 mm/m 度分秒 デジタル傾斜計 てこ式',
     'datum-edge/':'基準点 基準線 データム 端面 平板 大板 板 コンベックス スケール メジャー 換算 連鎖 極座標 けがき 罫書き 墨出し 左端 下端 縁読み 座標変換',
-    'pitch-row/':'ピッチ 穴間 並び 並び寸法 累進 累積 逐次 端面 端面から 間隔 等ピッチ 等間隔 穴ピッチ 引き算 差 コンベックス スケール 連続寸法'
+    'pitch-row/':'ピッチ 穴間 並び 並び寸法 累進 累積 逐次 端面 端面から 間隔 等ピッチ 等間隔 穴ピッチ 引き算 差 コンベックス スケール 連続寸法',
+    'pcd-multi/':'PCD 複合 複数 二重 多重 同心 偏心 芯ズレ 中心違い 別PCD 穴ピッチ 弦 起点角 位相 角度 不等配 不等分割 等配 割り出し ボルト穴 フランジ 時計回り 反時計回り 座標'
   };
   var FAVKEY='kensa-fav';
 
@@ -753,22 +784,80 @@
 </div>
 <script>
 (function(){
-  function toast(msg){
+  function toast(msg, hold){
     var n=document.getElementById('offlineNote');
     document.getElementById('offlineNoteMsg').textContent=msg;
     n.style.display='block';
-    setTimeout(function(){ n.style.display='none'; }, 6000);
+    if(!hold) setTimeout(function(){ n.style.display='none'; }, 6000);
   }
+
+  /* Service Worker に「実際に何件保存できたか」を聞く。3秒で諦める */
+  function askStatus(cb){
+    if(!('serviceWorker' in navigator) || !navigator.serviceWorker.controller){ cb(null); return; }
+    var ch=new MessageChannel(), done=false;
+    ch.port1.onmessage=function(ev){ if(!done){ done=true; cb(ev.data); } };
+    try{ navigator.serviceWorker.controller.postMessage({type:'STATUS'}, [ch.port2]); }
+    catch(e){ cb(null); return; }
+    setTimeout(function(){ if(!done){ done=true; cb(null); } }, 3000);
+  }
+
+  /* 保存完了の通知は、件数を実測してから出す。
+     取りこぼしがあるのに「完了」と出すと、現場で機内モードにして初めて気づくため。 */
+  function reportInstall(){
+    askStatus(function(st){
+      if(!st){ toast('オフライン準備が完了しました。機内モードでも全ツールが使えます。'); return; }
+      if(st.failed && st.failed.length){
+        toast('保存できなかったものが '+st.failed.length+' 件あります。電波の良い場所でこの画面を開き直してください。（下の「オフライン診断」で確認できます）', true);
+      }else{
+        toast('オフライン準備が完了しました（'+st.saved+' 件を保存）。機内モードでも全ツールが使えます。');
+      }
+    });
+  }
+
+  var diagBtn=document.getElementById('diagBtn');
+  if(diagBtn){
+    diagBtn.addEventListener('click', function(){
+      var out=document.getElementById('diagOut');
+      out.className='diagOut'; out.textContent='確認中…';
+      if(!('serviceWorker' in navigator)){
+        out.className='diagOut ng';
+        out.textContent='このブラウザはオフライン保存に対応していません。';
+        return;
+      }
+      askStatus(function(st){
+        if(!st){
+          out.className='diagOut ng';
+          out.textContent='まだオフライン保存が済んでいません。電波のある場所でこの画面を開いたまま少し待ち、もう一度押してください。';
+          return;
+        }
+        var head=st.cache+'／'+st.saved+' / '+st.total+' 件を保存済み';
+        if(st.failed && st.failed.length){
+          out.className='diagOut ng';
+          out.textContent=head+'\n未保存: '+st.failed.join(' , ')+'\n電波の良い場所でこの画面を開き直してください。';
+          out.style.whiteSpace='pre-line';
+        }else{
+          out.className='diagOut ok';
+          out.textContent=head+'。全ツールが機内モードで使えます。';
+        }
+      });
+    });
+  }
+
   if('serviceWorker' in navigator){
     window.addEventListener('load', function(){
       navigator.serviceWorker.register('./sw.js').then(function(reg){
         // 初回インストール完了の検知
         if(reg.installing || reg.waiting){
           var sw=reg.installing||reg.waiting;
+          var first=!navigator.serviceWorker.controller;
           sw.addEventListener('statechange', function(){
-            if(sw.state==='activated' && !navigator.serviceWorker.controller){
-              toast('オフライン準備が完了しました。機内モードでも全ツールが使えます。');
-            }
+            if(sw.state!=='activated' || !first) return;
+            // claim() で controller が付いてからでないと件数を聞けない
+            if(navigator.serviceWorker.controller){ reportInstall(); return; }
+            navigator.serviceWorker.addEventListener('controllerchange', function once(){
+              navigator.serviceWorker.removeEventListener('controllerchange', once);
+              reportInstall();
+            });
           });
         }
         // 新バージョン検知（CACHE番号を上げて再アップロードしたとき）
@@ -776,8 +865,9 @@
           var nw=reg.installing;
           if(!nw) return;
           nw.addEventListener('statechange', function(){
-            if(nw.state==='installed' && navigator.serviceWorker.controller){
-              toast('新しいバージョンを取得しました。次に開いたときに反映されます。');
+            // skipWaiting() で即座に切り替わるので、開いているこの画面だけが古いまま
+            if(nw.state==='activated' && navigator.serviceWorker.controller){
+              toast('新しいバージョンに更新しました。次に開くツールから最新になります。');
             }
           });
         });

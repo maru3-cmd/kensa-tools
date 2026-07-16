@@ -206,9 +206,9 @@
   <div class="card">
     <h2>寸法入力<span class="tag">L × W × H</span></h2>
     <div class="row">
-      <div><label class="f">L（長さ・X）</label><input type="number" id="bL" value="600" step="0.01" oninput="calcBox()"></div>
-      <div><label class="f">W（幅・Y）</label><input type="number" id="bW" value="400" step="0.01" oninput="calcBox()"></div>
-      <div><label class="f">H（高さ・Z）</label><input type="number" id="bH" value="300" step="0.01" oninput="calcBox()"></div>
+      <div><label class="f">L（長さ・X）</label><input type="text" inputmode="decimal" autocomplete="off" id="bL" value="600" oninput="calcBox()"></div>
+      <div><label class="f">W（幅・Y）</label><input type="text" inputmode="decimal" autocomplete="off" id="bW" value="400" oninput="calcBox()"></div>
+      <div><label class="f">H（高さ・Z）</label><input type="text" inputmode="decimal" autocomplete="off" id="bH" value="300" oninput="calcBox()"></div>
     </div>
     <div class="figbox"><figure><svg id="svgBox" viewBox="0 0 300 210" role="img" aria-label="直方体の対角線図"></svg><figcaption>赤＝空間対角</figcaption></figure></div>
   </div>
@@ -239,12 +239,12 @@
     <h2>実測チェック<span class="tag">対角差 → 直角度</span></h2>
     <div class="banner">面の対角2本を測って、差から直角のズレを見積もります。辺 a・b はその面の実寸を入れてください。</div>
     <div class="row">
-      <div><label class="f">辺 a</label><input type="number" id="sa" value="600" step="0.01" oninput="calcSq()"></div>
-      <div><label class="f">辺 b</label><input type="number" id="sb" value="400" step="0.01" oninput="calcSq()"></div>
+      <div><label class="f">辺 a</label><input type="text" inputmode="decimal" autocomplete="off" id="sa" value="600" oninput="calcSq()"></div>
+      <div><label class="f">辺 b</label><input type="text" inputmode="decimal" autocomplete="off" id="sb" value="400" oninput="calcSq()"></div>
     </div>
     <div class="row">
-      <div><label class="f">対角 実測 d1</label><input type="number" id="sd1" value="721.5" step="0.01" oninput="calcSq()"></div>
-      <div><label class="f">対角 実測 d2</label><input type="number" id="sd2" value="720.4" step="0.01" oninput="calcSq()"></div>
+      <div><label class="f">対角 実測 d1</label><input type="text" inputmode="decimal" autocomplete="off" id="sd1" value="721.5" oninput="calcSq()"></div>
+      <div><label class="f">対角 実測 d2</label><input type="text" inputmode="decimal" autocomplete="off" id="sd2" value="720.4" oninput="calcSq()"></div>
     </div>
     <div class="res">
       <div><span class="k">対角差 Δ</span><span class="v hl" id="sD">-</span></div>
@@ -256,14 +256,14 @@
 
     <h2 style="margin-top:16px">空間対角 4本の実測</h2>
     <div class="row">
-      <div><label class="f">D1</label><input type="number" id="q1" step="0.01" oninput="calcQ()"></div>
-      <div><label class="f">D2</label><input type="number" id="q2" step="0.01" oninput="calcQ()"></div>
+      <div><label class="f">D1</label><input type="text" inputmode="decimal" autocomplete="off" id="q1" oninput="calcQ()"></div>
+      <div><label class="f">D2</label><input type="text" inputmode="decimal" autocomplete="off" id="q2" oninput="calcQ()"></div>
     </div>
     <div class="row">
-      <div><label class="f">D3</label><input type="number" id="q3" step="0.01" oninput="calcQ()"></div>
-      <div><label class="f">D4</label><input type="number" id="q4" step="0.01" oninput="calcQ()"></div>
+      <div><label class="f">D3</label><input type="text" inputmode="decimal" autocomplete="off" id="q3" oninput="calcQ()"></div>
+      <div><label class="f">D4</label><input type="text" inputmode="decimal" autocomplete="off" id="q4" oninput="calcQ()"></div>
     </div>
-    <div class="row"><div><label class="f">許容差（最大－最小）</label><input type="number" id="qtol" value="0.5" step="0.01" oninput="calcQ()"></div></div>
+    <div class="row"><div><label class="f">許容差（最大－最小）</label><input type="text" inputmode="decimal" autocomplete="off" id="qtol" value="0.5" oninput="calcQ()"></div></div>
     <div class="res">
       <div><span class="k">最大 － 最小</span><span class="v hl" id="qRange">-</span></div>
       <div><span class="k">平均</span><span class="v" id="qAvg">-</span></div>
@@ -288,13 +288,13 @@
       </div>
     </div>
     <div class="row">
-      <div><label class="f">L（X方向）</label><input type="number" id="pL" value="600" step="0.01"></div>
-      <div><label class="f">W（Y方向）</label><input type="number" id="pW" value="400" step="0.01"></div>
+      <div><label class="f">L（X方向）</label><input type="text" inputmode="decimal" autocomplete="off" id="pL" value="600"></div>
+      <div><label class="f">W（Y方向）</label><input type="text" inputmode="decimal" autocomplete="off" id="pW" value="400"></div>
     </div>
     <div class="row">
-      <div><label class="f" id="paLbl">a</label><input type="number" id="pa" value="80" step="0.01"></div>
-      <div><label class="f" id="pbLbl">b</label><input type="number" id="pb" value="60" step="0.01"></div>
-      <div><label class="f">高さ H</label><input type="number" id="pH" value="300" step="0.01"></div>
+      <div><label class="f" id="paLbl">a</label><input type="text" inputmode="decimal" autocomplete="off" id="pa" value="80"></div>
+      <div><label class="f" id="pbLbl">b</label><input type="text" inputmode="decimal" autocomplete="off" id="pb" value="60"></div>
+      <div><label class="f">高さ H</label><input type="text" inputmode="decimal" autocomplete="off" id="pH" value="300"></div>
     </div>
     <div class="hint" id="presetHint"></div>
     <div class="btnrow" style="margin-top:10px">
@@ -316,7 +316,7 @@
 
     <h2 style="margin-top:16px">辺送りで追加<span class="tag">図面をなぞる</span></h2>
     <div class="row">
-      <div><label class="f">長さ</label><input type="number" id="stepLen" value="100" step="0.01"></div>
+      <div><label class="f">長さ</label><input type="text" inputmode="decimal" autocomplete="off" id="stepLen" value="100"></div>
       <div style="flex:2">
         <label class="f">方向</label>
         <div class="btnrow">
@@ -412,7 +412,7 @@
     </div>
     <div class="row noprint">
       <div><label class="f">検査者</label><input type="text" id="recBy" placeholder="—" oninput="persist()"></div>
-      <div><label class="f">公差 ±</label><input type="number" id="recTol" value="0.5" step="0.01" oninput="renderList();persist()"></div>
+      <div><label class="f">公差 ±</label><input type="text" inputmode="decimal" autocomplete="off" id="recTol" value="0.5" oninput="renderList();persist()"></div>
     </div>
     <div class="print-only" id="recHead" style="font-size:12px;margin-bottom:8px"></div>
     <div class="tblwrap" style="max-height:none">
@@ -450,7 +450,8 @@
 <script>
 "use strict";
 var DEC = 3;
-function f(v){ return (isFinite(v)? v.toFixed(DEC) : "-"); }
+function numOK(v){ return typeof v==="number" && isFinite(v); }  /* isFinite(null)===true なので型も見る */
+function f(v){ return (numOK(v)? v.toFixed(DEC) : "-"); }
 function f1(v){ return (isFinite(v)? v.toFixed(1) : "-"); }
 function num(id){ var v = parseFloat(document.getElementById(id).value); return isFinite(v)? v : NaN; }
 
@@ -550,14 +551,14 @@ function points(){
     var n=S.contour.length, out=[];
     for(var i=0;i<n;i++) out.push({label:String(i+1), x:S.contour[i].x, y:S.contour[i].y, z:0, ring:"B", idx:i});
     for(var j=0;j<n;j++){
-      var z = (S.contour[j].z===null||!isFinite(S.contour[j].z))? H0() : S.contour[j].z;
+      var z = numOK(S.contour[j].z)? S.contour[j].z : H0();
       out.push({label:(j+1)+"′", x:S.contour[j].x, y:S.contour[j].y, z:z, ring:"T", idx:j});
     }
     return out;
   }
   return S.free.map(function(p,i){ return {label:p.label||("P"+(i+1)), x:p.x, y:p.y, z:p.z, ring:"F", idx:i}; });
 }
-function valid(p){ return isFinite(p.x)&&isFinite(p.y)&&isFinite(p.z); }
+function valid(p){ return numOK(p.x)&&numOK(p.y)&&numOK(p.z); }
 function d3(a,b){ return Math.hypot(a.x-b.x, a.y-b.y, a.z-b.z); }
 
 function isEdge(a,b,n){
@@ -738,9 +739,9 @@ function renderVT(){
   document.getElementById("cnCount").textContent = S.contour.length+" 点";
   S.contour.forEach(function(p,i){
     h+='<tr><td>'+(i+1)+'</td>'
-      +'<td><input type="number" step="0.01" value="'+(isFinite(p.x)?p.x:"")+'" oninput="editV('+i+',\'x\',this)"></td>'
-      +'<td><input type="number" step="0.01" value="'+(isFinite(p.y)?p.y:"")+'" oninput="editV('+i+',\'y\',this)"></td>'
-      +'<td><input type="number" step="0.01" placeholder="H" value="'+(p.z===null||!isFinite(p.z)?"":p.z)+'" oninput="editV('+i+',\'z\',this)"></td>'
+      +'<td><input type="text" inputmode="decimal" autocomplete="off" value="'+(isFinite(p.x)?p.x:"")+'" oninput="editV('+i+',\'x\',this)"></td>'
+      +'<td><input type="text" inputmode="decimal" autocomplete="off" value="'+(isFinite(p.y)?p.y:"")+'" oninput="editV('+i+',\'y\',this)"></td>'
+      +'<td><input type="text" inputmode="decimal" autocomplete="off" placeholder="H" value="'+(p.z===null||!isFinite(p.z)?"":p.z)+'" oninput="editV('+i+',\'z\',this)"></td>'
       +'<td><button class="xbtn" onclick="delVertex('+i+')" aria-label="削除">×</button></td></tr>';
   });
   if(!S.contour.length) h='<tr><td colspan="5" style="text-align:center;color:#8FA2AF;padding:12px">ひな形を選んで「輪郭を作る」を押してください</td></tr>';
@@ -766,9 +767,9 @@ function renderFT(){
   S.free.forEach(function(p,i){
     h+='<tr>'
       +'<td style="width:52px"><input type="text" value="'+(p.label||"")+'" oninput="editF('+i+',\'label\',this)"></td>'
-      +'<td><input type="number" step="0.01" value="'+(isFinite(p.x)?p.x:"")+'" oninput="editF('+i+',\'x\',this)"></td>'
-      +'<td><input type="number" step="0.01" value="'+(isFinite(p.y)?p.y:"")+'" oninput="editF('+i+',\'y\',this)"></td>'
-      +'<td><input type="number" step="0.01" value="'+(isFinite(p.z)?p.z:"")+'" oninput="editF('+i+',\'z\',this)"></td>'
+      +'<td><input type="text" inputmode="decimal" autocomplete="off" value="'+(isFinite(p.x)?p.x:"")+'" oninput="editF('+i+',\'x\',this)"></td>'
+      +'<td><input type="text" inputmode="decimal" autocomplete="off" value="'+(isFinite(p.y)?p.y:"")+'" oninput="editF('+i+',\'y\',this)"></td>'
+      +'<td><input type="text" inputmode="decimal" autocomplete="off" value="'+(isFinite(p.z)?p.z:"")+'" oninput="editF('+i+',\'z\',this)"></td>'
       +'<td><button class="xbtn" onclick="delFree('+i+')" aria-label="削除">×</button></td></tr>';
   });
   if(!S.free.length) h='<tr><td colspan="5" style="text-align:center;color:#8FA2AF;padding:12px">「＋ 点を追加」から入力してください</td></tr>';
@@ -797,7 +798,7 @@ function renderList(){
     if(isFinite(diff)&&isFinite(tol)){ var ok=Math.abs(diff)<=tol; jd=ok?"合":"否"; cls=ok?"ok":"ng"; }
     h+='<tr><td>'+r.la+'–'+r.lb+' <button class="xbtn noprint" style="width:20px;height:20px;font-size:11px" onclick="delRow('+i+')" aria-label="削除">×</button></td>'
       +'<td>'+(isFinite(theo)?f(theo):"—")+'</td>'
-      +'<td><input type="number" step="0.001" value="'+r.meas+'" oninput="editM('+i+',this)" style="width:78px"></td>'
+      +'<td><input type="text" inputmode="decimal" autocomplete="off" value="'+r.meas+'" oninput="editM('+i+',this)" style="width:78px"></td>'
       +'<td>'+(isFinite(diff)?(diff>0?"+":"")+f(diff):"—")+'</td>'
       +'<td class="'+cls+'">'+jd+'</td></tr>';
   });
@@ -833,7 +834,10 @@ function persist(){
 function restore(){
   try{
     var d=JSON.parse(localStorage.getItem(KEY)||"null"); if(!d) return;
-    S.contour=d.contour||[]; S.free=d.free||[]; S.list=d.list||[]; S.sel=d.sel||null;
+    /* JSON保存では NaN が null に化ける。z は null＝「高さHを使う」の意味なので温存する */
+    S.contour=(d.contour||[]).map(function(p){ return {x:numOK(p.x)?p.x:NaN, y:numOK(p.y)?p.y:NaN, z:numOK(p.z)?p.z:null}; });
+    S.free=(d.free||[]).map(function(p,i){ return {label:p.label||("P"+(i+1)), x:numOK(p.x)?p.x:NaN, y:numOK(p.y)?p.y:NaN, z:numOK(p.z)?p.z:NaN}; });
+    S.list=d.list||[]; S.sel=d.sel||null;
     S.savedTab = d.tab || "box";
     if(d.H) document.getElementById("pH").value=d.H;
     if(d.name) document.getElementById("recName").value=d.name;
@@ -879,6 +883,155 @@ if(!document.getElementById("recDate").value){
 }
 renderList();
 setTab(S.savedTab || "box");
+</script>
+
+<!-- ═══ 数字入力の補助（共通スニペット / 全ツール同一） ═══
+     ・数字キーパッド固定（inputmode）／全角数字・句点の自動半角化
+     ・数字以外（かな・英字・記号）の混入を自動で除去
+     ・± ボタン … 数字キーパッドに無いマイナスを入力
+     ・✕ ボタン … 欄をまとめて消去
+     ・「5 43」のような度分秒のスペース区切りはそのまま通します
+     ・DOM構造は変更しません（再描画するツールでも壊れません）        -->
+<style>
+  .kt-aid{
+    position:absolute;z-index:9998;display:none;gap:4px;
+    background:#1F3341;border-radius:8px;padding:3px;
+    box-shadow:0 3px 10px rgba(0,0,0,.28);
+  }
+  .kt-aid.on{display:flex}
+  .kt-aid button{
+    -webkit-appearance:none;appearance:none;border:none;
+    background:#2C4353;color:#fff;font:inherit;font-size:14px;font-weight:700;
+    line-height:1;padding:8px 12px;border-radius:5px;cursor:pointer;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  .kt-aid button:active{background:#D63426}
+  @media print{.kt-aid{display:none !important}}
+</style>
+<script>
+(function(){
+  "use strict";
+
+  /* ── 対象の判定 ── */
+  function mode(el){
+    return (el && el.tagName==="INPUT" && !el.readOnly && !el.disabled)
+      ? (el.getAttribute("inputmode")||"") : "";
+  }
+  function isNum(el){ var m=mode(el); return m==="decimal"||m==="numeric"; }
+  function isDec(el){ return mode(el)==="decimal"; }
+
+  /* ── 全角→半角（かなキーボードで打たれた場合の救済） ── */
+  function toHalf(v){
+    return v
+      .replace(/[０-９]/g, function(c){ return String.fromCharCode(c.charCodeAt(0)-65248); })
+      .replace(/[．。･・]/g, ".")
+      .replace(/[－−―ーｰ‐–—]/g, "-")
+      .replace(/[\u3000]/g, " ");
+  }
+
+  /* ── 数字だけに整える（空白区切りは温存＝度分秒入力を壊さない） ── */
+  function clean(v, dec){
+    var toks = toHalf(v).split(" "), out = [], i, t, neg, k;
+    for(i=0;i<toks.length;i++){
+      t = toks[i];
+      neg = (i===0) && t.charAt(0)==="-";
+      t = t.replace(/[^0-9.]/g, "");
+      if(!dec) t = t.replace(/\./g, "");
+      else {
+        k = t.indexOf(".");
+        if(k>=0) t = t.slice(0,k+1) + t.slice(k+1).replace(/\./g,"");
+      }
+      out.push((neg?"-":"") + t);
+    }
+    return out.join(" ");
+  }
+
+  /* ── 入力の監視（捕捉フェーズ＝各ツールの計算処理より先に整える） ── */
+  document.addEventListener("input", function(e){
+    var el = e.target;
+    if(!isNum(el)) return;
+    var v = el.value, c = clean(v, isDec(el));
+    if(c === v) return;
+    var p = el.selectionStart, d = v.length - c.length;
+    el.value = c;
+    try{ el.setSelectionRange(Math.max(0,p-d), Math.max(0,p-d)); }catch(err){}
+  }, true);
+
+  /* ── ± / ✕ の浮動ボタン（DOMを包まないので再描画に強い） ── */
+  var bar=null, cur=null, sign=null;
+
+  function notify(el){
+    var ev;
+    try{ ev = new Event("input", {bubbles:true}); }
+    catch(err){ ev = document.createEvent("Event"); ev.initEvent("input", true, false); }
+    el.dispatchEvent(ev);
+    try{ ev = new Event("change", {bubbles:true}); }
+    catch(err){ ev = document.createEvent("Event"); ev.initEvent("change", true, false); }
+    el.dispatchEvent(ev);
+  }
+  /* 押した瞬間に実行する。既定動作を止めることで入力欄のフォーカス（＝
+     数字キーパッド）を保ったまま操作でき、ゴーストクリックも防げる。   */
+  function act(e){
+    e.preventDefault();
+    var b = e.target, a, v;
+    while(b && b !== bar && b.tagName !== "BUTTON") b = b.parentNode;
+    if(!b || b === bar || !cur) return;
+    a = b.getAttribute("data-a");
+    if(a === "clr") cur.value = "";
+    else {
+      v = cur.value;
+      cur.value = (v.charAt(0) === "-") ? v.slice(1) : ("-" + v);
+    }
+    notify(cur);
+    try{ cur.focus(); }catch(err){}
+    place();
+  }
+
+  function build(){
+    bar = document.createElement("div");
+    bar.className = "kt-aid";
+    bar.innerHTML =
+      '<button type="button" data-a="sign" aria-label="符号を反転">±</button>'+
+      '<button type="button" data-a="clr" aria-label="この欄を消去">✕</button>';
+    document.body.appendChild(bar);
+    sign = bar.querySelector('[data-a="sign"]');
+    if(window.PointerEvent){
+      bar.addEventListener("pointerdown", act);
+    } else {
+      bar.addEventListener("mousedown", act);
+      bar.addEventListener("touchstart", act, {passive:false});
+    }
+  }
+
+  function hide(){ if(bar) bar.className = "kt-aid"; cur = null; }
+
+  function place(){
+    if(!cur || !bar) return;
+    if(!document.contains(cur)){ hide(); return; }   /* 再描画で消えた場合 */
+    bar.className = "kt-aid on";
+    var r = cur.getBoundingClientRect();
+    var bw = bar.offsetWidth, bh = bar.offsetHeight;
+    var top = r.top - bh - 6;
+    if(top < 4) top = r.bottom + 6;
+    var left = r.right - bw;
+    if(left < 4) left = 4;
+    bar.style.left = (left + (window.pageXOffset||0)) + "px";
+    bar.style.top  = (top  + (window.pageYOffset||0)) + "px";
+  }
+
+  document.addEventListener("focusin", function(e){
+    if(!isNum(e.target)){ hide(); return; }
+    cur = e.target;
+    if(!bar) build();
+    sign.style.display = isDec(cur) ? "" : "none";   /* 整数欄には ± を出さない */
+    place();
+  });
+  document.addEventListener("focusout", function(){
+    setTimeout(function(){ if(document.activeElement !== cur) hide(); }, 0);
+  });
+  window.addEventListener("scroll", function(){ if(cur) place(); }, true);
+  window.addEventListener("resize", function(){ if(cur) place(); });
+})();
 </script>
 </body>
 </html>
