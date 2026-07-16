@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#1F3341">
-<meta name="description" content="複数のPCDを同心・偏心で重ねて、全ての穴の座標と穴間ピッチを計算します。起点角の指定、時計回り/反時計回り、等配だけでなく30°150°のような不等配にも対応。計算は端末内で完結します。">
-<title>PCD 複合 | 検査計算ツール</title>
+<meta name="description" content="PCD・単独の穴・中心線からの左右振り分け・端面からの寸法を1枚の図の上で合成し、全ての穴の座標と穴間ピッチをまとめて計算します。計算は端末内で完結します。">
+<title>穴配置 総合 | 検査計算ツール</title>
 <style>
   :root{
     --paper:#F2F4F5; --sheet:#FFFFFF; --ink:#1F3341; --line:#8FA2AF; --red:#D63426;
@@ -59,10 +59,13 @@
   .circ .hd{display:flex;align-items:center;gap:8px;margin-bottom:8px}
   .circ .hd .nm{font-family:ui-monospace,Menlo,monospace;font-weight:700;font-size:14px;min-width:22px;
     background:var(--ink);color:#fff;text-align:center;border-radius:5px;padding:3px 0}
+  .circ .hd .ty{font-size:11px;font-weight:700;color:#5B707E;letter-spacing:.06em;flex:none}
   .circ .hd select{flex:1}
   .xbtn{width:28px;height:28px;border:1px solid var(--line);background:#fff;border-radius:6px;color:var(--red);font-size:14px;line-height:1;cursor:pointer;flex:none}
   .circ .err{font-size:10.5px;color:var(--red);font-weight:700;margin:2px 0 4px}
   .circ .note{font-size:10.5px;color:var(--green);font-weight:700;margin:2px 0 4px}
+  .ckrow{display:flex;align-items:center;gap:6px;font-size:12px;color:#42565F;margin:0 0 9px 1px}
+  .ckrow input{width:auto;padding:0}
 
   .dro{background:var(--dro-bg);border-radius:10px;padding:12px;color:#fff;font-variant-numeric:tabular-nums}
   .dro .lbl{font-size:10px;color:var(--dro-dim);letter-spacing:.12em}
@@ -94,8 +97,8 @@
   .banner{font-size:11.5px;line-height:1.7;background:#FDF6E7;border:1px solid #E9D9AE;border-radius:6px;padding:8px 10px;color:#6B5518;margin-bottom:10px}
 
   details{border-top:1px solid #E3E9EC;margin-top:10px;padding-top:8px}
-  #posDtl{border-top:none;margin-top:0;padding-top:0}
-  @media print{#posDtl>summary{display:none}}
+  #posDtl,#workDtl{border-top:none;margin-top:0;padding-top:0}
+  @media print{#posDtl>summary,#workDtl>summary{display:none}}
   details summary{font-size:11.5px;font-weight:700;color:#5B707E;cursor:pointer;letter-spacing:.04em}
   details ul{margin:8px 0 0 16px;font-size:11.5px;line-height:1.85;color:#42565F}
   footer{font-size:10px;color:#8FA2AF;text-align:center;line-height:1.7;padding:6px 0 4px}
@@ -117,30 +120,54 @@
 <div class="wrap">
 
 <header class="noprint">
-  <h1>PCD 複合<small>複数PCD・偏心・不等配の穴ピッチ</small></h1>
+  <h1>穴配置 総合<small>PCD・任意穴・軸配置・端面をまとめて</small></h1>
   <a href="../index.html">≡ ツール一覧</a>
 </header>
 
 <div class="tb-strip">
-  <div><b>TOOL-29</b></div>
+  <div><b>TOOL-30</b></div>
   <div>0°＝真上</div>
-  <div>不等配可</div>
+  <div>部品を重ねる</div>
   <div>端末内計算</div>
 </div>
 
 <div class="card">
-  <h2>円の入力<span class="tag" id="cCount">0 円</span></h2>
-  <div class="banner">角度は<b>真上（12時）が 0°</b>、既定は<b>時計回り</b>です（PCD穴ピッチと同じ規約）。中心は共通の原点からのズレで、<b>0 のままなら同心</b>です。</div>
+  <h2>部品の入力<span class="tag" id="cCount">0 個</span></h2>
+  <div class="banner">角度は<b>真上（12時）が 0°</b>、<b>時計回りが＋</b>です（PCD穴ピッチ・PCD複合と同じ規約）。すべての部品が<b>ひとつの共通原点 (0, 0)</b> の上に載ります。</div>
   <div id="cBox"></div>
   <div class="btnrow">
-    <button class="btn primary sm" onclick="addCircle('eq')">＋ 等配の円</button>
-    <button class="btn sm" onclick="addCircle('un')">＋ 不等配の円</button>
+    <button class="btn primary sm" onclick="addPart('circle','eq')">＋ PCD（等配）</button>
+    <button class="btn sm" onclick="addPart('circle','un')">＋ PCD（不等配）</button>
+  </div>
+  <div class="btnrow" style="margin-top:8px">
+    <button class="btn sm" onclick="addPart('hole')">＋ 任意穴</button>
+    <button class="btn sm" onclick="addPart('axis')">＋ 軸配置</button>
   </div>
 </div>
 
 <div class="card">
+  <h2>ワーク外形<span class="tag">端面基準を使うときだけ</span></h2>
+  <details id="workDtl">
+  <summary style="font-size:12px;font-weight:700;color:#5B707E;cursor:pointer;padding:2px 0 8px">▼ 外形を入れる（任意穴の「端面から」に必要）</summary>
+  <div class="row">
+    <div><label class="f">幅 W（X方向）</label><input type="text" inputmode="decimal" autocomplete="off" id="wkW" oninput="workSet('w',this)"></div>
+    <div><label class="f">高さ H（Y方向）</label><input type="text" inputmode="decimal" autocomplete="off" id="wkH" oninput="workSet('h',this)"></div>
+  </div>
+  <div class="row">
+    <div><label class="f">共通原点 (0,0) の位置</label>
+      <select id="wkOrg" onchange="workSet('org',this)">
+        <option value="center">外形の中心</option>
+        <option value="corner">外形の左下隅</option>
+      </select>
+    </div>
+  </div>
+  <div class="hint">図面のデータムが部品の中心なら「中心」、左下の角なら「左下隅」です。ここを間違えると、端面基準で入れた穴だけが W/2・H/2 ずれます。<b>図で外形と穴の位置関係を必ず確認してください。</b></div>
+  </details>
+</div>
+
+<div class="card">
   <h2>図<span class="tag">タップで選択と連動</span></h2>
-  <figure><svg id="fig" viewBox="0 0 300 300" role="img" aria-label="複数PCDと穴位置の図"></svg><figcaption>上 が 0°／原点は共通中心</figcaption></figure>
+  <figure><svg id="fig" viewBox="0 0 300 300" role="img" aria-label="部品を合成した穴配置の図"></svg><figcaption>上 が 0°／緑の十字が座標の原点</figcaption></figure>
 </div>
 
 <div class="card">
@@ -151,7 +178,8 @@
   <div class="row noprint">
     <div style="flex:1.1"><label class="f">原点にする場所</label>
       <select id="orgKind" onchange="orgSet('kind',this)">
-        <option value="circle">円の中心</option>
+        <option value="common">共通原点 (0,0)</option>
+        <option value="part">部品の基準点</option>
         <option value="hole">穴</option>
         <option value="xy">指定した点</option>
       </select>
@@ -160,7 +188,7 @@
   </div>
   <div class="tblwrap">
     <table>
-      <thead><tr><th>穴</th><th>角度</th><th>X</th><th>Y</th><th>原点から</th></tr></thead>
+      <thead><tr><th>穴</th><th>由来</th><th>X</th><th>Y</th><th>原点から</th></tr></thead>
       <tbody id="posBody"></tbody>
     </table>
   </div>
@@ -176,8 +204,8 @@
   <h2>穴間ピッチ<span class="tag" id="pCount">0 組</span></h2>
   <div class="chips" id="fltChips">
     <button aria-pressed="true"  onclick="setFilter('all',this)">すべて</button>
-    <button aria-pressed="false" onclick="setFilter('same',this)">同じ円の中</button>
-    <button aria-pressed="false" onclick="setFilter('cross',this)">円をまたぐ</button>
+    <button aria-pressed="false" onclick="setFilter('same',this)">同じ部品の中</button>
+    <button aria-pressed="false" onclick="setFilter('cross',this)">部品をまたぐ</button>
     <button aria-pressed="false" onclick="setFilter('adj',this)">隣どうしだけ</button>
   </div>
   <div class="chips" id="srtChips">
@@ -200,9 +228,9 @@
       <div><div class="k">ΔX</div><div class="v" id="dX">-</div></div>
       <div><div class="k">ΔY</div><div class="v" id="dY">-</div></div>
     </div>
-    <div class="sub" id="dCenRow">
-      <div><div class="k">中心角（同じ円のとき）</div><div class="v" id="dAng">-</div></div>
-      <div><div class="k">方位（Xから反時計）</div><div class="v" id="dAz">-</div></div>
+    <div class="sub">
+      <div><div class="k">中心角（同じPCDのとき）</div><div class="v" id="dAng">-</div></div>
+      <div><div class="k">方位（真上から時計）</div><div class="v" id="dAz">-</div></div>
     </div>
   </div>
   <div class="btnrow noprint" style="margin-top:10px">
@@ -239,129 +267,240 @@
     <summary>測定時の留意点</summary>
     <ul>
       <li>穴の中心そのものは測れません。ピンを入れて外々・内々で測るか、当ピンの径を足し引きしてください（外々－ピン径＝中心間）。</li>
-      <li>偏心した円どうしの穴ピッチは、<b>2つの円の中心距離の精度がそのまま乗ります</b>。中心のズレ（X・Y）は図面値ではなく、可能なら現物で確認してください。</li>
+      <li><b>軸配置の「左」「右」は、基点から先端を見たときの左手・右手</b>です。図面を裏から見た向きで読むと左右が入れ替わります。図で必ず確認してください。</li>
+      <li>離れた部品どうしの穴ピッチは、<b>基準点の位置の精度がそのまま乗ります</b>。中心のズレ（X・Y）や基点は図面値ではなく、可能なら現物で確認してください。</li>
       <li>不等配は「隣との角度」で入れると一周が 360°になるはずです。合計が合わない場合は図面の読み違いか、角度が基準（真上）からの絶対角である可能性があります。</li>
-      <li>回り方向を間違えると、鏡像になって同じ円内のピッチは合うのに他の円との距離だけ合わない、という紛らわしい形で出ます。図と現物を必ず見比べてください。</li>
+      <li>回り方向を間違えると、鏡像になって同じPCD内のピッチは合うのに他の部品との距離だけ合わない、という紛らわしい形で出ます。図と現物を必ず見比べてください。</li>
+      <li>端面基準は、ワーク外形の <b>W・H と「共通原点の位置」</b>に依存します。中心と左下隅を取り違えると、その穴だけが W/2・H/2 ずれます。図で外形と穴の関係を確認してください。</li>
       <li>ここで出るのは理論値です。合否は記録表の実測との差で判定してください。真位置度で見る場合は真位置度判定ツールへ。</li>
-      <li><b>加工に座標を渡す場合。</b>この画面の値は入力した PCD・中心・起点角から計算したものです。入力を間違えると、間違った座標で加工し、同じ間違った値で検査して「合格」と出ます（検査が独立でなくなる）。加工用に使うときは、必ず図面で PCD・起点角・中心を照合してから渡してください。</li>
+      <li><b>加工に座標を渡す場合。</b>この画面の値は入力した数値から計算したものです。入力を間違えると、間違った座標で加工し、同じ間違った値で検査して「合格」と出ます（検査が独立でなくなる）。加工用に使うときは、必ず図面で照合してから渡してください。</li>
       <li>原点を切り替えても穴間ピッチ・ΔX・ΔY は変わりません（平行移動のため）。検査の判定に影響しない作りにしてあります。</li>
     </ul>
   </details>
 </div>
 
 <footer>
-  PCD以外の穴（単独の穴、中心線から左右に振った穴、端面からの寸法）が混ざるときは
-  <a href="../hole-map/" style="color:#5B707E">穴配置 総合(TOOL-30)</a> をどうぞ。PCDの計算は同じです。<br>
   検査ミニポータル｜計算はすべてこの端末の中で行われます。入力値は端末のブラウザ内にのみ保存され、消去ボタンで完全に削除できます。
 </footer>
 </div>
 
 <script>
 "use strict";
-var RAD=Math.PI/180, LB="ABCDEF";
+
+var RAD=Math.PI/180, LB="ABCDEFGH";
+var MAXPART=8, MAXHOLE=60;
 function numOK(v){ return typeof v==="number" && isFinite(v); }  /* isFinite(null)===true なので型も見る */
 function g(id){ return document.getElementById(id); }
 function pf(v){ var x=parseFloat(v); return isFinite(x)? x : NaN; }
 function f3(v){ return numOK(v)? v.toFixed(3) : "-"; }
 function f2(v){ return numOK(v)? v.toFixed(2) : "-"; }
 
-/* circles[i] = {cx,cy,pcd,mode:'eq'|'un',n,th0,dir,angMode:'rel'|'abs',angs} */
-var S={ circles:[], sel:null, filter:"all", sort:"order", rec:[],
-        org:{kind:"circle", ci:0, key:"", x:0, y:0} };
+/* parts[i] は t で分岐する
+   t:'circle' … {cx,cy,pcd,mode:'eq'|'un',n,th0,dir,angMode:'rel'|'abs',angs}
+   t:'hole'   … {mode:'xy'|'polar'|'edge', x,y, th,r, ex,ey}
+   t:'axis'   … {bx,by,th,L,tip,left,right}                                        */
+var S={ parts:[], work:{w:NaN,h:NaN,org:"center"},
+        sel:null, filter:"all", sort:"order", rec:[],
+        org:{kind:"common", pi:0, key:"", x:0, y:0} };
 
-/* ═══ 円の編集 ═══ */
-function addCircle(mode){
-  if(S.circles.length>=6){ alert("円は 6 までです。"); return; }
-  S.circles.push({cx:0,cy:0,pcd:100,mode:mode,n:6,th0:0,dir:1,angMode:"rel",angs:"30 150 30 150"});
-  renderCircles(); calc(); persist();
+/* ═══ 部品の編集 ═══ */
+function addPart(t,mode){
+  if(S.parts.length>=MAXPART){ alert("部品は "+MAXPART+" までです。"); return; }
+  if(t==="circle") S.parts.push({t:"circle",cx:0,cy:0,pcd:100,mode:mode,n:6,th0:0,dir:1,angMode:"rel",angs:"30 150 30 150"});
+  else if(t==="hole") S.parts.push({t:"hole",mode:"xy",x:0,y:0,th:0,r:0,ex:0,ey:0});
+  else S.parts.push({t:"axis",bx:0,by:0,th:45,L:50,tip:0,left:"15",right:"15"});
+  renderParts(); calc(); persist();
 }
-function delCircle(i){ S.circles.splice(i,1); S.sel=null; renderCircles(); calc(); persist(); }
+function delPart(i){ S.parts.splice(i,1); S.sel=null; renderParts(); calc(); persist(); }
 function up(i,k,el){
-  var v=el.value;
-  if(k==="mode"||k==="angMode"){ S.circles[i][k]=v; renderCircles(); }
-  else if(k==="dir"){ S.circles[i].dir=parseInt(v,10); }
-  else if(k==="angs"){ S.circles[i].angs=v; }
-  else S.circles[i][k]=pf(v);
+  var p=S.parts[i], v=el.value;
+  if(k==="mode"||k==="angMode"){ p[k]=v; renderParts(); }
+  else if(k==="dir"){ p.dir=parseInt(v,10); }
+  else if(k==="angs"||k==="left"||k==="right"){ p[k]=v; }
+  else if(k==="tip"){ p.tip=el.checked?1:0; }
+  else p[k]=pf(v);
   S.sel=null; calc(); persist();
 }
-function renderCircles(){
-  var box=g("cBox"), h="";
-  g("cCount").textContent=S.circles.length+" 円";
-  S.circles.forEach(function(c,i){
-    var mo=function(v,l){ return '<option value="'+v+'"'+(c.mode===v?' selected':'')+'>'+l+'</option>'; };
-    var di=function(v,l){ return '<option value="'+v+'"'+(c.dir===v?' selected':'')+'>'+l+'</option>'; };
-    h+='<div class="circ"><div class="hd"><span class="nm">'+LB.charAt(i)+'</span>'
-      +'<select onchange="up('+i+',\'mode\',this)">'+mo('eq','等配')+mo('un','不等配')+'</select>'
-      +'<select onchange="up('+i+',\'dir\',this)">'+di(1,'時計回り')+di(-1,'反時計回り')+'</select>'
-      +'<button class="xbtn" onclick="delCircle('+i+')" aria-label="円'+LB.charAt(i)+'を削除">×</button></div>';
-    h+='<div class="row"><div><label class="f">PCD</label>'+inp(i,"pcd",c.pcd)+'</div>'
-      +'<div><label class="f">中心X（0＝同心）</label>'+inp(i,"cx",c.cx)+'</div>'
-      +'<div><label class="f">中心Y</label>'+inp(i,"cy",c.cy)+'</div></div>';
-    if(c.mode==="eq"){
-      h+='<div class="row"><div><label class="f">穴数 n</label>'
-        +'<input type="text" inputmode="numeric" autocomplete="off" value="'+(numOK(c.n)?c.n:"")+'" oninput="up('+i+',\'n\',this)"></div>'
-        +'<div><label class="f">起点角 θ₀（真上＝0）</label>'+inp(i,"th0",c.th0)+'</div></div>';
-    } else {
-      var am=function(v,l){ return '<option value="'+v+'"'+(c.angMode===v?' selected':'')+'>'+l+'</option>'; };
-      h+='<div class="row"><div style="flex:2"><label class="f">角度の指定</label>'
-        +'<select onchange="up('+i+',\'angMode\',this)">'+am('rel','隣との角度（合計360）')+am('abs','真上からの角度')+'</select></div>'
-        +'<div><label class="f">起点角 θ₀</label>'+inp(i,"th0",c.th0)+'</div></div>'
-        +'<div><label class="f">角度の並び（スペース区切り）</label>'
-        +'<input type="text" inputmode="decimal" autocomplete="off" value="'+(c.angs||"")+'" oninput="up('+i+',\'angs\',this)" placeholder="30 150 30 150"></div>';
-    }
-    h+='<div class="err" id="cErr'+i+'" style="display:none"></div><div class="note" id="cNote'+i+'" style="display:none"></div></div>';
-  });
-  if(!S.circles.length) h='<div class="hint" style="padding:6px 2px 10px">下のボタンから円を追加してください。同じ中心でも、ズラした中心でも構いません。</div>';
-  box.innerHTML=h;
+function workSet(k,el){
+  if(k==="org") S.work.org=el.value;
+  else S.work[k]=pf(el.value);
+  S.sel=null; calc(); persist();
 }
 function inp(i,k,v){
   return '<input type="text" inputmode="decimal" autocomplete="off" value="'+(numOK(v)?v:"")+'" oninput="up('+i+',\''+k+'\',this)">';
 }
+function txt(i,k,v,ph){
+  return '<input type="text" inputmode="decimal" autocomplete="off" value="'+String(v||"").replace(/"/g,"&quot;")+'" oninput="up('+i+',\''+k+'\',this)" placeholder="'+(ph||"")+'">';
+}
+function opt(cur,v,l){ return '<option value="'+v+'"'+(cur===v?" selected":"")+'>'+l+'</option>'; }
+
+function renderParts(){
+  var box=g("cBox"), h="";
+  g("cCount").textContent=S.parts.length+" 個";
+  S.parts.forEach(function(p,i){
+    var nm=LB.charAt(i);
+    h+='<div class="circ"><div class="hd"><span class="nm">'+nm+'</span>';
+    if(p.t==="circle"){
+      h+='<select onchange="up('+i+',\'mode\',this)">'+opt(p.mode,"eq","PCD 等配")+opt(p.mode,"un","PCD 不等配")+'</select>'
+       + '<select onchange="up('+i+',\'dir\',this)">'+opt(p.dir,1,"時計回り")+opt(p.dir,-1,"反時計回り")+'</select>';
+    } else if(p.t==="hole"){
+      h+='<span class="ty">任意穴</span>'
+       + '<select onchange="up('+i+',\'mode\',this)">'+opt(p.mode,"xy","X・Y で")+opt(p.mode,"polar","角度と距離で")+opt(p.mode,"edge","端面から")+'</select>';
+    } else {
+      h+='<span class="ty">軸配置</span><span style="flex:1"></span>';
+    }
+    h+='<button class="xbtn" onclick="delPart('+i+')" aria-label="部品'+nm+'を削除">×</button></div>';
+
+    if(p.t==="circle"){
+      h+='<div class="row"><div><label class="f">PCD</label>'+inp(i,"pcd",p.pcd)+'</div>'
+        +'<div><label class="f">中心X（0＝原点）</label>'+inp(i,"cx",p.cx)+'</div>'
+        +'<div><label class="f">中心Y</label>'+inp(i,"cy",p.cy)+'</div></div>';
+      if(p.mode==="eq"){
+        h+='<div class="row"><div><label class="f">穴数 n</label>'
+          +'<input type="text" inputmode="numeric" autocomplete="off" value="'+(numOK(p.n)?p.n:"")+'" oninput="up('+i+',\'n\',this)"></div>'
+          +'<div><label class="f">起点角 θ₀（真上＝0）</label>'+inp(i,"th0",p.th0)+'</div></div>';
+      } else {
+        h+='<div class="row"><div style="flex:2"><label class="f">角度の指定</label>'
+          +'<select onchange="up('+i+',\'angMode\',this)">'+opt(p.angMode,"rel","隣との角度（合計360）")+opt(p.angMode,"abs","真上からの角度")+'</select></div>'
+          +'<div><label class="f">起点角 θ₀</label>'+inp(i,"th0",p.th0)+'</div></div>'
+          +'<div><label class="f">角度の並び（スペース区切り）</label>'+txt(i,"angs",p.angs,"30 150 30 150")+'</div>';
+      }
+    }
+
+    else if(p.t==="hole"){
+      if(p.mode==="xy"){
+        h+='<div class="row"><div><label class="f">X</label>'+inp(i,"x",p.x)+'</div>'
+          +'<div><label class="f">Y</label>'+inp(i,"y",p.y)+'</div></div>';
+      } else if(p.mode==="polar"){
+        h+='<div class="row"><div><label class="f">角度（真上＝0・時計＋）</label>'+inp(i,"th",p.th)+'</div>'
+          +'<div><label class="f">原点からの距離</label>'+inp(i,"r",p.r)+'</div></div>';
+      } else {
+        h+='<div class="row"><div><label class="f">左端面から X</label>'+inp(i,"ex",p.ex)+'</div>'
+          +'<div><label class="f">下端面から Y</label>'+inp(i,"ey",p.ey)+'</div></div>';
+      }
+    }
+
+    else {
+      h+='<div class="row"><div><label class="f">基点X</label>'+inp(i,"bx",p.bx)+'</div>'
+        +'<div><label class="f">基点Y</label>'+inp(i,"by",p.by)+'</div></div>'
+        +'<div class="row"><div><label class="f">中心線の角度（真上＝0）</label>'+inp(i,"th",p.th)+'</div>'
+        +'<div><label class="f">基点からの距離 L</label>'+inp(i,"L",p.L)+'</div></div>'
+        +'<div class="ckrow"><input type="checkbox" id="tip'+i+'"'+(p.tip?" checked":"")+' onchange="up('+i+',\'tip\',this)"><label for="tip'+i+'">中心線の先端にも穴を置く</label></div>'
+        +'<div class="row"><div><label class="f">左へ（スペース区切り）</label>'+txt(i,"left",p.left,"15")+'</div>'
+        +'<div><label class="f">右へ</label>'+txt(i,"right",p.right,"15")+'</div></div>'
+        +'<div class="hint" style="margin:0 0 6px">左右は<b>基点から先端を見たときの左手・右手</b>です。中心線と直角に振ります。</div>';
+    }
+
+    h+='<div class="err" id="cErr'+i+'" style="display:none"></div><div class="note" id="cNote'+i+'" style="display:none"></div></div>';
+  });
+  if(!S.parts.length) h='<div class="hint" style="padding:6px 2px 10px">下のボタンから部品を追加してください。PCD・単独の穴・軸配置を、ひとつの原点の上で好きに重ねられます。</div>';
+  box.innerHTML=h;
+  g("wkW").value = numOK(S.work.w)? S.work.w : "";
+  g("wkH").value = numOK(S.work.h)? S.work.h : "";
+  g("wkOrg").value = S.work.org;
+}
 
 /* ═══ 穴の生成 ═══ */
-function parseAngs(s){
+function parseNums(s){
   var t=String(s||"").split(/[\s,、，]+/), out=[], i, v;
   for(i=0;i<t.length;i++){ if(t[i]==="") continue; v=parseFloat(t[i]); if(isFinite(v)) out.push(v); }
   return out;
 }
-function pos(c,th){                                  /* 0°=真上, dir=+1で時計回り */
-  var R=c.pcd/2;
-  return { x:c.cx + c.dir*R*Math.sin(th*RAD), y:c.cy + R*Math.cos(th*RAD) };
-}
-var H=[];                                            /* 全穴 */
+function uvec(th){ return {x:Math.sin(th*RAD), y:Math.cos(th*RAD)}; }  /* 0°=真上・時計回りが＋ */
+function pos(c,th){ var R=c.pcd/2; return {x:c.cx + c.dir*R*Math.sin(th*RAD), y:c.cy + R*Math.cos(th*RAD)}; }
+
+var H=[];        /* 全穴 {key,pi,hi,nh,x,y,src,th,adjable} */
+var BASE=[];     /* 部品ごとの基準点 {x,y,lb} または null */
+
 function build(){
-  H=[];
-  S.circles.forEach(function(c,i){
-    var err="", note="", ths=[];
-    if(!numOK(c.pcd)||c.pcd<=0) err="PCD を入れてください";
-    else if(!numOK(c.cx)||!numOK(c.cy)) err="中心 X・Y を入れてください";
-    else if(!numOK(c.th0)) err="起点角を入れてください";
-    else if(c.mode==="eq"){
-      if(!numOK(c.n)||c.n<1||c.n!==Math.floor(c.n)) err="穴数は 1 以上の整数で";
-      else if(c.n>36) err="穴数は 36 までです";
-      else { for(var j=0;j<c.n;j++) ths.push(c.th0 + j*360/c.n); }
-    } else {
-      var a=parseAngs(c.angs);
-      if(a.length<2) err="角度を2つ以上入れてください";
-      else if(c.angMode==="rel"){
-        var sum=0, t=c.th0;
-        for(var k=0;k<a.length;k++){ ths.push(t); t+=a[k]; sum+=a[k]; }
-        if(Math.abs(sum-360)>0.001) err="隣との角度の合計が "+f2(sum)+"° です（360° になるはず）";
-        else note=a.length+" 穴 / 合計 360° OK";
+  H=[]; BASE=[];
+  S.parts.forEach(function(p,i){
+    var err="", note="", nm=LB.charAt(i), out=[], base=null;
+
+    if(p.t==="circle"){
+      var ths=[];
+      if(!numOK(p.pcd)||p.pcd<=0) err="PCD を入れてください";
+      else if(!numOK(p.cx)||!numOK(p.cy)) err="中心 X・Y を入れてください";
+      else if(!numOK(p.th0)) err="起点角を入れてください";
+      else if(p.mode==="eq"){
+        if(!numOK(p.n)||p.n<1||p.n!==Math.floor(p.n)) err="穴数は 1 以上の整数で";
+        else if(p.n>36) err="穴数は 36 までです";
+        else { for(var j=0;j<p.n;j++) ths.push(p.th0 + j*360/p.n); }
       } else {
-        for(var m=0;m<a.length;m++) ths.push(c.th0 + a[m]);
-        note=a.length+" 穴";
+        var a=parseNums(p.angs);
+        if(a.length<2) err="角度を2つ以上入れてください";
+        else if(p.angMode==="rel"){
+          var sum=0, t=p.th0;
+          for(var k=0;k<a.length;k++){ ths.push(t); t+=a[k]; sum+=a[k]; }
+          if(Math.abs(sum-360)>0.001) err="隣との角度の合計が "+f2(sum)+"° です（360° になるはず）";
+          else note=a.length+" 穴 / 合計 360° OK";
+        } else {
+          for(var m=0;m<a.length;m++) ths.push(p.th0 + a[m]);
+          note=a.length+" 穴";
+        }
+      }
+      if(!err){
+        base={x:p.cx, y:p.cy, lb:"部品 "+nm+" の中心"};
+        ths.forEach(function(th){
+          var q=pos(p,th);
+          out.push({x:q.x, y:q.y, th:((th%360)+360)%360, src:"PCD"+(numOK(p.pcd)?" φ"+p.pcd:""), adjable:true});
+        });
       }
     }
+
+    else if(p.t==="hole"){
+      var x=NaN, y=NaN, sr="";
+      if(p.mode==="xy"){
+        if(!numOK(p.x)||!numOK(p.y)) err="X・Y を入れてください";
+        else { x=p.x; y=p.y; sr="X,Y 指定"; }
+      } else if(p.mode==="polar"){
+        if(!numOK(p.th)||!numOK(p.r)) err="角度と距離を入れてください";
+        else if(p.r<0) err="距離は 0 以上で";
+        else { var u=uvec(p.th); x=p.r*u.x; y=p.r*u.y; sr="原点から "+f2(p.th)+"°／"+f3(p.r); }
+      } else {
+        if(!numOK(p.ex)||!numOK(p.ey)) err="端面からの寸法を入れてください";
+        else if(S.work.org==="center" && (!numOK(S.work.w)||!numOK(S.work.h)||S.work.w<=0||S.work.h<=0))
+          err="ワーク外形の W・H を入れてください（原点が中心のため）";
+        else {
+          if(S.work.org==="center"){ x=p.ex-S.work.w/2; y=p.ey-S.work.h/2; }
+          else { x=p.ex; y=p.ey; }
+          sr="端面から";
+        }
+      }
+      if(!err){
+        base={x:x, y:y, lb:"部品 "+nm+" の穴"};
+        out.push({x:x, y:y, th:NaN, src:sr, adjable:false});
+      }
+    }
+
+    else {
+      var L=parseNums(p.left), R=parseNums(p.right);
+      if(!numOK(p.bx)||!numOK(p.by)) err="基点 X・Y を入れてください";
+      else if(!numOK(p.th)) err="中心線の角度を入れてください";
+      else if(!numOK(p.L)||p.L<0) err="基点からの距離 L を入れてください（0 以上）";
+      else if(!p.tip && !L.length && !R.length) err="先端の穴にチェックを入れるか、左右のオフセットを入れてください";
+      else {
+        var uu=uvec(p.th), vL=uvec(p.th-90), vR=uvec(p.th+90);
+        var P={x:p.bx+p.L*uu.x, y:p.by+p.L*uu.y};
+        base={x:P.x, y:P.y, lb:"部品 "+nm+" の先端"};
+        L.forEach(function(d){ out.push({x:P.x+d*vL.x, y:P.y+d*vL.y, th:NaN, src:"軸配置 左"+f3(d), adjable:false}); });
+        if(p.tip) out.push({x:P.x, y:P.y, th:NaN, src:"軸配置 先端", adjable:false});
+        R.forEach(function(d){ out.push({x:P.x+d*vR.x, y:P.y+d*vR.y, th:NaN, src:"軸配置 右"+f3(d), adjable:false}); });
+        note=out.length+" 穴 / 先端 ("+f3(P.x)+", "+f3(P.y)+")";
+      }
+    }
+
     var e=g("cErr"+i), nt=g("cNote"+i);
     if(e){ e.textContent=err; e.style.display=err?"":"none"; }
     if(nt){ nt.textContent=note; nt.style.display=(note&&!err)?"":"none"; }
+    BASE.push(err? null : base);
     if(err) return;
-    ths.forEach(function(th,j){
-      var p=pos(c,th);
-      H.push({key:LB.charAt(i)+(j+1), ci:i, hi:j, nh:ths.length, th:((th%360)+360)%360, x:p.x, y:p.y});
+
+    out.forEach(function(o,j){
+      H.push({key:nm+(j+1), pi:i, hi:j, nh:out.length, x:o.x, y:o.y, th:o.th, src:o.src, adjable:o.adjable});
     });
   });
+  if(H.length>MAXHOLE) H=H.slice(0,MAXHOLE);
 }
 
 /* ═══ ペア ═══ */
@@ -369,9 +508,10 @@ function pairs(){
   var out=[], i, j, a, b, adj;
   for(i=0;i<H.length;i++) for(j=i+1;j<H.length;j++){
     a=H[i]; b=H[j];
-    adj = (a.ci===b.ci) && (Math.abs(a.hi-b.hi)===1 || Math.abs(a.hi-b.hi)===a.nh-1);
-    if(S.filter==="same"  && a.ci!==b.ci) continue;
-    if(S.filter==="cross" && a.ci===b.ci) continue;
+    adj = (a.pi===b.pi) && a.adjable && b.adjable &&
+          (Math.abs(a.hi-b.hi)===1 || Math.abs(a.hi-b.hi)===a.nh-1);
+    if(S.filter==="same"  && a.pi!==b.pi) continue;
+    if(S.filter==="cross" && a.pi===b.pi) continue;
     if(S.filter==="adj"   && !adj) continue;
     out.push({a:a,b:b,d:Math.hypot(b.x-a.x,b.y-a.y),adj:adj});
   }
@@ -384,7 +524,7 @@ function setFilter(v,b){ S.filter=v; mark("fltChips",b); renderPairs(); persist(
 function setSort(v,b){ S.sort=v; mark("srtChips",b); renderPairs(); persist(); }
 function mark(id,b){ Array.prototype.forEach.call(g(id).children,function(x){ x.setAttribute("aria-pressed", x===b?"true":"false"); }); }
 
-/* ═══ 原点 ═══ */
+/* ═══ 原点（表示のみに効き、ピッチの計算には触れない） ═══ */
 function origin(){
   var o=S.org;
   if(o.kind==="xy" && numOK(o.x) && numOK(o.y)) return {x:o.x, y:o.y, lb:"指定点 ("+f3(o.x)+", "+f3(o.y)+")"};
@@ -392,16 +532,15 @@ function origin(){
     var hp=byKey(o.key);
     if(hp) return {x:hp.x, y:hp.y, lb:"穴 "+hp.key};
   }
-  var c=S.circles[o.ci] || S.circles[0];
-  if(c && numOK(c.cx) && numOK(c.cy)){
-    var i=S.circles.indexOf(c);
-    return {x:c.cx, y:c.cy, lb:"円 "+LB.charAt(i)+" の中心"};
+  if(o.kind==="part"){
+    var b=BASE[o.pi];
+    if(b) return {x:b.x, y:b.y, lb:b.lb};
   }
-  return {x:0, y:0, lb:"共通中心 (0, 0)"};
+  return {x:0, y:0, lb:"共通原点 (0, 0)"};
 }
 function orgSet(k,el){
   if(k==="kind") S.org.kind=el.value;
-  else if(k==="ci") S.org.ci=parseInt(el.value,10)||0;
+  else if(k==="pi") S.org.pi=parseInt(el.value,10)||0;
   else if(k==="key") S.org.key=el.value;
   else S.org[k]=pf(el.value);
   calc(); persist();
@@ -410,19 +549,21 @@ function renderOrg(){
   var o=S.org, h="";
   /* 種類を切り替えた直後は参照先が未選択なので、先頭に寄せてから描く */
   if(o.kind==="hole" && !byKey(o.key) && H.length) o.key=H[0].key;
-  if(o.kind==="circle" && !(o.ci>=0 && o.ci<S.circles.length)) o.ci=0;
+  if(o.kind==="part" && !BASE[o.pi]){
+    for(var i=0;i<BASE.length;i++) if(BASE[i]){ o.pi=i; break; }
+  }
   g("orgKind").value=o.kind;
-  if(o.kind==="circle"){
-    h='<label class="f">どの円</label><select onchange="orgSet(\'ci\',this)">';
-    S.circles.forEach(function(c,i){ h+='<option value="'+i+'"'+(o.ci===i?" selected":"")+'>'+LB.charAt(i)+' の中心</option>'; });
-    if(!S.circles.length) h+='<option>（円を追加）</option>';
+  if(o.kind==="part"){
+    h='<label class="f">どの部品</label><select onchange="orgSet(\'pi\',this)">';
+    BASE.forEach(function(b,i){ if(b) h+='<option value="'+i+'"'+(o.pi===i?" selected":"")+'>'+b.lb+'</option>'; });
+    if(!BASE.some(function(b){return !!b;})) h+='<option>（部品がありません）</option>';
     h+='</select>';
   } else if(o.kind==="hole"){
     h='<label class="f">どの穴</label><select onchange="orgSet(\'key\',this)">';
     H.forEach(function(p){ h+='<option value="'+p.key+'"'+(o.key===p.key?" selected":"")+'>'+p.key+'</option>'; });
     if(!H.length) h+='<option>（穴がありません）</option>';
     h+='</select>';
-  } else {
+  } else if(o.kind==="xy"){
     h='<div class="row" style="margin:0"><div><label class="f">原点X</label>'
      +'<input type="text" inputmode="decimal" autocomplete="off" value="'+(numOK(o.x)?o.x:"")+'" oninput="orgSet(\'x\',this)"></div>'
      +'<div><label class="f">原点Y</label>'
@@ -430,6 +571,7 @@ function renderOrg(){
   }
   g("orgPick").innerHTML=h;
   g("orgPick").style.flex = (o.kind==="xy") ? "2" : "1";
+  g("orgPick").style.display = (o.kind==="common") ? "none" : "";
 }
 
 /* ═══ 表示 ═══ */
@@ -443,10 +585,10 @@ function renderPos(){
   H.forEach(function(p){
     var X=p.x-O.x, Y=p.y-O.y;
     h+='<tr data-k="'+p.key+'"'+(S.sel&&(S.sel[0]===p.key||S.sel[1]===p.key)?' aria-selected="true"':'')+'>'
-      +'<td>'+p.key+'</td><td>'+f2(p.th)+'°</td><td>'+f3(X)+'</td><td>'+f3(Y)+'</td>'
-      +'<td>'+f3(Math.hypot(X,Y))+'</td></tr>';
+      +'<td>'+p.key+'</td><td style="font-family:inherit;font-size:10.5px;color:#7A8C97">'+p.src+'</td>'
+      +'<td>'+f3(X)+'</td><td>'+f3(Y)+'</td><td>'+f3(Math.hypot(X,Y))+'</td></tr>';
   });
-  if(!H.length) h='<tr><td colspan="5" style="text-align:center;color:#8FA2AF;font-family:inherit;padding:12px">円を追加すると出ます</td></tr>';
+  if(!H.length) h='<tr><td colspan="5" style="text-align:center;color:#8FA2AF;font-family:inherit;padding:12px">部品を追加すると出ます</td></tr>';
   tb.innerHTML=h;
 }
 var ROWCAP=500;   /* 総当たりは穴数の2乗。端末が固まらないよう表示行を制限する */
@@ -490,11 +632,11 @@ function renderDRO(){
   g("dPair").textContent=a.key+" ／ "+b.key;
   g("dD").textContent=f3(Math.hypot(dx,dy));
   g("dX").textContent=f3(dx); g("dY").textContent=f3(dy);
-  if(a.ci===b.ci){
+  if(a.pi===b.pi && numOK(a.th) && numOK(b.th)){
     var d=Math.abs(a.th-b.th)%360; if(d>180) d=360-d;
     g("dAng").textContent=f2(d)+"°";
-  } else g("dAng").textContent="—（別の円）";
-  var az=Math.atan2(dy,dx)/RAD; if(az<0) az+=360;
+  } else g("dAng").textContent = (a.pi===b.pi) ? "—（PCDではない）" : "—（別の部品）";
+  var az=Math.atan2(dx,dy)/RAD; if(az<0) az+=360;   /* 真上から時計回り */
   g("dAz").textContent=f2(az)+"°";
 }
 
@@ -502,12 +644,19 @@ function draw(){
   var svg=g("fig");
   if(!H.length){ svg.innerHTML=""; return; }
   var xs=[], ys=[];
-  S.circles.forEach(function(c){
-    if(!numOK(c.pcd)||!numOK(c.cx)||!numOK(c.cy)) return;
-    var R=c.pcd/2;
-    xs.push(c.cx-R, c.cx+R); ys.push(c.cy-R, c.cy+R);
+  S.parts.forEach(function(p){
+    if(p.t==="circle" && numOK(p.pcd)&&numOK(p.cx)&&numOK(p.cy)){
+      var R=p.pcd/2; xs.push(p.cx-R, p.cx+R); ys.push(p.cy-R, p.cy+R);
+    }
+    if(p.t==="axis" && numOK(p.bx)&&numOK(p.by)){ xs.push(p.bx); ys.push(p.by); }
   });
+  if(numOK(S.work.w)&&numOK(S.work.h)&&S.work.w>0&&S.work.h>0){
+    var wx0 = (S.work.org==="center") ? -S.work.w/2 : 0;
+    var wy0 = (S.work.org==="center") ? -S.work.h/2 : 0;
+    xs.push(wx0, wx0+S.work.w); ys.push(wy0, wy0+S.work.h);
+  }
   H.forEach(function(p){ xs.push(p.x); ys.push(p.y); });
+  var O=origin(); xs.push(O.x); ys.push(O.y);
   if(!xs.length){ svg.innerHTML=""; return; }
   var mnx=Math.min.apply(null,xs), mxx=Math.max.apply(null,xs);
   var mny=Math.min.apply(null,ys), mxy=Math.max.apply(null,ys);
@@ -516,19 +665,38 @@ function draw(){
   var ox=(W-(mxx-mnx)*s)/2-mnx*s, oy=(Hh-(mxy-mny)*s)/2-mny*s;
   function M(x,y){ return [x*s+ox, Hh-(y*s+oy)]; }
   var h="";
-  S.circles.forEach(function(c,i){
-    if(!numOK(c.pcd)||!numOK(c.cx)||!numOK(c.cy)) return;
-    var ct=M(c.cx,c.cy), R=c.pcd/2*s;
-    h+='<circle cx="'+ct[0].toFixed(1)+'" cy="'+ct[1].toFixed(1)+'" r="'+R.toFixed(1)+'" fill="none" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="6 2 1.5 2"/>';
-    h+='<line x1="'+(ct[0]-5)+'" y1="'+ct[1].toFixed(1)+'" x2="'+(ct[0]+5)+'" y2="'+ct[1].toFixed(1)+'" stroke="#1F3341" stroke-width="1.2"/>';
-    h+='<line x1="'+ct[0].toFixed(1)+'" y1="'+(ct[1]-5)+'" x2="'+ct[0].toFixed(1)+'" y2="'+(ct[1]+5)+'" stroke="#1F3341" stroke-width="1.2"/>';
-    h+='<text x="'+(ct[0]+7).toFixed(1)+'" y="'+(ct[1]-6).toFixed(1)+'" font-size="10" fill="#5B707E" font-family="monospace">'+LB.charAt(i)+'</text>';
+
+  if(numOK(S.work.w)&&numOK(S.work.h)&&S.work.w>0&&S.work.h>0){
+    var a0=M(wx0, wy0), a1=M(wx0+S.work.w, wy0+S.work.h);
+    h+='<rect x="'+Math.min(a0[0],a1[0]).toFixed(1)+'" y="'+Math.min(a0[1],a1[1]).toFixed(1)
+      +'" width="'+Math.abs(a1[0]-a0[0]).toFixed(1)+'" height="'+Math.abs(a1[1]-a0[1]).toFixed(1)
+      +'" fill="none" stroke="#B4C2CC" stroke-width="1.2"/>';
+  }
+
+  S.parts.forEach(function(p,i){
+    var nm=LB.charAt(i);
+    if(p.t==="circle"){
+      if(!numOK(p.pcd)||!numOK(p.cx)||!numOK(p.cy)) return;
+      var ct=M(p.cx,p.cy), R=p.pcd/2*s;
+      h+='<circle cx="'+ct[0].toFixed(1)+'" cy="'+ct[1].toFixed(1)+'" r="'+R.toFixed(1)+'" fill="none" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="6 2 1.5 2"/>';
+      h+='<line x1="'+(ct[0]-5).toFixed(1)+'" y1="'+ct[1].toFixed(1)+'" x2="'+(ct[0]+5).toFixed(1)+'" y2="'+ct[1].toFixed(1)+'" stroke="#1F3341" stroke-width="1.2"/>';
+      h+='<line x1="'+ct[0].toFixed(1)+'" y1="'+(ct[1]-5).toFixed(1)+'" x2="'+ct[0].toFixed(1)+'" y2="'+(ct[1]+5).toFixed(1)+'" stroke="#1F3341" stroke-width="1.2"/>';
+      h+='<text x="'+(ct[0]+7).toFixed(1)+'" y="'+(ct[1]-6).toFixed(1)+'" font-size="10" fill="#5B707E" font-family="monospace">'+nm+'</text>';
+    }
+    if(p.t==="axis" && BASE[i]){
+      var b0=M(p.bx,p.by), b1=M(BASE[i].x,BASE[i].y);
+      h+='<line x1="'+b0[0].toFixed(1)+'" y1="'+b0[1].toFixed(1)+'" x2="'+b1[0].toFixed(1)+'" y2="'+b1[1].toFixed(1)+'" stroke="#7F77DD" stroke-width="1.2" stroke-dasharray="7 3 1.5 3"/>';
+      h+='<circle cx="'+b0[0].toFixed(1)+'" cy="'+b0[1].toFixed(1)+'" r="2.2" fill="#7F77DD"/>';
+      h+='<text x="'+(b1[0]+6).toFixed(1)+'" y="'+(b1[1]-5).toFixed(1)+'" font-size="10" fill="#5B707E" font-family="monospace">'+nm+'</text>';
+    }
   });
-  var O=origin(), oq=M(O.x,O.y);
+
+  var oq=M(O.x,O.y);
   h+='<circle cx="'+oq[0].toFixed(1)+'" cy="'+oq[1].toFixed(1)+'" r="6" fill="none" stroke="#2E9E5B" stroke-width="1.6"/>';
-  h+='<line x1="'+(oq[0]-9)+'" y1="'+oq[1].toFixed(1)+'" x2="'+(oq[0]+9)+'" y2="'+oq[1].toFixed(1)+'" stroke="#2E9E5B" stroke-width="1.6"/>';
-  h+='<line x1="'+oq[0].toFixed(1)+'" y1="'+(oq[1]-9)+'" x2="'+oq[0].toFixed(1)+'" y2="'+(oq[1]+9)+'" stroke="#2E9E5B" stroke-width="1.6"/>';
+  h+='<line x1="'+(oq[0]-9).toFixed(1)+'" y1="'+oq[1].toFixed(1)+'" x2="'+(oq[0]+9).toFixed(1)+'" y2="'+oq[1].toFixed(1)+'" stroke="#2E9E5B" stroke-width="1.6"/>';
+  h+='<line x1="'+oq[0].toFixed(1)+'" y1="'+(oq[1]-9).toFixed(1)+'" x2="'+oq[0].toFixed(1)+'" y2="'+(oq[1]+9).toFixed(1)+'" stroke="#2E9E5B" stroke-width="1.6"/>';
   h+='<text x="'+(oq[0]+11).toFixed(1)+'" y="'+(oq[1]+12).toFixed(1)+'" font-size="9" fill="#2E9E5B" font-family="monospace">原点</text>';
+
   H.forEach(function(p){
     var q=M(p.x,p.y), sel=S.sel&&(S.sel[0]===p.key||S.sel[1]===p.key);
     h+='<circle cx="'+q[0].toFixed(1)+'" cy="'+q[1].toFixed(1)+'" r="'+(sel?4.6:3.4)+'" fill="'+(sel?"#D63426":"#fff")+'" stroke="'+(sel?"#D63426":"#1F3341")+'" stroke-width="1.4"/>';
@@ -574,51 +742,54 @@ function renderRec(){
   tb.innerHTML=h;
   g("recHead").innerHTML="部品名："+(g("recName").value||"—")+"　／　検査日："+(g("recDate").value||"—")+"　／　検査者："+(g("recBy").value||"—")+"　／　公差 ±"+(isFinite(tol)?tol:"—")+" mm　／　座標の原点："+origin().lb;
 }
-function copyPos(){
-  if(!H.length){ alert("先に円を追加してください。"); return; }
-  var O=origin(), rows=[["hole","X","Y","angle_deg"]];
-  H.forEach(function(p){ rows.push([p.key, f3(p.x-O.x), f3(p.y-O.y), f2(p.th)]); });
-  toClip(rows, "座標", "原点＝"+O.lb);
-}
 function toClip(rows, what, note){
-  var txt=rows.map(function(r){return r.join(",");}).join("\n");
+  var txt2=rows.map(function(r){return r.join(",");}).join("\n");
   if(navigator.clipboard&&navigator.clipboard.writeText)
-    navigator.clipboard.writeText(txt).then(function(){ alert(what+"をコピーしました（"+(rows.length-1)+" 行）"+(note?"\n"+note:"")); },function(){ alert("コピーできませんでした"); });
+    navigator.clipboard.writeText(txt2).then(function(){ alert(what+"をコピーしました（"+(rows.length-1)+" 行）"+(note?"\n"+note:"")); },function(){ alert("コピーできませんでした"); });
   else alert("この端末ではコピーできません");
+}
+function copyPos(){
+  if(!H.length){ alert("先に部品を追加してください。"); return; }
+  var O=origin(), rows=[["hole","X","Y","source"]];
+  H.forEach(function(p){ rows.push([p.key, f3(p.x-O.x), f3(p.y-O.y), p.src]); });
+  toClip(rows, "座標", "原点＝"+O.lb);
 }
 function copyCSV(){
   var rows=[["pair","pitch","dX","dY"]];
   pairs().forEach(function(p){ rows.push([p.a.key+"-"+p.b.key, f3(p.d), f3(p.b.x-p.a.x), f3(p.b.y-p.a.y)]); });
-  var txt=rows.map(function(r){return r.join(",");}).join("\n");
-  if(navigator.clipboard&&navigator.clipboard.writeText)
-    navigator.clipboard.writeText(txt).then(function(){ alert("コピーしました（"+(rows.length-1)+" 行）"); },function(){ alert("コピーできませんでした"); });
-  else alert("この端末ではコピーできません");
+  toClip(rows, "一覧", "");
 }
 
 /* ═══ 保存 ═══ */
-var KEY="pcdmulti_v1";
+var KEY="holemap_v1";
 var IDS=["recName","recDate","recBy","recTol"];
 function persist(){
   try{
-    var o={circles:S.circles, sel:S.sel, filter:S.filter, sort:S.sort, rec:S.rec, org:S.org, v:{}};
+    var o={parts:S.parts, work:S.work, sel:S.sel, filter:S.filter, sort:S.sort, rec:S.rec, org:S.org, v:{}};
     IDS.forEach(function(i){ o.v[i]=g(i).value; });
     localStorage.setItem(KEY, JSON.stringify(o));
   }catch(e){}
 }
+function nz(v){ return numOK(v)? v : NaN; }   /* JSON保存では NaN が null に化けるため戻す */
 function restore(){
   try{
     var o=JSON.parse(localStorage.getItem(KEY)||"null"); if(!o) return;
-    /* JSON保存では NaN が null に化けるため、数値以外は NaN に戻す */
-    S.circles=(o.circles||[]).map(function(c){
-      return { cx:numOK(c.cx)?c.cx:NaN, cy:numOK(c.cy)?c.cy:NaN, pcd:numOK(c.pcd)?c.pcd:NaN,
-               mode:(c.mode==="un")?"un":"eq", n:numOK(c.n)?c.n:NaN, th0:numOK(c.th0)?c.th0:NaN,
-               dir:(c.dir===-1)?-1:1, angMode:(c.angMode==="abs")?"abs":"rel", angs:String(c.angs||"") };
+    S.parts=(o.parts||[]).map(function(p){
+      if(p.t==="hole") return {t:"hole", mode:(p.mode==="polar"||p.mode==="edge")?p.mode:"xy",
+        x:nz(p.x), y:nz(p.y), th:nz(p.th), r:nz(p.r), ex:nz(p.ex), ey:nz(p.ey)};
+      if(p.t==="axis") return {t:"axis", bx:nz(p.bx), by:nz(p.by), th:nz(p.th), L:nz(p.L),
+        tip:p.tip?1:0, left:String(p.left||""), right:String(p.right||"")};
+      return {t:"circle", cx:nz(p.cx), cy:nz(p.cy), pcd:nz(p.pcd),
+        mode:(p.mode==="un")?"un":"eq", n:nz(p.n), th0:nz(p.th0),
+        dir:(p.dir===-1)?-1:1, angMode:(p.angMode==="abs")?"abs":"rel", angs:String(p.angs||"")};
     });
+    var w=o.work||{};
+    S.work={ w:nz(w.w), h:nz(w.h), org:(w.org==="corner")?"corner":"center" };
     S.sel=(o.sel&&o.sel.length)?o.sel:null;
     S.filter=o.filter||"all"; S.sort=o.sort||"order"; S.rec=o.rec||[];
     var q=o.org||{};
-    S.org={ kind:(q.kind==="hole"||q.kind==="xy")?q.kind:"circle",
-            ci:(typeof q.ci==="number")?q.ci:0, key:String(q.key||""),
+    S.org={ kind:(q.kind==="hole"||q.kind==="xy"||q.kind==="part")?q.kind:"common",
+            pi:(typeof q.pi==="number")?q.pi:0, key:String(q.key||""),
             x:numOK(q.x)?q.x:0, y:numOK(q.y)?q.y:0 };
     if(o.v) IDS.forEach(function(i){ if(o.v[i]!=null&&o.v[i]!=="") g(i).value=o.v[i]; });
   }catch(e){}
@@ -626,8 +797,9 @@ function restore(){
 function wipe(){
   if(!confirm("この端末に保存された入力・記録をすべて消します。よろしいですか？")) return;
   try{ localStorage.removeItem(KEY); }catch(e){}
-  S.circles=[]; S.sel=null; S.rec=[]; S.org={kind:"circle",ci:0,key:"",x:0,y:0};
-  renderCircles(); calc();
+  S.parts=[]; S.work={w:NaN,h:NaN,org:"center"}; S.sel=null; S.rec=[];
+  S.org={kind:"common",pi:0,key:"",x:0,y:0};
+  renderParts(); calc();
 }
 
 /* ═══ 起動 ═══ */
@@ -638,7 +810,7 @@ if(!g("recDate").value){
 }
 Array.prototype.forEach.call(g("fltChips").children,function(b){ b.setAttribute("aria-pressed", b.getAttribute("onclick").indexOf("'"+S.filter+"'")>=0 ? "true":"false"); });
 Array.prototype.forEach.call(g("srtChips").children,function(b){ b.setAttribute("aria-pressed", b.getAttribute("onclick").indexOf("'"+S.sort+"'")>=0 ? "true":"false"); });
-renderCircles(); calc();
+renderParts(); calc();
 </script>
 
 <!-- ═══ 数字入力の補助（共通スニペット / 全ツール同一） ═══
