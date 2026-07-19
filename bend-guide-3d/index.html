@@ -148,6 +148,28 @@
   }
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+  /* ── 使い方ガイド（全ツール共通） ── */
+  .guide{background:#FFFFFF;border:1px solid #D5DDE2;border-radius:12px;margin:0 0 12px;overflow:hidden}
+  .guide>summary{list-style:none;cursor:pointer;padding:12px 14px;font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.04em;display:flex;align-items:center;gap:7px}
+  .guide>summary::-webkit-details-marker{display:none}
+  .guide>summary::before{content:"?";display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#1F3341;color:#fff;font-size:11px;font-weight:700;flex:none}
+  .guide[open]>summary{border-bottom:1px solid #E3E9EC}
+  .guide .gb{padding:2px 14px 14px}
+  .guide .gb h4{font-size:11px;letter-spacing:.07em;color:#5B707E;font-weight:700;margin:13px 0 6px}
+  .guide .gb ol{margin:0;padding-left:1.2em;font-size:11.5px;line-height:1.75;color:#1F3341}
+  .guide .gb ol b{color:#1F3341}
+  .guide .gx{border-top:1px dashed #E3E9EC;margin-top:11px;padding-top:8px}
+  .guide .gx h4{margin-top:6px}
+  .guide .gxin{display:flex;gap:12px;align-items:flex-start;margin-top:4px}
+  .guide .gfig{flex:none}
+  .guide .gfig svg{width:112px;height:112px;display:block;background:#FBFCFC;border:1px solid #EDF1F3;border-radius:8px}
+  .guide .gtxt{flex:1;font-size:11.5px;line-height:1.6;color:#1F3341}
+  .guide .gtxt p{margin:0 0 7px}
+  .guide .gset{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;background:#F2F6F8;border:1px solid #E3E9EC;border-radius:6px;padding:6px 8px;color:#3A5060;line-height:1.5}
+  .guide .gread b{color:#D63426}
+  .guide .gbtn{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;font:inherit;font-size:11.5px;font-weight:600;border:1px solid #1F3341;border-radius:6px;background:#fff;color:#1F3341;cursor:pointer;margin-top:2px}
+  .guide .gbtn:active{transform:translateY(1px)}
+  @media(max-width:360px){.guide .gxin{flex-direction:column}.guide .gfig svg{width:128px;height:128px}}
 </style>
 </head>
 <body>
@@ -156,6 +178,37 @@
     <h1>曲げガイド計算(3D)<small>ひねり付き曲げの三面図/展開長</small></h1>
     <a href="../index.html">≡ ツール一覧</a>
   </header>
+<details class="guide noprint">
+  <summary>使い方と例を見る</summary>
+  <div class="gb">
+    <h4>使い方</h4>
+    <ol>
+      <li>2D版と同じく「直線 → 曲げ → 直線 …」を入れます。曲げには<b>θ・R</b>に加えて<b>ひねり（回転）</b>を入れられます。</li>
+      <li>ひねりは「前の曲げ面から何度ねじって次を曲げるか」。これで立体的な取り回しを表せます。</li>
+      <li><b>展開長・端点間距離・外形 X/Y/Z</b>と、三面図（平面・正面・側面）が出ます。</li>
+    </ol>
+    <div class="gx">
+      <h4>例 ── 2段曲げ（2段目を90°ひねり）</h4>
+      <div class="gxin">
+        <div class="gfig"><svg viewBox="0 0 120 120" role="img" aria-label="ひねりを含む立体曲げのイメージ図">
+          <path d="M30,26 L30,58 A12 12 0 0 0 42,70 L70,70" fill="none" stroke="#1F3341" stroke-width="2.3" stroke-linecap="round"/>
+          <path d="M70,70 L92,48" fill="none" stroke="#8FA2AF" stroke-width="2.3" stroke-linecap="round"/>
+          <text x="18" y="46" font-size="7" fill="#5B707E">直線</text>
+          <text x="50" y="82" font-size="7" fill="#5B707E">曲げ</text>
+          <text x="76" y="44" font-size="7" fill="#D63426">ひねり</text>
+        </svg></div>
+        <div class="gtxt">
+          <p>直線50 →90°R10 →直線50 →90°R10（ひねり90°）→直線50 の立体形状は？</p>
+          <p class="gset">直線50 ／ 曲げ θ90 R10 ／ 直線50 ／ 曲げ θ90 R10 ひねり90 ／ 直線50</p>
+          <p class="gread">読み方：展開長 ≈ <b>141.416mm</b>、外形 <b>50×50×50</b>（Zが出る＝立体）。三面図で向きを確認できます。</p>
+          <button class="gbtn" type="button" data-ex='{"set":[{"sel":"[data-t=\"s\"][data-i=\"0\"]","v":50},{"click":"#addBend"},{"sel":"[data-t=\"a\"][data-i=\"0\"]","v":90},{"sel":"[data-t=\"r\"][data-i=\"0\"]","v":10},{"sel":"[data-t=\"s\"][data-i=\"1\"]","v":50},{"click":"#addBend"},{"sel":"[data-t=\"a\"][data-i=\"1\"]","v":90},{"sel":"[data-t=\"r\"][data-i=\"1\"]","v":10},{"sel":"[data-t=\"p\"][data-i=\"1\"]","v":90},{"sel":"[data-t=\"s\"][data-i=\"2\"]","v":50}]}' onclick="tryExample(this)">この例を試す</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</details>
+
+
 
   <!-- 三面図シート -->
   <div class="sheet">
@@ -725,6 +778,44 @@
   });
   window.addEventListener("scroll", function(){ if(cur) place(); }, true);
   window.addEventListener("resize", function(){ if(cur) place(); });
+})();
+</script>
+<script>
+(function(){
+  function fire(el,t){
+    try{ el.dispatchEvent(new Event(t,{bubbles:true})); }
+    catch(e){ var ev=document.createEvent('Event'); ev.initEvent(t,true,true); el.dispatchEvent(ev); }
+  }
+  function clickText(within,text){
+    var cont = within ? document.querySelector(within) : document;
+    if(!cont) return;
+    var all=cont.querySelectorAll('button,[class*="chip"],span,a,div,li'), target=String(text), j,e;
+    for(j=0;j<all.length;j++){
+      e=all[j];
+      if(e.textContent.trim()===target && (e.children.length===0 || e.tagName==='BUTTON')){ e.click(); return; }
+    }
+  }
+  window.tryExample=function(btn){
+    var raw=btn.getAttribute('data-ex'); if(!raw) return;
+    var cfg; try{ cfg=JSON.parse(raw); }catch(e){ return; }
+    var steps=cfg.set||[], i, it, el, k, fns, f, fn;
+    for(i=0;i<steps.length;i++){
+      it=steps[i];
+      if(it.click){ var c=document.querySelector(it.click); if(c) c.click(); continue; }
+      if(it.clickText){ clickText(it.within, it.clickText); continue; }
+      if(it.setState){ if(window.S){ for(k in it.setState){ window.S[k]=it.setState[k]; } }
+        fns=(it.apply||'').split(';'); for(f=0;f<fns.length;f++){ fn=fns[f].replace(/^\s+|\s+$/g,''); if(fn && typeof window[fn]==='function'){ try{ window[fn](); }catch(e){} } }
+        continue; }
+      el = it.sel ? document.querySelector(it.sel) : document.getElementById(it.id);
+      if(!el) continue;
+      el.value=String(it.v);
+      fire(el, el.tagName==='SELECT' ? 'change' : 'input');
+    }
+    var gd=btn; while(gd && !(gd.classList && gd.classList.contains('guide'))) gd=gd.parentNode;
+    if(gd) gd.open=false;
+    var fig=document.querySelector('svg#fig, svg#dwg, figure svg, #fig, #dwg');
+    if(fig && fig.scrollIntoView) fig.scrollIntoView({behavior:'smooth',block:'center'});
+  };
 })();
 </script>
 </body>

@@ -161,6 +161,28 @@
   }
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   @media (prefers-reduced-motion:reduce){.toast{transition:none;} .instTgl .sw,.instTgl .sw::after{transition:none}}
+  /* ── 使い方ガイド（全ツール共通） ── */
+  .guide{background:#FFFFFF;border:1px solid #D5DDE2;border-radius:12px;margin:0 0 12px;overflow:hidden}
+  .guide>summary{list-style:none;cursor:pointer;padding:12px 14px;font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.04em;display:flex;align-items:center;gap:7px}
+  .guide>summary::-webkit-details-marker{display:none}
+  .guide>summary::before{content:"?";display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#1F3341;color:#fff;font-size:11px;font-weight:700;flex:none}
+  .guide[open]>summary{border-bottom:1px solid #E3E9EC}
+  .guide .gb{padding:2px 14px 14px}
+  .guide .gb h4{font-size:11px;letter-spacing:.07em;color:#5B707E;font-weight:700;margin:13px 0 6px}
+  .guide .gb ol{margin:0;padding-left:1.2em;font-size:11.5px;line-height:1.75;color:#1F3341}
+  .guide .gb ol b{color:#1F3341}
+  .guide .gx{border-top:1px dashed #E3E9EC;margin-top:11px;padding-top:8px}
+  .guide .gx h4{margin-top:6px}
+  .guide .gxin{display:flex;gap:12px;align-items:flex-start;margin-top:4px}
+  .guide .gfig{flex:none}
+  .guide .gfig svg{width:112px;height:112px;display:block;background:#FBFCFC;border:1px solid #EDF1F3;border-radius:8px}
+  .guide .gtxt{flex:1;font-size:11.5px;line-height:1.6;color:#1F3341}
+  .guide .gtxt p{margin:0 0 7px}
+  .guide .gset{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;background:#F2F6F8;border:1px solid #E3E9EC;border-radius:6px;padding:6px 8px;color:#3A5060;line-height:1.5}
+  .guide .gread b{color:#D63426}
+  .guide .gbtn{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;font:inherit;font-size:11.5px;font-weight:600;border:1px solid #1F3341;border-radius:6px;background:#fff;color:#1F3341;cursor:pointer;margin-top:2px}
+  .guide .gbtn:active{transform:translateY(1px)}
+  @media(max-width:360px){.guide .gxin{flex-direction:column}.guide .gfig svg{width:128px;height:128px}}
 </style>
 </head>
 <body>
@@ -169,6 +191,40 @@
     <h1>真位置度判定<small>穴位置の合否 = 2×√(ΔX²+ΔY²)</small></h1>
     <a href="../index.html">≡ ツール一覧</a>
   </header>
+<details class="guide noprint">
+  <summary>使い方と例を見る</summary>
+  <div class="gb">
+    <h4>使い方</h4>
+    <ol>
+      <li><b>位置度公差 φ</b>（図面の公差記入枠の値）を入れます。</li>
+      <li><b>図面値 X・Y</b> と <b>実測値 X・Y</b> を入れると、ΔX・ΔY と位置度が出ます。</li>
+      <li>差（ΔX・ΔY）だけ分かっているときは、図面値を 0・0 にして実測値に差を入れてもOKです。</li>
+      <li>位置度＝2×√(ΔX²+ΔY²)。これが φ 以下なら<b>合格</b>。Ⓜ（最大実体）ならボーナス公差も加味します。</li>
+    </ol>
+    <div class="gx">
+      <h4>例 ── ずれ ΔX0.03・ΔY0.04</h4>
+      <div class="gxin">
+        <div class="gfig"><svg viewBox="0 0 120 120" role="img" aria-label="位置度公差域の円の中に実測位置がある図">
+          <circle cx="60" cy="60" r="35" fill="#FBFCFC" stroke="#1F3341" stroke-width="1.3"/>
+          <line x1="60" y1="25" x2="60" y2="95" stroke="#C9D3DA" stroke-width="0.7"/>
+          <line x1="25" y1="60" x2="95" y2="60" stroke="#C9D3DA" stroke-width="0.7"/>
+          <line x1="60" y1="60" x2="70.5" y2="46" stroke="#D63426" stroke-width="1" stroke-dasharray="2 1.5"/>
+          <circle cx="70.5" cy="46" r="3.4" fill="#D63426"/>
+          <text x="60" y="20" font-size="8" fill="#5B707E" text-anchor="middle">公差域 φ</text>
+          <text x="78" y="44" font-size="7.5" fill="#D63426" text-anchor="middle">実測</text>
+        </svg></div>
+        <div class="gtxt">
+          <p>公差 φ0.2。図面値 (0,0) に対して実測が (0.03, 0.04) ずれていたら？</p>
+          <p class="gset">φ 0.2 ／ 図面値 X0 Y0 ／ 実測値 X0.03 Y0.04</p>
+          <p class="gread">読み方：位置度 = 2×√(0.03²+0.04²) = <b>0.100</b> ≤ 0.2 なので <b>合格</b>。</p>
+          <button class="gbtn" type="button" data-ex='{"set":[{"id":"fT","v":0.2},{"id":"fBX","v":0},{"id":"fBY","v":0},{"id":"fMX","v":0.03},{"id":"fMY","v":0.04}]}' onclick="tryExample(this)">この例を試す</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</details>
+
+
 
   <!-- 公差域プロット -->
   <div class="sheet">
@@ -607,6 +663,31 @@
   });
   window.addEventListener("scroll", function(){ if(cur) place(); }, true);
   window.addEventListener("resize", function(){ if(cur) place(); });
+})();
+</script>
+<script>
+(function(){
+  function fire(el,t){
+    try{ el.dispatchEvent(new Event(t,{bubbles:true})); }
+    catch(e){ var ev=document.createEvent('Event'); ev.initEvent(t,true,true); el.dispatchEvent(ev); }
+  }
+  window.tryExample=function(btn){
+    var raw=btn.getAttribute('data-ex'); if(!raw) return;
+    var cfg; try{ cfg=JSON.parse(raw); }catch(e){ return; }
+    var steps=cfg.set||[], i, it, el;
+    for(i=0;i<steps.length;i++){
+      it=steps[i];
+      if(it.click){ var c=document.querySelector(it.click); if(c) c.click(); continue; }
+      el = it.sel ? document.querySelector(it.sel) : document.getElementById(it.id);
+      if(!el) continue;
+      el.value=String(it.v);
+      fire(el, el.tagName==='SELECT' ? 'change' : 'input');
+    }
+    var gd=btn; while(gd && !(gd.classList && gd.classList.contains('guide'))) gd=gd.parentNode;
+    if(gd) gd.open=false;
+    var fig=document.querySelector('svg#fig, svg#dwg, figure svg, #fig, #dwg');
+    if(fig && fig.scrollIntoView) fig.scrollIntoView({behavior:'smooth',block:'center'});
+  };
 })();
 </script>
 </body>

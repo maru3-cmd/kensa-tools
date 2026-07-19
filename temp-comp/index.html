@@ -151,6 +151,28 @@
   }
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   @media (prefers-reduced-motion:reduce){.toast{transition:none;} .instTgl .sw,.instTgl .sw::after{transition:none}}
+  /* ── 使い方ガイド（全ツール共通） ── */
+  .guide{background:#FFFFFF;border:1px solid #D5DDE2;border-radius:12px;margin:0 0 12px;overflow:hidden}
+  .guide>summary{list-style:none;cursor:pointer;padding:12px 14px;font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.04em;display:flex;align-items:center;gap:7px}
+  .guide>summary::-webkit-details-marker{display:none}
+  .guide>summary::before{content:"?";display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#1F3341;color:#fff;font-size:11px;font-weight:700;flex:none}
+  .guide[open]>summary{border-bottom:1px solid #E3E9EC}
+  .guide .gb{padding:2px 14px 14px}
+  .guide .gb h4{font-size:11px;letter-spacing:.07em;color:#5B707E;font-weight:700;margin:13px 0 6px}
+  .guide .gb ol{margin:0;padding-left:1.2em;font-size:11.5px;line-height:1.75;color:#1F3341}
+  .guide .gb ol b{color:#1F3341}
+  .guide .gx{border-top:1px dashed #E3E9EC;margin-top:11px;padding-top:8px}
+  .guide .gx h4{margin-top:6px}
+  .guide .gxin{display:flex;gap:12px;align-items:flex-start;margin-top:4px}
+  .guide .gfig{flex:none}
+  .guide .gfig svg{width:112px;height:112px;display:block;background:#FBFCFC;border:1px solid #EDF1F3;border-radius:8px}
+  .guide .gtxt{flex:1;font-size:11.5px;line-height:1.6;color:#1F3341}
+  .guide .gtxt p{margin:0 0 7px}
+  .guide .gset{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;background:#F2F6F8;border:1px solid #E3E9EC;border-radius:6px;padding:6px 8px;color:#3A5060;line-height:1.5}
+  .guide .gread b{color:#D63426}
+  .guide .gbtn{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;font:inherit;font-size:11.5px;font-weight:600;border:1px solid #1F3341;border-radius:6px;background:#fff;color:#1F3341;cursor:pointer;margin-top:2px}
+  .guide .gbtn:active{transform:translateY(1px)}
+  @media(max-width:360px){.guide .gxin{flex-direction:column}.guide .gfig svg{width:128px;height:128px}}
 </style>
 </head>
 <body>
@@ -159,6 +181,40 @@
     <h1>温度補正<small>測定値の20℃換算(熱膨張)</small></h1>
     <a href="../index.html">≡ ツール一覧</a>
   </header>
+<details class="guide noprint">
+  <summary>使い方と例を見る</summary>
+  <div class="gb">
+    <h4>使い方</h4>
+    <ol>
+      <li>チップで<b>部品の材質</b>を選ぶ（線膨張係数 α が入る）か、α を直接入れます。</li>
+      <li><b>実測値</b>（いま測った長さ）と<b>測定時の温度</b>を入れます。</li>
+      <li>寸法の正式な基準は 20℃（JIS B 0680）。下に<b>20℃換算値</b>と補正量が出ます。</li>
+      <li>必要なら測定器側の伸び（器差）も加味できます。</li>
+    </ol>
+    <div class="gx">
+      <h4>例 ── 鋼を30℃で100mm測定</h4>
+      <div class="gxin">
+        <div class="gfig"><svg viewBox="0 0 120 120" role="img" aria-label="30℃で伸びた実測値を20℃に換算する図">
+          <rect x="20" y="44" width="70" height="12" fill="#F2F6F8" stroke="#5B707E" stroke-width="1"/>
+          <text x="20" y="40" font-size="7.5" fill="#5B707E">20℃（換算）</text>
+          <rect x="20" y="70" width="80" height="12" fill="#FBECEA" stroke="#D63426" stroke-width="1"/>
+          <text x="20" y="66" font-size="7.5" fill="#D63426">30℃（実測）</text>
+          <line x1="90" y1="44" x2="90" y2="82" stroke="#8FA2AF" stroke-width="0.8" stroke-dasharray="2 2"/>
+          <line x1="100" y1="70" x2="100" y2="82" stroke="#8FA2AF" stroke-width="0.8" stroke-dasharray="2 2"/>
+          <text x="95" y="99" font-size="7.5" fill="#D63426" text-anchor="middle">伸び</text>
+        </svg></div>
+        <div class="gtxt">
+          <p>鋼（α=11.5）を 30℃ の現場で 100.000mm と測ったら、20℃では？</p>
+          <p class="gset">α 11.5 ／ 実測値 100 ／ 温度 30</p>
+          <p class="gread">読み方：20℃換算値≈<b>99.9885mm</b>（30℃で約 11.5µm 伸びている分を差し引き）。</p>
+          <button class="gbtn" type="button" data-ex='{"set":[{"id":"fAlpha","v":11.5},{"id":"fL","v":100},{"id":"fT","v":30}]}' onclick="tryExample(this)">この例を試す</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</details>
+
+
 
   <!-- 図面シート -->
   <div class="sheet">
@@ -592,6 +648,31 @@
   });
   window.addEventListener("scroll", function(){ if(cur) place(); }, true);
   window.addEventListener("resize", function(){ if(cur) place(); });
+})();
+</script>
+<script>
+(function(){
+  function fire(el,t){
+    try{ el.dispatchEvent(new Event(t,{bubbles:true})); }
+    catch(e){ var ev=document.createEvent('Event'); ev.initEvent(t,true,true); el.dispatchEvent(ev); }
+  }
+  window.tryExample=function(btn){
+    var raw=btn.getAttribute('data-ex'); if(!raw) return;
+    var cfg; try{ cfg=JSON.parse(raw); }catch(e){ return; }
+    var steps=cfg.set||[], i, it, el;
+    for(i=0;i<steps.length;i++){
+      it=steps[i];
+      if(it.click){ var c=document.querySelector(it.click); if(c) c.click(); continue; }
+      el = it.sel ? document.querySelector(it.sel) : document.getElementById(it.id);
+      if(!el) continue;
+      el.value=String(it.v);
+      fire(el, el.tagName==='SELECT' ? 'change' : 'input');
+    }
+    var gd=btn; while(gd && !(gd.classList && gd.classList.contains('guide'))) gd=gd.parentNode;
+    if(gd) gd.open=false;
+    var fig=document.querySelector('svg#fig, svg#dwg, figure svg, #fig, #dwg');
+    if(fig && fig.scrollIntoView) fig.scrollIntoView({behavior:'smooth',block:'center'});
+  };
 })();
 </script>
 </body>

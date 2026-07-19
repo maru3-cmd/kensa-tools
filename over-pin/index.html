@@ -113,6 +113,28 @@
   }
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+  /* ── 使い方ガイド（全ツール共通） ── */
+  .guide{background:#FFFFFF;border:1px solid #D5DDE2;border-radius:12px;margin:0 0 12px;overflow:hidden}
+  .guide>summary{list-style:none;cursor:pointer;padding:12px 14px;font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.04em;display:flex;align-items:center;gap:7px}
+  .guide>summary::-webkit-details-marker{display:none}
+  .guide>summary::before{content:"?";display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#1F3341;color:#fff;font-size:11px;font-weight:700;flex:none}
+  .guide[open]>summary{border-bottom:1px solid #E3E9EC}
+  .guide .gb{padding:2px 14px 14px}
+  .guide .gb h4{font-size:11px;letter-spacing:.07em;color:#5B707E;font-weight:700;margin:13px 0 6px}
+  .guide .gb ol{margin:0;padding-left:1.2em;font-size:11.5px;line-height:1.75;color:#1F3341}
+  .guide .gb ol b{color:#1F3341}
+  .guide .gx{border-top:1px dashed #E3E9EC;margin-top:11px;padding-top:8px}
+  .guide .gx h4{margin-top:6px}
+  .guide .gxin{display:flex;gap:12px;align-items:flex-start;margin-top:4px}
+  .guide .gfig{flex:none}
+  .guide .gfig svg{width:112px;height:112px;display:block;background:#FBFCFC;border:1px solid #EDF1F3;border-radius:8px}
+  .guide .gtxt{flex:1;font-size:11.5px;line-height:1.6;color:#1F3341}
+  .guide .gtxt p{margin:0 0 7px}
+  .guide .gset{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;background:#F2F6F8;border:1px solid #E3E9EC;border-radius:6px;padding:6px 8px;color:#3A5060;line-height:1.5}
+  .guide .gread b{color:#D63426}
+  .guide .gbtn{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;font:inherit;font-size:11.5px;font-weight:600;border:1px solid #1F3341;border-radius:6px;background:#fff;color:#1F3341;cursor:pointer;margin-top:2px}
+  .guide .gbtn:active{transform:translateY(1px)}
+  @media(max-width:360px){.guide .gxin{flex-direction:column}.guide .gfig svg{width:128px;height:128px}}
 </style>
 </head>
 <body>
@@ -121,6 +143,38 @@
     <h1>オーバーピン径<small>平歯車: 2本のピンを挟んだ測定値</small></h1>
     <a href="../index.html">≡ ツール一覧</a>
   </header>
+<details class="guide noprint">
+  <summary>使い方と例を見る</summary>
+  <div class="gb">
+    <h4>使い方</h4>
+    <ol>
+      <li><b>モジュール m</b>・<b>歯数 z</b>・<b>ピン径</b>を入れます（圧力角 α 既定20°、転位 x 既定0）。</li>
+      <li>歯数が偶数なら向かい合う2本、奇数なら食い違いのピンを挟む式を自動で選びます。</li>
+      <li>下に<b>オーバーピン径 M</b>（理論値）が出ます。実測 M を入れると差 Δ も出ます。</li>
+    </ol>
+    <div class="gx">
+      <h4>例 ── m2・z20・ピン径3.5</h4>
+      <div class="gxin">
+        <div class="gfig"><svg viewBox="0 0 120 120" role="img" aria-label="歯車を2本のピンで挟んで測るオーバーピン径Mの図">
+          <circle cx="60" cy="60" r="30" fill="none" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="4 2"/>
+          <circle cx="24" cy="60" r="6" fill="#FBECEA" stroke="#D63426" stroke-width="1.3"/>
+          <circle cx="96" cy="60" r="6" fill="#FBECEA" stroke="#D63426" stroke-width="1.3"/>
+          <line x1="18" y1="60" x2="102" y2="60" stroke="#D63426" stroke-width="1.2" stroke-dasharray="3 2"/>
+          <text x="60" y="50" font-size="9" fill="#D63426" text-anchor="middle">M</text>
+          <text x="60" y="92" font-size="7" fill="#5B707E" text-anchor="middle">ピン2本を挟む</text>
+        </svg></div>
+        <div class="gtxt">
+          <p>モジュール2・歯数20の平歯車を、ピン径3.5で挟むと測定値は？</p>
+          <p class="gset">m 2 ／ z 20 ／ α 20 ／ x 0 ／ ピン径 3.5</p>
+          <p class="gread">読み方：歯数20は偶数なので M = ピン中心円＋ピン径 ≈ <b>44.929mm</b>（推奨ピン径の目安 1.68m=3.36）。</p>
+          <button class="gbtn" type="button" data-ex='{"set":[{"id":"fM","v":2},{"id":"fZ","v":20},{"id":"fDp","v":3.5}]}' onclick="tryExample(this)">この例を試す</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</details>
+
+
 
   <!-- 図面シート -->
   <div class="sheet">
@@ -532,6 +586,41 @@
   });
   window.addEventListener("scroll", function(){ if(cur) place(); }, true);
   window.addEventListener("resize", function(){ if(cur) place(); });
+})();
+</script>
+<script>
+(function(){
+  function fire(el,t){
+    try{ el.dispatchEvent(new Event(t,{bubbles:true})); }
+    catch(e){ var ev=document.createEvent('Event'); ev.initEvent(t,true,true); el.dispatchEvent(ev); }
+  }
+  function clickText(within,text){
+    var cont = within ? document.querySelector(within) : document;
+    if(!cont) return;
+    var all=cont.querySelectorAll('button,[class*="chip"],span,a,div,li'), target=String(text), j,e;
+    for(j=0;j<all.length;j++){
+      e=all[j];
+      if(e.textContent.trim()===target && (e.children.length===0 || e.tagName==='BUTTON')){ e.click(); return; }
+    }
+  }
+  window.tryExample=function(btn){
+    var raw=btn.getAttribute('data-ex'); if(!raw) return;
+    var cfg; try{ cfg=JSON.parse(raw); }catch(e){ return; }
+    var steps=cfg.set||[], i, it, el;
+    for(i=0;i<steps.length;i++){
+      it=steps[i];
+      if(it.click){ var c=document.querySelector(it.click); if(c) c.click(); continue; }
+      if(it.clickText){ clickText(it.within, it.clickText); continue; }
+      el = it.sel ? document.querySelector(it.sel) : document.getElementById(it.id);
+      if(!el) continue;
+      el.value=String(it.v);
+      fire(el, el.tagName==='SELECT' ? 'change' : 'input');
+    }
+    var gd=btn; while(gd && !(gd.classList && gd.classList.contains('guide'))) gd=gd.parentNode;
+    if(gd) gd.open=false;
+    var fig=document.querySelector('svg#fig, svg#dwg, figure svg, #fig, #dwg');
+    if(fig && fig.scrollIntoView) fig.scrollIntoView({behavior:'smooth',block:'center'});
+  };
 })();
 </script>
 </body>

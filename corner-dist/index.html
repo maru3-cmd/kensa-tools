@@ -178,6 +178,28 @@
     .tblwrap{max-height:none;overflow:visible}
   }
   @media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
+  /* ── 使い方ガイド（全ツール共通） ── */
+  .guide{background:#FFFFFF;border:1px solid #D5DDE2;border-radius:12px;margin:0 0 12px;overflow:hidden}
+  .guide>summary{list-style:none;cursor:pointer;padding:12px 14px;font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.04em;display:flex;align-items:center;gap:7px}
+  .guide>summary::-webkit-details-marker{display:none}
+  .guide>summary::before{content:"?";display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#1F3341;color:#fff;font-size:11px;font-weight:700;flex:none}
+  .guide[open]>summary{border-bottom:1px solid #E3E9EC}
+  .guide .gb{padding:2px 14px 14px}
+  .guide .gb h4{font-size:11px;letter-spacing:.07em;color:#5B707E;font-weight:700;margin:13px 0 6px}
+  .guide .gb ol{margin:0;padding-left:1.2em;font-size:11.5px;line-height:1.75;color:#1F3341}
+  .guide .gb ol b{color:#1F3341}
+  .guide .gx{border-top:1px dashed #E3E9EC;margin-top:11px;padding-top:8px}
+  .guide .gx h4{margin-top:6px}
+  .guide .gxin{display:flex;gap:12px;align-items:flex-start;margin-top:4px}
+  .guide .gfig{flex:none}
+  .guide .gfig svg{width:112px;height:112px;display:block;background:#FBFCFC;border:1px solid #EDF1F3;border-radius:8px}
+  .guide .gtxt{flex:1;font-size:11.5px;line-height:1.6;color:#1F3341}
+  .guide .gtxt p{margin:0 0 7px}
+  .guide .gset{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;background:#F2F6F8;border:1px solid #E3E9EC;border-radius:6px;padding:6px 8px;color:#3A5060;line-height:1.5}
+  .guide .gread b{color:#D63426}
+  .guide .gbtn{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;font:inherit;font-size:11.5px;font-weight:600;border:1px solid #1F3341;border-radius:6px;background:#fff;color:#1F3341;cursor:pointer;margin-top:2px}
+  .guide .gbtn:active{transform:translateY(1px)}
+  @media(max-width:360px){.guide .gxin{flex-direction:column}.guide .gfig svg{width:128px;height:128px}}
 </style>
 </head>
 <body>
@@ -187,6 +209,40 @@
   <h1>角－角 距離<small>凹み形状の全頂点間も</small></h1>
   <a href="../index.html">≡ ツール一覧</a>
 </header>
+<details class="guide noprint">
+  <summary>使い方と例を見る</summary>
+  <div class="gb">
+    <h4>使い方</h4>
+    <ol>
+      <li>「直方体」タブで <b>L（長さ）・W（幅）・H（高さ）</b> を入れると、<b>空間対角</b>が出ます。</li>
+      <li>隅切り・切欠きなど凹み形状は「輪郭で作る」、測定機の座標そのままは「座標で作る」を使います。</li>
+      <li>角にRや面取りがある部品は理論交点そのものは測れないので、基準面から測って座標で入れると確実です。</li>
+    </ol>
+    <div class="gx">
+      <h4>例 ── 100×60×40 の直方体</h4>
+      <div class="gxin">
+        <div class="gfig"><svg viewBox="0 0 120 120" role="img" aria-label="直方体の空間対角の図">
+          <polygon points="30,50 80,50 95,38 45,38" fill="#FBFCFC" stroke="#1F3341" stroke-width="1.1"/>
+          <polygon points="30,50 80,50 80,90 30,90" fill="#F2F6F8" stroke="#1F3341" stroke-width="1.1"/>
+          <polygon points="80,50 95,38 95,78 80,90" fill="#EDF1F3" stroke="#1F3341" stroke-width="1.1"/>
+          <line x1="30" y1="90" x2="95" y2="38" stroke="#D63426" stroke-width="1.7"/>
+          <circle cx="30" cy="90" r="2.4" fill="#D63426"/>
+          <circle cx="95" cy="38" r="2.4" fill="#D63426"/>
+          <text x="64" y="60" font-size="8" fill="#D63426">対角</text>
+          <text x="54" y="104" font-size="7" fill="#5B707E" text-anchor="middle">L×W×H の空間対角</text>
+        </svg></div>
+        <div class="gtxt">
+          <p>100×60×40 の直方体の、向かい合う角どうしの距離（空間対角）は？</p>
+          <p class="gset">直方体 ／ L 100 ／ W 60 ／ H 40</p>
+          <p class="gread">読み方：空間対角 = √(100²+60²+40²) = <b>123.288mm</b>。</p>
+          <button class="gbtn" type="button" data-ex='{"set":[{"click":"#tabBox"},{"id":"bL","v":100},{"id":"bW","v":60},{"id":"bH","v":40}]}' onclick="tryExample(this)">この例を試す</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</details>
+
+
 
 <div class="tb-strip">
   <div><b>TOOL-25</b></div>
@@ -1031,6 +1087,44 @@ setTab(S.savedTab || "box");
   });
   window.addEventListener("scroll", function(){ if(cur) place(); }, true);
   window.addEventListener("resize", function(){ if(cur) place(); });
+})();
+</script>
+<script>
+(function(){
+  function fire(el,t){
+    try{ el.dispatchEvent(new Event(t,{bubbles:true})); }
+    catch(e){ var ev=document.createEvent('Event'); ev.initEvent(t,true,true); el.dispatchEvent(ev); }
+  }
+  function clickText(within,text){
+    var cont = within ? document.querySelector(within) : document;
+    if(!cont) return;
+    var all=cont.querySelectorAll('button,[class*="chip"],span,a,div,li'), target=String(text), j,e;
+    for(j=0;j<all.length;j++){
+      e=all[j];
+      if(e.textContent.trim()===target && (e.children.length===0 || e.tagName==='BUTTON')){ e.click(); return; }
+    }
+  }
+  window.tryExample=function(btn){
+    var raw=btn.getAttribute('data-ex'); if(!raw) return;
+    var cfg; try{ cfg=JSON.parse(raw); }catch(e){ return; }
+    var steps=cfg.set||[], i, it, el, k, fns, f, fn;
+    for(i=0;i<steps.length;i++){
+      it=steps[i];
+      if(it.click){ var c=document.querySelector(it.click); if(c) c.click(); continue; }
+      if(it.clickText){ clickText(it.within, it.clickText); continue; }
+      if(it.setState){ if(window.S){ for(k in it.setState){ window.S[k]=it.setState[k]; } }
+        fns=(it.apply||'').split(';'); for(f=0;f<fns.length;f++){ fn=fns[f].replace(/^\s+|\s+$/g,''); if(fn && typeof window[fn]==='function'){ try{ window[fn](); }catch(e){} } }
+        continue; }
+      el = it.sel ? document.querySelector(it.sel) : document.getElementById(it.id);
+      if(!el) continue;
+      el.value=String(it.v);
+      fire(el, el.tagName==='SELECT' ? 'change' : 'input');
+    }
+    var gd=btn; while(gd && !(gd.classList && gd.classList.contains('guide'))) gd=gd.parentNode;
+    if(gd) gd.open=false;
+    var fig=document.querySelector('svg#fig, svg#dwg, figure svg, #fig, #dwg');
+    if(fig && fig.scrollIntoView) fig.scrollIntoView({behavior:'smooth',block:'center'});
+  };
 })();
 </script>
 </body>

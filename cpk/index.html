@@ -145,6 +145,28 @@
   }
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+  /* ── 使い方ガイド（全ツール共通） ── */
+  .guide{background:#FFFFFF;border:1px solid #D5DDE2;border-radius:12px;margin:0 0 12px;overflow:hidden}
+  .guide>summary{list-style:none;cursor:pointer;padding:12px 14px;font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.04em;display:flex;align-items:center;gap:7px}
+  .guide>summary::-webkit-details-marker{display:none}
+  .guide>summary::before{content:"?";display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#1F3341;color:#fff;font-size:11px;font-weight:700;flex:none}
+  .guide[open]>summary{border-bottom:1px solid #E3E9EC}
+  .guide .gb{padding:2px 14px 14px}
+  .guide .gb h4{font-size:11px;letter-spacing:.07em;color:#5B707E;font-weight:700;margin:13px 0 6px}
+  .guide .gb ol{margin:0;padding-left:1.2em;font-size:11.5px;line-height:1.75;color:#1F3341}
+  .guide .gb ol b{color:#1F3341}
+  .guide .gx{border-top:1px dashed #E3E9EC;margin-top:11px;padding-top:8px}
+  .guide .gx h4{margin-top:6px}
+  .guide .gxin{display:flex;gap:12px;align-items:flex-start;margin-top:4px}
+  .guide .gfig{flex:none}
+  .guide .gfig svg{width:112px;height:112px;display:block;background:#FBFCFC;border:1px solid #EDF1F3;border-radius:8px}
+  .guide .gtxt{flex:1;font-size:11.5px;line-height:1.6;color:#1F3341}
+  .guide .gtxt p{margin:0 0 7px}
+  .guide .gset{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;background:#F2F6F8;border:1px solid #E3E9EC;border-radius:6px;padding:6px 8px;color:#3A5060;line-height:1.5}
+  .guide .gread b{color:#D63426}
+  .guide .gbtn{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;font:inherit;font-size:11.5px;font-weight:600;border:1px solid #1F3341;border-radius:6px;background:#fff;color:#1F3341;cursor:pointer;margin-top:2px}
+  .guide .gbtn:active{transform:translateY(1px)}
+  @media(max-width:360px){.guide .gxin{flex-direction:column}.guide .gfig svg{width:128px;height:128px}}
 </style>
 </head>
 <body>
@@ -153,6 +175,40 @@
     <h1>Cpk電卓<small>工程能力指数: 平均・σ・分布・予測不良率</small></h1>
     <a href="../index.html">≡ ツール一覧</a>
   </header>
+<details class="guide noprint">
+  <summary>使い方と例を見る</summary>
+  <div class="gb">
+    <h4>使い方</h4>
+    <ol>
+      <li><b>基準値</b>（中心）と<b>上限・下限の許容差</b>を入れます。</li>
+      <li>実測値を<b>スペースや改行で貼り付け</b>ると、平均・σ（n−1）・Cp・Cpk・予測不良率・分布図が出ます。</li>
+      <li><b>Cp</b>はばらつきだけの実力、<b>Cpk</b>は平均の寄りも含めた実力。≧1.33 が目安です。</li>
+    </ol>
+    <div class="gx">
+      <h4>例 ── ばらつきは良いが中心がずれた工程</h4>
+      <div class="gxin">
+        <div class="gfig"><svg viewBox="0 0 120 120" role="img" aria-label="分布の中心が上限側に寄りCpkがCpより小さくなる図">
+          <line x1="18" y1="90" x2="106" y2="90" stroke="#1F3341" stroke-width="1"/>
+          <line x1="30" y1="32" x2="30" y2="92" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="3 2"/>
+          <line x1="96" y1="32" x2="96" y2="92" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="3 2"/>
+          <text x="30" y="26" font-size="7" fill="#5B707E" text-anchor="middle">下限</text>
+          <text x="96" y="26" font-size="7" fill="#5B707E" text-anchor="middle">上限</text>
+          <path d="M42,90 C56,90 60,42 74,42 C88,42 92,90 104,90" fill="#FBECEA" stroke="#D63426" stroke-width="1.4"/>
+          <line x1="74" y1="38" x2="74" y2="90" stroke="#D63426" stroke-width="1" stroke-dasharray="2 2"/>
+          <text x="74" y="34" font-size="7.5" fill="#D63426" text-anchor="middle">平均</text>
+        </svg></div>
+        <div class="gtxt">
+          <p>中心50・許容±0.05 に対し、平均が少し上振れした10個のデータ。</p>
+          <p class="gset">基準50 ／ 上限+0.05 ／ 下限−0.05 ／ データ 50.02 50.03 …</p>
+          <p class="gread">読み方：Cp=<b>1.39</b>（ばらつきは足りている）だが、平均50.021 が上振れのため Cpk=<b>0.81</b>。予測不良率0.77%。中心を直せば実力が上がる、と読めます。</p>
+          <button class="gbtn" type="button" data-ex='{"set":[{"id":"fNom","v":50},{"id":"fUp","v":0.05},{"id":"fLow","v":-0.05},{"id":"fData","v":"50.02 50.03 50.01 50.04 50.02 50.03 50.00 50.02 50.01 50.03"}]}' onclick="tryExample(this)">この例を試す</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</details>
+
+
 
   <!-- 分布図シート -->
   <div class="sheet">
@@ -641,6 +697,41 @@
   });
   window.addEventListener("scroll", function(){ if(cur) place(); }, true);
   window.addEventListener("resize", function(){ if(cur) place(); });
+})();
+</script>
+<script>
+(function(){
+  function fire(el,t){
+    try{ el.dispatchEvent(new Event(t,{bubbles:true})); }
+    catch(e){ var ev=document.createEvent('Event'); ev.initEvent(t,true,true); el.dispatchEvent(ev); }
+  }
+  function clickText(within,text){
+    var cont = within ? document.querySelector(within) : document;
+    if(!cont) return;
+    var all=cont.querySelectorAll('button,[class*="chip"],span,a,div,li'), target=String(text), j,e;
+    for(j=0;j<all.length;j++){
+      e=all[j];
+      if(e.textContent.trim()===target && (e.children.length===0 || e.tagName==='BUTTON')){ e.click(); return; }
+    }
+  }
+  window.tryExample=function(btn){
+    var raw=btn.getAttribute('data-ex'); if(!raw) return;
+    var cfg; try{ cfg=JSON.parse(raw); }catch(e){ return; }
+    var steps=cfg.set||[], i, it, el;
+    for(i=0;i<steps.length;i++){
+      it=steps[i];
+      if(it.click){ var c=document.querySelector(it.click); if(c) c.click(); continue; }
+      if(it.clickText){ clickText(it.within, it.clickText); continue; }
+      el = it.sel ? document.querySelector(it.sel) : document.getElementById(it.id);
+      if(!el) continue;
+      el.value=String(it.v);
+      fire(el, el.tagName==='SELECT' ? 'change' : 'input');
+    }
+    var gd=btn; while(gd && !(gd.classList && gd.classList.contains('guide'))) gd=gd.parentNode;
+    if(gd) gd.open=false;
+    var fig=document.querySelector('svg#fig, svg#dwg, figure svg, #fig, #dwg');
+    if(fig && fig.scrollIntoView) fig.scrollIntoView({behavior:'smooth',block:'center'});
+  };
 })();
 </script>
 </body>

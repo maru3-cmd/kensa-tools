@@ -62,6 +62,28 @@
   .toast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);background:var(--ink);color:#fff;font-size:13px;padding:9px 20px;border-radius:20px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+  /* ── 使い方ガイド（全ツール共通） ── */
+  .guide{background:#FFFFFF;border:1px solid #D5DDE2;border-radius:12px;margin:0 0 12px;overflow:hidden}
+  .guide>summary{list-style:none;cursor:pointer;padding:12px 14px;font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.04em;display:flex;align-items:center;gap:7px}
+  .guide>summary::-webkit-details-marker{display:none}
+  .guide>summary::before{content:"?";display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#1F3341;color:#fff;font-size:11px;font-weight:700;flex:none}
+  .guide[open]>summary{border-bottom:1px solid #E3E9EC}
+  .guide .gb{padding:2px 14px 14px}
+  .guide .gb h4{font-size:11px;letter-spacing:.07em;color:#5B707E;font-weight:700;margin:13px 0 6px}
+  .guide .gb ol{margin:0;padding-left:1.2em;font-size:11.5px;line-height:1.75;color:#1F3341}
+  .guide .gb ol b{color:#1F3341}
+  .guide .gx{border-top:1px dashed #E3E9EC;margin-top:11px;padding-top:8px}
+  .guide .gx h4{margin-top:6px}
+  .guide .gxin{display:flex;gap:12px;align-items:flex-start;margin-top:4px}
+  .guide .gfig{flex:none}
+  .guide .gfig svg{width:112px;height:112px;display:block;background:#FBFCFC;border:1px solid #EDF1F3;border-radius:8px}
+  .guide .gtxt{flex:1;font-size:11.5px;line-height:1.6;color:#1F3341}
+  .guide .gtxt p{margin:0 0 7px}
+  .guide .gset{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;background:#F2F6F8;border:1px solid #E3E9EC;border-radius:6px;padding:6px 8px;color:#3A5060;line-height:1.5}
+  .guide .gread b{color:#D63426}
+  .guide .gbtn{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;font:inherit;font-size:11.5px;font-weight:600;border:1px solid #1F3341;border-radius:6px;background:#fff;color:#1F3341;cursor:pointer;margin-top:2px}
+  .guide .gbtn:active{transform:translateY(1px)}
+  @media(max-width:360px){.guide .gxin{flex-direction:column}.guide .gfig svg{width:128px;height:128px}}
 </style>
 </head>
 <body>
@@ -70,6 +92,40 @@
     <h1>直角三角形<small>2つ入れれば残りが出る</small></h1>
     <a href="../index.html">≡ ツール一覧</a>
   </header>
+<details class="guide noprint">
+  <summary>使い方と例を見る</summary>
+  <div class="gb">
+    <h4>使い方</h4>
+    <ol>
+      <li><b>a・b・c・α・β</b>の5つのうち<b>2つ</b>（辺を1つ以上ふくむ）を入れると、残りが赤字で出ます。</li>
+      <li>3つ目を入れると、いちばん古い入力が計算値に切り替わります。</li>
+      <li>角度は <b>30.5</b> でも <b>30 30</b>（度 分）でも入れられます。</li>
+      <li>斜辺からの高さ（垂線）も下に出ます。</li>
+    </ol>
+    <div class="gx">
+      <h4>例 ── 3:4:5 の直角三角形</h4>
+      <div class="gxin">
+        <div class="gfig"><svg viewBox="0 0 120 120" role="img" aria-label="底辺30 高さ40 斜辺50の直角三角形の例">
+          <polygon points="20,100 80,100 20,20" fill="#FBFCFC" stroke="#1F3341" stroke-width="1.4"/>
+          <line x1="80" y1="100" x2="20" y2="20" stroke="#D63426" stroke-width="1.7"/>
+          <rect x="20" y="92" width="8" height="8" fill="none" stroke="#1F3341" stroke-width="1"/>
+          <text x="50" y="113" font-size="8.5" fill="#1F3341" text-anchor="middle">a=30</text>
+          <text x="9" y="62" font-size="8.5" fill="#1F3341" text-anchor="middle">b=40</text>
+          <text x="59" y="54" font-size="8.5" fill="#D63426" text-anchor="middle">c=50</text>
+          <text x="70" y="96" font-size="8" fill="#5B707E">α</text>
+        </svg></div>
+        <div class="gtxt">
+          <p>底辺 a=30、高さ b=40 を入れると残りが出ます。</p>
+          <p class="gset">底辺 a 30 ／ 高さ b 40</p>
+          <p class="gread">読み方：斜辺 c=<b>50.000</b>、α≈<b>53.13°</b>、β≈<b>36.87°</b>、斜辺からの高さ=24.000。</p>
+          <button class="gbtn" type="button" data-ex='{"set":[{"click":"#clearBtn"},{"id":"fa","v":30},{"id":"fb","v":40}]}' onclick="tryExample(this)">この例を試す</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</details>
+
+
 
   <div class="sheet">
     <div class="sheet-inner">
@@ -499,6 +555,31 @@
   });
   window.addEventListener("scroll", function(){ if(cur) place(); }, true);
   window.addEventListener("resize", function(){ if(cur) place(); });
+})();
+</script>
+<script>
+(function(){
+  function fire(el,t){
+    try{ el.dispatchEvent(new Event(t,{bubbles:true})); }
+    catch(e){ var ev=document.createEvent('Event'); ev.initEvent(t,true,true); el.dispatchEvent(ev); }
+  }
+  window.tryExample=function(btn){
+    var raw=btn.getAttribute('data-ex'); if(!raw) return;
+    var cfg; try{ cfg=JSON.parse(raw); }catch(e){ return; }
+    var steps=cfg.set||[], i, it, el;
+    for(i=0;i<steps.length;i++){
+      it=steps[i];
+      if(it.click){ var c=document.querySelector(it.click); if(c) c.click(); continue; }
+      el = it.sel ? document.querySelector(it.sel) : document.getElementById(it.id);
+      if(!el) continue;
+      el.value=String(it.v);
+      fire(el, el.tagName==='SELECT' ? 'change' : 'input');
+    }
+    var gd=btn; while(gd && !(gd.classList && gd.classList.contains('guide'))) gd=gd.parentNode;
+    if(gd) gd.open=false;
+    var fig=document.querySelector('svg#fig, svg#dwg, figure svg, #fig, #dwg');
+    if(fig && fig.scrollIntoView) fig.scrollIntoView({behavior:'smooth',block:'center'});
+  };
 })();
 </script>
 </body>

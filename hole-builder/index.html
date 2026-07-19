@@ -100,6 +100,28 @@
   .toast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);background:var(--ink);color:#fff;font-size:13px;padding:9px 20px;border-radius:20px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+  /* ── 使い方ガイド（全ツール共通） ── */
+  .guide{background:#FFFFFF;border:1px solid #D5DDE2;border-radius:12px;margin:0 0 12px;overflow:hidden}
+  .guide>summary{list-style:none;cursor:pointer;padding:12px 14px;font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.04em;display:flex;align-items:center;gap:7px}
+  .guide>summary::-webkit-details-marker{display:none}
+  .guide>summary::before{content:"?";display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#1F3341;color:#fff;font-size:11px;font-weight:700;flex:none}
+  .guide[open]>summary{border-bottom:1px solid #E3E9EC}
+  .guide .gb{padding:2px 14px 14px}
+  .guide .gb h4{font-size:11px;letter-spacing:.07em;color:#5B707E;font-weight:700;margin:13px 0 6px}
+  .guide .gb ol{margin:0;padding-left:1.2em;font-size:11.5px;line-height:1.75;color:#1F3341}
+  .guide .gb ol b{color:#1F3341}
+  .guide .gx{border-top:1px dashed #E3E9EC;margin-top:11px;padding-top:8px}
+  .guide .gx h4{margin-top:6px}
+  .guide .gxin{display:flex;gap:12px;align-items:flex-start;margin-top:4px}
+  .guide .gfig{flex:none}
+  .guide .gfig svg{width:112px;height:112px;display:block;background:#FBFCFC;border:1px solid #EDF1F3;border-radius:8px}
+  .guide .gtxt{flex:1;font-size:11.5px;line-height:1.6;color:#1F3341}
+  .guide .gtxt p{margin:0 0 7px}
+  .guide .gset{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;background:#F2F6F8;border:1px solid #E3E9EC;border-radius:6px;padding:6px 8px;color:#3A5060;line-height:1.5}
+  .guide .gread b{color:#D63426}
+  .guide .gbtn{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;font:inherit;font-size:11.5px;font-weight:600;border:1px solid #1F3341;border-radius:6px;background:#fff;color:#1F3341;cursor:pointer;margin-top:2px}
+  .guide .gbtn:active{transform:translateY(1px)}
+  @media(max-width:360px){.guide .gxin{flex-direction:column}.guide .gfig svg{width:128px;height:128px}}
 </style>
 </head>
 <body>
@@ -108,6 +130,41 @@
     <h1>穴位置ビルダー<small>複数中心の配置 / 実測距離→位置の割り出し</small></h1>
     <a href="../index.html">≡ ツール一覧</a>
   </header>
+<details class="guide noprint">
+  <summary>使い方と例を見る</summary>
+  <div class="gb">
+    <h4>使い方</h4>
+    <ol>
+      <li>「絶対座標」では、中心Aを原点に、中心B以降を「Aから角度・距離」で置き、各中心の穴を<b>r・θ</b>で入れます。角度は<b>真上0°・時計回り＋</b>。</li>
+      <li>「三辺測量」では、基準の2穴 P1・P2 を置き、他の穴の <b>P1から・P2から</b>の実測距離で位置（縦横）を割り出します（CMM不要）。</li>
+      <li>2穴を選ぶと距離が、下の表に全穴の座標が出ます。</li>
+    </ol>
+    <div class="gx">
+      <h4>例 ── 中心Aに r50・0°と r50・90°</h4>
+      <div class="gxin">
+        <div class="gfig"><svg viewBox="0 0 120 120" role="img" aria-label="中心Aから真上0度と東90度に2穴を置いた図">
+          <circle cx="55" cy="72" r="2" fill="#1F3341"/>
+          <text x="49" y="82" font-size="7" fill="#5B707E">A</text>
+          <line x1="55" y1="72" x2="55" y2="30" stroke="#8FA2AF" stroke-width="0.9" stroke-dasharray="2 2"/>
+          <text x="55" y="24" font-size="7" fill="#5B707E" text-anchor="middle">0°(真上)</text>
+          <circle cx="55" cy="30" r="3.4" fill="#fff" stroke="#1F3341" stroke-width="1.3"/>
+          <circle cx="97" cy="72" r="3.4" fill="#fff" stroke="#1F3341" stroke-width="1.3"/>
+          <line x1="55" y1="30" x2="97" y2="72" stroke="#D63426" stroke-width="1.5"/>
+          <text x="41" y="50" font-size="7" fill="#1F3341">A1</text>
+          <text x="100" y="74" font-size="7" fill="#1F3341">A2</text>
+        </svg></div>
+        <div class="gtxt">
+          <p>中心Aから真上（0°）に50、東（90°）に50 の位置に2穴。座標と距離は？</p>
+          <p class="gset">中心A ／ 穴1 r50 θ0 ／ 穴2 r50 θ90</p>
+          <p class="gread">読み方：A1(0, 50)・A2(50, 0)、2穴の距離 <b>70.711mm</b>（θ0が真上、θ90が東）。</p>
+          <button class="gbtn" type="button" data-ex='{"set":[{"sel":"[data-ci=\"0\"][data-hi=\"0\"][data-f=\"r\"]","v":50},{"sel":"[data-ci=\"0\"][data-hi=\"0\"][data-f=\"a\"]","v":0},{"click":"[data-addh=\"0\"]"},{"sel":"[data-ci=\"0\"][data-hi=\"1\"][data-f=\"r\"]","v":50},{"sel":"[data-ci=\"0\"][data-hi=\"1\"][data-f=\"a\"]","v":90},{"sel":"#pairA","v":"A1"},{"sel":"#pairB","v":"A2"}]}' onclick="tryExample(this)">この例を試す</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</details>
+
+
 
   <div class="mode-lg" role="group" aria-label="モード">
     <button type="button" id="mBuild" class="on">配置(中心→穴→座標)</button>
@@ -134,7 +191,7 @@
   <!-- 配置モード -->
   <div id="buildBox">
     <div class="note">
-      中心Aを原点(0,0)とし、中心B以降は「<b>Aから見た角度・距離</b>」で置きます。各中心にぶら下がる穴は、その中心からの <b>r・θ</b> で入力。全穴の絶対座標を計算します(角度は度分秒可)。
+      中心Aを原点(0,0)とし、中心B以降は「<b>Aから見た角度・距離</b>」で置きます。各中心にぶら下がる穴は、その中心からの <b>r・θ</b> で入力。角度は<b>真上0°・時計回り＋</b>（PCD各ツール・TOOL-30と同じ）。全穴の絶対座標を計算します(角度は度分秒可)。
     </div>
     <div class="inputs" id="ctrList"></div>
     <div class="btnrow">
@@ -150,7 +207,7 @@
   <!-- 逆算モード -->
   <div id="solveBox" style="display:none">
     <div class="note">
-      <b>三辺測量方式</b>: 基準の2穴 P1・P2 を先に置き(P1=原点、P2はX軸上に既知間隔で配置)、他の各穴について <b>P1からの距離・P2からの距離</b>を実測入力すると位置(縦横)が決まります。CMMがなくてもノギス/ハイトゲージで測れます。
+      <b>三辺測量方式</b>: 基準の2穴 P1・P2 を先に置き(P1=原点、P2は基準線方向(真上=0°)に既知間隔で配置)、他の各穴について <b>P1からの距離・P2からの距離</b>を実測入力すると位置(縦横)が決まります。CMMがなくてもノギス/ハイトゲージで測れます。
     </div>
     <div class="inputs">
       <div class="grp ctr">
@@ -197,8 +254,8 @@
 
   <footer>
     このページは計算のみを行います。入力値の送信・保存は一切ありません(端末内で完結)。<br>
-    座標系は基準点を原点、基準線をX軸にとった相対座標です。図面のデータムに合わせて読み替えてください。<br>
-    PCDが絡むとき、中心線から左右に振った穴があるときは <a href="../hole-map/" style="color:#5B707E">穴配置 総合(TOOL-30)</a> が楽です（角度の規約が違うので注意：こちらはX軸が0°、TOOL-30は真上が0°です）。
+    座標系は基準点を原点、P1→P2 の向き(基準線)を 0°=真上 にとった相対座標です。図面のデータムに合わせて読み替えてください。<br>
+    PCDが絡むとき、中心線から左右に振った穴があるときは <a href="../hole-map/" style="color:#5B707E">穴配置 総合(TOOL-30)</a> が楽です（角度は TOOL-30 と同じ真上0°・時計回り＋にそろえてあります）。
   </footer>
 </div>
 
@@ -278,14 +335,14 @@
       else{
         var ang=parseAngle(c.ang),dist=num(c.dist);
         if(isNaN(ang)||isNaN(dist)){cen.push(null);return}
-        var r=ang*Math.PI/180;cx=dist*Math.cos(r);cy=dist*Math.sin(r);
+        var r=ang*Math.PI/180;cx=dist*Math.sin(r);cy=dist*Math.cos(r);
       }
       cen.push({x:cx,y:cy});
       c.holes.forEach(function(h,hi){
         var r=num(h.r),a=parseAngle(h.a);
         if(isNaN(r)||isNaN(a))return;
         var ra=a*Math.PI/180;
-        pts.push({name:LBL[ci]+(hi+1),x:cx+r*Math.cos(ra),y:cy+r*Math.sin(ra)});
+        pts.push({name:LBL[ci]+(hi+1),x:cx+r*Math.sin(ra),y:cy+r*Math.cos(ra)});
       });
     });
     return {pts:pts,cen:cen};
@@ -313,17 +370,17 @@
     var pts=[]; var warns=[];
     if(base>0){
       pts.push({name:'P1',x:0,y:0,base:true});
-      pts.push({name:'P2',x:base,y:0,base:true});
+      pts.push({name:'P2',x:0,y:base,base:true});
     }
     solveHoles.forEach(function(h,i){
       var d1=num(h.d1),d2=num(h.d2);
       if(!(base>0)||isNaN(d1)||isNaN(d2))return;
-      // x=(base²+d1²−d2²)/(2base), y²=d1²−x²
-      var x=(base*base+d1*d1-d2*d2)/(2*base);
-      var y2=d1*d1-x*x;
-      if(y2<-1e-6){warns.push('Q'+(i+1)+': 実測距離で三角形が作れません(和/差を確認)');return}
-      var y=Math.sqrt(Math.max(0,y2))*h.side;
-      pts.push({name:'Q'+(i+1),x:x,y:y});
+      // 基準線 P1→P2 を 0°(真上=+Y) とする。along=基準線方向, perp=それに直角
+      var along=(base*base+d1*d1-d2*d2)/(2*base);
+      var p2=d1*d1-along*along;
+      if(p2<-1e-6){warns.push('Q'+(i+1)+': 実測距離で三角形が作れません(和/差を確認)');return}
+      var perp=Math.sqrt(Math.max(0,p2))*h.side;
+      pts.push({name:'Q'+(i+1),x:perp,y:along});
     });
     return {pts:pts,warns:warns};
   }
@@ -344,11 +401,14 @@
     // 中心マーク＆連結
     if(cen){
       var prev=null;
-      cen.forEach(function(c){
+      cen.forEach(function(c,ci){
         if(!c)return;var P=px(c);
         if(prev)dyn.appendChild(el('line',{x1:prev.x.toFixed(1),y1:prev.y.toFixed(1),x2:P.x.toFixed(1),y2:P.y.toFixed(1),stroke:'#C9D3DA','stroke-width':1,'stroke-dasharray':'4 3'}));
         dyn.appendChild(el('line',{x1:(P.x-5).toFixed(1),y1:P.y.toFixed(1),x2:(P.x+5).toFixed(1),y2:P.y.toFixed(1),stroke:'#8FA2AF','stroke-width':1}));
         dyn.appendChild(el('line',{x1:P.x.toFixed(1),y1:(P.y-5).toFixed(1),x2:P.x.toFixed(1),y2:(P.y+5).toFixed(1),stroke:'#8FA2AF','stroke-width':1}));
+        var clb=el('text',{x:(P.x+7).toFixed(1),y:(P.y+11).toFixed(1),'font-size':11,'font-weight':700,fill:'#5B707E',stroke:'#fff','stroke-width':2.5,'paint-order':'stroke'});
+        clb.textContent=LBL.charAt(ci)+(ci===0?'(原点)':'');
+        dyn.appendChild(clb);
         prev=P;
       });
     }
@@ -425,11 +485,11 @@
       var cells=[];
       if(pa&&pb&&a!==b){
         var dx=pb.x-pa.x,dy=pb.y-pa.y,d=Math.sqrt(dx*dx+dy*dy);
-        var ang=Math.atan2(dy,dx)*180/Math.PI;
+        var ang=Math.atan2(dx,dy)*180/Math.PI; if(ang<0) ang+=360;
         $('mainLbl').textContent=a+' → '+b+' の距離';
         $('out').textContent=f3(d);
         cells=[{k:'ΔX',v:(dx>=0?'+':'')+f3(dx),s:'mm'},{k:'ΔY',v:(dy>=0?'+':'')+f3(dy),s:'mm'},
-               {k:'角度(+X基準)',v:ang.toFixed(3)+'°',s:''},{k:'穴数',v:String(pts.length),s:'点'}];
+               {k:'角度(真上0°時計＋)',v:ang.toFixed(3)+'°',s:''},{k:'穴数',v:String(pts.length),s:'点'}];
         lastCopy='['+a+'→'+b+'] 距離'+f3(d)+' ΔX'+f3(dx)+' ΔY'+f3(dy)+' 角度'+ang.toFixed(3)+'°';
       }else{
         $('mainLbl').textContent='選択2穴の距離';$('out').textContent='―';
@@ -453,7 +513,7 @@
         $('cellGrid').appendChild(d);
       });
       if(r2.warns.length){$('statusTxt').textContent='⚠ '+r2.warns.join(' / ');$('statusTxt').className='statusTxt err'}
-      else{$('statusTxt').textContent='P1=原点、P2をX軸上に配置。各Qの縦横を座標表に表示中';$('statusTxt').className='statusTxt'}
+      else{$('statusTxt').textContent='P1=原点、P2を基準線方向(真上=0°)に配置。各Qの縦横を座標表に表示中';$('statusTxt').className='statusTxt'}
       var co2=[];r2.pts.forEach(function(p){co2.push(p.name+'('+f3(p.x)+', '+f3(p.y)+')')});
       lastCopy='[穴位置 逆算] '+co2.join(' ');
       $('out').textContent=String(qs.length);
@@ -682,6 +742,44 @@
   });
   window.addEventListener("scroll", function(){ if(cur) place(); }, true);
   window.addEventListener("resize", function(){ if(cur) place(); });
+})();
+</script>
+<script>
+(function(){
+  function fire(el,t){
+    try{ el.dispatchEvent(new Event(t,{bubbles:true})); }
+    catch(e){ var ev=document.createEvent('Event'); ev.initEvent(t,true,true); el.dispatchEvent(ev); }
+  }
+  function clickText(within,text){
+    var cont = within ? document.querySelector(within) : document;
+    if(!cont) return;
+    var all=cont.querySelectorAll('button,[class*="chip"],span,a,div,li'), target=String(text), j,e;
+    for(j=0;j<all.length;j++){
+      e=all[j];
+      if(e.textContent.trim()===target && (e.children.length===0 || e.tagName==='BUTTON')){ e.click(); return; }
+    }
+  }
+  window.tryExample=function(btn){
+    var raw=btn.getAttribute('data-ex'); if(!raw) return;
+    var cfg; try{ cfg=JSON.parse(raw); }catch(e){ return; }
+    var steps=cfg.set||[], i, it, el, k, fns, f, fn;
+    for(i=0;i<steps.length;i++){
+      it=steps[i];
+      if(it.click){ var c=document.querySelector(it.click); if(c) c.click(); continue; }
+      if(it.clickText){ clickText(it.within, it.clickText); continue; }
+      if(it.setState){ if(window.S){ for(k in it.setState){ window.S[k]=it.setState[k]; } }
+        fns=(it.apply||'').split(';'); for(f=0;f<fns.length;f++){ fn=fns[f].replace(/^\s+|\s+$/g,''); if(fn && typeof window[fn]==='function'){ try{ window[fn](); }catch(e){} } }
+        continue; }
+      el = it.sel ? document.querySelector(it.sel) : document.getElementById(it.id);
+      if(!el) continue;
+      el.value=String(it.v);
+      fire(el, el.tagName==='SELECT' ? 'change' : 'input');
+    }
+    var gd=btn; while(gd && !(gd.classList && gd.classList.contains('guide'))) gd=gd.parentNode;
+    if(gd) gd.open=false;
+    var fig=document.querySelector('svg#fig, svg#dwg, figure svg, #fig, #dwg');
+    if(fig && fig.scrollIntoView) fig.scrollIntoView({behavior:'smooth',block:'center'});
+  };
 })();
 </script>
 </body>

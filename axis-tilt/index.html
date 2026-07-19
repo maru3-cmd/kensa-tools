@@ -112,6 +112,28 @@
     .dro .big,.dro .sub .v{color:#000}
   }
   @media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
+  /* ── 使い方ガイド（全ツール共通） ── */
+  .guide{background:#FFFFFF;border:1px solid #D5DDE2;border-radius:12px;margin:0 0 12px;overflow:hidden}
+  .guide>summary{list-style:none;cursor:pointer;padding:12px 14px;font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.04em;display:flex;align-items:center;gap:7px}
+  .guide>summary::-webkit-details-marker{display:none}
+  .guide>summary::before{content:"?";display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#1F3341;color:#fff;font-size:11px;font-weight:700;flex:none}
+  .guide[open]>summary{border-bottom:1px solid #E3E9EC}
+  .guide .gb{padding:2px 14px 14px}
+  .guide .gb h4{font-size:11px;letter-spacing:.07em;color:#5B707E;font-weight:700;margin:13px 0 6px}
+  .guide .gb ol{margin:0;padding-left:1.2em;font-size:11.5px;line-height:1.75;color:#1F3341}
+  .guide .gb ol b{color:#1F3341}
+  .guide .gx{border-top:1px dashed #E3E9EC;margin-top:11px;padding-top:8px}
+  .guide .gx h4{margin-top:6px}
+  .guide .gxin{display:flex;gap:12px;align-items:flex-start;margin-top:4px}
+  .guide .gfig{flex:none}
+  .guide .gfig svg{width:112px;height:112px;display:block;background:#FBFCFC;border:1px solid #EDF1F3;border-radius:8px}
+  .guide .gtxt{flex:1;font-size:11.5px;line-height:1.6;color:#1F3341}
+  .guide .gtxt p{margin:0 0 7px}
+  .guide .gset{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;background:#F2F6F8;border:1px solid #E3E9EC;border-radius:6px;padding:6px 8px;color:#3A5060;line-height:1.5}
+  .guide .gread b{color:#D63426}
+  .guide .gbtn{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;font:inherit;font-size:11.5px;font-weight:600;border:1px solid #1F3341;border-radius:6px;background:#fff;color:#1F3341;cursor:pointer;margin-top:2px}
+  .guide .gbtn:active{transform:translateY(1px)}
+  @media(max-width:360px){.guide .gxin{flex-direction:column}.guide .gfig svg{width:128px;height:128px}}
 </style>
 </head>
 <body>
@@ -121,6 +143,41 @@
   <h1>軸の傾き<small>2点読みからガタ判定まで</small></h1>
   <a href="../index.html">≡ ツール一覧</a>
 </header>
+<details class="guide noprint">
+  <summary>使い方と例を見る</summary>
+  <div class="gb">
+    <h4>使い方</h4>
+    <ol>
+      <li>「傾きを出す」タブで、<b>測定スパン S</b> と、手前・先端側の<b>ダイヤル読み r₁・r₂</b>を入れます。</li>
+      <li>差 Δ=r₂−r₁ から、角度・度分秒・mm/m・mm/100mm・こう配 1:N が一度に出ます。</li>
+      <li>「ガタの影響」タブでは、穴とのすき間で許されるロッキング量を出し、その読みが本当に傾きか（測定が有効か）を判定できます。</li>
+    </ol>
+    <div class="gx">
+      <h4>例 ── スパン200・読み差0.20</h4>
+      <div class="gxin">
+        <div class="gfig"><svg viewBox="0 0 120 120" role="img" aria-label="スパンS上の2点読み差Δから傾き角θを求める図">
+          <line x1="16" y1="80" x2="104" y2="80" stroke="#C9D3DA" stroke-width="0.8" stroke-dasharray="3 2"/>
+          <line x1="16" y1="80" x2="104" y2="60" stroke="#1F3341" stroke-width="2"/>
+          <line x1="20" y1="80" x2="20" y2="71" stroke="#8FA2AF" stroke-width="1"/>
+          <line x1="100" y1="80" x2="100" y2="61" stroke="#D63426" stroke-width="1.3"/>
+          <text x="20" y="93" font-size="7.5" fill="#5B707E" text-anchor="middle">r₁</text>
+          <text x="100" y="93" font-size="7.5" fill="#D63426" text-anchor="middle">r₂</text>
+          <text x="60" y="94" font-size="7.5" fill="#5B707E" text-anchor="middle">S</text>
+          <path d="M 32 80 A 16 16 0 0 0 32 72" fill="none" stroke="#5B707E" stroke-width="0.9"/>
+          <text x="38" y="77" font-size="8" fill="#5B707E">θ</text>
+        </svg></div>
+        <div class="gtxt">
+          <p>スパン200mmで、手前0・先端0.20mm の読み差があったときの傾きは？</p>
+          <p class="gset">傾きを出す ／ S 200 ／ r₁ 0 ／ r₂ 0.20</p>
+          <p class="gread">読み方：θ≈<b>0.0573°</b>、こう配 <b>1:1000</b>、mm/100mm=<b>0.100</b>。</p>
+          <button class="gbtn" type="button" data-ex='{"set":[{"click":"#tA"},{"id":"span","v":200},{"id":"alpha","v":0},{"id":"r1","v":0},{"id":"r2","v":0.20}]}' onclick="tryExample(this)">この例を試す</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</details>
+
+
 
 <div class="tb-strip">
   <div><b>TOOL-26</b></div>
@@ -768,6 +825,31 @@ setTab(TAB);
   });
   window.addEventListener("scroll", function(){ if(cur) place(); }, true);
   window.addEventListener("resize", function(){ if(cur) place(); });
+})();
+</script>
+<script>
+(function(){
+  function fire(el,t){
+    try{ el.dispatchEvent(new Event(t,{bubbles:true})); }
+    catch(e){ var ev=document.createEvent('Event'); ev.initEvent(t,true,true); el.dispatchEvent(ev); }
+  }
+  window.tryExample=function(btn){
+    var raw=btn.getAttribute('data-ex'); if(!raw) return;
+    var cfg; try{ cfg=JSON.parse(raw); }catch(e){ return; }
+    var steps=cfg.set||[], i, it, el;
+    for(i=0;i<steps.length;i++){
+      it=steps[i];
+      if(it.click){ var c=document.querySelector(it.click); if(c) c.click(); continue; }
+      el = it.sel ? document.querySelector(it.sel) : document.getElementById(it.id);
+      if(!el) continue;
+      el.value=String(it.v);
+      fire(el, el.tagName==='SELECT' ? 'change' : 'input');
+    }
+    var gd=btn; while(gd && !(gd.classList && gd.classList.contains('guide'))) gd=gd.parentNode;
+    if(gd) gd.open=false;
+    var fig=document.querySelector('svg#fig, svg#dwg, figure svg, #fig, #dwg');
+    if(fig && fig.scrollIntoView) fig.scrollIntoView({behavior:'smooth',block:'center'});
+  };
 })();
 </script>
 </body>

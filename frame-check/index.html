@@ -225,6 +225,28 @@
     }
     .toast{display:none}
   }
+  /* ── 使い方ガイド（全ツール共通） ── */
+  .guide{background:#FFFFFF;border:1px solid #D5DDE2;border-radius:12px;margin:0 0 12px;overflow:hidden}
+  .guide>summary{list-style:none;cursor:pointer;padding:12px 14px;font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.04em;display:flex;align-items:center;gap:7px}
+  .guide>summary::-webkit-details-marker{display:none}
+  .guide>summary::before{content:"?";display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#1F3341;color:#fff;font-size:11px;font-weight:700;flex:none}
+  .guide[open]>summary{border-bottom:1px solid #E3E9EC}
+  .guide .gb{padding:2px 14px 14px}
+  .guide .gb h4{font-size:11px;letter-spacing:.07em;color:#5B707E;font-weight:700;margin:13px 0 6px}
+  .guide .gb ol{margin:0;padding-left:1.2em;font-size:11.5px;line-height:1.75;color:#1F3341}
+  .guide .gb ol b{color:#1F3341}
+  .guide .gx{border-top:1px dashed #E3E9EC;margin-top:11px;padding-top:8px}
+  .guide .gx h4{margin-top:6px}
+  .guide .gxin{display:flex;gap:12px;align-items:flex-start;margin-top:4px}
+  .guide .gfig{flex:none}
+  .guide .gfig svg{width:112px;height:112px;display:block;background:#FBFCFC;border:1px solid #EDF1F3;border-radius:8px}
+  .guide .gtxt{flex:1;font-size:11.5px;line-height:1.6;color:#1F3341}
+  .guide .gtxt p{margin:0 0 7px}
+  .guide .gset{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;background:#F2F6F8;border:1px solid #E3E9EC;border-radius:6px;padding:6px 8px;color:#3A5060;line-height:1.5}
+  .guide .gread b{color:#D63426}
+  .guide .gbtn{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;font:inherit;font-size:11.5px;font-weight:600;border:1px solid #1F3341;border-radius:6px;background:#fff;color:#1F3341;cursor:pointer;margin-top:2px}
+  .guide .gbtn:active{transform:translateY(1px)}
+  @media(max-width:360px){.guide .gxin{flex-direction:column}.guide .gfig svg{width:128px;height:128px}}
 </style>
 </head>
 <body>
@@ -233,6 +255,39 @@
     <h1>フレーム削り代検査<small>大型溶接フレームの前加工検査・記録</small></h1>
     <a href="../index.html" class="no-print">≡ ツール一覧</a>
   </header>
+<details class="guide noprint">
+  <summary>使い方と例を見る</summary>
+  <div class="gb">
+    <h4>使い方</h4>
+    <ol>
+      <li>ヘッダー（管理番号・検査者・日付・測定基準）と<b>最低削り代</b>を入れます。</li>
+      <li>加工面ごとに<b>上面/下面</b>と<b>仕上がり高さ</b>を決め、各点の<b>実測高さ</b>を「点を追加」で足します。</li>
+      <li>上面は 代＝実測−仕上がり、下面は 代＝仕上がり−実測。<b>全点でいちばん少ない削り代</b>が合否を決めます。対角差やねじれも判定でき、記録はPDFで残せます。</li>
+    </ol>
+    <div class="gx">
+      <h4>例 ── 上面、仕上がり100・実測102</h4>
+      <div class="gxin">
+        <div class="gfig"><svg viewBox="0 0 120 120" role="img" aria-label="加工面の実測と仕上がりの差が削り代となる図">
+          <rect x="20" y="62" width="80" height="30" fill="#EDF1F3" stroke="#1F3341" stroke-width="1.2"/>
+          <line x1="20" y1="52" x2="100" y2="52" stroke="#8FA2AF" stroke-width="1.1" stroke-dasharray="4 2"/>
+          <text x="103" y="55" font-size="6.5" fill="#5B707E">実測</text>
+          <line x1="20" y1="62" x2="100" y2="62" stroke="#1F3341" stroke-width="1.5"/>
+          <text x="103" y="66" font-size="6.5" fill="#1F3341">仕上</text>
+          <line x1="55" y1="52" x2="55" y2="62" stroke="#D63426" stroke-width="1.8"/>
+          <text x="62" y="59" font-size="7.5" fill="#D63426">削り代</text>
+        </svg></div>
+        <div class="gtxt">
+          <p>上面の仕上がり高さ100に対し、実測102。削り代は足りている？</p>
+          <p class="gset">最低削り代 2 ／ 上面 仕上がり100 ／ 実測 102</p>
+          <p class="gread">読み方：削り代 = 102 − 100 = <b>2.0mm</b> ≧ 最低2 なので <b>合格</b>。いちばん少ない点で判定します。</p>
+          <button class="gbtn" type="button" data-ex='{"set":[{"sel":"[data-si=\"0\"][data-f=\"fin\"]","v":100},{"id":"ptin-0","v":102},{"click":"[data-add=\"0\"]"},{"id":"sMin","v":2}]}' onclick="tryExample(this)">この例を試す</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</details>
+
+
 
   <div class="tb-strip">
     <div><b>書類</b> 削り代検査記録</div>
@@ -809,6 +864,44 @@
   });
   window.addEventListener("scroll", function(){ if(cur) place(); }, true);
   window.addEventListener("resize", function(){ if(cur) place(); });
+})();
+</script>
+<script>
+(function(){
+  function fire(el,t){
+    try{ el.dispatchEvent(new Event(t,{bubbles:true})); }
+    catch(e){ var ev=document.createEvent('Event'); ev.initEvent(t,true,true); el.dispatchEvent(ev); }
+  }
+  function clickText(within,text){
+    var cont = within ? document.querySelector(within) : document;
+    if(!cont) return;
+    var all=cont.querySelectorAll('button,[class*="chip"],span,a,div,li'), target=String(text), j,e;
+    for(j=0;j<all.length;j++){
+      e=all[j];
+      if(e.textContent.trim()===target && (e.children.length===0 || e.tagName==='BUTTON')){ e.click(); return; }
+    }
+  }
+  window.tryExample=function(btn){
+    var raw=btn.getAttribute('data-ex'); if(!raw) return;
+    var cfg; try{ cfg=JSON.parse(raw); }catch(e){ return; }
+    var steps=cfg.set||[], i, it, el, k, fns, f, fn;
+    for(i=0;i<steps.length;i++){
+      it=steps[i];
+      if(it.click){ var c=document.querySelector(it.click); if(c) c.click(); continue; }
+      if(it.clickText){ clickText(it.within, it.clickText); continue; }
+      if(it.setState){ if(window.S){ for(k in it.setState){ window.S[k]=it.setState[k]; } }
+        fns=(it.apply||'').split(';'); for(f=0;f<fns.length;f++){ fn=fns[f].replace(/^\s+|\s+$/g,''); if(fn && typeof window[fn]==='function'){ try{ window[fn](); }catch(e){} } }
+        continue; }
+      el = it.sel ? document.querySelector(it.sel) : document.getElementById(it.id);
+      if(!el) continue;
+      el.value=String(it.v);
+      fire(el, el.tagName==='SELECT' ? 'change' : 'input');
+    }
+    var gd=btn; while(gd && !(gd.classList && gd.classList.contains('guide'))) gd=gd.parentNode;
+    if(gd) gd.open=false;
+    var fig=document.querySelector('svg#fig, svg#dwg, figure svg, #fig, #dwg');
+    if(fig && fig.scrollIntoView) fig.scrollIntoView({behavior:'smooth',block:'center'});
+  };
 })();
 </script>
 </body>

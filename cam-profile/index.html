@@ -81,6 +81,28 @@
   .toast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);background:var(--ink);color:#fff;font-size:13px;padding:9px 20px;border-radius:20px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+  /* ── 使い方ガイド（全ツール共通） ── */
+  .guide{background:#FFFFFF;border:1px solid #D5DDE2;border-radius:12px;margin:0 0 12px;overflow:hidden}
+  .guide>summary{list-style:none;cursor:pointer;padding:12px 14px;font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.04em;display:flex;align-items:center;gap:7px}
+  .guide>summary::-webkit-details-marker{display:none}
+  .guide>summary::before{content:"?";display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#1F3341;color:#fff;font-size:11px;font-weight:700;flex:none}
+  .guide[open]>summary{border-bottom:1px solid #E3E9EC}
+  .guide .gb{padding:2px 14px 14px}
+  .guide .gb h4{font-size:11px;letter-spacing:.07em;color:#5B707E;font-weight:700;margin:13px 0 6px}
+  .guide .gb ol{margin:0;padding-left:1.2em;font-size:11.5px;line-height:1.75;color:#1F3341}
+  .guide .gb ol b{color:#1F3341}
+  .guide .gx{border-top:1px dashed #E3E9EC;margin-top:11px;padding-top:8px}
+  .guide .gx h4{margin-top:6px}
+  .guide .gxin{display:flex;gap:12px;align-items:flex-start;margin-top:4px}
+  .guide .gfig{flex:none}
+  .guide .gfig svg{width:112px;height:112px;display:block;background:#FBFCFC;border:1px solid #EDF1F3;border-radius:8px}
+  .guide .gtxt{flex:1;font-size:11.5px;line-height:1.6;color:#1F3341}
+  .guide .gtxt p{margin:0 0 7px}
+  .guide .gset{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;background:#F2F6F8;border:1px solid #E3E9EC;border-radius:6px;padding:6px 8px;color:#3A5060;line-height:1.5}
+  .guide .gread b{color:#D63426}
+  .guide .gbtn{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;font:inherit;font-size:11.5px;font-weight:600;border:1px solid #1F3341;border-radius:6px;background:#fff;color:#1F3341;cursor:pointer;margin-top:2px}
+  .guide .gbtn:active{transform:translateY(1px)}
+  @media(max-width:360px){.guide .gxin{flex-direction:column}.guide .gfig svg{width:128px;height:128px}}
 </style>
 </head>
 <body>
@@ -89,6 +111,41 @@
     <h1>カム変位線図<small>板カム: 区間の運動曲線→リフト/速度/加速度</small></h1>
     <a href="../index.html">≡ ツール一覧</a>
   </header>
+<details class="guide noprint">
+  <summary>使い方と例を見る</summary>
+  <div class="gb">
+    <h4>使い方</h4>
+    <ol>
+      <li><b>総リフト量</b>を入れ、「＋ 区間を追加」で<b>角度幅・動作（上昇/下降/停留）・運動曲線</b>を並べます。</li>
+      <li><b>確認したい角度</b>を入れると、その角度の<b>リフト・速度・加速度</b>が出ます。回転数を入れれば実単位に。</li>
+      <li>基礎円半径を入れると輪郭半径（カム外形）も計算できます。</li>
+    </ol>
+    <div class="gx">
+      <h4>例 ── 90°でサイクロイド上昇、45°のリフト</h4>
+      <div class="gxin">
+        <div class="gfig"><svg viewBox="0 0 120 120" role="img" aria-label="カムの変位線図で45度のリフトを示す図">
+          <line x1="20" y1="90" x2="106" y2="90" stroke="#1F3341" stroke-width="1"/>
+          <line x1="20" y1="90" x2="20" y2="28" stroke="#1F3341" stroke-width="1"/>
+          <path d="M20,90 C50,90 42,42 74,42" fill="none" stroke="#1F3341" stroke-width="1.6"/>
+          <line x1="47" y1="90" x2="47" y2="66" stroke="#D63426" stroke-width="1" stroke-dasharray="2 2"/>
+          <line x1="20" y1="66" x2="47" y2="66" stroke="#D63426" stroke-width="1" stroke-dasharray="2 2"/>
+          <circle cx="47" cy="66" r="2.6" fill="#D63426"/>
+          <text x="47" y="99" font-size="7" fill="#5B707E" text-anchor="middle">45°</text>
+          <text x="12" y="69" font-size="7" fill="#D63426" text-anchor="middle">5</text>
+          <text x="62" y="24" font-size="7" fill="#5B707E" text-anchor="middle">リフト</text>
+        </svg></div>
+        <div class="gtxt">
+          <p>総リフト10で、0〜90°をサイクロイド上昇。ちょうど45°のリフトは？</p>
+          <p class="gset">総リフト 10 ／ 区間: 上昇・角度幅90・サイクロイド ／ 確認角度 45</p>
+          <p class="gread">読み方：45°のリフト＝<b>5.000mm</b>（サイクロイドの中点は総リフトの半分）。速度・加速度も同時に出ます。</p>
+          <button class="gbtn" type="button" data-ex='{"set":[{"sel":"[data-i=\"0\"][data-f=\"act\"]","v":"rise"},{"sel":"[data-i=\"0\"][data-f=\"span\"]","v":90},{"sel":"[data-i=\"0\"][data-f=\"curve\"]","v":"cyclo"},{"id":"fLift","v":10},{"id":"fAngle","v":45}]}' onclick="tryExample(this)">この例を試す</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</details>
+
+
 
   <div class="sheet">
     <div class="sheet-inner">
@@ -595,6 +652,44 @@
   });
   window.addEventListener("scroll", function(){ if(cur) place(); }, true);
   window.addEventListener("resize", function(){ if(cur) place(); });
+})();
+</script>
+<script>
+(function(){
+  function fire(el,t){
+    try{ el.dispatchEvent(new Event(t,{bubbles:true})); }
+    catch(e){ var ev=document.createEvent('Event'); ev.initEvent(t,true,true); el.dispatchEvent(ev); }
+  }
+  function clickText(within,text){
+    var cont = within ? document.querySelector(within) : document;
+    if(!cont) return;
+    var all=cont.querySelectorAll('button,[class*="chip"],span,a,div,li'), target=String(text), j,e;
+    for(j=0;j<all.length;j++){
+      e=all[j];
+      if(e.textContent.trim()===target && (e.children.length===0 || e.tagName==='BUTTON')){ e.click(); return; }
+    }
+  }
+  window.tryExample=function(btn){
+    var raw=btn.getAttribute('data-ex'); if(!raw) return;
+    var cfg; try{ cfg=JSON.parse(raw); }catch(e){ return; }
+    var steps=cfg.set||[], i, it, el, k, fns, f, fn;
+    for(i=0;i<steps.length;i++){
+      it=steps[i];
+      if(it.click){ var c=document.querySelector(it.click); if(c) c.click(); continue; }
+      if(it.clickText){ clickText(it.within, it.clickText); continue; }
+      if(it.setState){ if(window.S){ for(k in it.setState){ window.S[k]=it.setState[k]; } }
+        fns=(it.apply||'').split(';'); for(f=0;f<fns.length;f++){ fn=fns[f].replace(/^\s+|\s+$/g,''); if(fn && typeof window[fn]==='function'){ try{ window[fn](); }catch(e){} } }
+        continue; }
+      el = it.sel ? document.querySelector(it.sel) : document.getElementById(it.id);
+      if(!el) continue;
+      el.value=String(it.v);
+      fire(el, el.tagName==='SELECT' ? 'change' : 'input');
+    }
+    var gd=btn; while(gd && !(gd.classList && gd.classList.contains('guide'))) gd=gd.parentNode;
+    if(gd) gd.open=false;
+    var fig=document.querySelector('svg#fig, svg#dwg, figure svg, #fig, #dwg');
+    if(fig && fig.scrollIntoView) fig.scrollIntoView({behavior:'smooth',block:'center'});
+  };
 })();
 </script>
 </body>
