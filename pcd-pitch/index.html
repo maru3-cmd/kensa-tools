@@ -147,6 +147,9 @@
   .guide .gbtn{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;font:inherit;font-size:11.5px;font-weight:600;border:1px solid #1F3341;border-radius:6px;background:#fff;color:#1F3341;cursor:pointer;margin-top:2px}
   .guide .gbtn:active{transform:translateY(1px)}
   @media(max-width:360px){.guide .gxin{flex-direction:column}.guide .gfig svg{width:128px;height:128px}}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+  .chips button{padding:5px 9px;font:inherit;font-size:11px;border:1px solid #C9D3DA;background:#fff;color:#5B707E;border-radius:20px;cursor:pointer}
+  .chips button[aria-pressed="true"]{background:#1F3341;color:#fff;border-color:#1F3341}
 </style>
 </head>
 <body>
@@ -268,6 +271,7 @@
       <input id="inN" type="text" inputmode="numeric" autocomplete="off" placeholder="8">
       <span class="unit">穴</span>
     </div>
+    <div class="chips nchips" id="nChipsP" role="group" aria-label="穴数を選ぶ（2〜12）" style="margin:2px 0 6px 34px"><button type="button" data-n="2">2</button><button type="button" data-n="3">3</button><button type="button" data-n="4">4</button><button type="button" data-n="5">5</button><button type="button" data-n="6">6</button><button type="button" data-n="7">7</button><button type="button" data-n="8">8</button><button type="button" data-n="9">9</button><button type="button" data-n="10">10</button><button type="button" data-n="11">11</button><button type="button" data-n="12">12</button></div>
     <div class="row" style="grid-template-columns:26px 1fr 150px 0px">
       <span class="badge">3</span>
       <label for="inK">穴とび k<small>1=隣りの穴どうし</small></label>
@@ -670,6 +674,17 @@
     var fig=document.querySelector('svg#fig, svg#dwg, figure svg, #fig, #dwg');
     if(fig && fig.scrollIntoView) fig.scrollIntoView({behavior:'smooth',block:'center'});
   };
+})();
+</script>
+<script>
+(function(){
+  var box=document.getElementById("nChipsP"); if(!box) return;
+  var inN=document.getElementById("inN"); if(!inN) return;
+  var btns=box.getElementsByTagName("button");
+  function sync(){ var v=(inN.value||"").replace(/\s/g,""); for(var j=0;j<btns.length;j++){ btns[j].setAttribute("aria-pressed", btns[j].getAttribute("data-n")===v?"true":"false"); } }
+  function fire(el){ var ev; try{ev=new Event("input",{bubbles:true});}catch(e){ev=document.createEvent("Event");ev.initEvent("input",true,true);} el.dispatchEvent(ev); }
+  for(var j=0;j<btns.length;j++){ (function(b){ b.addEventListener("click",function(){ inN.value=b.getAttribute("data-n"); fire(inN); sync(); }); })(btns[j]); }
+  inN.addEventListener("input",sync); sync();
 })();
 </script>
 </body>

@@ -145,6 +145,8 @@
   <h1>穴配置 総合<small>PCD・任意穴・軸配置・端面をまとめて</small></h1>
   <a href="../index.html">≡ ツール一覧</a>
 </header>
+  <div class="topClear noprint" style="display:flex;justify-content:flex-end;margin:6px 2px 0"><button type="button" aria-label="一括消去して新しく始める" style="font-weight:700;font-size:12px;color:#B23B2E;background:#FBECEA;border:1px solid #E7B7B0;border-radius:9px;padding:7px 13px;cursor:pointer" onclick="armClear(this)">一括消去（新しく始める）</button></div>
+
 <details class="guide noprint">
   <summary>使い方と例を見る</summary>
   <div class="gb">
@@ -153,6 +155,7 @@
       <li>「＋ PCD（等配／不等配）」「＋ 任意穴」「＋ 軸配置」で部品を足し、<b>ひとつの共通原点 (0,0)</b> の上に自由に重ねます。</li>
       <li>角度は<b>真上0°・時計回り＋</b>。任意穴は「X,Yで」「角度と距離で」「端面から」の3通り。</li>
       <li>図面まるごとを1枚で入れると、<b>全穴の座標</b>と<b>総当たりの穴間ピッチ</b>が出ます。行をタップで図と連動します。</li>
+      <li><b>同じ穴パターンが PCD の各点にあるとき</b>は、「＋軸配置」で<b>「PCDの各点に同じパターンを複製する」</b>にチェック。1点ぶん入れるだけで全点に複製され、<b>別の点どうしの穴の距離</b>まで一気に出ます。既定の「隣り合う点だけ」フィルタで、隣の点との距離だけを拾えます（PCDの基準穴は除外）。</li>
       <li>PCDだけなら <b>PCD複合（TOOL-29）</b>、単純な弦長なら PCD穴ピッチ（TOOL-02）が手軽です。</li>
     </ol>
     <div class="gx">
@@ -175,6 +178,36 @@
           <p class="gset">＋PCD（等配） ／ PCD 100 ／ 穴数 6 ／ 起点角 0</p>
           <p class="gread">読み方：全6穴の座標と 15組の穴間ピッチが出ます。隣り合う穴は <b>50.000mm</b>、対角は 100.000mm（表の行をタップで拡大表示）。</p>
           <button class="gbtn" type="button" data-ex='{"set":[{"setState":{"parts":[{"t":"circle","cx":0,"cy":0,"pcd":100,"mode":"eq","n":6,"th0":0,"dir":1,"angMode":"rel","angs":""}]},"apply":"renderParts;build;calc;persist"}]}' onclick="tryExample(this)">この例を試す</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="gx">
+      <h4>例 ── PCD の各点に同じパターン（中心線＋左右＋先端）を複製</h4>
+      <div class="gxin">
+        <div class="gfig"><svg viewBox="0 0 120 120" role="img" aria-label="PCD上の各点に中心線・左右・先端の穴パターンを複製した図">
+          <circle cx="60" cy="60" r="34" fill="none" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="5 2 1.2 2"/>
+          <line x1="60" y1="60" x2="60" y2="26" stroke="#C9D3DA" stroke-width="0.8"/>
+          <text x="60" y="20" font-size="7" fill="#5B707E" text-anchor="middle">0°</text>
+          <!-- 点0(真上) の外向き30°パターン：中心線・先端・左右 -->
+          <g stroke="#CFC9F2" stroke-width="0.8">
+            <line x1="60" y1="26" x2="73.6" y2="43.4"/>
+          </g>
+          <circle cx="60" cy="26" r="2.2" fill="#7F77DD"/>
+          <circle cx="73.6" cy="43.4" r="2.6" fill="#fff" stroke="#1F3341" stroke-width="1.2"/>
+          <circle cx="66" cy="52" r="2.2" fill="#fff" stroke="#1F3341" stroke-width="1.1"/>
+          <circle cx="82" cy="35" r="2.2" fill="#fff" stroke="#1F3341" stroke-width="1.1"/>
+          <!-- 点1 -->
+          <circle cx="83.2" cy="34.8" r="2.2" fill="#7F77DD"/>
+          <g stroke="#CFC9F2" stroke-width="0.8"><line x1="83.2" y1="34.8" x2="92" y2="55"/></g>
+          <circle cx="92" cy="55" r="2.6" fill="#fff" stroke="#1F3341" stroke-width="1.2"/>
+          <text x="60" y="63" font-size="6.5" fill="#5B707E" text-anchor="middle">各点に複製</text>
+        </svg></div>
+        <div class="gtxt">
+          <p>PCD の 20 点それぞれに、中心線上へ左 25・右 35、外向き 40 の先端穴がある部品。<b>1点ぶんだけ入力</b>すれば 20 点すべてに複製され、<b>別の点どうしの穴の距離</b>まで出ます。</p>
+          <p class="gset">＋PCD（等配）→ PCD 100／穴数 20／起点角 0<br>＋軸配置 →「PCDの各点に複製」ON／PCD A／向き＝半径方向を0／角度 30／L 40／左 25／右 35／先端 ON</p>
+          <p class="gread">読み方：全 80 穴の座標が出ます。既定の「隣り合う点だけ」フィルタで、<b>隣の点の先端どうし＝27.211mm</b>、左穴どうし＝30.397mm などが並びます（この例の数値）。表の行をタップで図に距離線。</p>
+          <button class="gbtn" type="button" data-ex='{"set":[{"setState":{"parts":[{"t":"circle","cx":0,"cy":0,"pcd":100,"mode":"eq","n":20,"th0":0,"dir":1,"angMode":"rel","angs":""},{"t":"axis","bx":0,"by":0,"th":30,"L":40,"tip":1,"left":"25","right":"35","rep":1,"repPi":0,"repAng":"radial","repWhich":"all","repList":""}],"filter":"gadj"},"apply":"renderParts;build;calc;persist"}]}' onclick="tryExample(this)">この例を試す</button>
         </div>
       </div>
     </div>
@@ -266,6 +299,9 @@
     <button aria-pressed="false" onclick="setFilter('same',this)">同じ部品の中</button>
     <button aria-pressed="false" onclick="setFilter('cross',this)">部品をまたぐ</button>
     <button aria-pressed="false" onclick="setFilter('adj',this)">隣どうしだけ</button>
+    <button aria-pressed="false" id="fltGadj" style="display:none" onclick="setFilter('gadj',this)">隣り合う点だけ</button>
+    <button aria-pressed="false" id="fltGcross" style="display:none" onclick="setFilter('gcross',this)">点をまたぐ（全部）</button>
+    <button aria-pressed="false" id="fltGsame" style="display:none" onclick="setFilter('gsame',this)">同じ点の中</button>
   </div>
   <div class="chips" id="srtChips">
     <button aria-pressed="true"  onclick="setSort('order',this)">番号順</button>
@@ -317,7 +353,7 @@
   </div>
   <div class="btnrow noprint" style="margin-top:10px">
     <button class="btn" onclick="window.print()">印刷 / PDF</button>
-    <button class="btn warn sm" onclick="wipe()">保存データを消去</button>
+    <button class="btn warn sm" onclick="armClear(this)">一括消去（新しく始める）</button>
   </div>
 </div>
 
@@ -347,7 +383,7 @@
 "use strict";
 
 var RAD=Math.PI/180, LB="ABCDEFGH";
-var MAXPART=8, MAXHOLE=60;
+var MAXPART=8, MAXHOLE=200;   /* 複製配置（PCD各点にパターン複製）で穴数が増えるため拡大 */
 function numOK(v){ return typeof v==="number" && isFinite(v); }  /* isFinite(null)===true なので型も見る */
 function g(id){ return document.getElementById(id); }
 function pf(v){ var x=parseFloat(v); return isFinite(x)? x : NaN; }
@@ -365,17 +401,20 @@ var S={ parts:[], work:{w:NaN,h:NaN,org:"center"},
 /* ═══ 部品の編集 ═══ */
 function addPart(t,mode){
   if(S.parts.length>=MAXPART){ alert("部品は "+MAXPART+" までです。"); return; }
-  if(t==="circle") S.parts.push({t:"circle",cx:0,cy:0,pcd:100,mode:mode,n:6,th0:0,dir:1,angMode:"rel",angs:"30 150 30 150"});
+  if(t==="circle") S.parts.push({t:"circle",cx:0,cy:0,pcd:NaN,mode:mode,n:NaN,th0:0,dir:1,angMode:"rel",angs:""});
   else if(t==="hole") S.parts.push({t:"hole",mode:"xy",x:0,y:0,th:0,r:0,ex:0,ey:0});
-  else S.parts.push({t:"axis",bx:0,by:0,th:45,L:50,tip:0,left:"15",right:"15"});
+  else S.parts.push({t:"axis",bx:0,by:0,th:45,L:50,tip:0,left:"15",right:"15",
+                     rep:0,repPi:0,repAng:"radial",repWhich:"all",repList:""});
   renderParts(); calc(); persist();
 }
 function delPart(i){ S.parts.splice(i,1); S.sel=null; renderParts(); calc(); persist(); }
 function up(i,k,el){
   var p=S.parts[i], v=el.value;
-  if(k==="mode"||k==="angMode"){ p[k]=v; renderParts(); }
+  if(k==="mode"||k==="angMode"||k==="repAng"||k==="repWhich"){ p[k]=v; renderParts(); }
+  else if(k==="rep"){ p.rep=el.checked?1:0; if(p.rep && (S.filter==="all"||S.filter==="gcross")) S.filter="gadj"; renderParts(); }
+  else if(k==="repPi"){ p.repPi=parseInt(v,10); }
   else if(k==="dir"){ p.dir=parseInt(v,10); }
-  else if(k==="angs"||k==="left"||k==="right"){ p[k]=v; }
+  else if(k==="angs"||k==="left"||k==="right"||k==="repList"){ p[k]=v; }
   else if(k==="tip"){ p.tip=el.checked?1:0; }
   else p[k]=pf(v);
   S.sel=null; calc(); persist();
@@ -385,13 +424,38 @@ function workSet(k,el){
   else S.work[k]=pf(el.value);
   S.sel=null; calc(); persist();
 }
-function inp(i,k,v){
-  return '<input type="text" inputmode="decimal" autocomplete="off" value="'+(numOK(v)?v:"")+'" oninput="up('+i+',\''+k+'\',this)">';
+function inp(i,k,v,ph){
+  return '<input type="text" inputmode="decimal" autocomplete="off" value="'+(numOK(v)?v:"")+'" placeholder="'+(ph||"")+'" oninput="up('+i+',\''+k+'\',this)">';
 }
+function nchips(i,cur){
+  var h='',k; for(k=2;k<=12;k++){ h+='<button type="button" aria-pressed="'+(cur===k?'true':'false')+'" onclick="setPartN('+i+','+k+')">'+k+'</button>'; }
+  return h;
+}
+function setPartN(i,v){ if(S.parts[i]){ S.parts[i].n=v; renderParts(); calc(); persist(); } }
 function txt(i,k,v,ph){
   return '<input type="text" inputmode="decimal" autocomplete="off" value="'+String(v||"").replace(/"/g,"&quot;")+'" oninput="up('+i+',\''+k+'\',this)" placeholder="'+(ph||"")+'">';
 }
 function opt(cur,v,l){ return '<option value="'+v+'"'+(cur===v?" selected":"")+'>'+l+'</option>'; }
+
+/* ═══ 複製配置（PCD各点にローカルパターンを複製）用ヘルパー ═══ */
+/* 自分より前にある circle 部品の一覧 {i, nm} を返す（循環防止のため自分の手前まで） */
+function circleParts(selfIdx){
+  var list=[], k;
+  for(k=0;k<S.parts.length;k++){ if(k===selfIdx) break; if(S.parts[k].t==="circle") list.push({i:k, nm:LB.charAt(k)}); }
+  return list;
+}
+/* 「1,5,12」「1-7」「1-3 8 10」などを 0始まりの点indexの配列にする。総点数nでクランプ。 */
+function parseIdxList(s,n){
+  var t=String(s||"").split(/[\s,、，]+/), out=[], seen={}, i, m, a, b, v;
+  for(i=0;i<t.length;i++){
+    if(t[i]==="") continue;
+    m=t[i].match(/^(\d+)\s*[-〜~]\s*(\d+)$/);
+    if(m){ a=parseInt(m[1],10); b=parseInt(m[2],10); if(a>b){ v=a;a=b;b=v; }
+           for(v=a;v<=b;v++){ if(v>=1&&v<=n&&!seen[v]){ seen[v]=1; out.push(v-1); } } }
+    else { v=parseInt(t[i],10); if(isFinite(v)&&v>=1&&v<=n&&!seen[v]){ seen[v]=1; out.push(v-1); } }
+  }
+  return out;
+}
 
 function renderParts(){
   var box=g("cBox"), h="";
@@ -411,13 +475,14 @@ function renderParts(){
     h+='<button class="xbtn" onclick="delPart('+i+')" aria-label="部品'+nm+'を削除">×</button></div>';
 
     if(p.t==="circle"){
-      h+='<div class="row"><div><label class="f">PCD</label>'+inp(i,"pcd",p.pcd)+'</div>'
+      h+='<div class="row"><div><label class="f">PCD</label>'+inp(i,"pcd",p.pcd,"100")+'</div>'
         +'<div><label class="f">中心X（0＝原点）</label>'+inp(i,"cx",p.cx)+'</div>'
         +'<div><label class="f">中心Y</label>'+inp(i,"cy",p.cy)+'</div></div>';
       if(p.mode==="eq"){
         h+='<div class="row"><div><label class="f">穴数 n</label>'
-          +'<input type="text" inputmode="numeric" autocomplete="off" value="'+(numOK(p.n)?p.n:"")+'" oninput="up('+i+',\'n\',this)"></div>'
-          +'<div><label class="f">起点角 θ₀（真上＝0）</label>'+inp(i,"th0",p.th0)+'</div></div>';
+          +'<input type="text" inputmode="numeric" autocomplete="off" placeholder="6" value="'+(numOK(p.n)?p.n:"")+'" oninput="up('+i+',\'n\',this)"></div>'
+          +'<div><label class="f">起点角 θ₀（真上＝0）</label>'+inp(i,"th0",p.th0)+'</div></div>'
+          +'<div class="chips nchips" role="group" aria-label="穴数を選ぶ（2〜12）">'+nchips(i,p.n)+'</div>';
       } else {
         h+='<div class="row"><div style="flex:2"><label class="f">角度の指定</label>'
           +'<select onchange="up('+i+',\'angMode\',this)">'+opt(p.angMode,"rel","隣との角度（最後は省略可）")+opt(p.angMode,"abs","真上からの角度")+'</select></div>'
@@ -440,14 +505,47 @@ function renderParts(){
     }
 
     else {
-      h+='<div class="row"><div><label class="f">基点X</label>'+inp(i,"bx",p.bx)+'</div>'
-        +'<div><label class="f">基点Y</label>'+inp(i,"by",p.by)+'</div></div>'
-        +'<div class="row"><div><label class="f">中心線の角度（真上＝0）</label>'+inp(i,"th",p.th)+'</div>'
-        +'<div><label class="f">基点からの距離 L</label>'+inp(i,"L",p.L)+'</div></div>'
-        +'<div class="ckrow"><input type="checkbox" id="tip'+i+'"'+(p.tip?" checked":"")+' onchange="up('+i+',\'tip\',this)"><label for="tip'+i+'">中心線の先端にも穴を置く</label></div>'
-        +'<div class="row"><div><label class="f">左へ（スペース区切り）</label>'+txt(i,"left",p.left,"15")+'</div>'
-        +'<div><label class="f">右へ</label>'+txt(i,"right",p.right,"15")+'</div></div>'
-        +'<div class="hint" style="margin:0 0 6px">左右は<b>基点から先端を見たときの左手・右手</b>です。中心線と直角に振ります。</div>';
+      var cps=circleParts(i);
+      /* 複製ON/OFF切替 */
+      h+='<div class="ckrow" style="margin-top:2px"><input type="checkbox" id="rep'+i+'"'+(p.rep?" checked":"")
+        +' onchange="up('+i+',\'rep\',this)"'+(cps.length?"":' disabled')+'>'
+        +'<label for="rep'+i+'">PCDの各点に同じパターンを複製する'
+        +(cps.length?'':'<span style="color:#B23B2E">（先にPCDを追加してください）</span>')+'</label></div>';
+
+      if(p.rep && cps.length){
+        /* ── 複製モード ── 基点XYの代わりにPCDを選ぶ */
+        var sel='<select onchange="up('+i+',\'repPi\',this)">';
+        cps.forEach(function(c){ sel+='<option value="'+c.i+'"'+(p.repPi===c.i?" selected":"")+'>PCD '+c.nm+'</option>'; });
+        sel+='</select>';
+        if(cps.length && !cps.some(function(c){return c.i===p.repPi;})) p.repPi=cps[0].i;
+        h+='<div class="row"><div><label class="f">どのPCDに乗せる</label>'+sel+'</div>'
+          +'<div><label class="f">中心線の向き</label><select onchange="up('+i+',\'repAng\',this)">'
+          +opt(p.repAng,"radial","半径方向を0とする")+opt(p.repAng,"abs","真上を0（絶対角）")+'</select></div></div>'
+          +'<div class="row"><div><label class="f">中心線の角度'
+          +(p.repAng==="radial"?'（外向き＝0）':'（真上＝0）')+'</label>'+inp(i,"th",p.th)+'</div>'
+          +'<div><label class="f">中心点からの距離 L</label>'+inp(i,"L",p.L)+'</div></div>'
+          +'<div class="row"><div><label class="f">複製する点</label><select onchange="up('+i+',\'repWhich\',this)">'
+          +opt(p.repWhich,"all","すべての点")+opt(p.repWhich,"list","番号・範囲で指定")+'</select></div>'
+          +'<div>'+(p.repWhich==="list"
+              ?'<label class="f">点番号（例 1,5 または 1-7）</label>'+txt(i,"repList",p.repList,"1-7")
+              :'<label class="f">&nbsp;</label><div class="hint" style="margin:8px 0 0">起点角の穴から時計回りに1,2,3…</div>')
+          +'</div></div>'
+          +'<div class="ckrow"><input type="checkbox" id="tip'+i+'"'+(p.tip?" checked":"")+' onchange="up('+i+',\'tip\',this)"><label for="tip'+i+'">先端（L 進んだ位置）にも穴を置く</label></div>'
+          +'<div class="row"><div><label class="f">左へ（スペース区切り）</label>'+txt(i,"left",p.left,"25")+'</div>'
+          +'<div><label class="f">右へ</label>'+txt(i,"right",p.right,"35")+'</div></div>'
+          +'<div class="hint" style="margin:0 0 6px">各点で、中心（PCD中心→その点の外向き）を基準に同じパターンを複製します。'
+          +'左右は<b>中心点から先端を見たときの左手・右手</b>です。</div>';
+      } else {
+        /* ── 従来モード ── 基点XY直接 */
+        h+='<div class="row"><div><label class="f">基点X</label>'+inp(i,"bx",p.bx)+'</div>'
+          +'<div><label class="f">基点Y</label>'+inp(i,"by",p.by)+'</div></div>'
+          +'<div class="row"><div><label class="f">中心線の角度（真上＝0）</label>'+inp(i,"th",p.th)+'</div>'
+          +'<div><label class="f">基点からの距離 L</label>'+inp(i,"L",p.L)+'</div></div>'
+          +'<div class="ckrow"><input type="checkbox" id="tip'+i+'"'+(p.tip?" checked":"")+' onchange="up('+i+',\'tip\',this)"><label for="tip'+i+'">中心線の先端にも穴を置く</label></div>'
+          +'<div class="row"><div><label class="f">左へ（スペース区切り）</label>'+txt(i,"left",p.left,"15")+'</div>'
+          +'<div><label class="f">右へ</label>'+txt(i,"right",p.right,"15")+'</div></div>'
+          +'<div class="hint" style="margin:0 0 6px">左右は<b>基点から先端を見たときの左手・右手</b>です。中心線と直角に振ります。</div>';
+      }
     }
 
     h+='<div class="err" id="cErr'+i+'" style="display:none"></div><div class="note" id="cNote'+i+'" style="display:none"></div></div>';
@@ -541,18 +639,72 @@ function build(){
 
     else {
       var L=parseNums(p.left), R=parseNums(p.right);
-      if(!numOK(p.bx)||!numOK(p.by)) err="基点 X・Y を入れてください";
-      else if(!numOK(p.th)) err="中心線の角度を入れてください";
-      else if(!numOK(p.L)||p.L<0) err="基点からの距離 L を入れてください（0 以上）";
-      else if(!p.tip && !L.length && !R.length) err="先端の穴にチェックを入れるか、左右のオフセットを入れてください";
-      else {
-        var uu=uvec(p.th), vL=uvec(p.th-90), vR=uvec(p.th+90);
-        var P={x:p.bx+p.L*uu.x, y:p.by+p.L*uu.y};
-        base={x:P.x, y:P.y, lb:"部品 "+nm+" の先端"};
-        L.forEach(function(d){ out.push({x:P.x+d*vL.x, y:P.y+d*vL.y, th:NaN, src:"軸配置 左"+f3(d), adjable:false}); });
-        if(p.tip) out.push({x:P.x, y:P.y, th:NaN, src:"軸配置 先端", adjable:false});
-        R.forEach(function(d){ out.push({x:P.x+d*vR.x, y:P.y+d*vR.y, th:NaN, src:"軸配置 右"+f3(d), adjable:false}); });
-        note=out.length+" 穴 / 先端 ("+f3(P.x)+", "+f3(P.y)+")";
+      /* 1つの中心線パターンを out へ吐く。cx,cy=中心点、thDir=中心線の絶対角、tag=点の識別 */
+      function emitPattern(cx,cy,thDir,tag,pt,ptlb,pidx,pn){
+        var uu=uvec(thDir), vL=uvec(thDir-90), vR=uvec(thDir+90);
+        var P={x:cx+p.L*uu.x, y:cy+p.L*uu.y};
+        var suf=ptlb?(" "+ptlb):"", pre=ptlb?"":"軸 ";
+        L.forEach(function(d,z){ out.push({x:P.x+d*vL.x, y:P.y+d*vL.y, th:NaN,
+          src:pre+"左"+f3(d)+suf, adjable:false, grp:tag, role:"左"+(L.length>1?(z+1):""), pt:pt, pidx:pidx, pn:pn}); });
+        if(p.tip) out.push({x:P.x, y:P.y, th:NaN, src:pre+"先端"+suf, adjable:false, grp:tag, role:"先", pt:pt, pidx:pidx, pn:pn});
+        R.forEach(function(d,z){ out.push({x:P.x+d*vR.x, y:P.y+d*vR.y, th:NaN,
+          src:pre+"右"+f3(d)+suf, adjable:false, grp:tag, role:"右"+(R.length>1?(z+1):""), pt:pt, pidx:pidx, pn:pn}); });
+        return P;
+      }
+
+      if(p.rep && circleParts(i).length){
+        /* ── 複製モード：PCDの各点にパターンを複製 ── */
+        var cp=S.parts[p.repPi];
+        if(!cp || cp.t!=="circle") err="乗せる PCD を選んでください";
+        else if(!numOK(p.th)) err="中心線の角度を入れてください";
+        else if(!numOK(p.L)||p.L<0) err="中心点からの距離 L を入れてください（0 以上）";
+        else if(!p.tip && !L.length && !R.length) err="先端にチェックを入れるか、左右のオフセットを入れてください";
+        else {
+          /* 乗せる PCD の全点の角度を、build 内の circle と同じ規則で再現 */
+          var ths=[], ok=true;
+          if(!numOK(cp.pcd)||cp.pcd<=0||!numOK(cp.cx)||!numOK(cp.cy)||!numOK(cp.th0)) ok=false;
+          else if(cp.mode==="eq"){
+            if(!numOK(cp.n)||cp.n<1||cp.n!==Math.floor(cp.n)||cp.n>36) ok=false;
+            else for(var jj=0;jj<cp.n;jj++) ths.push(cp.th0+jj*360/cp.n);
+          } else {
+            var aa=parseNums(cp.angs);
+            if(aa.length<2) ok=false;
+            else if(cp.angMode==="rel"){
+              var sm=0,kk; for(kk=0;kk<aa.length;kk++) sm+=aa[kk];
+              if(sm>360.001) ok=false;
+              else { var gap=360-sm, fl=(gap<=0.001), nH=fl?aa.length:aa.length+1, tt=cp.th0;
+                     for(kk=0;kk<nH;kk++){ ths.push(tt); if(kk<aa.length) tt+=aa[kk]; } }
+            } else { for(var mm=0;mm<aa.length;mm++) ths.push(cp.th0+aa[mm]); }
+          }
+          if(!ok||!ths.length) err="乗せる PCD の設定を先に正しく入れてください";
+          else {
+            var pick = (p.repWhich==="list") ? parseIdxList(p.repList, ths.length)
+                                              : (function(){var z=[],q;for(q=0;q<ths.length;q++)z.push(q);return z;})();
+            if(!pick.length) err="複製する点が指定されていません（例：1,5 または 1-7）";
+            else {
+              base={x:cp.cx, y:cp.cy, lb:"部品 "+nm+" の元PCD中心"};
+              pick.forEach(function(idx){
+                var thPt=ths[idx];                         /* その点の方位（PCD中心から見た角度） */
+                var q=pos(cp,thPt);                         /* その点の座標 */
+                /* 中心線の絶対角：radial は「外向き=thPt」を0として th を足す／abs はそのまま th */
+                var thDir=(p.repAng==="radial") ? (thPt + p.th) : p.th;
+                emitPattern(q.x, q.y, thDir, "@"+nm+(idx+1), (idx+1), "点"+nm+(idx+1), idx, ths.length);
+              });
+              note=pick.length+" 点 × 1パターン = "+out.length+" 穴（PCD "+LB.charAt(p.repPi)+" に複製）";
+            }
+          }
+        }
+      } else {
+        /* ── 従来モード：基点XY直接 ── */
+        if(!numOK(p.bx)||!numOK(p.by)) err="基点 X・Y を入れてください";
+        else if(!numOK(p.th)) err="中心線の角度を入れてください";
+        else if(!numOK(p.L)||p.L<0) err="基点からの距離 L を入れてください（0 以上）";
+        else if(!p.tip && !L.length && !R.length) err="先端の穴にチェックを入れるか、左右のオフセットを入れてください";
+        else {
+          var Pp=emitPattern(p.bx, p.by, p.th, "");
+          base={x:Pp.x, y:Pp.y, lb:"部品 "+nm+" の先端"};
+          note=out.length+" 穴 / 先端 ("+f3(Pp.x)+", "+f3(Pp.y)+")";
+        }
       }
     }
 
@@ -562,8 +714,19 @@ function build(){
     BASE.push(err? null : base);
     if(err) return;
 
+    var used={};
     out.forEach(function(o,j){
-      H.push({key:nm+(j+1), pi:i, hi:j, nh:out.length, x:o.x, y:o.y, th:o.th, src:o.src, adjable:o.adjable});
+      var key;
+      if(o.role && o.pt){                       /* 複製穴：例 B3先 / B4左 / B4左1 */
+        key=nm+o.pt+o.role;
+        if(used[key]){ var c=2; while(used[key+"_"+c]) c++; key=key+"_"+c; }  /* 万一の衝突回避 */
+      } else {
+        key=nm+(j+1);                            /* 従来穴：A1 形式のまま */
+      }
+      used[key]=1;
+      H.push({key:key, pi:i, hi:j, nh:out.length, x:o.x, y:o.y, th:o.th,
+              src:o.src, adjable:o.adjable, grp:(o.grp?o.grp:key),
+              pidx:(typeof o.pidx==="number"?o.pidx:-1), pn:(o.pn||0)});
     });
   });
   if(H.length>MAXHOLE) H=H.slice(0,MAXHOLE);
@@ -579,6 +742,15 @@ function pairs(){
     if(S.filter==="same"  && a.pi!==b.pi) continue;
     if(S.filter==="cross" && a.pi===b.pi) continue;
     if(S.filter==="adj"   && !adj) continue;
+    /* 複製穴（元PCD点に紐づく穴）だけを対象にする点ベースのフィルタ */
+    var bothRep = (a.pidx>=0 && b.pidx>=0 && a.pi===b.pi);
+    if(S.filter==="gcross"){ if(!bothRep || a.grp===b.grp) continue; }        /* 別の点どうし（複製穴のみ） */
+    if(S.filter==="gsame"){  if(!bothRep || a.grp!==b.grp) continue; }        /* 同じ点の中（複製穴のみ） */
+    if(S.filter==="gadj"){                                                     /* 隣り合う点どうし（複製穴のみ） */
+      if(!bothRep || a.grp===b.grp) continue;
+      var dd=Math.abs(a.pidx-b.pidx);
+      if(!(dd===1 || dd===a.pn-1)) continue;   /* 元PCD上で隣接（端と端の一周も隣） */
+    }
     out.push({a:a,b:b,d:Math.hypot(b.x-a.x,b.y-a.y),adj:adj});
   }
   if(S.sort==="asc")  out.sort(function(p,q){return p.d-q.d;});
@@ -587,6 +759,10 @@ function pairs(){
 }
 function byKey(k){ for(var i=0;i<H.length;i++) if(H[i].key===k) return H[i]; return null; }
 function setFilter(v,b){ S.filter=v; mark("fltChips",b); renderPairs(); persist(); }
+function syncFilterChips(){
+  Array.prototype.forEach.call(g("fltChips").children,function(b){
+    b.setAttribute("aria-pressed", b.getAttribute("onclick").indexOf("'"+S.filter+"'")>=0 ? "true":"false"); });
+}
 function setSort(v,b){ S.sort=v; mark("srtChips",b); renderPairs(); persist(); }
 function mark(id,b){ Array.prototype.forEach.call(g(id).children,function(x){ x.setAttribute("aria-pressed", x===b?"true":"false"); }); }
 
@@ -659,6 +835,14 @@ function renderPos(){
 }
 var ROWCAP=500;   /* 総当たりは穴数の2乗。端末が固まらないよう表示行を制限する */
 function renderPairs(){
+  /* 複製穴（grp が key と異なる＝点にまとめられている穴）があるか */
+  var hasRep=false, r; for(r=0;r<H.length;r++){ if(H[r].grp!==H[r].key){ hasRep=true; break; } }
+  var ga=g("fltGadj"), gc=g("fltGcross"), gs=g("fltGsame");
+  if(ga) ga.style.display=hasRep?"":"none";
+  if(gc) gc.style.display=hasRep?"":"none";
+  if(gs) gs.style.display=hasRep?"":"none";
+  /* 複製が無いのに点フィルタが選ばれていたら all に戻す */
+  if(!hasRep && (S.filter==="gcross"||S.filter==="gsame"||S.filter==="gadj")){ S.filter="all"; syncFilterChips(); }
   var L=pairs(), tb=g("pairBody"), h="", over=0;
   g("pCount").textContent=L.length.toLocaleString()+" 組";
   if(L.length>ROWCAP){ over=L.length-ROWCAP; L=L.slice(0,ROWCAP); }
@@ -714,8 +898,9 @@ function draw(){
     if(p.t==="circle" && numOK(p.pcd)&&numOK(p.cx)&&numOK(p.cy)){
       var R=p.pcd/2; xs.push(p.cx-R, p.cx+R); ys.push(p.cy-R, p.cy+R);
     }
-    if(p.t==="axis" && numOK(p.bx)&&numOK(p.by)){ xs.push(p.bx); ys.push(p.by); }
+    if(p.t==="axis" && !p.rep && numOK(p.bx)&&numOK(p.by)){ xs.push(p.bx); ys.push(p.by); }
   });
+  /* 複製 axis の穴は下の H.forEach で拾われるので bbox は穴側で足りる */
   if(numOK(S.work.w)&&numOK(S.work.h)&&S.work.w>0&&S.work.h>0){
     var wx0 = (S.work.org==="center") ? -S.work.w/2 : 0;
     var wy0 = (S.work.org==="center") ? -S.work.h/2 : 0;
@@ -749,11 +934,24 @@ function draw(){
       h+='<line x1="'+ct[0].toFixed(1)+'" y1="'+(ct[1]-5).toFixed(1)+'" x2="'+ct[0].toFixed(1)+'" y2="'+(ct[1]+5).toFixed(1)+'" stroke="#1F3341" stroke-width="1.2"/>';
       h+='<text x="'+(ct[0]+7).toFixed(1)+'" y="'+(ct[1]-6).toFixed(1)+'" font-size="10" fill="#5B707E" font-family="monospace">'+nm+'</text>';
     }
-    if(p.t==="axis" && BASE[i]){
+    if(p.t==="axis" && !p.rep && BASE[i]){
       var b0=M(p.bx,p.by), b1=M(BASE[i].x,BASE[i].y);
       h+='<line x1="'+b0[0].toFixed(1)+'" y1="'+b0[1].toFixed(1)+'" x2="'+b1[0].toFixed(1)+'" y2="'+b1[1].toFixed(1)+'" stroke="#7F77DD" stroke-width="1.2" stroke-dasharray="7 3 1.5 3"/>';
       h+='<circle cx="'+b0[0].toFixed(1)+'" cy="'+b0[1].toFixed(1)+'" r="2.2" fill="#7F77DD"/>';
       h+='<text x="'+(b1[0]+6).toFixed(1)+'" y="'+(b1[1]-5).toFixed(1)+'" font-size="10" fill="#5B707E" font-family="monospace">'+nm+'</text>';
+    }
+    /* 複製 axis：グループごとの穴を薄い線で結び、どの点のパターンかを見せる */
+    if(p.t==="axis" && p.rep && BASE[i]){
+      var groups={}, gk;
+      H.forEach(function(hh){ if(hh.pi===i){ (groups[hh.grp]=groups[hh.grp]||[]).push(hh); } });
+      for(gk in groups){ if(!groups.hasOwnProperty(gk)) continue;
+        var gg=groups[gk]; if(gg.length<2) continue;
+        var cxc=0,cyc=0,z; for(z=0;z<gg.length;z++){ cxc+=gg[z].x; cyc+=gg[z].y; } cxc/=gg.length; cyc/=gg.length;
+        var cm=M(cxc,cyc);
+        for(z=0;z<gg.length;z++){ var pm=M(gg[z].x,gg[z].y);
+          h+='<line x1="'+cm[0].toFixed(1)+'" y1="'+cm[1].toFixed(1)+'" x2="'+pm[0].toFixed(1)+'" y2="'+pm[1].toFixed(1)+'" stroke="#CFC9F2" stroke-width="0.8"/>';
+        }
+      }
     }
   });
 
@@ -844,7 +1042,10 @@ function restore(){
       if(p.t==="hole") return {t:"hole", mode:(p.mode==="polar"||p.mode==="edge")?p.mode:"xy",
         x:nz(p.x), y:nz(p.y), th:nz(p.th), r:nz(p.r), ex:nz(p.ex), ey:nz(p.ey)};
       if(p.t==="axis") return {t:"axis", bx:nz(p.bx), by:nz(p.by), th:nz(p.th), L:nz(p.L),
-        tip:p.tip?1:0, left:String(p.left||""), right:String(p.right||"")};
+        tip:p.tip?1:0, left:String(p.left||""), right:String(p.right||""),
+        rep:p.rep?1:0, repPi:(typeof p.repPi==="number")?p.repPi:0,
+        repAng:(p.repAng==="abs")?"abs":"radial", repWhich:(p.repWhich==="list")?"list":"all",
+        repList:String(p.repList||"")};
       return {t:"circle", cx:nz(p.cx), cy:nz(p.cy), pcd:nz(p.pcd),
         mode:(p.mode==="un")?"un":"eq", n:nz(p.n), th0:nz(p.th0),
         dir:(p.dir===-1)?-1:1, angMode:(p.angMode==="abs")?"abs":"rel", angs:String(p.angs||"")};
@@ -852,13 +1053,26 @@ function restore(){
     var w=o.work||{};
     S.work={ w:nz(w.w), h:nz(w.h), org:(w.org==="corner")?"corner":"center" };
     S.sel=(o.sel&&o.sel.length)?o.sel:null;
-    S.filter=o.filter||"all"; S.sort=o.sort||"order"; S.rec=o.rec||[];
+    var fok={all:1,same:1,cross:1,adj:1,gcross:1,gsame:1,gadj:1};
+    S.filter=fok[o.filter]?o.filter:"all"; S.sort=o.sort||"order"; S.rec=o.rec||[];
     var q=o.org||{};
     S.org={ kind:(q.kind==="hole"||q.kind==="xy"||q.kind==="part")?q.kind:"common",
             pi:(typeof q.pi==="number")?q.pi:0, key:String(q.key||""),
             x:numOK(q.x)?q.x:0, y:numOK(q.y)?q.y:0 };
     if(o.v) IDS.forEach(function(i){ if(o.v[i]!=null&&o.v[i]!=="") g(i).value=o.v[i]; });
   }catch(e){}
+}
+function armClear(btn){
+  if(!btn.getAttribute("data-armed")){
+    btn.setAttribute("data-armed","1");
+    if(!btn.getAttribute("data-lbl")) btn.setAttribute("data-lbl", btn.textContent);
+    btn.textContent="もう一度押すと消去";
+    setTimeout(function(){ if(btn.getAttribute("data-armed")){ btn.removeAttribute("data-armed"); btn.textContent=btn.getAttribute("data-lbl"); } }, 3000);
+    return;
+  }
+  try{ localStorage.removeItem("holemap_v1"); }catch(e){}
+  S.parts=[]; S.work={w:NaN,h:NaN,org:"center"}; S.sel=null; S.rec=[]; S.org={kind:"common",pi:0,key:"",x:0,y:0}; try{ renderParts(); calc(); }catch(e){}
+  try{ location.reload(); }catch(e){}
 }
 function wipe(){
   if(!confirm("この端末に保存された入力・記録をすべて消します。よろしいですか？")) return;

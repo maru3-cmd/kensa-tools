@@ -139,6 +139,8 @@
   <h1>PCD 複合<small>複数PCD・偏心・不等配の穴ピッチ</small></h1>
   <a href="../index.html">≡ ツール一覧</a>
 </header>
+  <div class="topClear noprint" style="display:flex;justify-content:flex-end;margin:6px 2px 0"><button type="button" aria-label="一括消去して新しく始める" style="font-weight:700;font-size:12px;color:#B23B2E;background:#FBECEA;border:1px solid #E7B7B0;border-radius:9px;padding:7px 13px;cursor:pointer" onclick="armClear(this)">一括消去（新しく始める）</button></div>
+
 
 <div class="tb-strip">
   <div><b>TOOL-29</b></div>
@@ -314,7 +316,7 @@
   </div>
   <div class="btnrow noprint" style="margin-top:10px">
     <button class="btn" onclick="window.print()">印刷 / PDF</button>
-    <button class="btn warn sm" onclick="wipe()">保存データを消去</button>
+    <button class="btn warn sm" onclick="armClear(this)">一括消去（新しく始める）</button>
   </div>
 </div>
 
@@ -357,7 +359,7 @@ var S={ circles:[], sel:null, filter:"all", sort:"order", rec:[],
 /* ═══ 円の編集 ═══ */
 function addCircle(mode){
   if(S.circles.length>=6){ alert("円は 6 までです。"); return; }
-  S.circles.push({cx:0,cy:0,pcd:100,mode:mode,n:6,th0:0,dir:1,angMode:"rel",angs:"30 150 30 150",cMode:"xy",refCi:0,cL:NaN,cA:0});
+  S.circles.push({cx:0,cy:0,pcd:NaN,mode:mode,n:NaN,th0:0,dir:1,angMode:"rel",angs:"",cMode:"xy",refCi:0,cL:NaN,cA:0});
   renderCircles(); calc(); persist();
 }
 function delCircle(i){ S.circles.splice(i,1); S.sel=null; renderCircles(); calc(); persist(); }
@@ -392,7 +394,7 @@ function renderCircles(){
       +'<select onchange="up('+i+',\'mode\',this)">'+mo('eq','等配')+mo('un','不等配')+'</select>'
       +'<select onchange="up('+i+',\'dir\',this)">'+di(1,'時計回り')+di(-1,'反時計回り')+'</select>'
       +'<button class="xbtn" onclick="delCircle('+i+')" aria-label="円'+LB.charAt(i)+'を削除">×</button></div>';
-    h+='<div class="row"><div><label class="f">PCD</label>'+inp(i,"pcd",c.pcd)+'</div></div>';
+    h+='<div class="row"><div><label class="f">PCD</label>'+inp(i,"pcd",c.pcd,"100")+'</div></div>';
     var cm0=(c.cMode==="ref")?"ref":"xy";
     if(i>0){
       var cm=function(v,l){ return '<option value="'+v+'"'+(cm0===v?' selected':'')+'>'+l+'</option>'; };
@@ -411,8 +413,9 @@ function renderCircles(){
     }
     if(c.mode==="eq"){
       h+='<div class="row"><div><label class="f">穴数 n</label>'
-        +'<input type="text" inputmode="numeric" autocomplete="off" value="'+(numOK(c.n)?c.n:"")+'" oninput="up('+i+',\'n\',this)"></div>'
-        +'<div><label class="f">起点角 θ₀（真上＝0）</label>'+inp(i,"th0",c.th0)+'</div></div>';
+        +'<input type="text" inputmode="numeric" autocomplete="off" placeholder="6" value="'+(numOK(c.n)?c.n:"")+'" oninput="up('+i+',\'n\',this)"></div>'
+        +'<div><label class="f">起点角 θ₀（真上＝0）</label>'+inp(i,"th0",c.th0)+'</div></div>'
+        +'<div class="chips nchips" role="group" aria-label="穴数を選ぶ（2〜12）">'+nchips(i,c.n)+'</div>';
     } else {
       var am=function(v,l){ return '<option value="'+v+'"'+(c.angMode===v?' selected':'')+'>'+l+'</option>'; };
       h+='<div class="row"><div style="flex:2"><label class="f">角度の指定</label>'
@@ -426,9 +429,14 @@ function renderCircles(){
   if(!S.circles.length) h='<div class="hint" style="padding:6px 2px 10px">下のボタンから円を追加してください。同じ中心でも、ズラした中心でも構いません。</div>';
   box.innerHTML=h;
 }
-function inp(i,k,v){
-  return '<input type="text" inputmode="decimal" autocomplete="off" value="'+(numOK(v)?v:"")+'" oninput="up('+i+',\''+k+'\',this)">';
+function inp(i,k,v,ph){
+  return '<input type="text" inputmode="decimal" autocomplete="off" value="'+(numOK(v)?v:"")+'" placeholder="'+(ph||"")+'" oninput="up('+i+',\''+k+'\',this)">';
 }
+function nchips(i,cur){
+  var h='',k; for(k=2;k<=12;k++){ h+='<button type="button" aria-pressed="'+(cur===k?'true':'false')+'" onclick="setCircN('+i+','+k+')">'+k+'</button>'; }
+  return h;
+}
+function setCircN(i,v){ if(S.circles[i]){ S.circles[i].n=v; renderCircles(); calc(); persist(); } }
 
 /* ═══ 穴の生成 ═══ */
 function parseAngs(s){
@@ -758,6 +766,18 @@ function restore(){
             x:numOK(q.x)?q.x:0, y:numOK(q.y)?q.y:0 };
     if(o.v) IDS.forEach(function(i){ if(o.v[i]!=null&&o.v[i]!=="") g(i).value=o.v[i]; });
   }catch(e){}
+}
+function armClear(btn){
+  if(!btn.getAttribute("data-armed")){
+    btn.setAttribute("data-armed","1");
+    if(!btn.getAttribute("data-lbl")) btn.setAttribute("data-lbl", btn.textContent);
+    btn.textContent="もう一度押すと消去";
+    setTimeout(function(){ if(btn.getAttribute("data-armed")){ btn.removeAttribute("data-armed"); btn.textContent=btn.getAttribute("data-lbl"); } }, 3000);
+    return;
+  }
+  try{ localStorage.removeItem("pcdmulti_v1"); }catch(e){}
+  S.circles=[]; S.sel=null; S.rec=[]; S.org={kind:"circle",ci:0,key:"",x:0,y:0}; try{ renderCircles(); calc(); }catch(e){}
+  try{ location.reload(); }catch(e){}
 }
 function wipe(){
   if(!confirm("この端末に保存された入力・記録をすべて消します。よろしいですか？")) return;
