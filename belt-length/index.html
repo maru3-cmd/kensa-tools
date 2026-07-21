@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1F3341">
+<meta name="description" content="電子はかりでの数取り(重量カウント)支援。サンプルから単重を算出し、小分け計量を記録・合計して総個数を計算。データは端末内にのみ保存され、どこにも送信されません。">
+<title>はかり数取器 | 検査計算ツール</title>
+<style>
+  :root{
+    --paper:#F2F4F5;
+    --sheet:#FFFFFF;
+    --ink:#1F3341;
+    --line:#8FA2AF;
+    --red:#D63426;
+    --amber:#B97A1E;
+    --dro-bg:#15181A;
+    --dro-red:#FF5A48;
+    --dro-green:#42D77D;
+    --dro-amber:#E8B34B;
+    --dro-dim:#9FB0B8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI",sans-serif;
+    background:var(--paper);color:var(--ink);
+    min-height:100dvh;display:flex;flex-direction:column;align-items:center;
+    padding:0 12px calc(16px + env(safe-area-inset-bottom));
+  }
+  .wrap{width:100%;max-width:480px}
+
+  header{display:flex;align-items:baseline;justify-content:space-between;padding:14px 2px 8px}
+  header h1{font-size:16px;font-weight:700;letter-spacing:.04em}
+  header h1 small{display:block;font-size:11px;font-weight:400;color:#5B707E;letter-spacing:.08em;margin-top:2px}
+  header a{font-size:12px;color:#5B707E;text-decoration:none}
+
+  .tb-strip{
+    display:flex;background:var(--sheet);border:2px solid var(--ink);
+    font-size:9px;letter-spacing:.06em;margin-bottom:12px;
+  }
+  .tb-strip div{padding:4px 8px;border-right:1px solid var(--ink)}
+  .tb-strip div:last-child{border-right:none;margin-left:auto}
+  .tb-strip b{font-weight:700}
+
+  .banner{
+    display:none;background:#FBF3E2;border:1.5px solid #D9A94E;border-radius:10px;
+    padding:12px;margin-bottom:12px;font-size:13px;line-height:1.6;
+  }
+  .banner.show{display:block}
+  .banner .btns{display:flex;gap:8px;margin-top:8px}
+  .banner button{
+    flex:1;font-size:13px;font-weight:700;padding:9px 4px;border-radius:8px;
+    border:1.5px solid var(--ink);background:var(--sheet);color:var(--ink);
+  }
+  .banner button.warn{border-color:var(--red);color:var(--red)}
+
+  .card{
+    background:var(--sheet);border:1px solid #D5DDE2;border-radius:12px;
+    padding:12px;margin-bottom:12px;
+  }
+  .card h2{
+    font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.1em;
+    margin-bottom:10px;display:flex;align-items:center;gap:6px;
+  }
+  .card h2::before{content:'';width:4px;height:14px;background:var(--ink);border-radius:2px}
+
+  .row{
+    display:grid;grid-template-columns:26px 1fr 110px 30px;
+    align-items:center;gap:8px;padding:7px 0;
+  }
+  .badge{
+    width:22px;height:22px;border-radius:50%;
+    background:var(--ink);color:#fff;font-size:12px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .row label{font-size:13px;font-weight:600}
+  .row label small{display:block;font-size:10px;font-weight:400;color:#5B707E}
+  .row input,.bigin{
+    width:100%;font-size:20px;font-weight:600;text-align:right;
+    font-variant-numeric:tabular-nums;
+    border:none;border-bottom:2px solid var(--ink);
+    background:transparent;color:var(--ink);
+    padding:2px 4px;border-radius:0;outline:none;
+  }
+  .row input:focus,.bigin:focus{border-bottom-color:var(--red)}
+  .unit{font-size:12px;color:#5B707E}
+
+  .unitline{
+    margin-top:6px;padding-top:9px;border-top:1px dashed #D5DDE2;
+    font-size:13px;display:flex;justify-content:space-between;align-items:baseline;
+    font-variant-numeric:tabular-nums;
+  }
+  .unitline b{font-size:18px;font-weight:700;color:var(--red)}
+  .unitline .lab{color:#5B707E;font-size:12px;font-weight:600}
+
+  .addline{display:flex;gap:8px;align-items:flex-end}
+  .addline .bigin{font-size:26px;flex:1}
+  .addbtn{
+    flex:none;font-size:15px;font-weight:700;padding:12px 22px;border-radius:10px;
+    border:none;background:var(--ink);color:#fff;letter-spacing:.1em;
+  }
+  .addbtn:active{background:#3A5468}
+  .caphint{font-size:11px;color:#5B707E;margin-top:7px;font-variant-numeric:tabular-nums}
+  .caphint.warn{color:var(--amber);font-weight:700}
+  .caphint.err{color:var(--red);font-weight:700}
+
+  table.rec{
+    width:100%;border-collapse:collapse;margin-top:10px;
+    font-size:14px;font-variant-numeric:tabular-nums;
+  }
+  table.rec th{
+    font-size:10px;color:#5B707E;font-weight:700;text-align:right;
+    border-bottom:1.5px solid var(--ink);padding:4px 6px;
+  }
+  table.rec th:first-child{text-align:center}
+  table.rec td{
+    padding:8px 6px;border-bottom:1px solid #E4EAEE;text-align:right;
+  }
+  table.rec td:first-child{text-align:center;color:#5B707E;font-size:12px}
+  table.rec td.warn{color:var(--amber);font-weight:700}
+  table.rec .del{
+    border:none;background:none;color:#B4C1C9;font-size:17px;
+    padding:2px 8px;font-weight:700;
+  }
+  table.rec .del:active{color:var(--red)}
+  .empty{font-size:12px;color:#8FA2AF;text-align:center;padding:14px 0 6px}
+
+  .dro{
+    background:var(--dro-bg);border-radius:12px;
+    padding:16px 18px 12px;box-shadow:inset 0 2px 8px rgba(0,0,0,.5);
+    margin-bottom:12px;
+  }
+  .dro-line{display:flex;align-items:baseline;gap:10px;justify-content:flex-end}
+  .dro-label{color:#7d8a91;font-size:13px;font-weight:700;letter-spacing:.1em}
+  .dro-val{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:40px;font-weight:600;color:var(--dro-green);
+    text-shadow:0 0 12px rgba(66,215,125,.35);letter-spacing:.02em;
+  }
+  .dro-unit{color:#7d8a91;font-size:14px;font-weight:600}
+  .devline{
+    text-align:right;font-size:12px;margin-top:2px;min-height:16px;
+    font-variant-numeric:tabular-nums;
+  }
+  .devline.good{color:var(--dro-green)}
+  .devline.warn{color:var(--dro-amber)}
+  .devline.bad{color:var(--dro-red)}
+  .devline.none{color:#5d6a71}
+  .dro-grid{
+    display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;
+    border-top:1px solid #2a3034;margin-top:10px;padding-top:10px;
+  }
+  .cellv{display:flex;flex-direction:column;align-items:flex-end;padding:4px 8px;border-radius:8px}
+  .cellv:active{background:#1e2327}
+  .cellv .k{color:#7d8a91;font-size:11px;font-weight:700;letter-spacing:.06em;align-self:flex-start}
+  .cellv .v{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:19px;font-weight:600;color:var(--dro-dim);
+  }
+  .cellv .s{color:#5d6a71;font-size:10px}
+  .dro-foot{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-top:10px;border-top:1px solid #2a3034;padding-top:9px;gap:8px;
+  }
+  .statusTxt{color:#5d6a71;font-size:11px;letter-spacing:.02em}
+  .statusTxt.err{color:#FF8A7E}
+  .copyRec{
+    font-size:12px;font-weight:700;color:#c9d2d7;background:#252b2f;
+    border:1px solid #3a4247;border-radius:7px;padding:6px 14px;flex:none;
+  }
+  .copyRec:active{background:#31383d}
+
+  .revline{
+    display:flex;justify-content:space-between;align-items:baseline;
+    padding-top:9px;margin-top:8px;border-top:1px dashed #D5DDE2;
+    font-size:13px;font-variant-numeric:tabular-nums;
+  }
+  .revline b{font-size:17px;color:var(--red)}
+  .revline .lab{color:#5B707E;font-size:12px;font-weight:600}
+
+  .clearBtn{
+    width:100%;font-size:13px;font-weight:700;padding:12px 4px;
+    border:1.5px solid #C9D3DA;border-radius:10px;
+    background:var(--sheet);color:#5B707E;letter-spacing:.05em;
+    margin-bottom:6px;
+  }
+  .clearBtn.arm{border-color:var(--red);color:var(--red);background:#FCF0EF}
+
+  footer{margin-top:12px;font-size:11px;color:#5B707E;line-height:1.7;text-align:center;letter-spacing:.03em}
+
+  .toast{
+    position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);
+    background:var(--ink);color:#fff;font-size:13px;
+    padding:9px 20px;border-radius:20px;opacity:0;pointer-events:none;
+    transition:opacity .25s,transform .25s;z-index:9;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+  /* ── 使い方ガイド（全ツール共通） ── */
+  .guide{background:#FFFFFF;border:1px solid #D5DDE2;border-radius:12px;margin:0 0 12px;overflow:hidden}
+  .guide>summary{list-style:none;cursor:pointer;padding:12px 14px;font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.04em;display:flex;align-items:center;gap:7px}
+  .guide>summary::-webkit-details-marker{display:none}
+  .guide>summary::before{content:"?";display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#1F3341;color:#fff;font-size:11px;font-weight:700;flex:none}
+  .guide[open]>summary{border-bottom:1px solid #E3E9EC}
+  .guide .gb{padding:2px 14px 14px}
+  .guide .gb h4{font-size:11px;letter-spacing:.07em;color:#5B707E;font-weight:700;margin:13px 0 6px}
+  .guide .gb ol{margin:0;padding-left:1.2em;font-size:11.5px;line-height:1.75;color:#1F3341}
+  .guide .gb ol b{color:#1F3341}
+  .guide .gx{border-top:1px dashed #E3E9EC;margin-top:11px;padding-top:8px}
+  .guide .gx h4{margin-top:6px}
+  .guide .gxin{display:flex;gap:12px;align-items:flex-start;margin-top:4px}
+  .guide .gfig{flex:none}
+  .guide .gfig svg{width:112px;height:112px;display:block;background:#FBFCFC;border:1px solid #EDF1F3;border-radius:8px}
+  .guide .gtxt{flex:1;font-size:11.5px;line-height:1.6;color:#1F3341}
+  .guide .gtxt p{margin:0 0 7px}
+  .guide .gset{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;background:#F2F6F8;border:1px solid #E3E9EC;border-radius:6px;padding:6px 8px;color:#3A5060;line-height:1.5}
+  .guide .gread b{color:#D63426}
+  .guide .gbtn{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;font:inherit;font-size:11.5px;font-weight:600;border:1px solid #1F3341;border-radius:6px;background:#fff;color:#1F3341;cursor:pointer;margin-top:2px}
+  .guide .gbtn:active{transform:translateY(1px)}
+  @media(max-width:360px){.guide .gxin{flex-direction:column}.guide .gfig svg{width:128px;height:128px}}
+
+  /* ── ベルト周長 固有 ── */
+  .beltfig{width:100%;background:#FBFCFC;border:1px solid #EDF1F3;border-radius:10px;margin-bottom:12px;display:block}
+  .out-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;border-top:1px solid #2a3034;margin-top:10px;padding-top:10px}
+  .cellv{display:flex;flex-direction:column;align-items:flex-end;padding:4px 8px}
+  .cellv .k{color:#7d8a91;font-size:11px;font-weight:700;letter-spacing:.06em;align-self:flex-start}
+  .cellv .v{font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;font-variant-numeric:tabular-nums;font-size:18px;font-weight:600;color:var(--dro-dim)}
+  .cellv .s{color:#5d6a71;font-size:10px}
+  .dro-val.good{color:var(--dro-green);text-shadow:0 0 12px rgba(66,215,125,.35)}
+  .dro-val.warn{color:var(--dro-amber);text-shadow:0 0 12px rgba(232,179,75,.30)}
+  .dro-val.bad{color:var(--dro-red);text-shadow:0 0 12px rgba(255,90,72,.35)}
+
+  .pl{border:1px solid #E0E6EA;border-radius:11px;padding:10px 11px;margin-bottom:9px;background:#FCFDFD}
+  .pl-head{display:flex;align-items:center;gap:8px;margin-bottom:2px}
+  .pl-badge{width:24px;height:24px;border-radius:7px;background:var(--ink);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none}
+  .pl-badge.in{background:#B97A1E}
+  .pl-name{font-size:12px;font-weight:700;color:#5B707E}
+  .pl-del{margin-left:auto;border:none;background:none;color:#B4C1C9;font-size:18px;font-weight:700;padding:2px 6px}
+  .pl-del:active{color:var(--red)}
+  .pl-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  .pl-grid .fld label{display:block;font-size:10px;color:#5B707E;font-weight:700;margin-bottom:1px}
+  .pl-grid .fld input{width:100%;font-size:18px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums;border:none;border-bottom:2px solid var(--ink);background:transparent;color:var(--ink);padding:2px 3px;outline:none}
+  .pl-grid .fld input:focus{border-bottom-color:var(--red)}
+  .fld-lab{display:flex;justify-content:space-between;align-items:center;min-height:15px;margin-bottom:1px}
+  .fld-lab label{font-size:10px;color:#5B707E;font-weight:700}
+  .fld-lab .clr{border:none;background:none;color:#B23B2E;font-size:15px;font-weight:700;padding:0 3px;line-height:1;visibility:hidden}
+  .fld-lab.has .clr{visibility:visible}
+  .fld-lab .clr:active{color:var(--red)}
+  .inclr{border:none;background:none;color:#B23B2E;font-size:15px;font-weight:700;padding:0 6px;line-height:1}
+  .inclr:active{color:var(--red)}
+  input::placeholder{color:#C8D2D8;opacity:1;font-weight:400}
+  input::-webkit-input-placeholder{color:#C8D2D8;font-weight:400}
+  input:-ms-input-placeholder{color:#C8D2D8;font-weight:400}
+  .topclear{display:flex;justify-content:flex-end;margin:2px 2px 10px}
+  .topclear button{font-size:12px;font-weight:700;color:#B23B2E;background:#FBECEA;border:1px solid #E7B7B0;border-radius:9px;padding:7px 14px}
+  .topclear button:active{background:#F6DAD5}
+  .topclear button.arm{background:#B23B2E;color:#fff;border-color:#B23B2E}
+  .pl-side{display:flex;gap:6px;margin-top:9px}
+  .pl-side button{flex:1;font-size:12px;font-weight:700;padding:8px 2px;border-radius:7px;border:1.5px solid #C9D3DA;background:#fff;color:#5B707E}
+  .pl-side button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .pl-side button.in[aria-pressed="true"]{background:#B97A1E;border-color:#B97A1E}
+
+  .addpl{width:100%;font-size:13px;font-weight:700;padding:11px 4px;border:1.5px dashed #B7C3CB;border-radius:10px;background:#fff;color:#5B707E;margin-bottom:12px}
+  .addpl:disabled{opacity:.4}
+
+  .cmp{background:var(--sheet);border:1px solid #D5DDE2;border-radius:12px;padding:12px;margin-bottom:12px}
+  .cmp h2{font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.1em;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+  .cmp h2::before{content:'';width:4px;height:14px;background:var(--ink);border-radius:2px}
+  .cmprow{display:flex;align-items:baseline;gap:10px;justify-content:space-between}
+  .cmprow label{font-size:13px;font-weight:700}
+  .cmprow input{font-size:22px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums;border:none;border-bottom:2px solid var(--ink);background:transparent;color:var(--ink);padding:2px 4px;outline:none;width:130px}
+  .cmprow input:focus{border-bottom-color:var(--red)}
+  .cmpres{margin-top:9px;padding-top:9px;border-top:1px dashed #D5DDE2;font-size:13px;text-align:right;font-variant-numeric:tabular-nums;min-height:18px}
+  .cmpres b{font-size:17px}
+  .cmpres.good b{color:#2E9C57}.cmpres.bad b{color:var(--red)}.cmpres.none{color:#8FA2AF}
+
+  .tglrow{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:12.5px;color:#3A5060}
+  .tglrow input{width:16px;height:16px}
+  .pitchsel{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+  .pitchsel button{font-size:12px;font-weight:700;padding:6px 11px;border-radius:7px;border:1.5px solid #C9D3DA;background:#fff;color:var(--ink)}
+  .pitchsel button[aria-pressed="true"]{background:#EEF2F4;border-color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>ベルト周長（図面から）<small>プーリー配置から周長を割り出す</small></h1>
+    <a href="../index.html">≡ ツール一覧</a>
+  </header>
+
+  <div class="topclear"><button type="button" id="clearTop">すべて消去</button></div>
+
+  <div class="tb-strip">
+    <div><b>入力</b> 位置＋直径</div>
+    <div><b>基準</b> 図面が正解</div>
+    <div>周長を算出</div>
+  </div>
+
+  <!-- 周長 DRO -->
+  <div class="dro">
+    <div class="dro-line">
+      <span class="dro-label">図面上の周長</span>
+      <span class="dro-val warn" id="lenVal">—</span>
+      <span class="dro-unit">mm</span>
+    </div>
+    <div class="devline none" id="lenMsg">各プーリーの位置と直径を入れてください</div>
+    <div class="out-grid">
+      <div class="cellv"><span class="k">直線部 合計</span><span class="v" id="oStr">—</span><span class="s">mm</span></div>
+      <div class="cellv"><span class="k">巻き付き弧 合計</span><span class="v" id="oArc">—</span><span class="s">mm</span></div>
+    </div>
+    <div class="dro-foot">
+      <span class="statusTxt" id="stat"></span>
+      <button class="copyRec" id="copyBtn" type="button">記録をコピー</button>
+    </div>
+  </div>
+
+  <!-- 図 -->
+  <svg class="beltfig" id="fig" viewBox="0 0 320 210" role="img" aria-label="ベルト経路の図"></svg>
+
+  <!-- プーリー -->
+  <div class="card">
+    <h2>プーリー（ベルトが接する順に）</h2>
+    <div id="plBox"></div>
+    <button class="addpl" id="addBtn" type="button">＋ プーリーを追加</button>
+    <p style="font-size:11px;color:#5B707E;line-height:1.6;margin-top:2px">位置は図面の寸法どおりXY（例：プーリー1を X0・Y0 として、右へ＋X、下へ＋Y）。<b>外掛け</b>＝ベルトが外周に沿う通常のプーリー、<b>内掛け</b>＝内側から押すテンションプーリー。</p>
+  </div>
+
+  <!-- 歯付き -->
+  <div class="card">
+    <h2>歯付き（タイミングベルト）</h2>
+    <div class="tglrow"><input type="checkbox" id="isTooth"><label for="isTooth">歯数も計算する</label></div>
+    <div id="toothBox" style="display:none">
+      <div class="tglrow" style="gap:10px"><label style="font-size:12px;color:#5B707E;font-weight:700">歯ピッチ</label>
+        <input id="pitch" type="text" inputmode="decimal" autocomplete="off" placeholder="5" style="font-size:18px;font-weight:600;text-align:right;border:none;border-bottom:2px solid var(--ink);background:transparent;width:70px;outline:none"><span style="font-size:12px;color:#5B707E">mm</span><button class="inclr" type="button" tabindex="-1" id="clrPitch">×</button></div>
+      <div class="pitchsel" id="pitchSel">
+        <button type="button" data-p="2">2M</button>
+        <button type="button" data-p="3">3M</button>
+        <button type="button" data-p="5">5M</button>
+        <button type="button" data-p="8">8M</button>
+        <button type="button" data-p="14">14M</button>
+      </div>
+      <div class="tglrow" style="margin-top:8px"><label style="font-size:12px;color:#5B707E;font-weight:700">歯数（計算値）</label>
+        <span id="teeth" style="font-family:ui-monospace,monospace;font-size:18px;font-weight:600;color:#5B707E">—</span></div>
+    </div>
+  </div>
+
+  <!-- 仕様照合（参考） -->
+  <div class="cmp">
+    <h2>メーカー仕様と照合（参考）</h2>
+    <div class="cmprow">
+      <label for="specLen">仕様書の全長</label>
+      <div><input id="specLen" type="text" inputmode="decimal" autocomplete="off" placeholder="—"> <span style="font-size:12px;color:#5B707E">mm</span><button class="inclr" type="button" tabindex="-1" id="clrSpec">×</button></div>
+    </div>
+    <div class="cmpres none" id="cmpRes">図面周長との差を表示します（正解は図面）</div>
+  </div>
+
+  <button class="clearBtn" id="clearBtn" type="button">すべて消去</button>
+
+  <!-- ガイド -->
+  <details class="guide">
+    <summary>使い方</summary>
+    <div class="gb">
+      <h4>やること</h4>
+      <ol>
+        <li>各プーリーの<b>位置（X・Y）</b>と<b>直径</b>を、図面の寸法どおり入れます。プーリー1を X0・Y0 の基準にすると楽です。</li>
+        <li>通常のプーリーは<b>外掛け</b>、内側から押すテンションプーリーは<b>内掛け</b>を選びます。</li>
+        <li>ベルトが<b>接する順</b>に並べます（上から順に 1→2→3→…→1 でひと回り）。</li>
+        <li>上に<b>図面上の周長</b>が出ます。接線と巻き付き弧を厳密に合算した値です。図でベルト経路も確認できます。</li>
+        <li>歯付きなら歯ピッチを選ぶと歯数の目安、仕様書の全長を入れると差（参考）が出ます。</li>
+      </ol>
+      <div class="gx">
+        <h4>例 ── 2プーリー＋内掛けテンション</h4>
+        <div class="gxin">
+          <div class="gtxt">
+            <p>P1（X0・Y0・φ100・外）、P2（X300・Y0・φ100・外）、テンション（X150・Y80・φ40・内）。ベルトが下側テンションで押し下げられた経路の周長が出ます。</p>
+            <button class="gbtn" type="button" id="exBtn">この例を試す</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <footer>
+    データは端末内にのみ保存され、どこにも送信されません。<br>
+    位置・直径から、接線と巻き付き弧を合算して周長を求めます。
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+<script>
+"use strict";
+var KEY="belt_perimeter_v1";
+var MAXPL=4, MINPL=2;
+var S={ pulleys:[], isTooth:false, pitch:"", spec:"" };
+function newPl(x,y,d,side){ return { x:(x==null?"":String(x)), y:(y==null?"":String(y)), d:(d==null?"":String(d)), side:(side||"out") }; }
+(function initS(){ S.pulleys=[ newPl(0,0,100,"out"), newPl(300,0,100,"out") ]; })();
+
+function g(id){ return document.getElementById(id); }
+function pf(v){ var s=String(v==null?"":v).replace(/[^\d.\-]/g,""); if(s===""||s==="-"||s===".") return NaN; var n=parseFloat(s); return isFinite(n)?n:NaN; }
+function ok(v){ return isFinite(v); }
+function f2(n){ return (Math.round(n*100)/100).toFixed(2); }
+function f1(n){ return (Math.round(n*10)/10).toFixed(1); }
+
+/* ── 計算エンジン（検証済み・接点も返す） ── */
+function windingSign(A){ var s=0,i,n=A.length; for(i=0;i<n;i++){ var j=(i+1)%n; s+=A[i].x*A[j].y-A[j].x*A[i].y; } return s>=0?1:-1; }
+function beltCompute(){
+  var raw=S.pulleys, n=raw.length, i;
+  var C=[];
+  for(i=0;i<n;i++){ var x=pf(raw[i].x), y=pf(raw[i].y), d=pf(raw[i].d); if(!ok(x)||!ok(y)||!ok(d)||d<=0) return null; C.push({x:x,y:y,r:d/2,side:raw[i].side}); }
+  if(n<2) return null;
+  var w=windingSign(C);
+  var P=C.map(function(p){ return {x:p.x,y:p.y,r:p.r,dir:(p.side==="in"?-w:w)}; });
+  var straight=0, incoming=new Array(n), outgoing=new Array(n), inN=new Array(n), outN=new Array(n);
+  for(i=0;i<n;i++){
+    var j=(i+1)%n;
+    var dx=P[j].x-P[i].x, dy=P[j].y-P[i].y, D=Math.hypot(dx,dy);
+    if(D<1e-9) return {err:"プーリーが重なっています"};
+    var Ri=P[i].dir*P[i].r, Rj=P[j].dir*P[j].r;
+    var val=(Rj-Ri)/D;
+    if(Math.abs(val)>1) return {err:"プーリーが近すぎて経路が作れません"};
+    var base=Math.atan2(dy,dx);
+    var phi=base+Math.acos(val);
+    var nx=Math.cos(phi), ny=Math.sin(phi);
+    var si=P[i].dir, sj=P[j].dir;
+    outgoing[i]=Math.atan2(-si*ny,-si*nx);
+    incoming[j]=Math.atan2(-sj*ny,-sj*nx);
+    var tl=Math.sqrt(Math.max(0,D*D-(Rj-Ri)*(Rj-Ri)));
+    straight+=tl;
+  }
+  var arc=0, wraps=[];
+  for(i=0;i<n;i++){
+    var delta=outgoing[i]-incoming[i];
+    var ww;
+    if(P[i].dir>0){ while(delta<0)delta+=2*Math.PI; while(delta>=2*Math.PI)delta-=2*Math.PI; ww=delta; }
+    else { while(delta>0)delta-=2*Math.PI; while(delta<=-2*Math.PI)delta+=2*Math.PI; ww=-delta; }
+    arc+=P[i].r*ww;
+    wraps.push(ww*180/Math.PI);
+  }
+  return { L:straight+arc, straight:straight, arc:arc, P:P, incoming:incoming, outgoing:outgoing, wraps:wraps, w:w };
+}
+
+/* ── 表示 ── */
+function calc(){
+  var r=beltCompute();
+  var lv=g("lenVal"), lm=g("lenMsg");
+  if(r===null){
+    lv.textContent="—"; lv.className="dro-val warn"; lm.className="devline none"; lm.textContent="各プーリーの位置と直径を入れてください";
+    g("oStr").textContent="—"; g("oArc").textContent="—"; g("stat").textContent=""; g("teeth").textContent="—";
+    drawFig(null); calcCmp(null); persist(); return;
+  }
+  if(r.err){
+    lv.textContent="—"; lv.className="dro-val bad"; lm.className="devline bad"; lm.textContent=r.err;
+    g("oStr").textContent="—"; g("oArc").textContent="—"; g("stat").textContent=""; g("teeth").textContent="—";
+    drawFig(null); calcCmp(null); persist(); return;
+  }
+  lv.textContent=f2(r.L); lv.className="dro-val good";
+  lm.className="devline good"; lm.textContent="接線＋巻き付き弧の合計（図面値）";
+  g("oStr").textContent=f2(r.straight);
+  g("oArc").textContent=f2(r.arc);
+  g("stat").textContent="プーリー "+r.P.length+" 個";
+  if(S.isTooth){ var p=pf(S.pitch); g("teeth").textContent=(ok(p)&&p>0)?(f1(r.L/p)+"（≒"+Math.round(r.L/p)+"）"):"—"; }
+  drawFig(r); calcCmp(r.L); persist();
+}
+function calcCmp(L){
+  var el=g("cmpRes"), sp=pf(S.spec);
+  if(L===null||!ok(sp)||sp<=0){ el.className="cmpres none"; el.textContent="図面周長との差を表示します（正解は図面）"; return; }
+  var d=L-sp, pct=d/sp*100, sign=d>0?"+":"", near=Math.abs(pct)<=1.0;
+  el.className="cmpres "+(near?"good":"bad");
+  el.innerHTML="図面 "+f2(L)+" − 仕様 "+f2(sp)+" ＝ <b>"+sign+f2(d)+" mm</b>（"+sign+f1(pct)+"%）"+(near?"　近い":"　差あり");
+}
+
+/* ── 図（接点を使って正確に描く） ── */
+function drawFig(r){
+  var svg=g("fig"), W=320, H=210, pad=24;
+  if(!svg) return;
+  if(!r){ svg.innerHTML='<text x="160" y="108" text-anchor="middle" font-size="12" fill="#B4C1C9" font-family="sans-serif">プーリー配置の図</text>'; return; }
+  try{
+  var P=r.P, n=P.length, i;
+  var minx=1e9,maxx=-1e9,miny=1e9,maxy=-1e9;
+  for(i=0;i<n;i++){ minx=Math.min(minx,P[i].x-P[i].r); maxx=Math.max(maxx,P[i].x+P[i].r); miny=Math.min(miny,P[i].y-P[i].r); maxy=Math.max(maxy,P[i].y+P[i].r); }
+  var spanX=(maxx-minx)||1, spanY=(maxy-miny)||1;
+  var sc=Math.min((W-2*pad)/spanX,(H-2*pad)/spanY); if(!isFinite(sc)||sc<=0) sc=1;
+  function MX(x){ return pad+(x-minx)*sc; }
+  function MY(y){ return pad+(y-miny)*sc; }   /* 図面Yは下が＋。SVGも下が＋なのでそのまま */
+  /* ベルト経路：各プーリーで incoming→outgoing を実際に回る向きで点を刻み、次へ接線 */
+  var d="";
+  for(i=0;i<n;i++){
+    var p=P[i], cin=r.incoming[i], cout=r.outgoing[i];
+    var pin=[MX(p.x+p.r*Math.cos(cin)), MY(p.y+p.r*Math.sin(cin))];
+    if(i===0) d+="M "+f1(pin[0])+" "+f1(pin[1])+" ";
+    else d+="L "+f1(pin[0])+" "+f1(pin[1])+" ";
+    /* incoming→outgoing を dir 方向に刻む */
+    var wrapDeg=r.wraps[i];                 /* 常に正（回った角度の大きさ） */
+    var dirSign=(p.dir>0)?1:-1;
+    var steps=Math.max(2, Math.ceil(wrapDeg/12));
+    var kk;
+    for(kk=1;kk<=steps;kk++){
+      var ang=cin + dirSign*(wrapDeg*Math.PI/180)*(kk/steps);
+      d+="L "+f1(MX(p.x+p.r*Math.cos(ang)))+" "+f1(MY(p.y+p.r*Math.sin(ang)))+" ";
+    }
+    /* 接線 outgoing[i] → incoming[next] は次ループ先頭のLで結ばれる */
+  }
+  d+="Z";
+  var h='<path d="'+d+'" fill="none" stroke="#D63426" stroke-width="2.2"/>';
+  for(i=0;i<n;i++){
+    var cc=P[i], cxp=MX(cc.x), cyp=MY(cc.y), pr=cc.r*sc;
+    var fill=(cc.side==="in")?"#FBEFD8":"#EAF0F3", strk=(cc.side==="in")?"#B97A1E":"#1F3341";
+    h+='<circle cx="'+f1(cxp)+'" cy="'+f1(cyp)+'" r="'+f1(pr)+'" fill="'+fill+'" stroke="'+strk+'" stroke-width="1.3"/>';
+    h+='<circle cx="'+f1(cxp)+'" cy="'+f1(cyp)+'" r="1.8" fill="'+strk+'"/>';
+    h+='<text x="'+f1(cxp)+'" y="'+f1(cyp-pr-4)+'" text-anchor="middle" font-size="9.5" fill="#5B707E" font-family="monospace">'+(i+1)+'</text>';
+  }
+  svg.innerHTML=h;
+  }catch(e){ /* 描画に失敗しても計算表示は保持 */ }
+}
+
+/* ── プーリー描画（入力UI） ── */
+function renderPls(){
+  var box=g("plBox"), h="", i;
+  for(i=0;i<S.pulleys.length;i++){
+    var p=S.pulleys[i], isIn=(p.side==="in");
+    h+='<div class="pl" data-i="'+i+'">'
+      +'<div class="pl-head"><span class="pl-badge '+(isIn?"in":"")+'">'+(i+1)+'</span>'
+      +'<span class="pl-name">プーリー'+(i+1)+(isIn?'（テンション）':'')+'</span>'
+      +(S.pulleys.length>MINPL?'<button class="pl-del" type="button" data-del="'+i+'" aria-label="削除">×</button>':'')
+      +'</div>'
+      +'<div class="pl-grid">'
+      +fldHTML(i,"x","X（右＋）",p.x,"0")
+      +fldHTML(i,"y","Y（下＋）",p.y,"0")
+      +fldHTML(i,"d","直径 φ",p.d,"100")
+      +'</div>'
+      +'<div class="pl-side">'
+      +'<button type="button" data-side="'+i+'|out" aria-pressed="'+(!isIn)+'">外掛け</button>'
+      +'<button class="in" type="button" data-side="'+i+'|in" aria-pressed="'+isIn+'">内掛け（テンション）</button>'
+      +'</div>'
+      +'</div>';
+  }
+  box.innerHTML=h;
+  g("addBtn").disabled=(S.pulleys.length>=MAXPL);
+  bindPls();
+}
+function fldHTML(i,k,label,val,ph){
+  var id=(k==="x"?"px":k==="y"?"py":"pd")+i, has=(String(val)!=="");
+  return '<div class="fld">'
+    +'<div class="fld-lab'+(has?" has":"")+'"><label for="'+id+'">'+label+'</label>'
+    +'<button class="clr" type="button" tabindex="-1" data-clr="'+i+'|'+k+'" aria-label="この欄を消去">×</button></div>'
+    +'<input id="'+id+'" type="text" inputmode="decimal" autocomplete="off" value="'+escAttr(val)+'" placeholder="'+ph+'" data-in="'+i+'|'+k+'">'
+    +'</div>';
+}
+function bindPls(){
+  var box=g("plBox");
+  Array.prototype.forEach.call(box.querySelectorAll("input[data-in]"),function(el){
+    el.addEventListener("input",function(){ var a=this.getAttribute("data-in").split("|"); upPl(+a[0],a[1],this); });
+  });
+  Array.prototype.forEach.call(box.querySelectorAll("button[data-clr]"),function(el){
+    el.addEventListener("click",function(){ var a=this.getAttribute("data-clr").split("|"); clrPl(+a[0],a[1]); });
+  });
+  Array.prototype.forEach.call(box.querySelectorAll("button[data-side]"),function(el){
+    el.addEventListener("click",function(){ var a=this.getAttribute("data-side").split("|"); setSide(+a[0],a[1]); });
+  });
+  Array.prototype.forEach.call(box.querySelectorAll("button[data-del]"),function(el){
+    el.addEventListener("click",function(){ delPl(+this.getAttribute("data-del")); });
+  });
+}
+function escAttr(s){ return String(s==null?"":s).replace(/"/g,"&quot;"); }
+
+/* ── 操作 ── */
+function upPl(i,k,el){ var v=el.value.replace(/[^\d.\-]/g,""); if(el.value!==v) el.value=v; S.pulleys[i][k]=v;
+  var fld=el.parentNode, lab=fld?fld.querySelector(".fld-lab"):null;
+  if(lab){ if(v!=="") lab.classList.add("has"); else lab.classList.remove("has"); }
+  calc(); }
+function clrPl(i,k){
+  S.pulleys[i][k]="";
+  var idmap={x:"px",y:"py",d:"pd"}, el=g(idmap[k]+i);
+  if(el){ el.value=""; var fld=el.parentNode, lab=fld?fld.querySelector(".fld-lab"):null; if(lab) lab.classList.remove("has"); el.focus(); }
+  calc();
+}
+function setSide(i,side){ S.pulleys[i].side=side; renderPls(); calc(); }
+function addPl(){ if(S.pulleys.length>=MAXPL) return; S.pulleys.push(newPl("","","","out")); renderPls(); calc(); }
+function delPl(i){ if(S.pulleys.length<=MINPL) return; S.pulleys.splice(i,1); renderPls(); calc(); }
+
+function copyRec(){
+  var r=beltCompute(); if(!r||r.err){ toast("先に数値を入れてください"); return; }
+  var lines=["ベルト周長（図面）"+f2(r.L)+" mm"], i;
+  for(i=0;i<S.pulleys.length;i++){ var p=S.pulleys[i]; lines.push("P"+(i+1)+" X"+f1(pf(p.x))+" Y"+f1(pf(p.y))+" φ"+f1(pf(p.d))+" "+(p.side==="in"?"内":"外")); }
+  if(S.isTooth&&ok(pf(S.pitch))) lines.push("歯ピッチ"+f1(pf(S.pitch))+" → 歯数≒"+Math.round(r.L/pf(S.pitch)));
+  if(ok(pf(S.spec))) lines.push("仕様 "+f2(pf(S.spec))+" / 差 "+f2(r.L-pf(S.spec))+" mm");
+  copyText(lines.join("\n"));
+}
+function copyText(t){ if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(function(){toast("コピーしました");},function(){fb(t);}); else fb(t); function fb(x){ try{var ta=document.createElement("textarea");ta.value=x;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();document.execCommand("copy");document.body.removeChild(ta);toast("コピーしました");}catch(e){toast("コピーできませんでした");} } }
+
+var armed=false, armTimer=null;
+function doClearAll(){
+  S={ pulleys:[ newPl(0,0,100,"out"), newPl(300,0,100,"out") ], isTooth:false, pitch:"", spec:"" };
+  var e;
+  e=g("specLen"); if(e) e.value=""; e=g("pitch"); if(e) e.value=""; e=g("isTooth"); if(e) e.checked=false; e=g("toothBox"); if(e) e.style.display="none";
+  syncPitchSel(); renderPls(); calc(); persist(); toast("消去しました");
+}
+function onClear(){
+  var b=g("clearBtn");
+  if(!armed){ armed=true; b.classList.add("arm"); b.textContent="もう一度押すと消去"; armTimer=setTimeout(function(){armed=false;b.classList.remove("arm");b.textContent="すべて消去";},2500); return; }
+  clearTimeout(armTimer); armed=false; b.classList.remove("arm"); b.textContent="すべて消去";
+  doClearAll();
+}
+var armedTop=false, armTopTimer=null;
+function onClearTop(){
+  var b=g("clearTop");
+  if(!armedTop){ armedTop=true; if(b){ b.textContent="もう一度で消去"; b.classList.add("arm"); } armTopTimer=setTimeout(function(){ armedTop=false; if(b){ b.textContent="すべて消去"; b.classList.remove("arm"); } },2500); return; }
+  clearTimeout(armTopTimer); armedTop=false; if(b){ b.textContent="すべて消去"; b.classList.remove("arm"); }
+  doClearAll();
+}
+var tt=null; function toast(m){ var t=g("toast"); t.textContent=m; t.classList.add("show"); clearTimeout(tt); tt=setTimeout(function(){t.classList.remove("show");},1600); }
+function syncPitchSel(){ var b=g("pitchSel").children,i,p=pf(S.pitch); for(i=0;i<b.length;i++) b[i].setAttribute("aria-pressed",(parseFloat(b[i].getAttribute("data-p"))===p)?"true":"false"); }
+
+function persist(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+function restore(){
+  try{ var o=JSON.parse(localStorage.getItem(KEY)||"null");
+    if(o&&o.pulleys&&o.pulleys.length>=MINPL){ S.pulleys=[]; for(var i=0;i<o.pulleys.length&&i<MAXPL;i++){ var q=o.pulleys[i]; S.pulleys.push(newPl(q.x,q.y,q.d,q.side==="in"?"in":"out")); }
+      S.isTooth=!!o.isTooth; S.pitch=(o.pitch==null?"":String(o.pitch)); S.spec=(o.spec==null?"":String(o.spec)); }
+  }catch(e){}
+  g("specLen").value=S.spec; g("pitch").value=S.pitch; g("isTooth").checked=S.isTooth; g("toothBox").style.display=S.isTooth?"":"none";
+  syncPitchSel(); renderPls();
+}
+function tryExample(){
+  S.pulleys=[ newPl(0,0,100,"out"), newPl(300,0,100,"out"), newPl(150,80,40,"in") ];
+  S.isTooth=true; S.pitch="5";
+  g("isTooth").checked=true; g("toothBox").style.display=""; g("pitch").value="5";
+  syncPitchSel(); renderPls(); calc(); toast("例：2プーリー＋テンション");
+}
+
+function bindEl(id,ev,fn){ var el=g(id); if(el){ try{ el.addEventListener(ev,fn); }catch(e){} } }
+function init(){
+  /* まず描画を確定（バインド失敗に影響されないよう最優先） */
+  try{ restore(); }catch(e){ renderPls(); }
+  try{ calc(); }catch(e){}
+  /* 以降のバインドは個別に防御 */
+  bindEl("addBtn","click",addPl);
+  bindEl("copyBtn","click",copyRec);
+  bindEl("clearBtn","click",onClear);
+  bindEl("clearTop","click",onClearTop);
+  bindEl("exBtn","click",tryExample);
+  bindEl("isTooth","change",function(){ S.isTooth=this.checked; var tb=g("toothBox"); if(tb) tb.style.display=this.checked?"":"none"; calc(); persist(); });
+  bindEl("pitch","input",function(){ var v=this.value.replace(/[^\d.]/g,""); if(this.value!==v)this.value=v; S.pitch=v; syncPitchSel(); calc(); });
+  bindEl("specLen","input",function(){ var v=this.value.replace(/[^\d.]/g,""); if(this.value!==v)this.value=v; S.spec=v; calc(); });
+  var psEl=g("pitchSel");
+  if(psEl){ var ps=psEl.children,i; for(i=0;i<ps.length;i++) ps[i].addEventListener("click",function(){ S.pitch=this.getAttribute("data-p"); var pe=g("pitch"); if(pe) pe.value=S.pitch; syncPitchSel(); calc(); }); }
+  bindEl("clrPitch","click",function(){ S.pitch=""; var pe=g("pitch"); if(pe) pe.value=""; syncPitchSel(); calc(); persist(); });
+  bindEl("clrSpec","click",function(){ S.spec=""; var se=g("specLen"); if(se) se.value=""; calc(); persist(); });
+}
+if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",init); else init();
+</script>
+</body>
+</html>

@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1F3341">
+<meta name="description" content="搬送系でよく使う樹脂の色・密度・線膨張係数・吸水・見分け方(浮沈/感触/燃焼)をまとめた現場リファレンス。線膨張係数は温度補正ツールと同じ代表値。計算・判定はすべて端末内で完結します。">
+<title>樹脂ガイド | 検査計算ツール</title>
+<style>
+  :root{
+    --paper:#F2F4F5;
+    --sheet:#FFFFFF;
+    --ink:#1F3341;
+    --line:#8FA2AF;
+    --red:#D63426;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI",sans-serif;
+    background:var(--paper);color:var(--ink);
+    min-height:100dvh;display:flex;flex-direction:column;align-items:center;
+    padding:0 12px calc(16px + env(safe-area-inset-bottom));
+  }
+  .wrap{width:100%;max-width:480px}
+
+  header{display:flex;align-items:baseline;justify-content:space-between;padding:14px 2px 10px}
+  header h1{font-size:16px;font-weight:700;letter-spacing:.04em}
+  header h1 small{display:block;font-size:11px;font-weight:400;color:#5B707E;letter-spacing:.08em;margin-top:2px}
+  header a{font-size:12px;color:#5B707E;text-decoration:none}
+
+  h2{
+    font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.1em;
+    margin:16px 2px 8px;display:flex;align-items:center;gap:6px;
+  }
+  h2::before{content:'';width:4px;height:14px;background:var(--ink);border-radius:2px}
+  h2 .cnt{margin-left:auto;font-size:10px;font-weight:700;color:#8FA2AF;letter-spacing:.04em}
+
+  /* 安全注意 */
+  .warn{
+    background:#FDECEA;border:1px solid #E7A9A2;border-left:4px solid var(--red);
+    border-radius:8px;padding:10px 12px;font-size:11.5px;line-height:1.7;color:#7A241C;margin-bottom:4px;
+  }
+  .warn b{color:var(--red)}
+
+  /* 識別ヘルパー */
+  .idbox{background:var(--sheet);border:1px solid #D5DDE2;border-radius:12px;padding:12px 12px 6px}
+  .idgrp{margin-bottom:9px}
+  .idgrp .lbl{font-size:10.5px;font-weight:700;color:#8FA2AF;letter-spacing:.1em;margin:0 2px 6px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{
+    font-size:12px;font-weight:600;padding:7px 10px;
+    border:1.5px solid var(--ink);border-radius:8px;
+    background:var(--sheet);color:var(--ink);cursor:pointer;line-height:1.2;
+  }
+  .chip small{font-weight:400;font-size:10px;color:#5B707E;margin-left:3px}
+  .chip.on{background:var(--ink);color:#fff}
+  .chip.on small{color:#cdd7dd}
+  .idfoot{display:flex;align-items:center;justify-content:space-between;padding:6px 2px 4px;border-top:1px dashed #E3E9EC;margin-top:4px}
+  .idfoot .res{font-size:12px;font-weight:700;color:var(--ink)}
+  .idfoot .res b{color:var(--red)}
+  .idreset{font-size:11px;font-weight:700;color:#5B707E;background:#EEF2F4;border:1px solid #D5DDE2;border-radius:7px;padding:6px 12px;cursor:pointer}
+  .idreset:active{background:#E1E8EB}
+
+  /* 温度補正 目安 */
+  .corrpanel{background:var(--sheet);border:1px solid #D5DDE2;border-radius:12px;margin:10px 0 2px;overflow:hidden}
+  .corrpanel>summary{list-style:none;cursor:pointer;padding:11px 13px;font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.04em}
+  .corrpanel>summary::-webkit-details-marker{display:none}
+  .corrpanel>summary::before{content:"°";display:inline-block;width:17px;height:17px;line-height:15px;text-align:center;border-radius:50%;background:#1F3341;color:#fff;font-size:13px;font-weight:700;margin-right:7px;vertical-align:middle}
+  .corrpanel[open]>summary{border-bottom:1px solid #E3E9EC}
+  .corrbody{padding:11px 13px}
+  .corrrow{display:flex;gap:14px;flex-wrap:wrap}
+  .corrfield{display:flex;align-items:baseline;gap:6px}
+  .corrfield label{font-size:12px;font-weight:600;color:var(--ink)}
+  .corrfield input{
+    width:78px;font-size:18px;font-weight:600;text-align:right;
+    font-variant-numeric:tabular-nums;border:none;border-bottom:2px solid var(--ink);
+    background:transparent;color:var(--ink);padding:2px 4px;outline:none;
+  }
+  .corrfield input:focus{border-bottom-color:var(--red)}
+  .corrfield .u{font-size:11px;color:#5B707E}
+  .corrnote{font-size:10.5px;color:#5B707E;line-height:1.6;margin-top:8px}
+  .corrnote a{color:#2C5FA0}
+
+  /* 樹脂カード */
+  .rcard{background:var(--sheet);border:1px solid #D5DDE2;border-radius:12px;margin-bottom:9px;overflow:hidden}
+  .rcard.dim{opacity:.34}
+  .rhead{display:flex;align-items:center;gap:10px;padding:11px 12px;cursor:pointer;position:relative}
+  .rhead .sw{display:flex;gap:3px;flex:none}
+  .rhead .sw i{width:15px;height:22px;border-radius:3px;border:1px solid rgba(0,0,0,.18);display:block}
+  .rhead .nm{flex:1;min-width:0}
+  .rhead .nm .n1{font-size:14.5px;font-weight:800;letter-spacing:.02em;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+  .rhead .nm .n2{font-size:10.5px;color:#5B707E;margin-top:2px;line-height:1.4}
+  .rhead .chev{font-size:18px;color:#B7C3CA;flex:none;transition:transform .15s}
+  .rcard[open] .rhead .chev{transform:rotate(90deg)}
+  .rhead::-webkit-details-marker{display:none}
+  summary.rhead{list-style:none}
+
+  .tag{font-size:9px;font-weight:700;letter-spacing:.04em;padding:2px 6px;border-radius:5px;line-height:1.4}
+  .tag.conv{background:#1F3341;color:#fff}
+  .tag.hi{background:#2C5FA0;color:#fff}
+  .tag.ref{background:#EEF2F4;color:#5B707E;border:1px solid #D5DDE2}
+  .tag.match{background:var(--red);color:#fff}
+
+  .qbar{display:flex;gap:6px;padding:0 12px 11px;flex-wrap:wrap}
+  .qchip{font-size:10.5px;font-weight:700;color:var(--ink);background:#F2F6F8;border:1px solid #E3E9EC;border-radius:7px;padding:4px 8px;font-variant-numeric:tabular-nums}
+  .qchip b{color:#5B707E;font-weight:700;margin-right:3px}
+  .qchip.fl-up{background:#EAF4EC;border-color:#BEDCC5}
+  .qchip.fl-dn{background:#EAF0F6;border-color:#BDD0E4}
+  .qchip.water{background:#FCEFE8;border-color:#E7C3AC;color:#8A4A22}
+
+  .rdetail{border-top:1px solid #EDF1F3;padding:11px 13px 13px;font-size:12px;line-height:1.7}
+  .drow{display:flex;gap:8px;padding:5px 0;border-bottom:1px dashed #EDF1F3}
+  .drow:last-child{border-bottom:none}
+  .drow .k{flex:none;width:74px;font-size:10.5px;font-weight:700;color:#8FA2AF;letter-spacing:.04em;padding-top:1px}
+  .drow .v{flex:1;color:var(--ink)}
+  .drow .v b{color:var(--ink)}
+  .corrout{font-variant-numeric:tabular-nums;font-weight:700;color:var(--red)}
+  .tlink{display:inline-block;margin-top:2px;font-size:11px;color:#2C5FA0;text-decoration:none}
+
+  .note{font-size:11px;color:#5B707E;line-height:1.7;margin:8px 2px 0;padding:0 2px}
+  footer{margin-top:18px;font-size:11px;color:#5B707E;line-height:1.7;text-align:center;letter-spacing:.03em}
+  footer a{color:#5B707E}
+
+  .toast{
+    position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);
+    background:var(--ink);color:#fff;font-size:13px;
+    padding:9px 20px;border-radius:20px;opacity:0;pointer-events:none;
+    transition:opacity .25s,transform .25s;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+
+  /* ── 使い方ガイド（全ツール共通） ── */
+  .guide{background:#FFFFFF;border:1px solid #D5DDE2;border-radius:12px;margin:0 0 12px;overflow:hidden}
+  .guide>summary{list-style:none;cursor:pointer;padding:12px 14px;font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.04em;display:flex;align-items:center;gap:7px}
+  .guide>summary::-webkit-details-marker{display:none}
+  .guide>summary::before{content:"?";display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#1F3341;color:#fff;font-size:11px;font-weight:700;flex:none}
+  .guide[open]>summary{border-bottom:1px solid #E3E9EC}
+  .guide .gb{padding:2px 14px 14px}
+  .guide .gb h4{font-size:11px;letter-spacing:.07em;color:#5B707E;font-weight:700;margin:13px 0 6px}
+  .guide .gb ol{margin:0;padding-left:1.2em;font-size:11.5px;line-height:1.75;color:#1F3341}
+  .guide .gx{border-top:1px dashed #E3E9EC;margin-top:11px;padding-top:8px}
+  .guide .gxin{display:flex;gap:12px;align-items:flex-start;margin-top:4px}
+  .guide .gfig{flex:none}
+  .guide .gfig svg{width:112px;height:112px;display:block;background:#FBFCFC;border:1px solid #EDF1F3;border-radius:8px}
+  .guide .gtxt{flex:1;font-size:11.5px;line-height:1.6;color:#1F3341}
+  .guide .gtxt p{margin:0 0 7px}
+  .guide .gread b{color:#D63426}
+  .guide .gbtn{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;font:inherit;font-size:11.5px;font-weight:600;border:1px solid #1F3341;border-radius:6px;background:#fff;color:#1F3341;cursor:pointer;margin-top:2px}
+  .guide .gbtn:active{transform:translateY(1px)}
+  @media(max-width:360px){.guide .gxin{flex-direction:column}.guide .gfig svg{width:128px;height:128px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>樹脂ガイド<small>搬送系の樹脂・色/密度/線膨張/見分け</small></h1>
+    <a href="../">← 一覧</a>
+  </header>
+
+  <details class="guide">
+    <summary>使い方と例を見る</summary>
+    <div class="gb">
+      <h4>使い方</h4>
+      <ol>
+        <li><b>見分けたいとき</b>…上の「識別ヘルパー」で、確認できたこと(浮く/沈む・色・感触・燃焼のにおい)のチップを押すと、候補が絞られます。</li>
+        <li><b>一番確実で安全なのは水の浮き沈み</b>です。PE・PPだけが水に浮きます(密度&lt;1)。まずこれで大きく二分できます。</li>
+        <li>各樹脂のカードを開くと、<b>線膨張係数・吸水・使用温度・削り粉・搬送での用途</b>が出ます。</li>
+        <li>「温度補正の目安」に長さと温度差を入れると、各カードに<b>その条件での伸び</b>が出ます(厳密は温度補正ツールへ)。</li>
+      </ol>
+      <div class="gx">
+        <h4>例：水に浮いて、燃やすとろうそくの匂い</h4>
+        <div class="gxin">
+          <div class="gfig">
+            <svg viewBox="0 0 112 112" xmlns="http://www.w3.org/2000/svg">
+              <rect x="14" y="52" width="84" height="30" rx="3" fill="#EAF0F2" stroke="#8FA2AF" stroke-width="1.4"/>
+              <path d="M14 62 h84" stroke="#BDD0E4" stroke-width="1" stroke-dasharray="3 3"/>
+              <rect x="40" y="40" width="32" height="18" rx="2" fill="#ECEDE6" stroke="#1F3341" stroke-width="1.6"/>
+              <text x="56" y="52" font-size="8" text-anchor="middle" fill="#1F3341" font-weight="700">浮く</text>
+              <path d="M56 30 q-4 -6 0 -11 q4 5 0 11z" fill="#F0A000" stroke="#D63426" stroke-width="1"/>
+              <text x="56" y="98" font-size="8" text-anchor="middle" fill="#5B707E">PE / PP 系</text>
+            </svg>
+          </div>
+          <div class="gtxt">
+            <p>浮く＝PE か PP。ろうそく(パラフィン)臭・溶けて滴下なら<b>ポリエチレン系</b>が濃厚。<br>ろう感が強く白っぽければ <b>UHMW-PE</b>(ウェアストリップの定番)。</p>
+            <p class="gread">「この例を試す」で該当チップが入り、候補が絞られます。</p>
+            <button class="gbtn" type="button" data-ex='{"set":[{"click":"#f-up"},{"click":"#s-candle"},{"click":"#feel-waxy"}]}' onclick="tryExample(this)">この例を試す</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <div class="warn">
+    <b>⚠ 燃焼試験の前に</b> フッ素樹脂(PTFE・PVDF)と塩ビ(PVC)は<b>燃やすと有毒ガス</b>(フッ化水素・塩化水素など)が出ます。<b>これらは燃やさないでください。</b>まず水の浮き沈み・色・感触で判断し、燃焼はどうしても必要なときだけ、少量・屋外/換気下で行ってください。
+  </div>
+
+  <h2>識別ヘルパー<span class="cnt" id="idHint">見た特徴を押す</span></h2>
+  <div class="idbox">
+    <div class="idgrp">
+      <div class="lbl">水に入れると（最優先・安全）</div>
+      <div class="chips" id="grpFloat">
+        <button class="chip" type="button" id="f-up" data-g="float" data-v="浮">浮く<small>密度&lt;1</small></button>
+        <button class="chip" type="button" id="f-dn" data-g="float" data-v="沈">沈む<small>密度&gt;1</small></button>
+      </div>
+    </div>
+    <div class="idgrp">
+      <div class="lbl">色・見た目</div>
+      <div class="chips" id="grpColor">
+        <button class="chip" type="button" data-g="color" data-v="white">乳白・白</button>
+        <button class="chip" type="button" data-g="color" data-v="clear">透明</button>
+        <button class="chip" type="button" data-g="color" data-v="blue">青</button>
+        <button class="chip" type="button" data-g="color" data-v="black">黒</button>
+        <button class="chip" type="button" data-g="color" data-v="brown">茶〜こげ茶</button>
+        <button class="chip" type="button" data-g="color" data-v="beige">ベージュ・褐</button>
+        <button class="chip" type="button" data-g="color" data-v="gray">灰(グレー)</button>
+      </div>
+    </div>
+    <div class="idgrp">
+      <div class="lbl">感触</div>
+      <div class="chips" id="grpFeel">
+        <button class="chip" type="button" id="feel-waxy" data-g="feel" data-v="waxy">ろう感・すべる</button>
+        <button class="chip" type="button" data-g="feel" data-v="slick">硬くすべる</button>
+        <button class="chip" type="button" data-g="feel" data-v="hard">硬い(ふつう)</button>
+      </div>
+    </div>
+    <div class="idgrp">
+      <div class="lbl">燃焼のにおい（換気下・任意）</div>
+      <div class="chips" id="grpSmell">
+        <button class="chip" type="button" id="s-candle" data-g="smell" data-v="candle">ろうそく</button>
+        <button class="chip" type="button" data-g="smell" data-v="hair">毛髪が焦げた</button>
+        <button class="chip" type="button" data-g="smell" data-v="formalin">ツンと刺激(ホルマリン)</button>
+        <button class="chip" type="button" data-g="smell" data-v="sweet">甘い・果実</button>
+        <button class="chip" type="button" data-g="smell" data-v="phenol">石炭酸(フェノール)</button>
+        <button class="chip" type="button" data-g="smell" data-v="noburn">燃えにくい/自消</button>
+      </div>
+    </div>
+    <div class="idfoot">
+      <div class="res" id="idRes">全樹脂を表示中</div>
+      <button class="idreset" type="button" id="idReset">リセット</button>
+    </div>
+  </div>
+
+  <details class="corrpanel">
+    <summary>温度補正の目安（長さ・温度差を入れると各カードに伸びが出ます）</summary>
+    <div class="corrbody">
+      <div class="corrrow">
+        <div class="corrfield"><label>長さ L</label><input id="cL" type="text" inputmode="decimal" autocomplete="off" placeholder="100"><span class="u">mm</span></div>
+        <div class="corrfield"><label>温度差 ΔT</label><input id="cT" type="text" inputmode="decimal" autocomplete="off" placeholder="＋10"><span class="u">℃(20℃基準)</span></div>
+      </div>
+      <div class="corrnote">伸び ≒ L × α × ΔT。ΔT は 20℃ からの差(高いほど＋、低いほど − ／ ± ボタンで符号)。あくまで概算です。厳密な20℃換算・測定器側の伸びは <a href="../temp-comp/">温度補正ツール</a> をご利用ください。</div>
+    </div>
+  </details>
+
+  <h2>樹脂の一覧<span class="cnt" id="listCnt"></span></h2>
+  <div id="list"></div>
+
+  <div class="note">
+    ・数値は<b>無充填の代表値</b>です。銘柄・ガラス繊維の有無・吸湿状態で変わります(ガラス入りは線膨張が1/3程度まで下がることも)。<br>
+    ・厳密な検査判定は、必ず<b>メーカー物性表・ミルシート</b>の値で確認してください。<br>
+    ・ナイロン(PA)は<b>吸湿で膨らむ</b>ため、寸法測定は環境と時期に注意。<br>
+    ・「浮く/沈む」は水(密度1.0)基準。表面張力で小片が浮いて見えるときは、洗剤を一滴たらすか押し沈めて確認。
+  </div>
+
+  <footer>
+    樹脂ガイド | 計算・判定はすべてこの端末内。通信はありません。<br>
+    色・数値は一般的な代表値で、特定の品番・図面情報は含みません。<br>
+    <a href="../">← ツール一覧へ戻る</a>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+  function g(id){return document.getElementById(id);}
+
+  /* ── 樹脂データ ──
+     dens: 密度 g/cm3(代表) / cte: 線膨張 ×10^-6/K(代表, 温度補正ツールと整合)
+     float: 浮/沈(密度<1で浮) / water: 吸水フラグ(検査注意)
+     colorKeys: 色系統(識別用) / feel: 感触系統 / smell: 燃焼臭系統(配列)
+     rank: conv=搬送定番 / hi=高機能 / ref=工場で見かける参考 */
+  var R=[
+    {id:'uhmwpe',n:'UHMW-PE',full:'超高分子量ポリエチレン',alias:'PE1000 / MC-PE / 通称「ポリ」',rank:'conv',
+     dens:0.93,densT:'0.93–0.94',cte:180,cteT:'PE系は特に大きい(150–200)',water:false,waterT:'ほぼ吸わない(<0.01%)',temp:'約80–90℃',
+     colors:[['ナチュラル(乳白)','#ECEDE6'],['緑','#3C7A4E'],['青','#2B5CA6']],colorKeys:['white','green','blue'],
+     feel:['waxy'],feelT:'強いろう感・よくすべる。爪が食い込みにくく、傷が白く残る',
+     smell:['candle'],burn:'よく燃える／青炎・先端黄／溶けて滴下(燃えながら落ちる)／ろうそく(パラフィン)臭',
+     chip:'長く繋がる軟らかい削り粉。切削は逃げやすい',
+     use:'ウェアストリップ・ガイドレール・チェーンガイド・スライドプレート。低摩擦・耐摩耗の搬送定番'},
+    {id:'hdpe',n:'HDPE',full:'高密度ポリエチレン',alias:'PE300 / ポリエチレン(硬質)',rank:'conv',
+     dens:0.95,densT:'0.94–0.96',cte:180,cteT:'PE系は大きい(150–200)',water:false,waterT:'ほぼ吸わない(<0.01%)',temp:'約80℃',
+     colors:[['ナチュラル(乳白)','#ECEDE6'],['黒','#23272A']],colorKeys:['white','black'],
+     feel:['waxy'],feelT:'ろう感・すべる。UHMW-PEよりやや硬く安価',
+     smell:['candle'],burn:'よく燃える／青炎・先端黄／滴下／ろうそく臭。UHMW-PEと燃焼では区別しにくい',
+     chip:'つながる軟らかい削り粉',
+     use:'ガイド・受け板・タンク・一般部材。UHMW-PEの廉価版として摺動部にも'},
+    {id:'pp',n:'PP',full:'ポリプロピレン',alias:'ポリプロ',rank:'conv',
+     dens:0.905,densT:'0.90–0.91(最軽量)',cte:110,cteT:'100–150',water:false,waterT:'ほぼ吸わない(<0.02%)',temp:'約100℃',
+     colors:[['ナチュラル(半透明)','#E7EAE2'],['各色','#9FB0B8']],colorKeys:['white'],
+     feel:['waxy','hard'],feelT:'ろう感あり。PEより張りがあり、薄物は白化する折り曲げ(ヒンジ)ができる',
+     smell:['candle','sweet'],burn:'よく燃える／青炎・先端黄／滴下／PEに近いがやや甘め・軽油様のにおい',
+     chip:'つながる削り粉。PEよりやや硬い',
+     use:'耐薬品カバー・タンク・一般部材。水に最もよく浮く(最軽量)'},
+    {id:'pom',n:'POM',full:'ポリアセタール(ポリオキシメチレン)',alias:'ジュラコン / デルリン',rank:'conv',
+     dens:1.41,densT:'1.41–1.42',cte:110,cteT:'温度補正ツールと同値',water:false,waterT:'少ない(0.2–0.4%)',temp:'約90–100℃',
+     colors:[['ナチュラル(白・不透明)','#F6F6F2'],['黒','#23272A']],colorKeys:['white','black'],
+     feel:['slick'],feelT:'硬く乾いた滑り。カチッと硬質。摺動性が高い',
+     smell:['formalin'],burn:'よく燃え、青炎で滴下することも／<b>ツンと刺激的なホルムアルデヒド臭</b>(ホルマリン様)が最大の特徴',
+     chip:'細かく分かれる歯切れの良い削り粉。被削性良好で寸法が出しやすい',
+     use:'スプロケット・ギア・軸受け・カム・摺動部品。搬送機構の主役級'},
+    {id:'pa',n:'ナイロン(PA)',full:'ポリアミド / MCナイロン',alias:'MC901(青) / MC602(緑褐) / ナイロン6・66',rank:'conv',
+     dens:1.15,densT:'1.14–1.16',cte:90,cteT:'80–100(吸湿で変動)',water:true,waterT:'よく吸う(1–3%)。吸湿で膨張=寸法注意',temp:'約90–100℃',
+     colors:[['ナチュラル(乳白〜飴色)','#E9E2CE'],['青(MC901)','#2B5CA6'],['緑褐(MC602)','#5C5A34'],['黒','#23272A']],colorKeys:['white','blue','brown','black','green'],
+     feel:['hard'],feelT:'硬く粘り強い。乾湿で硬さ・寸法が変わる',
+     smell:['hair'],burn:'青炎・先端黄で滴下・泡立ち／<b>毛髪や羊毛が焦げたような臭い</b>(たんぱく様)／炎から離すと消えやすい',
+     chip:'粘って繋がる削り粉。吸湿すると寸法が出にくい',
+     use:'ローラー・ギア・スペーサ・摩耗部品。MC901(青)は汎用、MC602は耐熱系'},
+    {id:'ptfe',n:'PTFE',full:'ポリテトラフルオロエチレン(フッ素樹脂)',alias:'テフロン / 四フッ化',rank:'conv',
+     dens:2.17,densT:'2.1–2.2(最も重い)',cte:100,cteT:'100–160と幅広い',water:false,waterT:'ほぼ吸わない',temp:'約260℃',
+     colors:[['白','#FAFAF8']],colorKeys:['white'],
+     feel:['waxy','slick'],feelT:'非常にすべる・しっとりろう感。軟らかく傷つきやすい',
+     smell:['noburn'],burn:'⚠ <b>燃やさない</b>。燃えにくく自消するが、加熱で有毒ガス(フッ化水素等)。判別は密度・すべりで',
+     chip:'軟らかく削れるが逃げやすい。melts/流れる感覚',
+     use:'低摩擦シール・すべり板・絶縁・耐薬品。重さ(沈む)と極端な滑りで判別'},
+    {id:'pet',n:'PET',full:'ポリエチレンテレフタレート(ポリエステル)',alias:'PET-P / エステル / ベークP(商品名)',rank:'conv',
+     dens:1.39,densT:'1.38–1.40',cte:65,cteT:'60–70',water:false,waterT:'少ない(0.1–0.3%)',temp:'約100–115℃',
+     colors:[['ナチュラル(乳白)','#EDEBE4'],['黒','#23272A']],colorKeys:['white','black'],
+     feel:['slick','hard'],feelT:'硬く寸法が安定。POMよりやや重く沈む',
+     smell:['sweet'],burn:'黄炎で黒煙(すす)を出して燃え、滴下／やや甘い芳香',
+     chip:'歯切れよく削れ、寸法安定性が高い',
+     use:'精密摺動部・ガイド・絶縁板。POMより剛性・寸法安定を求める部位に'},
+    {id:'pc',n:'PC',full:'ポリカーボネート',alias:'ポリカ',rank:'ref',
+     dens:1.20,densT:'1.19–1.20',cte:65,cteT:'温度補正ツールと同値',water:false,waterT:'少ない(0.15%)',temp:'約120℃',
+     colors:[['透明','#EAF0F2'],['黒','#23272A']],colorKeys:['clear','black'],
+     feel:['hard'],feelT:'硬く割れにくい。透明で耐衝撃',
+     smell:['sweet','phenol'],burn:'着火しにくく自消／黒煙・すす／甘い〜フェノール様のにおい／黒く炭化',
+     chip:'透明部材。切削で欠けやすい',
+     use:'透明ガード・カバー・のぞき窓・保護板'},
+    {id:'pvc',n:'PVC(硬質)',full:'硬質ポリ塩化ビニル(塩ビ)',alias:'塩ビ / 硬質塩ビ',rank:'ref',
+     dens:1.40,densT:'1.38–1.45',cte:70,cteT:'温度補正ツールと同値',water:false,waterT:'少ない(0.04%)',temp:'約60℃',
+     colors:[['灰(グレー)','#9AA3A8'],['白','#F6F6F4']],colorKeys:['gray','white'],
+     feel:['hard'],feelT:'硬く、灰色板が定番。傷が白く残る',
+     smell:['noburn'],burn:'⚠ <b>燃やさない</b>。自消性で炎から離すと消え、刺激的な塩素臭(酸っぱい)。加熱で塩化水素。灰色板と密度で判別',
+     chip:'削れるが刃物を傷めやすい',
+     use:'配管・カバー・耐薬品部材・治具の受け'},
+    {id:'peek',n:'PEEK',full:'ポリエーテルエーテルケトン',alias:'ピーク',rank:'hi',
+     dens:1.31,densT:'1.30–1.32',cte:47,cteT:'温度補正ツールと同値(GF入りは20前後)',water:false,waterT:'少ない(0.1–0.5%)',temp:'約250℃',
+     colors:[['ベージュ・褐(ナチュラル)','#C9A876'],['黒','#23272A']],colorKeys:['beige','black'],
+     feel:['hard'],feelT:'非常に硬く高強度。ベージュ〜褐色の地色が目印',
+     smell:['noburn'],burn:'非常に燃えにくく自消・低発煙／独特の地色(ベージュ)で判別しやすい',
+     chip:'硬く工具負担大。寸法は安定',
+     use:'高荷重・高温・耐薬品の軸受・ギア・シール。高価な高機能材'},
+    {id:'pvdf',n:'PVDF',full:'ポリフッ化ビニリデン(フッ素樹脂)',alias:'キーナー / 二フッ化',rank:'hi',
+     dens:1.78,densT:'1.77–1.79',cte:130,cteT:'120–140',water:false,waterT:'ほぼ吸わない(<0.04%)',temp:'約150℃',
+     colors:[['白','#FAFAF8']],colorKeys:['white'],
+     feel:['slick','hard'],feelT:'白く硬めで滑る。PTFEより硬く重い',
+     smell:['noburn'],burn:'⚠ <b>燃やさない</b>(フッ素樹脂)。自消性。加熱で有毒ガス。密度(重い)で判別',
+     chip:'削りやすく寸法安定',
+     use:'耐薬品配管・ポンプ部品・半導体まわりの搬送'},
+    {id:'pps',n:'PPS',full:'ポリフェニレンサルファイド',alias:'PPS(GF入り多い)',rank:'hi',
+     dens:1.35,densT:'無充填1.35 / GF入り1.5–1.7',cte:50,cteT:'無充填〜50 / GF入り20–30',water:false,waterT:'ほぼ吸わない(<0.05%)',temp:'約200–220℃',
+     colors:[['褐色・こげ茶','#5A4632'],['黒','#23272A']],colorKeys:['brown','black'],
+     feel:['hard'],feelT:'非常に硬い。ガラス入りは重く、割れ面にガラスの光沢',
+     smell:['noburn'],burn:'非常に燃えにくく自消／褐色〜黒の地色／ガラス入りは残渣が残る',
+     chip:'硬く工具摩耗大。ガラス入りは特に',
+     use:'高温・高剛性の構造部品・耐薬品。多くがガラス繊維入り'},
+    {id:'phenol',n:'ベークライト',full:'フェノール樹脂積層板(紙・布)',alias:'ベーク / 紙フェノール / 布フェノール',rank:'ref',
+     dens:1.35,densT:'紙1.3 / 布1.35–1.4',cte:25,cteT:'温度補正ツールと同値(積層方向で異なる)',water:false,waterT:'やや吸う(0.3–1%)',temp:'約150–180℃',
+     colors:[['茶(紙)','#8A5A2E'],['茶褐(布)','#6E4A2E'],['黒','#3A2E24']],colorKeys:['brown','black'],
+     feel:['hard'],feelT:'硬く、切断面に紙/布の積層目が見える。熱硬化性で溶けない',
+     smell:['phenol'],burn:'<b>溶けず滴下しない</b>(熱硬化性)。炭化・赤熱し、フェノール(石炭酸)/焦げ臭。積層目が最大の目印',
+     chip:'粉状に削れ、粉塵が出る。溶けない',
+     use:'絶縁板・治具・受け・一部の摺動/位置決め部材'},
+    {id:'pmma',n:'アクリル',full:'ポリメタクリル酸メチル(PMMA)',alias:'アクリル / メタクリル',rank:'ref',
+     dens:1.19,densT:'1.18–1.19',cte:70,cteT:'温度補正ツールと同値',water:false,waterT:'少ない(0.3%)',temp:'約80℃',
+     colors:[['透明','#EAF0F2'],['各色','#9FB0B8']],colorKeys:['clear'],
+     feel:['hard'],feelT:'硬く透明感が高い。PCより割れやすい',
+     smell:['sweet'],burn:'よく燃える／パチパチ音／甘い花・果実様のにおい／ほぼ滴下せず',
+     chip:'欠け・割れに注意。磨くと透明',
+     use:'透明カバー・表示板・のぞき窓(耐衝撃はPC)'},
+    {id:'abs',n:'ABS',full:'アクリロニトリル・ブタジエン・スチレン',alias:'ABS樹脂',rank:'ref',
+     dens:1.05,densT:'1.04–1.06',cte:95,cteT:'90–110',water:false,waterT:'少ない(0.3–0.4%)',temp:'約80℃',
+     colors:[['黒','#23272A'],['アイボリー','#EDE9DE'],['各色','#9FB0B8']],colorKeys:['black','white'],
+     feel:['hard'],feelT:'硬めで加工しやすい。艶消し〜半光沢',
+     smell:['sweet'],burn:'黄橙炎で黒煙(すす)を多く出す／甘くゴム・スチレン様の刺激臭／軟化',
+     chip:'削りやすい汎用樹脂',
+     use:'カバー・筐体・治具・試作。搬送では非構造の外装が中心'},
+    {id:'pc2',n:'PBT',full:'ポリブチレンテレフタレート',alias:'PBT(GF入り多い)',rank:'ref',
+     dens:1.31,densT:'無充填1.31 / GF入り1.5前後',cte:80,cteT:'無充填60–100 / GF入りで低下',water:false,waterT:'少ない(0.1%)',temp:'約120–140℃',
+     colors:[['黒','#23272A'],['ナチュラル(乳白)','#EDEBE4']],colorKeys:['black','white'],
+     feel:['slick','hard'],feelT:'硬く寸法安定。PETに近い',
+     smell:['sweet'],burn:'黒煙・すすで燃え滴下／甘い芳香。PETに似る',
+     chip:'歯切れよく削れる',
+     use:'電装・コネクタ・摺動小物。多くがガラス繊維入り'}
+  ];
+
+  var SMELL={candle:'ろうそく(パラフィン)',hair:'毛髪が焦げた',formalin:'ツンと刺激(ホルマリン)',sweet:'甘い・果実',phenol:'石炭酸(フェノール)',noburn:'燃えにくい/自消'};
+  var FEEL={waxy:'ろう感・すべる',slick:'硬くすべる',hard:'硬い(ふつう)'};
+  var RANK={conv:['搬送定番','conv'],hi:['高機能','hi'],ref:['参考','ref']};
+
+  var sel={float:'',color:{},feel:{},smell:{}};
+
+  function floatOf(m){return m.dens<1.0?'浮':'沈';}
+
+  /* 選択条件に対する一致スコア。float/colorは必須フィルタ、feel/smellは加点 */
+  function evalMatch(m){
+    if(sel.float && floatOf(m)!==sel.float) return -1;               // 浮沈は確実 → 除外
+    var cols=objKeys(sel.color);
+    if(cols.length){                                                 // 色は指定色を1つでも含めば通す
+      var ok=false,i;
+      for(i=0;i<cols.length;i++){ if(m.colorKeys.indexOf(cols[i])>=0){ok=true;break;} }
+      if(!ok) return -1;
+    }
+    var score=0,k,arr;
+    arr=objKeys(sel.feel);
+    for(k=0;k<arr.length;k++){ if(m.feel.indexOf(arr[k])>=0) score++; }
+    arr=objKeys(sel.smell);
+    for(k=0;k<arr.length;k++){ if(m.smell.indexOf(arr[k])>=0) score++; }
+    return score;
+  }
+  function objKeys(o){var a=[],k;for(k in o){if(o.hasOwnProperty(k)&&o[k])a.push(k);}return a;}
+  function anySel(){return sel.float||objKeys(sel.color).length||objKeys(sel.feel).length||objKeys(sel.smell).length;}
+
+  function corrText(m){
+    var L=parseFloat((g('cL').value||'').replace(/[^0-9.\-]/g,''));
+    var T=parseFloat((g('cT').value||'').replace(/[^0-9.\-]/g,''));
+    if(isFinite(L)&&isFinite(T)&&L>0){
+      var d=L*m.cte*1e-6*T;
+      var s=(d>=0?'＋':'−')+Math.abs(d).toFixed(3)+' mm';
+      return 'L'+trim(L)+'mm・ΔT'+(T>=0?'＋':'−')+trim(Math.abs(T))+'℃ → <span class="corrout">'+s+'</span>';
+    }
+    var d0=100*m.cte*1e-6*10;
+    return '参考: 100mm が ＋10℃ で <span class="corrout">＋'+d0.toFixed(3)+' mm</span> 伸びる';
+  }
+  function trim(x){return (Math.round(x*1000)/1000).toString();}
+
+  function swatchHTML(m){
+    var h='<span class="sw">',i,c;
+    for(i=0;i<m.colors.length&&i<3;i++){c=m.colors[i];h+='<i style="background:'+c[1]+'" title="'+esc(c[0])+'"></i>';}
+    return h+'</span>';
+  }
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+  function render(){
+    var list=g('list'), html='', shown=0, best=[], i, m, sc;
+    // スコア順(高→低)、同点は元順
+    var ordered=R.map(function(m,idx){return {m:m,idx:idx,sc:evalMatch(m)};});
+    if(anySel()){
+      ordered.sort(function(a,b){ if((a.sc<0)!==(b.sc<0)) return a.sc<0?1:-1; if(a.sc!==b.sc) return b.sc-a.sc; return a.idx-b.idx; });
+    }
+    for(i=0;i<ordered.length;i++){
+      m=ordered[i].m; sc=ordered[i].sc;
+      var dim=anySel()&&sc<0;
+      if(!dim) shown++;
+      if(!dim&&sc>0) best.push(m.n);
+      var fl=floatOf(m);
+      var rk=RANK[m.rank];
+      var matchTag=(anySel()&&sc>0)?'<span class="tag match">一致</span>':'';
+      html+=''+
+      '<details class="rcard'+(dim?' dim':'')+'" data-id="'+m.id+'">'+
+        '<summary class="rhead">'+
+          swatchHTML(m)+
+          '<span class="nm">'+
+            '<span class="n1">'+esc(m.n)+' <span class="tag '+rk[1]+'">'+rk[0]+'</span>'+matchTag+'</span>'+
+            '<span class="n2">'+esc(m.full)+'</span>'+
+          '</span>'+
+          '<span class="chev">›</span>'+
+        '</summary>'+
+        '<div class="qbar">'+
+          '<span class="qchip '+(fl==='浮'?'fl-up':'fl-dn')+'"><b>水</b>'+(fl==='浮'?'浮く':'沈む')+'</span>'+
+          '<span class="qchip"><b>密度</b>'+m.dens.toFixed(2)+'</span>'+
+          '<span class="qchip"><b>α</b>'+m.cte+'×10⁻⁶</span>'+
+          (m.water?'<span class="qchip water"><b>吸湿</b>寸法注意</span>':'')+
+        '</div>'+
+        '<div class="rdetail">'+
+          '<div class="drow"><span class="k">別名</span><span class="v">'+esc(m.alias)+'</span></div>'+
+          '<div class="drow"><span class="k">色</span><span class="v">'+m.colors.map(function(c){return esc(c[0]);}).join(' ／ ')+'</span></div>'+
+          '<div class="drow"><span class="k">密度</span><span class="v">'+esc(m.densT)+' g/cm³ → 水に<b>'+(fl==='浮'?'浮く':'沈む')+'</b></span></div>'+
+          '<div class="drow"><span class="k">線膨張α</span><span class="v"><b>'+m.cte+'</b> ×10⁻⁶/℃ <span style="color:#8FA2AF">('+esc(m.cteT)+')</span></span></div>'+
+          '<div class="drow"><span class="k">吸水</span><span class="v">'+esc(m.waterT)+'</span></div>'+
+          '<div class="drow"><span class="k">連続使用</span><span class="v">'+esc(m.temp)+'(目安)</span></div>'+
+          '<div class="drow"><span class="k">感触</span><span class="v">'+esc(m.feelT)+'</span></div>'+
+          '<div class="drow"><span class="k">燃焼</span><span class="v">'+m.burn+'</span></div>'+
+          '<div class="drow"><span class="k">削り粉</span><span class="v">'+esc(m.chip)+'</span></div>'+
+          '<div class="drow"><span class="k">搬送用途</span><span class="v">'+esc(m.use)+'</span></div>'+
+          '<div class="drow"><span class="k">温度補正</span><span class="v corrCell" data-cte="'+m.cte+'">'+corrText(m)+'</span></div>'+
+        '</div>'+
+      '</details>';
+    }
+    list.innerHTML=html;
+    // 件数・ヘルパー表示
+    g('listCnt').textContent=R.length+'種';
+    if(anySel()){
+      var msg='候補 <b>'+shown+'</b> 種';
+      if(best.length) msg+=' ／ 一致: '+best.slice(0,4).join('・')+(best.length>4?' 他':'');
+      g('idRes').innerHTML=msg;
+      g('idHint').textContent='絞り込み中';
+    }else{
+      g('idRes').textContent='全樹脂を表示中';
+      g('idHint').textContent='見た特徴を押す';
+    }
+  }
+
+  // 温度補正入力 → 開いているカードの補正欄だけ更新(全再描画しない=開閉状態を保つ)
+  function updateCorr(){
+    var cells=document.querySelectorAll('.corrCell'),i,cte;
+    for(i=0;i<cells.length;i++){
+      cte=parseFloat(cells[i].getAttribute('data-cte'));
+      cells[i].innerHTML=corrText({cte:cte});
+    }
+  }
+
+  function toggleChip(btn){
+    var grp=btn.getAttribute('data-g'), v=btn.getAttribute('data-v');
+    if(grp==='float'){
+      if(sel.float===v){ sel.float=''; }
+      else { sel.float=v; }
+      // 単一選択：同グループの他をオフ
+      var sibs=document.querySelectorAll('#grpFloat .chip'),i;
+      for(i=0;i<sibs.length;i++) sibs[i].classList.toggle('on', sibs[i]===btn && sel.float===v);
+    }else{
+      sel[grp][v]=!sel[grp][v];
+      btn.classList.toggle('on', !!sel[grp][v]);
+    }
+    render();
+  }
+
+  function reset(){
+    sel={float:'',color:{},feel:{},smell:{}};
+    var chips=document.querySelectorAll('.idbox .chip'),i;
+    for(i=0;i<chips.length;i++) chips[i].classList.remove('on');
+    render();
+  }
+
+  function toast(msg){var t=g('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},1600);}
+
+  function init(){
+    // チップ結線
+    var chips=document.querySelectorAll('.idbox .chip'),i;
+    for(i=0;i<chips.length;i++){
+      chips[i].addEventListener('click',function(){ toggleChip(this); });
+    }
+    g('idReset').addEventListener('click',reset);
+    g('cL').addEventListener('input',updateCorr);
+    g('cT').addEventListener('input',updateCorr);
+    render();
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
+})();
+</script>
+
+<!-- ═══ 数字入力の補助（共通スニペット / 全ツール同一） ═══
+     ・数字キーパッド固定（inputmode）／全角数字・句点の自動半角化
+     ・数字以外（かな・英字・記号）の混入を自動で除去
+     ・± ボタン … 数字キーパッドに無いマイナスを入力
+     ・✕ ボタン … 欄をまとめて消去
+     ・「5 43」のような度分秒のスペース区切りはそのまま通します
+     ・DOM構造は変更しません（再描画するツールでも壊れません）        -->
+<style>
+  .kt-aid{
+    position:absolute;z-index:9998;display:none;gap:4px;
+    background:#1F3341;border-radius:8px;padding:3px;
+    box-shadow:0 3px 10px rgba(0,0,0,.28);
+  }
+  .kt-aid.on{display:flex}
+  .kt-aid button{
+    -webkit-appearance:none;appearance:none;border:none;
+    background:#2C4353;color:#fff;font:inherit;font-size:14px;font-weight:700;
+    line-height:1;padding:8px 12px;border-radius:5px;cursor:pointer;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  .kt-aid button:active{background:#D63426}
+  @media print{.kt-aid{display:none !important}}
+</style>
+<script>
+(function(){
+  "use strict";
+
+  /* ── 対象の判定 ── */
+  function mode(el){
+    return (el && el.tagName==="INPUT" && !el.readOnly && !el.disabled)
+      ? (el.getAttribute("inputmode")||"") : "";
+  }
+  function isNum(el){ var m=mode(el); return m==="decimal"||m==="numeric"; }
+  function isDec(el){ return mode(el)==="decimal"; }
+
+  /* ── 全角→半角（かなキーボードで打たれた場合の救済） ── */
+  function toHalf(v){
+    return v
+      .replace(/[０-９]/g, function(c){ return String.fromCharCode(c.charCodeAt(0)-65248); })
+      .replace(/[．。･・]/g, ".")
+      .replace(/[－−―ーｰ‐–—]/g, "-")
+      .replace(/[\u3000]/g, " ");
+  }
+
+  /* ── 数字だけに整える（空白区切りは温存＝度分秒入力を壊さない） ── */
+  function clean(v, dec){
+    var toks = toHalf(v).split(" "), out = [], i, t, neg, k;
+    for(i=0;i<toks.length;i++){
+      t = toks[i];
+      neg = (i===0) && t.charAt(0)==="-";
+      t = t.replace(/[^0-9.]/g, "");
+      if(!dec) t = t.replace(/\./g, "");
+      else {
+        k = t.indexOf(".");
+        if(k>=0) t = t.slice(0,k+1) + t.slice(k+1).replace(/\./g,"");
+      }
+      out.push((neg?"-":"") + t);
+    }
+    return out.join(" ");
+  }
+
+  /* ── 入力の監視（捕捉フェーズ＝各ツールの計算処理より先に整える） ── */
+  document.addEventListener("input", function(e){
+    var el = e.target;
+    if(!isNum(el)) return;
+    var v = el.value, c = clean(v, isDec(el));
+    if(c === v) return;
+    var p = el.selectionStart, d = v.length - c.length;
+    el.value = c;
+    try{ el.setSelectionRange(Math.max(0,p-d), Math.max(0,p-d)); }catch(err){}
+  }, true);
+
+  /* ── ± / ✕ の浮動ボタン（DOMを包まないので再描画に強い） ── */
+  var bar=null, cur=null, sign=null;
+
+  function notify(el){
+    var ev;
+    try{ ev = new Event("input", {bubbles:true}); }
+    catch(err){ ev = document.createEvent("Event"); ev.initEvent("input", true, false); }
+    el.dispatchEvent(ev);
+    try{ ev = new Event("change", {bubbles:true}); }
+    catch(err){ ev = document.createEvent("Event"); ev.initEvent("change", true, false); }
+    el.dispatchEvent(ev);
+  }
+  function act(e){
+    e.preventDefault();
+    var b = e.target, a, v;
+    while(b && b !== bar && b.tagName !== "BUTTON") b = b.parentNode;
+    if(!b || b === bar || !cur) return;
+    a = b.getAttribute("data-a");
+    if(a === "clr") cur.value = "";
+    else {
+      v = cur.value;
+      cur.value = (v.charAt(0) === "-") ? v.slice(1) : ("-" + v);
+    }
+    notify(cur);
+    try{ cur.focus(); }catch(err){}
+    place();
+  }
+
+  function build(){
+    bar = document.createElement("div");
+    bar.className = "kt-aid";
+    bar.innerHTML =
+      '<button type="button" data-a="sign" aria-label="符号を反転">±</button>'+
+      '<button type="button" data-a="clr" aria-label="この欄を消去">✕</button>';
+    document.body.appendChild(bar);
+    sign = bar.querySelector('[data-a="sign"]');
+    if(window.PointerEvent){
+      bar.addEventListener("pointerdown", act);
+    } else {
+      bar.addEventListener("mousedown", act);
+      bar.addEventListener("touchstart", act, {passive:false});
+    }
+  }
+
+  function hide(){ if(bar) bar.className = "kt-aid"; cur = null; }
+
+  function place(){
+    if(!cur || !bar) return;
+    if(!document.contains(cur)){ hide(); return; }
+    bar.className = "kt-aid on";
+    var r = cur.getBoundingClientRect();
+    var bw = bar.offsetWidth, bh = bar.offsetHeight;
+    var top = r.top - bh - 6;
+    if(top < 4) top = r.bottom + 6;
+    var left = r.right - bw;
+    if(left < 4) left = 4;
+    bar.style.left = (left + (window.pageXOffset||0)) + "px";
+    bar.style.top  = (top  + (window.pageYOffset||0)) + "px";
+  }
+
+  document.addEventListener("focusin", function(e){
+    if(!isNum(e.target)){ hide(); return; }
+    cur = e.target;
+    if(!bar) build();
+    sign.style.display = isDec(cur) ? "" : "none";
+    place();
+  });
+  document.addEventListener("focusout", function(){
+    setTimeout(function(){ if(document.activeElement !== cur) hide(); }, 0);
+  });
+  window.addEventListener("scroll", function(){ if(cur) place(); }, true);
+  window.addEventListener("resize", function(){ if(cur) place(); });
+})();
+</script>
+<script>
+(function(){
+  function fire(el,t){
+    try{ el.dispatchEvent(new Event(t,{bubbles:true})); }
+    catch(e){ var ev=document.createEvent('Event'); ev.initEvent(t,true,true); el.dispatchEvent(ev); }
+  }
+  window.tryExample=function(btn){
+    var raw=btn.getAttribute('data-ex'); if(!raw) return;
+    var cfg; try{ cfg=JSON.parse(raw); }catch(e){ return; }
+    var steps=cfg.set||[], i, it, el;
+    for(i=0;i<steps.length;i++){
+      it=steps[i];
+      if(it.click){ var c=document.querySelector(it.click); if(c) c.click(); continue; }
+      el = it.sel ? document.querySelector(it.sel) : document.getElementById(it.id);
+      if(!el) continue;
+      el.value=String(it.v);
+      fire(el, el.tagName==='SELECT' ? 'change' : 'input');
+    }
+    var gd=btn; while(gd && !(gd.classList && gd.classList.contains('guide'))) gd=gd.parentNode;
+    if(gd) gd.open=false;
+  };
+})();
+</script>
+</body>
+</html>

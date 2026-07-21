@@ -128,7 +128,7 @@
         現場のための計算・記録ツール集。すべての計算はこの端末の中で行われ、入力値がネットに送信されることはありません。
       </div>
       <div class="strip">
-        <div><b>構成</b> 29ツール</div>
+        <div><b>構成</b> 32ツール</div>
         <div><b>通信</b> なし(端末内計算)</div>
         <div>REV 2026-07</div>
       </div>
@@ -590,6 +590,21 @@
     </span>
     <span class="chev">›</span>
   </a>
+  <a class="tool" href="resin-guide/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <path d="M13 9 L13 34 Q13 37 16 37 L28 37 Q31 37 31 34 L31 9" fill="none" stroke="#1F3341" stroke-width="1.6"/>
+      <line x1="11" y1="9" x2="33" y2="9" stroke="#1F3341" stroke-width="1.6"/>
+      <line x1="13" y1="21" x2="31" y2="21" stroke="#8FA2AF" stroke-width="1.1" stroke-dasharray="2.6 2.4"/>
+      <rect x="16" y="14" width="7" height="7" rx="1" fill="#fff" stroke="#1F3341" stroke-width="1.5"/>
+      <rect x="21" y="28" width="7" height="7" rx="1" fill="#D63426"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-33</span>
+      <div class="nm">樹脂ガイド</div>
+      <div class="ds">搬送系樹脂の色・密度・線膨張・吸水と、浮沈/燃焼での見分け方</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
 
   <h2>記録ツール(端末内に保存)</h2>
 
@@ -623,6 +638,37 @@
     <span class="chev">›</span>
   </a>
   <!-- TOOL-08 ここまで -->
+
+  <a class="tool" href="tally-split/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <path d="M 10 9 L 27 9 L 35 17 L 35 35 L 10 35 Z" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+      <circle cx="14.5" cy="14" r="1.8" fill="#1F3341"/>
+      <line x1="14" y1="22" x2="26" y2="22" stroke="#1F3341" stroke-width="1.6"/>
+      <line x1="14" y1="27.5" x2="22" y2="27.5" stroke="#1F3341" stroke-width="1.6"/>
+      <path d="M 24 29 L 27.5 32.5 L 34 25" fill="none" stroke="#D63426" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-31</span>
+      <div class="nm">荷札 数え合わせ</div>
+      <div class="ds">確定個数に数えた数を合わせる。かんたん/仕切り/組の数え方に対応</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  <a class="tool" href="belt-length/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <path d="M 13 11 A 9 9 0 1 0 13 33 L 31 30 A 6 6 0 1 0 31 14 Z" fill="none" stroke="#D63426" stroke-width="2"/>
+      <circle cx="13" cy="22" r="9" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+      <circle cx="31" cy="22" r="6" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+      <circle cx="13" cy="22" r="1.8" fill="#1F3341"/>
+      <circle cx="31" cy="22" r="1.6" fill="#1F3341"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-32</span>
+      <div class="nm">ベルト周長</div>
+      <div class="ds">プーリー配置(位置・直径)から歯付/平ベルトの周長を算出。仕様と照合</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
 
   <div class="note">
     <b>使い方のヒント</b><br>
@@ -668,11 +714,14 @@
     'cam-profile/':'カム 板カム 変位線図 リフト 揚程 サイクロイド 単弦 等加速度 修正台形 速度 加速度 回転角',
     'scale-count/':'はかり 数取器 単重 個数 計数 秤',
     'frame-check/':'フレーム 削り代 溶接 対角 ねじれ 検査成績書 前加工',
+    'tally-split/':'荷札 数え 数取り 仕切り トレイ 段 組 束 新聞紙 個数 カウント 検品 仕分け',
+    'belt-length/':'ベルト 周長 全長 タイミングベルト プーリー 歯付き 歯数 テンション 平ベルト Vベルト',
     'corner-dist/':'角 かど 対角 直方体 箱物 角物 隅切り 面取り 切欠き ノッチ L字 凹み 頂点 座標 空間対角 対角差 直角度 立方体',
     'axis-tilt/':'傾き 傾斜 軸 検査棒 テストピース 芯 直角度 直角 スコヤ ダイヤルゲージ 2点読み 定盤 ガタ すき間 ロッキング 首振り 反転法 勾配 mm/m 度分秒 デジタル傾斜計 てこ式',
     'datum-edge/':'基準点 基準線 データム 端面 平板 大板 板 コンベックス スケール メジャー 換算 連鎖 極座標 けがき 罫書き 墨出し 左端 下端 縁読み 座標変換',
     'pitch-row/':'ピッチ 穴間 並び 並び寸法 累進 累積 逐次 端面 端面から 間隔 等ピッチ 等間隔 穴ピッチ 引き算 差 コンベックス スケール 連続寸法',
     'hole-map/':'総合 複合 合成 まとめて 穴配置 PCD 任意穴 単独穴 軸配置 中心線 左右 振り分け 端面 ワーク外形 原点 座標 図面まるごと',
+    'resin-guide/':'樹脂 プラスチック 材質 見分け 識別 種類 判別 搬送 コンベア UHMW-PE ポリエチレン PE HDPE PP ポリプロピレン POM ジュラコン デルリン ナイロン MC901 MCナイロン PA PTFE テフロン フッ素 PET エステル PC ポリカ 塩ビ PVC PEEK PVDF PPS ベークライト フェノール アクリル PMMA ABS 密度 比重 浮く 沈む 線膨張 熱膨張 膨張係数 吸水 吸湿 燃焼試験 炎 におい 色 摺動 ウェアストリップ ガイドレール ローラー スプロケット',
     'pcd-multi/':'PCD 複合 複数 二重 多重 同心 偏心 芯ズレ 中心違い 別PCD 穴ピッチ 弦 起点角 位相 角度 不等配 不等分割 等配 割り出し ボルト穴 フランジ 時計回り 反時計回り 座標'
   };
   var FAVKEY='kensa-fav';

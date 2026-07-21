@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1F3341">
+<meta name="description" content="1つの伝票の総数を、最大4つの荷札に分ける作業を支援。残り個数を大きく表示し、±ボタンや直接入力で数えながら過不足を確認できます。データは端末内にのみ保存され、どこにも送信されません。">
+<title>荷札仕分けカウント | 検査計算ツール</title>
+<style>
+  :root{
+    --paper:#F2F4F5;
+    --sheet:#FFFFFF;
+    --ink:#1F3341;
+    --line:#8FA2AF;
+    --red:#D63426;
+    --amber:#B97A1E;
+    --dro-bg:#15181A;
+    --dro-red:#FF5A48;
+    --dro-green:#42D77D;
+    --dro-amber:#E8B34B;
+    --dro-dim:#9FB0B8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI",sans-serif;
+    background:var(--paper);color:var(--ink);
+    min-height:100dvh;display:flex;flex-direction:column;align-items:center;
+    padding:0 12px calc(16px + env(safe-area-inset-bottom));
+  }
+  .wrap{width:100%;max-width:480px}
+
+  header{display:flex;align-items:baseline;justify-content:space-between;padding:14px 2px 8px}
+  header h1{font-size:16px;font-weight:700;letter-spacing:.04em}
+  header h1 small{display:block;font-size:11px;font-weight:400;color:#5B707E;letter-spacing:.08em;margin-top:2px}
+  header a{font-size:12px;color:#5B707E;text-decoration:none}
+
+  .tb-strip{
+    display:flex;background:var(--sheet);border:2px solid var(--ink);
+    font-size:9px;letter-spacing:.06em;margin-bottom:12px;
+  }
+  .tb-strip div{padding:4px 8px;border-right:1px solid var(--ink)}
+  .tb-strip div:last-child{border-right:none;margin-left:auto}
+  .tb-strip b{font-weight:700}
+
+  .banner{
+    display:none;background:#FBF3E2;border:1.5px solid #D9A94E;border-radius:10px;
+    padding:12px;margin-bottom:12px;font-size:13px;line-height:1.6;
+  }
+  .banner.show{display:block}
+  .banner .btns{display:flex;gap:8px;margin-top:8px}
+  .banner button{
+    flex:1;font-size:13px;font-weight:700;padding:9px 4px;border-radius:8px;
+    border:1.5px solid var(--ink);background:var(--sheet);color:var(--ink);
+  }
+  .banner button.warn{border-color:var(--red);color:var(--red)}
+
+  .card{
+    background:var(--sheet);border:1px solid #D5DDE2;border-radius:12px;
+    padding:12px;margin-bottom:12px;
+  }
+  .card h2{
+    font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.1em;
+    margin-bottom:10px;display:flex;align-items:center;gap:6px;
+  }
+  .card h2::before{content:'';width:4px;height:14px;background:var(--ink);border-radius:2px}
+
+  .row{
+    display:grid;grid-template-columns:26px 1fr 110px 30px;
+    align-items:center;gap:8px;padding:7px 0;
+  }
+  .badge{
+    width:22px;height:22px;border-radius:50%;
+    background:var(--ink);color:#fff;font-size:12px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .row label{font-size:13px;font-weight:600}
+  .row label small{display:block;font-size:10px;font-weight:400;color:#5B707E}
+  .row input,.bigin{
+    width:100%;font-size:20px;font-weight:600;text-align:right;
+    font-variant-numeric:tabular-nums;
+    border:none;border-bottom:2px solid var(--ink);
+    background:transparent;color:var(--ink);
+    padding:2px 4px;border-radius:0;outline:none;
+  }
+  .row input:focus,.bigin:focus{border-bottom-color:var(--red)}
+  .unit{font-size:12px;color:#5B707E}
+
+  .unitline{
+    margin-top:6px;padding-top:9px;border-top:1px dashed #D5DDE2;
+    font-size:13px;display:flex;justify-content:space-between;align-items:baseline;
+    font-variant-numeric:tabular-nums;
+  }
+  .unitline b{font-size:18px;font-weight:700;color:var(--red)}
+  .unitline .lab{color:#5B707E;font-size:12px;font-weight:600}
+
+  .addline{display:flex;gap:8px;align-items:flex-end}
+  .addline .bigin{font-size:26px;flex:1}
+  .addbtn{
+    flex:none;font-size:15px;font-weight:700;padding:12px 22px;border-radius:10px;
+    border:none;background:var(--ink);color:#fff;letter-spacing:.1em;
+  }
+  .addbtn:active{background:#3A5468}
+  .caphint{font-size:11px;color:#5B707E;margin-top:7px;font-variant-numeric:tabular-nums}
+  .caphint.warn{color:var(--amber);font-weight:700}
+  .caphint.err{color:var(--red);font-weight:700}
+
+  table.rec{
+    width:100%;border-collapse:collapse;margin-top:10px;
+    font-size:14px;font-variant-numeric:tabular-nums;
+  }
+  table.rec th{
+    font-size:10px;color:#5B707E;font-weight:700;text-align:right;
+    border-bottom:1.5px solid var(--ink);padding:4px 6px;
+  }
+  table.rec th:first-child{text-align:center}
+  table.rec td{
+    padding:8px 6px;border-bottom:1px solid #E4EAEE;text-align:right;
+  }
+  table.rec td:first-child{text-align:center;color:#5B707E;font-size:12px}
+  table.rec td.warn{color:var(--amber);font-weight:700}
+  table.rec .del{
+    border:none;background:none;color:#B4C1C9;font-size:17px;
+    padding:2px 8px;font-weight:700;
+  }
+  table.rec .del:active{color:var(--red)}
+  .empty{font-size:12px;color:#8FA2AF;text-align:center;padding:14px 0 6px}
+
+  .dro{
+    background:var(--dro-bg);border-radius:12px;
+    padding:16px 18px 12px;box-shadow:inset 0 2px 8px rgba(0,0,0,.5);
+    margin-bottom:12px;
+  }
+  .dro-line{display:flex;align-items:baseline;gap:10px;justify-content:flex-end}
+  .dro-label{color:#7d8a91;font-size:13px;font-weight:700;letter-spacing:.1em}
+  .dro-val{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:40px;font-weight:600;color:var(--dro-green);
+    text-shadow:0 0 12px rgba(66,215,125,.35);letter-spacing:.02em;
+  }
+  .dro-unit{color:#7d8a91;font-size:14px;font-weight:600}
+  .devline{
+    text-align:right;font-size:12px;margin-top:2px;min-height:16px;
+    font-variant-numeric:tabular-nums;
+  }
+  .devline.good{color:var(--dro-green)}
+  .devline.warn{color:var(--dro-amber)}
+  .devline.bad{color:var(--dro-red)}
+  .devline.none{color:#5d6a71}
+  .dro-grid{
+    display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;
+    border-top:1px solid #2a3034;margin-top:10px;padding-top:10px;
+  }
+  .cellv{display:flex;flex-direction:column;align-items:flex-end;padding:4px 8px;border-radius:8px}
+  .cellv:active{background:#1e2327}
+  .cellv .k{color:#7d8a91;font-size:11px;font-weight:700;letter-spacing:.06em;align-self:flex-start}
+  .cellv .v{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:19px;font-weight:600;color:var(--dro-dim);
+  }
+  .cellv .s{color:#5d6a71;font-size:10px}
+  .dro-foot{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-top:10px;border-top:1px solid #2a3034;padding-top:9px;gap:8px;
+  }
+  .statusTxt{color:#5d6a71;font-size:11px;letter-spacing:.02em}
+  .statusTxt.err{color:#FF8A7E}
+  .copyRec{
+    font-size:12px;font-weight:700;color:#c9d2d7;background:#252b2f;
+    border:1px solid #3a4247;border-radius:7px;padding:6px 14px;flex:none;
+  }
+  .copyRec:active{background:#31383d}
+
+  .revline{
+    display:flex;justify-content:space-between;align-items:baseline;
+    padding-top:9px;margin-top:8px;border-top:1px dashed #D5DDE2;
+    font-size:13px;font-variant-numeric:tabular-nums;
+  }
+  .revline b{font-size:17px;color:var(--red)}
+  .revline .lab{color:#5B707E;font-size:12px;font-weight:600}
+
+  .clearBtn{
+    width:100%;font-size:13px;font-weight:700;padding:12px 4px;
+    border:1.5px solid #C9D3DA;border-radius:10px;
+    background:var(--sheet);color:#5B707E;letter-spacing:.05em;
+    margin-bottom:6px;
+  }
+  .clearBtn.arm{border-color:var(--red);color:var(--red);background:#FCF0EF}
+
+  footer{margin-top:12px;font-size:11px;color:#5B707E;line-height:1.7;text-align:center;letter-spacing:.03em}
+
+  .toast{
+    position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);
+    background:var(--ink);color:#fff;font-size:13px;
+    padding:9px 20px;border-radius:20px;opacity:0;pointer-events:none;
+    transition:opacity .25s,transform .25s;z-index:9;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+  /* ── 使い方ガイド（全ツール共通） ── */
+  .guide{background:#FFFFFF;border:1px solid #D5DDE2;border-radius:12px;margin:0 0 12px;overflow:hidden}
+  .guide>summary{list-style:none;cursor:pointer;padding:12px 14px;font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.04em;display:flex;align-items:center;gap:7px}
+  .guide>summary::-webkit-details-marker{display:none}
+  .guide>summary::before{content:"?";display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#1F3341;color:#fff;font-size:11px;font-weight:700;flex:none}
+  .guide[open]>summary{border-bottom:1px solid #E3E9EC}
+  .guide .gb{padding:2px 14px 14px}
+  .guide .gb h4{font-size:11px;letter-spacing:.07em;color:#5B707E;font-weight:700;margin:13px 0 6px}
+  .guide .gb ol{margin:0;padding-left:1.2em;font-size:11.5px;line-height:1.75;color:#1F3341}
+  .guide .gb ol b{color:#1F3341}
+  .guide .gx{border-top:1px dashed #E3E9EC;margin-top:11px;padding-top:8px}
+  .guide .gx h4{margin-top:6px}
+  .guide .gxin{display:flex;gap:12px;align-items:flex-start;margin-top:4px}
+  .guide .gfig{flex:none}
+  .guide .gfig svg{width:112px;height:112px;display:block;background:#FBFCFC;border:1px solid #EDF1F3;border-radius:8px}
+  .guide .gtxt{flex:1;font-size:11.5px;line-height:1.6;color:#1F3341}
+  .guide .gtxt p{margin:0 0 7px}
+  .guide .gset{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;background:#F2F6F8;border:1px solid #E3E9EC;border-radius:6px;padding:6px 8px;color:#3A5060;line-height:1.5}
+  .guide .gread b{color:#D63426}
+  .guide .gbtn{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;font:inherit;font-size:11.5px;font-weight:600;border:1px solid #1F3341;border-radius:6px;background:#fff;color:#1F3341;cursor:pointer;margin-top:2px}
+  .guide .gbtn:active{transform:translateY(1px)}
+  @media(max-width:360px){.guide .gxin{flex-direction:column}.guide .gfig svg{width:128px;height:128px}}
+
+  /* ── 段タリー 固有 ── */
+  .totrow{display:flex;align-items:baseline;gap:10px;justify-content:space-between}
+  .totrow label{font-size:13px;font-weight:700;letter-spacing:.04em}
+  .totrow .bigin{font-size:26px;flex:1;max-width:150px}
+  .totrow .unit{font-size:13px;color:#5B707E}
+  .totchk{font-size:11px;font-weight:700;margin-top:6px;text-align:right;min-height:15px}
+  .totchk.good{color:#2E9C57}.totchk.bad{color:var(--red)}.totchk.none{color:#8FA2AF}
+
+  .nf{border:1px solid #E0E6EA;border-radius:11px;padding:10px 11px 11px;margin-bottom:10px;background:#FCFDFD}
+  .nf.done{border-color:#7CC79A;background:#F3FBF6}
+  .nf.over{border-color:#E9A79E;background:#FDF4F3}
+  .nf-head{display:flex;align-items:center;gap:7px}
+  .nf-badge{width:26px;height:26px;border-radius:7px;background:var(--ink);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none}
+  .nf.done .nf-badge{background:#2E9C57}
+  .nf.over .nf-badge{background:var(--red)}
+  .nf-now{text-align:left;line-height:1.05}
+  .nf-now .lab{font-size:9px;color:#8FA2AF;font-weight:700;letter-spacing:.04em}
+  .nf-now b{display:block;font-size:27px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums}
+  .nf.done .nf-now b{color:#2E9C57}.nf.over .nf-now b{color:var(--red)}
+  .nf-tgt{margin-left:auto;text-align:right;line-height:1.1;display:flex;flex-direction:column;align-items:flex-end}
+  .nf-tgt .lab{font-size:9px;color:#8FA2AF;font-weight:700;letter-spacing:.04em}
+  .nf-target{width:64px;font-size:17px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;border:none;border-bottom:2px solid #B7C3CB;background:transparent;color:#3A5060;padding:1px 4px;outline:none}
+  .nf-target:focus{border-bottom-color:var(--red)}
+  .nf-mark{flex:none;width:50px;text-align:right;font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;color:#8FA2AF}
+  .nf-mark.good{color:#2E9C57}.nf-mark.bad{color:var(--red)}
+
+  .steps{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;min-height:4px}
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;background:#EAF0F3;border:1px solid #D2DEE4;border-radius:16px;padding:5px 6px 5px 11px;color:var(--ink)}
+  .chip.neg{background:#FBECEA;border-color:#E7B7B0;color:#B23B2E}
+  .chip .seq{font-size:9px;color:#8093A0;font-weight:700}
+  .chip .x{border:none;background:#C2D0D8;color:#fff;width:17px;height:17px;border-radius:50%;font-size:12px;font-weight:700;line-height:1;display:flex;align-items:center;justify-content:center;padding:0}
+  .chip .x:active{background:var(--red)}
+  .stepsempty{font-size:11px;color:#A6B4BC;margin-top:8px}
+
+  .addstep{display:flex;align-items:center;gap:6px;margin-top:10px;padding-top:9px;border-top:1px dashed #E1E7EA}
+  .addstep .draft{flex:1;min-width:0;font-size:22px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums;border:none;border-bottom:2px solid #C9D3DA;background:transparent;color:var(--ink);padding:2px 4px;outline:none}
+  .addstep .draft:focus{border-bottom-color:var(--ink)}
+  .addstep .rec{flex:none;font-size:14px;font-weight:700;color:#fff;background:var(--ink);border:none;border-radius:9px;padding:11px 16px;letter-spacing:.04em}
+  .addstep .rec:active{background:#3A5468}
+  .addstep .rec:disabled{background:#C9D3DA}
+  .stepper{display:flex;gap:5px;margin-top:7px}
+  .stepper button{flex:1 1 0;min-width:38px;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;padding:8px 2px;border-radius:8px;border:1.5px solid #C9D3DA;background:#fff;color:var(--ink)}
+  .stepper button.minus{color:#5B707E}
+  .stepper button:active{background:#EEF2F4}
+  .stepper button:disabled{opacity:.35}
+
+  .dro-val.good{color:var(--dro-green);text-shadow:0 0 12px rgba(66,215,125,.35)}
+  .dro-val.warn{color:var(--dro-amber);text-shadow:0 0 12px rgba(232,179,75,.30)}
+  .dro-val.bad{color:var(--dro-red);text-shadow:0 0 12px rgba(255,90,72,.35)}
+
+  /* ── 数え方モード 追加分 ── */
+  .modeseg{display:flex;gap:5px;margin-top:9px}
+  .modeseg button{flex:1;font-size:12px;font-weight:700;padding:8px 2px;border-radius:7px;border:1.5px solid #C9D3DA;background:#fff;color:#5B707E}
+  .modeseg button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .mbody{margin-top:10px;padding-top:9px;border-top:1px dashed #E1E7EA}
+  .calcrow{display:grid;align-items:end;gap:8px;margin-bottom:2px}
+  .calcrow.g3{grid-template-columns:1fr 1fr 1fr}
+  .calcrow.g2{grid-template-columns:1fr 1fr}
+  .calcrow .fld label{display:block;font-size:10px;color:#5B707E;font-weight:700;margin-bottom:1px}
+  .calcrow .fld input{width:100%;font-size:19px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums;border:none;border-bottom:2px solid var(--ink);background:transparent;color:var(--ink);padding:2px 3px;outline:none}
+  .calcrow .fld input:focus{border-bottom-color:var(--red)}
+  .calcrow .op{display:flex;align-items:center;justify-content:center;font-size:15px;color:#8FA2AF;font-weight:700;padding-bottom:6px}
+  .mformula{font-size:12px;color:#5B707E;font-variant-numeric:tabular-nums;text-align:right;margin-top:8px;line-height:1.5}
+  .mformula b{color:var(--ink);font-size:15px;font-weight:700}
+  .setsize{display:flex;gap:6px;margin:6px 0 2px}
+  .setsize button{flex:none;font-size:12px;font-weight:700;padding:6px 12px;border-radius:7px;border:1.5px solid #C9D3DA;background:#fff;color:var(--ink)}
+  .setsize button[aria-pressed="true"]{background:#EEF2F4;border-color:var(--ink)}
+  .fld-lab{display:flex;justify-content:space-between;align-items:center;min-height:14px;margin-bottom:1px}
+  .fld-lab label{font-size:10px;color:#5B707E;font-weight:700}
+  .fld-lab .clr{border:none;background:none;color:#B23B2E;font-size:14px;font-weight:700;padding:0 3px;line-height:1;visibility:hidden}
+  .fld-lab.has .clr{visibility:visible}
+  .topclear{display:flex;justify-content:flex-end;margin:2px 2px 10px}
+  .topclear button{font-size:12px;font-weight:700;color:#B23B2E;background:#FBECEA;border:1px solid #E7B7B0;border-radius:9px;padding:7px 14px}
+  .topclear button:active{background:#F6DAD5}
+  .topclear button.arm{background:#B23B2E;color:#fff;border-color:#B23B2E}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>荷札 数え合わせ<small>確定個数に、数えた数を合わせる</small></h1>
+    <a href="../index.html">≡ ツール一覧</a>
+  </header>
+
+  <div class="topclear"><button type="button" id="clearTop">すべて消去</button></div>
+
+  <div class="tb-strip">
+    <div><b>数え方</b> かんたん/仕切り/組</div>
+    <div><b>荷札</b> 最大4</div>
+    <div>数えた計＝確定</div>
+  </div>
+
+  <div class="dro">
+    <div class="dro-line">
+      <span class="dro-label">残り合計</span>
+      <span class="dro-val warn" id="restVal">0</span>
+      <span class="dro-unit">個</span>
+    </div>
+    <div class="devline none" id="restMsg">各荷札の確定個数を入れてください</div>
+    <div class="dro-foot">
+      <span class="statusTxt" id="sumTxt">数えた 0 ／ 確定 0</span>
+      <button class="copyRec" id="copyBtn" type="button">記録をコピー</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>伝票の総数（任意・照合用）</h2>
+    <div class="totrow">
+      <label for="totIn">総数</label>
+      <input class="bigin" id="totIn" type="text" inputmode="numeric" autocomplete="off" placeholder="100">
+      <span class="unit">個</span>
+    </div>
+    <div class="totchk none" id="totChk"></div>
+  </div>
+
+  <div class="card">
+    <h2>荷札（確定個数と、数え方）</h2>
+    <div id="nfBox"></div>
+  </div>
+
+  <button class="clearBtn" id="clearBtn" type="button">すべて消去</button>
+
+  <details class="guide">
+    <summary>使い方</summary>
+    <div class="gb">
+      <h4>やること</h4>
+      <ol>
+        <li>各荷札の<b>確定個数</b>（荷札に書かれた数）を入れます。空にすれば、ただ数えるだけにも使えます。</li>
+        <li><b>数え方</b>を選びます。物に合わせて荷札ごとに変えられます。</li>
+        <li><b>かんたん</b>＝数えた分を次々足す（5・14・8…）。<b>仕切り</b>＝行×列×満載段＋端数段。<b>組</b>＝1組の数×組数＋端数。</li>
+        <li><b>数えた計</b>と<b>残り</b>が自動で出ます。合致で緑✓、入れすぎは赤。全荷札が合致すると上が「全て合致 ✓」。</li>
+      </ol>
+      <div class="gx">
+        <h4>例</h4>
+        <div class="gxin">
+          <div class="gtxt">
+            <p><b>仕切り</b>：6×5の仕切り、3段満載＋4段目12 → <b>102個</b>。</p>
+            <p><b>組</b>：2個1組が22組＋端数12 → <b>56個</b>。</p>
+            <p><b>かんたん</b>：5・14・8 → <b>27個</b>。</p>
+            <button class="gbtn" type="button" id="exBtn">この例を試す</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <footer>
+    データは端末内にのみ保存され、どこにも送信されません。<br>
+    数えた計が確定個数に合うかを、荷札ごとに確認できます。
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+<script>
+"use strict";
+var NF=4;
+var KEY="tally_count_v3";
+var S={ tot:"", tags:[] };
+function newTag(){ return { target:"", mode:"simple", steps:[], draft:"",
+  gr:{rows:"",cols:"",full:"",rem:""}, se:{size:"2",count:"",rem:""} }; }
+(function initS(){ var i; for(i=0;i<NF;i++) S.tags.push(newTag()); })();
+
+function g(id){ return document.getElementById(id); }
+function pint(v){ var s=String(v==null?"":v).replace(/[^\d]/g,""); if(s==="") return NaN; var n=parseInt(s,10); return isFinite(n)?n:NaN; }
+function pintS(v){ var s=String(v==null?"":v).replace(/[^\d-]/g,""); s=s.replace(/(?!^)-/g,""); if(s===""||s==="-") return NaN; var n=parseInt(s,10); return isFinite(n)?n:NaN; }
+function cleanS(v){ var s=String(v==null?"":v).replace(/[^\d-]/g,""); return s.replace(/(?!^)-/g,""); }
+function num(v){ var n=pint(v); return isFinite(n)?n:0; }
+function isSet(v){ return String(v==null?"":v).trim()!=="" && isFinite(pint(v)); }
+function sumA(a){ var s=0,i; for(i=0;i<a.length;i++) s+=a[i]; return s; }
+function escAttr(s){ return String(s==null?"":s).replace(/"/g,"&quot;"); }
+
+/* ── 各荷札の「数えた数」算出（モード別） ── */
+function counted(i){
+  var t=S.tags[i];
+  if(t.mode==="grid"){ return num(t.gr.rows)*num(t.gr.cols)*num(t.gr.full) + num(t.gr.rem); }
+  if(t.mode==="set"){ return num(t.se.size)*num(t.se.count) + num(t.se.rem); }
+  return sumA(t.steps);
+}
+function target(i){ return num(S.tags[i].target); }
+function used(i){
+  var t=S.tags[i];
+  if(isSet(t.target)) return true;
+  if(t.mode==="simple") return t.steps.length>0;
+  if(t.mode==="grid") return isSet(t.gr.rows)||isSet(t.gr.cols)||isSet(t.gr.full)||isSet(t.gr.rem);
+  if(t.mode==="set") return isSet(t.se.count)||isSet(t.se.rem);
+  return false;
+}
+function hasCount(i){   /* 数えた実績があるか（合致判定用） */
+  var t=S.tags[i];
+  if(t.mode==="simple") return t.steps.length>0;
+  return counted(i)>0;
+}
+
+/* ── 荷札の描画 ── */
+function renderTags(){
+  var box=g("nfBox"), h="", i;
+  for(i=0;i<NF;i++) h+=tagHTML(i);
+  box.innerHTML=h;
+  bindTags();
+}
+function tagHTML(i){
+  var t=S.tags[i], cnt=counted(i), tgt=target(i), rest=tgt-cnt, hasTgt=isSet(t.target);
+  var done=(hasTgt && cnt===tgt && hasCount(i)), over=(hasTgt && cnt>tgt);
+  var state=done?"done":(over?"over":""), statCls=done?"good":(over?"bad":"");
+  var markTxt = hasTgt ? (done?"✓":(over?"超過+"+(cnt-tgt):"残 "+rest)) : "";
+  var h='<div class="nf '+state+'" data-i="'+i+'">'
+    +'<div class="nf-head">'
+    +'<span class="nf-badge">'+(i+1)+'</span>'
+    +'<div class="nf-now"><span class="lab">数えた</span><b>'+cnt+'</b></div>'
+    +'<div class="nf-tgt"><span class="lab">確定</span><input class="nf-target" id="tg'+i+'" type="text" inputmode="numeric" autocomplete="off" value="'+escAttr(t.target)+'" placeholder="0" data-tg="'+i+'"></div>'
+    +'<div class="nf-mark '+statCls+'">'+markTxt+'</div>'
+    +'</div>'
+    /* モードセレクタ */
+    +'<div class="modeseg" data-i="'+i+'">'
+    +'<button type="button" data-mode="'+i+'|simple" aria-pressed="'+(t.mode==="simple")+'">かんたん</button>'
+    +'<button type="button" data-mode="'+i+'|grid" aria-pressed="'+(t.mode==="grid")+'">仕切り</button>'
+    +'<button type="button" data-mode="'+i+'|set" aria-pressed="'+(t.mode==="set")+'">組</button>'
+    +'</div>';
+  if(t.mode==="simple") h+=simpleBody(i,t);
+  else if(t.mode==="grid") h+=gridBody(i,t,cnt);
+  else h+=setBody(i,t,cnt);
+  h+='</div>';
+  return h;
+}
+/* かんたん（段積み） */
+function simpleBody(i,t){
+  var h='<div class="mbody">';
+  if(t.steps.length){
+    h+='<div class="steps">';
+    for(var k=0;k<t.steps.length;k++){ var sv=t.steps[k]; h+='<span class="chip'+(sv<0?" neg":"")+'"><span class="seq">'+(k+1)+'</span>'+(sv>0?"+"+sv:sv)+'<button class="x" type="button" data-del="'+i+'|'+k+'" aria-label="削除">×</button></span>'; }
+    h+='</div>';
+  } else h+='<div class="stepsempty">数えた分を下から記録します。取り出しは「−」で。</div>';
+  h+='<div class="addstep">'
+    +'<input class="draft" id="df'+i+'" type="text" inputmode="text" autocomplete="off" value="'+escAttr(t.draft)+'" placeholder="次の段（−も可）" data-draft="'+i+'">'
+    +'<button class="rec" type="button" id="rec'+i+'" data-rec="'+i+'">記録</button>'
+    +'</div>'
+    +'<div class="stepper" data-i="'+i+'">'
+    +'<button class="minus" type="button" data-step="'+i+'|-10">−10</button>'
+    +'<button class="minus" type="button" data-step="'+i+'|-5">−5</button>'
+    +'<button class="minus" type="button" data-step="'+i+'|-1">−1</button>'
+    +'<button type="button" data-step="'+i+'|1">＋1</button>'
+    +'<button type="button" data-step="'+i+'|5">＋5</button>'
+    +'<button type="button" data-step="'+i+'|10">＋10</button>'
+    +'</div></div>';
+  return h;
+}
+/* 仕切り */
+function gridBody(i,t,cnt){
+  var perLayer=num(t.gr.rows)*num(t.gr.cols);
+  var h='<div class="mbody">'
+    +'<div class="calcrow g3">'
+    +fld(i,"gr.rows","行",t.gr.rows,"6")+'<div class="op">×</div>'+fld(i,"gr.cols","列",t.gr.cols,"5")
+    +'</div>'
+    +'<div class="calcrow g2" style="margin-top:8px">'
+    +fld(i,"gr.full","満載の段数",t.gr.full,"3")+fld(i,"gr.rem","端数段の個数",t.gr.rem,"12")
+    +'</div>'
+    +'<div class="mformula">'+num(t.gr.rows)+'×'+num(t.gr.cols)+'='+perLayer+'/段 × '+num(t.gr.full)+'段 ＋ '+num(t.gr.rem)+' ＝ <b>'+cnt+'</b> 個</div>'
+    +'</div>';
+  return h;
+}
+/* 組 */
+function setBody(i,t,cnt){
+  var h='<div class="mbody">'
+    +'<div class="setsize" data-i="'+i+'">'
+    +'<button type="button" data-size="'+i+'|2" aria-pressed="'+(t.se.size==="2")+'">2個1組</button>'
+    +'<button type="button" data-size="'+i+'|3" aria-pressed="'+(t.se.size==="3")+'">3個1組</button>'
+    +'</div>'
+    +'<div class="calcrow g3">'
+    +fld(i,"se.size","1組の数",t.se.size,"2")+fld(i,"se.count","組数",t.se.count,"22")+fld(i,"se.rem","端数",t.se.rem,"12")
+    +'</div>'
+    +'<div class="mformula">'+num(t.se.size)+'個 × '+num(t.se.count)+'組 ＋ '+num(t.se.rem)+' ＝ <b>'+cnt+'</b> 個</div>'
+    +'</div>';
+  return h;
+}
+/* 数値欄（×付き） */
+function fld(i,key,label,val,ph){
+  var id="f_"+i+"_"+key.replace(".","_"), has=(String(val)!=="");
+  return '<div class="fld"><div class="fld-lab'+(has?" has":"")+'"><label for="'+id+'">'+label+'</label>'
+    +'<button class="clr" type="button" tabindex="-1" data-fclr="'+i+'|'+key+'" aria-label="消去">×</button></div>'
+    +'<input id="'+id+'" type="text" inputmode="numeric" autocomplete="off" value="'+escAttr(val)+'" placeholder="'+ph+'" data-fin="'+i+'|'+key+'"></div>';
+}
+
+/* 1荷札だけ再描画 */
+function refreshTag(i){
+  var el=document.querySelector('.nf[data-i="'+i+'"]');
+  if(el){ var tmp=document.createElement("div"); tmp.innerHTML=tagHTML(i); var nn=tmp.firstChild; el.parentNode.replaceChild(nn,el); bindOne(nn,i); }
+}
+
+/* ── バインド ── */
+function bindTags(){ var i; for(i=0;i<NF;i++){ var el=document.querySelector('.nf[data-i="'+i+'"]'); if(el) bindOne(el,i); } }
+function bindOne(el,i){
+  var q=function(sel){ return el.querySelectorAll(sel); };
+  var tg=el.querySelector('[data-tg]'); if(tg) tg.addEventListener("input",function(){ onTarget(i,this); });
+  Array.prototype.forEach.call(q('[data-mode]'),function(b){ b.addEventListener("click",function(){ setMode(i,this.getAttribute("data-mode").split("|")[1]); }); });
+  var df=el.querySelector('[data-draft]'); if(df) df.addEventListener("input",function(){ onDraft(i,this); });
+  var rc=el.querySelector('[data-rec]'); if(rc) rc.addEventListener("click",function(){ recStep(i); });
+  Array.prototype.forEach.call(q('[data-step]'),function(b){ b.addEventListener("click",function(){ var a=this.getAttribute("data-step").split("|"); draftStep(i,parseInt(a[1],10)); }); });
+  Array.prototype.forEach.call(q('[data-del]'),function(b){ b.addEventListener("click",function(){ var a=this.getAttribute("data-del").split("|"); delStep(i,parseInt(a[1],10)); }); });
+  Array.prototype.forEach.call(q('[data-size]'),function(b){ b.addEventListener("click",function(){ var a=this.getAttribute("data-size").split("|"); setSize(i,a[1]); }); });
+  Array.prototype.forEach.call(q('[data-fin]'),function(inp){ inp.addEventListener("input",function(){ var a=this.getAttribute("data-fin").split("|"); onFld(i,a[1],this); }); });
+  Array.prototype.forEach.call(q('[data-fclr]'),function(b){ b.addEventListener("click",function(){ var a=this.getAttribute("data-fclr").split("|"); clrFld(i,a[1]); }); });
+}
+
+/* ── 全体計算 ── */
+function calc(){
+  var totCounted=0, totTarget=0, over=false, allDone=true, anyUsed=false, i;
+  for(i=0;i<NF;i++){
+    if(!used(i)) continue;
+    anyUsed=true;
+    var c=counted(i), t=target(i);
+    totCounted+=c;
+    if(isSet(S.tags[i].target)) totTarget+=t; else allDone=false;
+    if(isSet(S.tags[i].target) && c>t) over=true;
+    if(!(isSet(S.tags[i].target) && c===t && hasCount(i))) allDone=false;
+  }
+  var rest=totTarget-totCounted;
+  var rv=g("restVal"), rm=g("restMsg");
+  rv.textContent=String(rest);
+  if(!anyUsed){ rv.textContent="0"; rv.className="dro-val warn"; rm.className="devline none"; rm.textContent="各荷札の確定個数を入れてください"; }
+  else if(over){ rv.className="dro-val bad"; rm.className="devline bad"; rm.textContent="入れすぎの荷札があります"; }
+  else if(allDone){ rv.className="dro-val good"; rm.className="devline good"; rm.textContent="全て合致 ✓ 完了"; }
+  else if(rest>0){ rv.className="dro-val warn"; rm.className="devline warn"; rm.textContent="あと "+rest+" 個"; }
+  else { rv.className="dro-val warn"; rm.className="devline warn"; rm.textContent="確定個数を入れてください"; }
+  g("sumTxt").textContent="数えた "+totCounted+" ／ 確定 "+totTarget;
+  g("sumTxt").className="statusTxt"+(over?" err":"");
+  var tc=g("totChk");
+  if(!isSet(S.tot)){ tc.className="totchk none"; tc.textContent=""; }
+  else { var d=num(S.tot)-totTarget;
+    if(d===0){ tc.className="totchk good"; tc.textContent="確定個数の合計＝総数 ✓"; }
+    else if(d>0){ tc.className="totchk bad"; tc.textContent="確定合計が総数より "+d+" 個 少ない"; }
+    else { tc.className="totchk bad"; tc.textContent="確定合計が総数より "+(-d)+" 個 多い"; } }
+}
+
+/* ── 操作 ── */
+function onTarget(i,el){ var v=el.value.replace(/[^\d]/g,""); if(el.value!==v) el.value=v; S.tags[i].target=v; refreshStat(i); calc(); persist(); }
+function setMode(i,m){ S.tags[i].mode=m; refreshTag(i); calc(); persist(); }
+function setSize(i,s){ S.tags[i].se.size=s; refreshTag(i); calc(); persist(); }
+function onFld(i,key,el){
+  var v=el.value.replace(/[^\d]/g,""); if(el.value!==v) el.value=v;
+  var parts=key.split("."), obj=S.tags[i][parts[0]]; obj[parts[1]]=v;
+  var lab=el.parentNode.querySelector(".fld-lab"); if(lab){ if(v!=="") lab.classList.add("has"); else lab.classList.remove("has"); }
+  refreshFormula(i); refreshStat(i); calc(); persist();
+}
+function clrFld(i,key){
+  var parts=key.split("."), obj=S.tags[i][parts[0]]; obj[parts[1]]="";
+  var id="f_"+i+"_"+key.replace(".","_"), el=g(id);
+  if(el){ el.value=""; var lab=el.parentNode.querySelector(".fld-lab"); if(lab) lab.classList.remove("has"); el.focus(); }
+  refreshFormula(i); refreshStat(i); calc(); persist();
+}
+function onDraft(i,el){ var v=cleanS(el.value); if(el.value!==v) el.value=v; S.tags[i].draft=v; updateRecBtn(i); persist(); }
+function draftStep(i,d){ var v=(isFinite(pintS(S.tags[i].draft))?pintS(S.tags[i].draft):0)+d; S.tags[i].draft=String(v); var el=g("df"+i); if(el) el.value=S.tags[i].draft; updateRecBtn(i); persist(); }
+function recStep(i){ var v=pintS(S.tags[i].draft); if(!isFinite(v)||v===0){ toast("記録する数を入れてください（マイナスも可）"); return; } S.tags[i].steps.push(v); S.tags[i].draft=""; refreshTag(i); calc(); persist(); }
+function delStep(i,k){ S.tags[i].steps.splice(k,1); refreshTag(i); calc(); persist(); }
+function updateRecBtn(i){ var b=g("rec"+i); if(b){ var v=pintS(S.tags[i].draft); b.disabled=!(isFinite(v)&&v!==0); } }
+
+/* 部分更新（フォーカス保持） */
+function refreshStat(i){
+  var nf=document.querySelector('.nf[data-i="'+i+'"]'); if(!nf) return;
+  var t=S.tags[i], cnt=counted(i), tgt=target(i), rest=tgt-cnt, hasTgt=isSet(t.target);
+  var done=(hasTgt&&cnt===tgt&&hasCount(i)), over=(hasTgt&&cnt>tgt);
+  nf.className="nf "+(done?"done":(over?"over":""));
+  var nowB=nf.querySelector(".nf-now b"); if(nowB) nowB.textContent=cnt;
+  var mk=nf.querySelector(".nf-mark"); if(mk){
+    mk.className="nf-mark "+(done?"good":(over?"bad":""));
+    mk.textContent = hasTgt ? (done?"✓":(over?"超過+"+(cnt-tgt):"残 "+rest)) : "";
+  }
+}
+function refreshFormula(i){
+  var nf=document.querySelector('.nf[data-i="'+i+'"]'); if(!nf) return;
+  var mf=nf.querySelector(".mformula"); if(!mf) return;
+  var t=S.tags[i], cnt=counted(i);
+  if(t.mode==="grid"){ var per=num(t.gr.rows)*num(t.gr.cols); mf.innerHTML=num(t.gr.rows)+'×'+num(t.gr.cols)+'='+per+'/段 × '+num(t.gr.full)+'段 ＋ '+num(t.gr.rem)+' ＝ <b>'+cnt+'</b> 個'; }
+  else if(t.mode==="set"){ mf.innerHTML=num(t.se.size)+'個 × '+num(t.se.count)+'組 ＋ '+num(t.se.rem)+' ＝ <b>'+cnt+'</b> 個'; }
+}
+
+/* ── コピー ── */
+function copyRec(){
+  var lines=[], i, totC=0, totT=0;
+  if(isSet(S.tot)) lines.push("総数 "+num(S.tot));
+  for(i=0;i<NF;i++){
+    if(!used(i)) continue;
+    var c=counted(i), t=target(i); totC+=c; totT+=t; var mk=(isSet(S.tags[i].target)&&c===t&&hasCount(i))?" ✓":(c>t?" 超過":"");
+    var detail=modeText(i);
+    lines.push("荷札"+(i+1)+" 確定"+(isSet(S.tags[i].target)?t:"—")+" "+detail+" 計"+c+mk);
+  }
+  lines.push("―― 数えた計 "+totC+" ／ 確定計 "+totT);
+  copyText(lines.join("\n"));
+}
+function modeText(i){
+  var t=S.tags[i];
+  if(t.mode==="grid") return "仕切り["+num(t.gr.rows)+"×"+num(t.gr.cols)+"×"+num(t.gr.full)+"段+"+num(t.gr.rem)+"]";
+  if(t.mode==="set") return "組["+num(t.se.size)+"×"+num(t.se.count)+"+"+num(t.se.rem)+"]";
+  return "かんたん["+t.steps.join(",")+"]";
+}
+function copyText(t){ if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(function(){toast("コピーしました");},function(){fb(t);}); else fb(t); function fb(x){ try{var ta=document.createElement("textarea");ta.value=x;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();document.execCommand("copy");document.body.removeChild(ta);toast("コピーしました");}catch(e){toast("コピーできませんでした");} } }
+
+/* ── 消去 ── */
+function doClearAll(){
+  S={ tot:"", tags:[] }; var i; for(i=0;i<NF;i++) S.tags.push(newTag());
+  var ti=g("totIn"); if(ti) ti.value=""; renderTags(); calc(); persist(); toast("消去しました");
+}
+var armed=false, armTimer=null;
+function onClear(){
+  var b=g("clearBtn");
+  if(!armed){ armed=true; b.classList.add("arm"); b.textContent="もう一度押すと消去"; armTimer=setTimeout(function(){armed=false;b.classList.remove("arm");b.textContent="すべて消去";},2500); return; }
+  clearTimeout(armTimer); armed=false; b.classList.remove("arm"); b.textContent="すべて消去";
+  doClearAll();
+}
+var armedTop=false, armTopTimer=null;
+function onClearTop(){
+  var b=g("clearTop");
+  if(!armedTop){ armedTop=true; if(b){ b.textContent="もう一度で消去"; b.classList.add("arm"); } armTopTimer=setTimeout(function(){ armedTop=false; if(b){ b.textContent="すべて消去"; b.classList.remove("arm"); } },2500); return; }
+  clearTimeout(armTopTimer); armedTop=false; if(b){ b.textContent="すべて消去"; b.classList.remove("arm"); }
+  doClearAll();
+}
+var tt=null; function toast(m){ var t=g("toast"); t.textContent=m; t.classList.add("show"); clearTimeout(tt); tt=setTimeout(function(){t.classList.remove("show");},1600); }
+
+/* ── 保存 ── */
+function persist(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+function restore(){
+  try{
+    var o=JSON.parse(localStorage.getItem(KEY)||"null");
+    if(o && o.tags){
+      S.tot=(o.tot==null?"":String(o.tot)); S.tags=[];
+      for(var i=0;i<NF;i++){
+        var q=o.tags[i]||{}, nt=newTag();
+        nt.target=(q.target==null?"":String(q.target));
+        nt.mode=(q.mode==="grid"||q.mode==="set")?q.mode:"simple";
+        if(q.steps&&q.steps.length) for(var k=0;k<q.steps.length;k++){ var v=parseInt(q.steps[k],10); if(isFinite(v)&&v!==0) nt.steps.push(v); }
+        if(q.gr){ ["rows","cols","full","rem"].forEach(function(kk){ nt.gr[kk]=(q.gr[kk]==null?"":String(q.gr[kk])); }); }
+        if(q.se){ nt.se.size=(q.se.size==="3")?"3":"2"; nt.se.count=(q.se.count==null?"":String(q.se.count)); nt.se.rem=(q.se.rem==null?"":String(q.se.rem)); }
+        S.tags.push(nt);
+      }
+    }
+  }catch(e){}
+  g("totIn").value=S.tot; renderTags();
+}
+
+/* ── ガイド例 ── */
+function tryExample(){
+  S.tags[0]=newTag(); S.tags[0].target="102"; S.tags[0].mode="grid"; S.tags[0].gr={rows:"6",cols:"5",full:"3",rem:"12"};
+  S.tags[1]=newTag(); S.tags[1].target="56"; S.tags[1].mode="set"; S.tags[1].se={size:"2",count:"22",rem:"12"};
+  S.tags[2]=newTag(); S.tags[2].target="27"; S.tags[2].mode="simple"; S.tags[2].steps=[5,14,8];
+  renderTags(); calc(); persist(); toast("例：仕切り・組・かんたん");
+}
+
+/* ── 初期化（防御的） ── */
+function init(){
+  try{ restore(); }catch(e){ renderTags(); }
+  try{ calc(); }catch(e){}
+  var b;
+  b=g("totIn"); if(b) b.addEventListener("input",function(){ var v=this.value.replace(/[^\d]/g,""); if(this.value!==v)this.value=v; S.tot=v; calc(); persist(); });
+  b=g("copyBtn"); if(b) b.addEventListener("click",copyRec);
+  b=g("clearBtn"); if(b) b.addEventListener("click",onClear);
+  b=g("clearTop"); if(b) b.addEventListener("click",onClearTop);
+  b=g("exBtn"); if(b) b.addEventListener("click",tryExample);
+}
+if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",init); else init();
+</script>
+</body>
+</html>
