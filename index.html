@@ -128,7 +128,7 @@
         現場のための計算・記録ツール集。すべての計算はこの端末の中で行われ、入力値がネットに送信されることはありません。
       </div>
       <div class="strip">
-        <div><b>構成</b> 32ツール</div>
+        <div><b>構成</b> 30ツール</div>
         <div><b>通信</b> なし(端末内計算)</div>
         <div>REV 2026-07</div>
       </div>
@@ -159,24 +159,6 @@
       <span class="no">TOOL-01</span>
       <div class="nm">穴間ピッチ</div>
       <div class="ds">同半径(角度)を既定に、異半径の余弦定理もタブで切替</div>
-    </span>
-    <span class="chev">›</span>
-  </a>
-  <a class="tool" href="pcd-pitch/">
-    <span class="icon"><svg viewBox="0 0 44 44">
-      <circle cx="22" cy="22" r="14" fill="none" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="6 2 1.5 2"/>
-      <circle cx="22" cy="8" r="2.6" fill="#fff" stroke="#1F3341" stroke-width="1.4"/>
-      <circle cx="34.1" cy="15" r="2.6" fill="#fff" stroke="#1F3341" stroke-width="1.4"/>
-      <circle cx="34.1" cy="29" r="2.6" fill="#fff" stroke="#1F3341" stroke-width="1.4"/>
-      <circle cx="22" cy="36" r="2.6" fill="#fff" stroke="#1F3341" stroke-width="1.4"/>
-      <circle cx="9.9" cy="29" r="2.6" fill="#fff" stroke="#1F3341" stroke-width="1.4"/>
-      <circle cx="9.9" cy="15" r="2.6" fill="#fff" stroke="#1F3341" stroke-width="1.4"/>
-      <line x1="24.5" y1="9.5" x2="31.7" y2="13.6" stroke="#D63426" stroke-width="1.8"/>
-    </svg></span>
-    <span>
-      <span class="no">TOOL-02</span>
-      <div class="nm">PCD穴ピッチ</div>
-      <div class="ds">PCDと穴数から穴間ピッチ。実測ピッチからPCDの逆算も</div>
     </span>
     <span class="chev">›</span>
   </a>
@@ -212,22 +194,6 @@
       <span class="no">TOOL-30</span>
       <div class="nm">穴配置 総合</div>
       <div class="ds">PCD・任意穴・中心線からの左右振り分け・端面基準を1枚に重ねて全穴の座標とピッチ</div>
-    </span>
-    <span class="chev">›</span>
-  </a>
-  <a class="tool" href="multi-hole/">
-    <span class="icon"><svg viewBox="0 0 44 44">
-      <circle cx="8" cy="36" r="1.8" fill="#1F3341"/>
-      <line x1="8" y1="36" x2="15" y2="13" stroke="#1F3341" stroke-width="1.2"/>
-      <circle cx="16" cy="11" r="3.6" fill="#fff" stroke="#1F3341" stroke-width="1.5"/>
-      <line x1="8" y1="36" x2="33" y2="25.5" stroke="#1F3341" stroke-width="1.2"/>
-      <line x1="31" y1="19" x2="36.5" y2="32" stroke="#1F3341" stroke-width="2.6"/>
-      <line x1="19" y1="13.5" x2="31.5" y2="22.5" stroke="#D63426" stroke-width="1.8"/>
-    </svg></span>
-    <span>
-      <span class="no">TOOL-09</span>
-      <div class="nm">多穴間距離</div>
-      <div class="ds">等配でない2〜8穴(半径・角度ばらばら)を総当たりで距離計算。座標は原点を選んで出力</div>
     </span>
     <span class="chev">›</span>
   </a>
@@ -692,13 +658,11 @@
   // 検索用の追加キーワード(名前・説明に出てこない言い回しを補完)
   var KW={
     'pitch-radius/':'余弦定理 2穴 ピッチ 距離 はんけい 弦 同半径 異半径 角度',
-    'pcd-pitch/':'PCD ピッチ円 ボルト穴 等配 弦 穴とび',
     'chord-r/':'アール 半径 弦 矢高 コード 円弧 R測定',
     'right-triangle/':'直角三角形 三平方 ピタゴラス 斜辺 底辺 高さ サイン コサイン タンジェント 勾配 角度 三角比',
     'tolerance/':'はめあい 公差 H7 h7 g6 js k m p s 軸 穴 合否 寸法許容差',
     'gear-w/':'歯車 またぎ歯厚 W寸法 モジュール 転位 歯厚マイクロ',
-    'multi-hole/':'多穴 座標 総当たり 三次元測定 CMM 穴1基準 相対角度 原点 ワーク原点 加工',
-    'hole-builder/':'穴位置 中心 データム 座標 三辺測量 逆算 縦横 位置 XY 割り出し',
+    'hole-builder/':'穴位置 中心 データム 座標 三辺測量 逆算 縦横 位置 XY 割り出し 多穴 多穴間距離 穴間距離 相対角度 前の穴から 総当たり 穴1基準 CMM',
     'bend-guide/':'パイプ チューブ 曲げ 展開長 R曲げ ベンダー',
     'bend-guide-3d/':'3D 立体 ひねり 回転 三面図 YBC パイプ',
     'temp-comp/':'温度 熱膨張 20度 線膨張 樹脂 補正 20℃',
@@ -722,7 +686,7 @@
     'pitch-row/':'ピッチ 穴間 並び 並び寸法 累進 累積 逐次 端面 端面から 間隔 等ピッチ 等間隔 穴ピッチ 引き算 差 コンベックス スケール 連続寸法',
     'hole-map/':'総合 複合 合成 まとめて 穴配置 PCD 任意穴 単独穴 軸配置 中心線 左右 振り分け 端面 ワーク外形 原点 座標 図面まるごと',
     'resin-guide/':'樹脂 プラスチック 材質 見分け 識別 種類 判別 搬送 コンベア UHMW-PE ポリエチレン PE HDPE PP ポリプロピレン POM ジュラコン デルリン ナイロン MC901 MCナイロン PA PTFE テフロン フッ素 PET エステル PC ポリカ 塩ビ PVC PEEK PVDF PPS ベークライト フェノール アクリル PMMA ABS 密度 比重 浮く 沈む 線膨張 熱膨張 膨張係数 吸水 吸湿 燃焼試験 炎 におい 色 摺動 ウェアストリップ ガイドレール ローラー スプロケット',
-    'pcd-multi/':'PCD 複合 複数 二重 多重 同心 偏心 芯ズレ 中心違い 別PCD 穴ピッチ 弦 起点角 位相 角度 不等配 不等分割 等配 割り出し ボルト穴 フランジ 時計回り 反時計回り 座標'
+    'pcd-multi/':'PCD 複合 複数 二重 多重 同心 偏心 芯ズレ 中心違い 別PCD 穴ピッチ 弦 起点角 位相 角度 不等配 不等分割 等配 割り出し ボルト穴 フランジ 時計回り 反時計回り 座標 ピッチ円 穴とび PCD穴ピッチ'
   };
   var FAVKEY='kensa-fav';
 

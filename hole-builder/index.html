@@ -60,6 +60,12 @@
   .addbtn{font-size:12px;font-weight:700;padding:9px 6px;border:1.5px dashed var(--ink);border-radius:9px;background:var(--sheet);color:var(--ink);flex:1}
   .addbtn:active{background:var(--ink);color:#fff}
   .btnrow{display:flex;gap:8px;margin-top:8px}
+  .relrow{display:flex;align-items:center;flex-wrap:wrap;gap:6px 8px;margin:2px 0 6px 10px}
+  .relrow .rl{font-size:11px;color:#5B707E;font-weight:700;flex:none}
+  .relseg{display:inline-flex;border:1.5px solid var(--ink);border-radius:8px;overflow:hidden}
+  .relseg button{font-size:11px;font-weight:700;padding:6px 9px;border:none;background:var(--sheet);color:var(--ink);cursor:pointer;letter-spacing:.02em}
+  .relseg button.on{background:var(--ink);color:#fff}
+  .relhint{font-size:10.5px;color:#5B707E;line-height:1.5;flex-basis:100%;margin-left:1px}
   .note{font-size:11px;color:#5B707E;line-height:1.7;margin-top:8px;padding:0 2px}
   .note b{color:var(--ink)}
   .sel{display:flex;gap:8px;align-items:center;margin-top:10px}
@@ -135,7 +141,8 @@
   <div class="gb">
     <h4>使い方</h4>
     <ol>
-      <li>「絶対座標」では、中心Aを原点に、中心B以降を「Aから角度・距離」で置き、各中心の穴を<b>r・θ</b>で入れます。角度は<b>真上0°・時計回り＋</b>。</li>
+      <li>「絶対座標」では、中心Aを原点に、中心B以降を「Aから<b>距離・角度</b>」で置き、各中心の穴を<b>r・θ</b>で入れます。角度は<b>真上0°・時計回り＋</b>。</li>
+      <li>各中心の<b>θの入れ方</b>は「0°から（絶対）」と「前の穴から＋（相対）」を選べます。相対にすると、等ピッチの穴を「15」「15」…のように<b>前の穴からの角度</b>で足し込めます（多穴間距離ツールと同じ考え方）。</li>
       <li>「三辺測量」では、基準の2穴 P1・P2 を置き、他の穴の <b>P1から・P2から</b>の実測距離で位置（縦横）を割り出します（CMM不要）。</li>
       <li>2穴を選ぶと距離が、下の表に全穴の座標が出ます。</li>
     </ol>
@@ -158,6 +165,32 @@
           <p class="gset">中心A ／ 穴1 r50 θ0 ／ 穴2 r50 θ90</p>
           <p class="gread">読み方：A1(0, 50)・A2(50, 0)、2穴の距離 <b>70.711mm</b>（θ0が真上、θ90が東）。</p>
           <button class="gbtn" type="button" data-ex='{"set":[{"sel":"[data-ci=\"0\"][data-hi=\"0\"][data-f=\"r\"]","v":50},{"sel":"[data-ci=\"0\"][data-hi=\"0\"][data-f=\"a\"]","v":0},{"click":"[data-addh=\"0\"]"},{"sel":"[data-ci=\"0\"][data-hi=\"1\"][data-f=\"r\"]","v":50},{"sel":"[data-ci=\"0\"][data-hi=\"1\"][data-f=\"a\"]","v":90},{"sel":"#pairA","v":"A1"},{"sel":"#pairB","v":"A2"}]}' onclick="tryExample(this)">この例を試す</button>
+        </div>
+      </div>
+    </div>
+    <div class="gx">
+      <h4>例2 ── θを「前の穴から＋」で等ピッチ（15°ずつ）</h4>
+      <div class="gxin">
+        <div class="gfig"><svg viewBox="0 0 120 120" role="img" aria-label="中心Aから15度ずつ開いた3穴の図">
+          <circle cx="34" cy="86" r="2" fill="#1F3341"/>
+          <text x="28" y="96" font-size="7" fill="#5B707E">A</text>
+          <line x1="34" y1="86" x2="34" y2="34" stroke="#8FA2AF" stroke-width="0.9" stroke-dasharray="2 2"/>
+          <text x="34" y="28" font-size="7" fill="#5B707E" text-anchor="middle">0°</text>
+          <line x1="34" y1="86" x2="47.5" y2="35.8" stroke="#D63426" stroke-width="1"/>
+          <line x1="34" y1="86" x2="60" y2="41" stroke="#D63426" stroke-width="1"/>
+          <line x1="34" y1="86" x2="70.7" y2="49.3" stroke="#D63426" stroke-width="1"/>
+          <circle cx="47.5" cy="35.8" r="3.2" fill="#fff" stroke="#1F3341" stroke-width="1.3"/>
+          <circle cx="60" cy="41" r="3.2" fill="#fff" stroke="#1F3341" stroke-width="1.3"/>
+          <circle cx="70.7" cy="49.3" r="3.2" fill="#fff" stroke="#1F3341" stroke-width="1.3"/>
+          <text x="45" y="30" font-size="6.5" fill="#1F3341">15°</text>
+          <text x="63" y="37" font-size="6.5" fill="#1F3341">30°</text>
+          <text x="74" y="49" font-size="6.5" fill="#1F3341">45°</text>
+        </svg></div>
+        <div class="gtxt">
+          <p>中心Aで θを<b>「前の穴から＋」</b>にし、r40・θ<b>15</b> を3回。重ならず 15°→30°→45° に開きます。</p>
+          <p class="gset">中心A ／ θ=前の穴から＋ ／ 穴1 r40 θ15 ／ 穴2 r40 θ15 ／ 穴3 r40 θ15</p>
+          <p class="gread">読み方：A1=<b>15°</b>・A2=<b>30°</b>(15+15)・A3=<b>45°</b>(15+15+15)。「15」を3回でも累積されます。</p>
+          <button class="gbtn" type="button" data-ex='{"set":[{"click":"[data-rel=\"0|rel\"]"},{"sel":"[data-ci=\"0\"][data-hi=\"0\"][data-f=\"r\"]","v":40},{"sel":"[data-ci=\"0\"][data-hi=\"0\"][data-f=\"a\"]","v":15},{"click":"[data-addh=\"0\"]"},{"sel":"[data-ci=\"0\"][data-hi=\"1\"][data-f=\"r\"]","v":40},{"sel":"[data-ci=\"0\"][data-hi=\"1\"][data-f=\"a\"]","v":15},{"click":"[data-addh=\"0\"]"},{"sel":"[data-ci=\"0\"][data-hi=\"2\"][data-f=\"r\"]","v":40},{"sel":"[data-ci=\"0\"][data-hi=\"2\"][data-f=\"a\"]","v":15},{"sel":"#pairA","v":"A1"},{"sel":"#pairB","v":"A3"}]}' onclick="tryExample(this)">この例を試す</button>
         </div>
       </div>
     </div>
@@ -191,7 +224,7 @@
   <!-- 配置モード -->
   <div id="buildBox">
     <div class="note">
-      中心Aを原点(0,0)とし、中心B以降は「<b>Aから見た角度・距離</b>」で置きます。各中心にぶら下がる穴は、その中心からの <b>r・θ</b> で入力。角度は<b>真上0°・時計回り＋</b>（PCD各ツール・TOOL-30と同じ）。全穴の絶対座標を計算します(角度は度分秒可)。
+      中心Aを原点(0,0)とし、中心B以降は「<b>Aから見た距離・角度</b>」で置きます。各中心にぶら下がる穴は、その中心からの <b>r・θ</b> で入力。角度は<b>真上0°・時計回り＋</b>（PCD各ツール・TOOL-30と同じ）。θは中心ごとに<b>「0°から」か「前の穴から＋」</b>を選べます。全穴の絶対座標を計算します(角度は度分秒可)。
     </div>
     <div class="inputs" id="ctrList"></div>
     <div class="btnrow">
@@ -268,8 +301,9 @@
   var mode='build';
   var lastCopy=null;
 
-  // 配置モード状態: centers[0]=A(角度距離なし), 各centerに holes[]
-  var centers=[{ang:'',dist:'',holes:[{r:'',a:''}]}];
+  // 配置モード状態: centers[0]=A(距離角度なし), 各centerに holes[]
+  // relA: 各中心の穴θの入れ方。false=0°から絶対 / true=前の穴から加算(相対)
+  var centers=[{ang:'',dist:'',holes:[{r:'',a:''}],relA:false}];
   // 逆算モード状態
   var solveHoles=[{d1:'',d2:'',side:1}];
 
@@ -297,24 +331,36 @@
       var head='<div class="lab"><span>中心 '+LBL[ci]+(ci===0?'(原点 0,0)':'')+'</span>'+(ci>0?'<span class="del" data-delc="'+ci+'">中心を削除</span>':'')+'</div>';
       var body='';
       if(ci>0){
+        // 並びは「距離 → 角度」(PCD複合・端面クイックと同じ)。data-f はそのままなので計算は不変。
         body+='<div class="flds c2">'+
-          '<div class="fld"><span class="fl">Aから角度</span><input data-ci="'+ci+'" data-f="ang" type="text" inputmode="decimal" placeholder="―"><span class="u">°</span></div>'+
-          '<div class="fld"><span class="fl">距離</span><input data-ci="'+ci+'" data-f="dist" type="text" inputmode="decimal" placeholder="―"><span class="u">mm</span></div></div>';
+          '<div class="fld"><span class="fl">Aから距離</span><input data-ci="'+ci+'" data-f="dist" type="text" inputmode="decimal" placeholder="―"><span class="u">mm</span></div>'+
+          '<div class="fld"><span class="fl">角度</span><input data-ci="'+ci+'" data-f="ang" type="text" inputmode="decimal" placeholder="―"><span class="u">°</span></div></div>';
       }
       g.innerHTML=head+body;
       box.appendChild(g);
       if(ci>0){
-        g.querySelector('[data-f="ang"]').value=c.ang;
         g.querySelector('[data-f="dist"]').value=c.dist;
+        g.querySelector('[data-f="ang"]').value=c.ang;
       }
+      // θの入れ方トグル(この中心の穴に適用)
+      var rel=document.createElement('div');
+      rel.className='relrow';
+      rel.innerHTML='<span class="rl">θの入れ方</span>'+
+        '<span class="relseg">'+
+          '<button type="button" data-rel="'+ci+'|abs"'+(c.relA?'':' class="on"')+'>0°から</button>'+
+          '<button type="button" data-rel="'+ci+'|rel"'+(c.relA?' class="on"':'')+'>前の穴から＋</button>'+
+        '</span>'+
+        (c.relA?'<span class="relhint">各穴のθは<b>1つ前の穴からの角度</b>を足し込みます（1つ目は真上0°から）。例:「15」を続けて入れると 15°→30°→45°。</span>':'');
+      box.appendChild(rel);
       // 穴
       c.holes.forEach(function(h,hi){
         var hg=document.createElement('div');
         hg.className='grp hole';
+        var thLbl=c.relA?'θ＋':'θ';
         hg.innerHTML='<div class="lab"><span>穴 '+LBL[ci]+(hi+1)+'</span>'+(c.holes.length>1||centers.length>1?'<span class="del" data-delh="'+ci+'_'+hi+'">削除</span>':'')+'</div>'+
           '<div class="flds c2">'+
           '<div class="fld"><span class="fl">r</span><input data-ci="'+ci+'" data-hi="'+hi+'" data-f="r" type="text" inputmode="decimal" placeholder="―"><span class="u">mm</span></div>'+
-          '<div class="fld"><span class="fl">θ</span><input data-ci="'+ci+'" data-hi="'+hi+'" data-f="a" type="text" inputmode="decimal" placeholder="―"><span class="u">°</span></div></div>';
+          '<div class="fld"><span class="fl">'+thLbl+'</span><input data-ci="'+ci+'" data-hi="'+hi+'" data-f="a" type="text" inputmode="decimal" placeholder="―"><span class="u">°</span></div></div>';
         box.appendChild(hg);
         hg.querySelector('[data-f="r"]').value=h.r;
         hg.querySelector('[data-f="a"]').value=h.a;
@@ -338,10 +384,16 @@
         var r=ang*Math.PI/180;cx=dist*Math.sin(r);cy=dist*Math.cos(r);
       }
       cen.push({x:cx,y:cy});
+      var acc=0,started=false; // 相対θ用の累積(1つ目=絶対、以降は前の穴に加算)
       c.holes.forEach(function(h,hi){
         var r=num(h.r),a=parseAngle(h.a);
-        if(isNaN(r)||isNaN(a))return;
-        var ra=a*Math.PI/180;
+        var absA=a;
+        if(c.relA&&!isNaN(a)){          // 角度が有効なら累積を進める(rが空でも角度連鎖は維持)
+          absA=started?acc+a:a;
+          acc=absA;started=true;
+        }
+        if(isNaN(r)||isNaN(absA))return; // 点を打つには r と 角度 の両方が必要
+        var ra=absA*Math.PI/180;
         pts.push({name:LBL[ci]+(hi+1),x:cx+r*Math.sin(ra),y:cy+r*Math.cos(ra)});
       });
     });
@@ -545,11 +597,12 @@
   });
   $('ctrList').addEventListener('click',function(e){
     var t=e.target;
+    if(t.getAttribute('data-rel')!=null){var rp=t.getAttribute('data-rel').split('|');centers[+rp[0]].relA=(rp[1]==='rel');buildCtrRows();recalc();return}
     if(t.getAttribute('data-addh')!=null){centers[+t.getAttribute('data-addh')].holes.push({r:'',a:''});buildCtrRows();recalc();return}
     if(t.getAttribute('data-delc')!=null){centers.splice(+t.getAttribute('data-delc'),1);buildCtrRows();recalc();return}
     if(t.getAttribute('data-delh')!=null){var p=t.getAttribute('data-delh').split('_');centers[+p[0]].holes.splice(+p[1],1);if(!centers[+p[0]].holes.length)centers[+p[0]].holes.push({r:'',a:''});buildCtrRows();recalc();return}
   });
-  $('addCtr').addEventListener('click',function(){if(centers.length>=8){toast('中心は最大8です');return}centers.push({ang:'',dist:'',holes:[{r:'',a:''}]});buildCtrRows();recalc()});
+  $('addCtr').addEventListener('click',function(){if(centers.length>=8){toast('中心は最大8です');return}centers.push({ang:'',dist:'',holes:[{r:'',a:''}],relA:false});buildCtrRows();recalc()});
   $('pairA').addEventListener('change',recalc);
   $('pairB').addEventListener('change',recalc);
 
