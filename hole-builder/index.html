@@ -331,7 +331,7 @@
       var head='<div class="lab"><span>中心 '+LBL[ci]+(ci===0?'(原点 0,0)':'')+'</span>'+(ci>0?'<span class="del" data-delc="'+ci+'">中心を削除</span>':'')+'</div>';
       var body='';
       if(ci>0){
-        // 並びは「距離 → 角度」(PCD複合・端面クイックと同じ)。data-f はそのままなので計算は不変。
+        // 並びは「距離 → 角度」(端面クイック・穴配置総合と同じ)。data-f はそのままなので計算は不変。
         body+='<div class="flds c2">'+
           '<div class="fld"><span class="fl">Aから距離</span><input data-ci="'+ci+'" data-f="dist" type="text" inputmode="decimal" placeholder="―"><span class="u">mm</span></div>'+
           '<div class="fld"><span class="fl">角度</span><input data-ci="'+ci+'" data-f="ang" type="text" inputmode="decimal" placeholder="―"><span class="u">°</span></div></div>';
