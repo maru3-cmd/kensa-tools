@@ -120,6 +120,14 @@
   .guide .gbtn{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;font:inherit;font-size:11.5px;font-weight:600;border:1px solid #1F3341;border-radius:6px;background:#fff;color:#1F3341;cursor:pointer;margin-top:2px}
   .guide .gbtn:active{transform:translateY(1px)}
   @media(max-width:360px){.guide .gxin{flex-direction:column}.guide .gfig svg{width:128px;height:128px}}
+  .toast{
+    position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);
+    background:var(--ink);color:#fff;font-size:13px;
+    padding:9px 20px;border-radius:20px;opacity:0;pointer-events:none;
+    transition:opacity .25s,transform .25s;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (prefers-reduced-motion:reduce){.toast{transition:none}}
 </style>
 </head>
 <body>
@@ -129,7 +137,7 @@
   <h1>並び寸法ピッチ<small>端面からの並び寸法 → 穴間ピッチ</small></h1>
   <a href="../index.html">≡ ツール一覧</a>
 </header>
-  <div class="topClear noprint" style="display:flex;justify-content:flex-end;margin:6px 2px 0"><button type="button" aria-label="一括消去して新しく始める" style="font-weight:700;font-size:12px;color:#B23B2E;background:#FBECEA;border:1px solid #E7B7B0;border-radius:9px;padding:7px 13px;cursor:pointer" onclick="if(confirm('このツールの入力・データをすべて消して新しく始めますか？（元に戻せません）')){try{localStorage.removeItem('pitchrow_v1');}catch(e){}location.reload();}">一括消去（新しく始める）</button></div>
+  <div class="topClear noprint" style="display:flex;justify-content:flex-end;margin:6px 2px 0"><button type="button" aria-label="一括消去して新しく始める" style="font-weight:700;font-size:12px;color:#B23B2E;background:#FBECEA;border:1px solid #E7B7B0;border-radius:9px;padding:7px 13px;cursor:pointer" onclick="armClear(this)">一括消去（新しく始める）</button></div>
 
 <details class="guide noprint">
   <summary>使い方と例を見る</summary>
@@ -267,7 +275,7 @@
   </div>
   <div class="btnrow" style="margin-top:4px">
     <button class="btn" onclick="prep();window.print()">印刷 / PDF</button>
-    <button class="btn warn sm" onclick="wipe()">保存データを消去</button>
+    <button class="btn warn sm" onclick="armClear(this)">保存データを消去</button>
   </div>
 </div>
 
@@ -292,6 +300,15 @@
 <script>
 "use strict";
 function g(id){ return document.getElementById(id); }
+
+/* ═══ 通知トースト（全ツール共通） ═══
+     alert は confirm と同じく PWA 等でダイアログが無効化されるため使いません */
+var toastTimer=null;
+function toast(msg){
+  var t=g("toast");t.textContent=msg;t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(function(){t.classList.remove("show")},1600);
+}
 function numOK(v){ return typeof v==="number" && isFinite(v); }  /* isFinite(null)===true なので型も見る */
 function nf(v,d){ return numOK(v)? v.toFixed(d==null?1:d) : "-"; }
 
@@ -303,11 +320,11 @@ function applyBulk(){
   var parts=raw.split(/[\s,、，\n\r\t;；]+/).filter(function(x){return x!=="";});
   var nums=[];
   parts.forEach(function(p){ var v=parseFloat(p); if(isFinite(v)) nums.push(v); });
-  if(!nums.length){ alert("数値が読み取れませんでした。"); return; }
+  if(!nums.length){ toast("数値が読み取れませんでした。"); return; }
   if(nums.length>40) nums=nums.slice(0,40);
   S.pos=nums; S.base=0; renderRows(); calc(); persist();
 }
-function addRow(){ if(S.pos.length>=40){alert("40穴までです。");return;} S.pos.push(NaN); renderRows(); calc(); persist(); focusRow(S.pos.length-1); }
+function addRow(){ if(S.pos.length>=40){toast("40穴までです。");return;} S.pos.push(NaN); renderRows(); calc(); persist(); focusRow(S.pos.length-1); }
 function delRow(i){ S.pos.splice(i,1); if(S.base>=S.pos.length) S.base=0; renderRows(); calc(); persist(); }
 function editRow(i,el){ S.pos[i]=parseFloat(el.value); calc(); persist(); }
 function clearAll(){ S.pos=[NaN]; S.base=0; g("bulk").value=""; renderRows(); calc(); persist(); focusRow(0); }
@@ -492,11 +509,6 @@ function restore(){
     S.base=o.base||0;
     if(o.v) IDS.forEach(function(i){ if(o.v[i]!=null&&o.v[i]!=="") g(i).value=o.v[i]; });
   }catch(e){}
-}
-function wipe(){
-  if(!confirm("この端末に保存された入力をすべて消します。よろしいですか？")) return;
-  try{ localStorage.removeItem(KEY); }catch(e){}
-  S.pos=[NaN]; S.base=0; g("bulk").value=""; renderRows(); calc();
 }
 g("baseHole").addEventListener("change",function(){ S.base=parseInt(this.value,10)||0; calc(); persist(); });
 
@@ -696,5 +708,38 @@ renderRows(); calc();
   };
 })();
 </script>
+<script>
+/* ═══ 一括消去の共通処理（全ツール共通 / 確認ダイアログは使いません） ═══
+     1回目 … ボタンが「もう一度押すと消去」に変わります（3秒で自動解除）
+     2回目 … 保存データを消して、最初の状態に戻します
+     ※ 確認ポップアップ（ダイアログ）はPWA等で無効化されるため使いません      */
+(function(){
+  "use strict";
+  var KEY = "pitchrow_v1";
+  window.armClear = function(btn){
+    if(!btn || !btn.getAttribute) return;
+    if(!btn.getAttribute("data-armed")){
+      btn.setAttribute("data-armed","1");
+      if(!btn.getAttribute("data-lbl")) btn.setAttribute("data-lbl", btn.textContent);
+      btn.textContent = "もう一度押すと消去";
+      if(btn.classList) btn.classList.add("arm");
+      setTimeout(function(){
+        if(btn.getAttribute("data-armed")){
+          btn.removeAttribute("data-armed");
+          btn.textContent = btn.getAttribute("data-lbl");
+          if(btn.classList) btn.classList.remove("arm");
+        }
+      }, 3000);
+      return;
+    }
+    btn.removeAttribute("data-armed");
+    if(btn.classList) btn.classList.remove("arm");
+    if(btn.getAttribute("data-lbl")) btn.textContent = btn.getAttribute("data-lbl");
+    try{ localStorage.removeItem(KEY); }catch(e){}
+    try{ location.reload(); }catch(e){}
+  };
+})();
+</script>
+<div class="toast" id="toast"></div>
 </body>
 </html>

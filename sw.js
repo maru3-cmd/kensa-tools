@@ -2,7 +2,7 @@
  * オフライン専用機向け：全ツールを事前キャッシュし、キャッシュ優先で即表示。
  * 更新時は下の CACHE のバージョン(v1→v2…)を上げるだけ。古いキャッシュは自動削除。
  */
-var CACHE = "kensa-tools-v20";
+var CACHE = "kensa-tools-v24";
 
 /* プリキャッシュで取りこぼしたURLの記録先。ページからの診断に使う（外部通信はしない） */
 var FAILKEY = "./__precache_failed";

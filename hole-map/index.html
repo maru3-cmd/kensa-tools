@@ -136,6 +136,14 @@
   .guide .gbtn{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;font:inherit;font-size:11.5px;font-weight:600;border:1px solid #1F3341;border-radius:6px;background:#fff;color:#1F3341;cursor:pointer;margin-top:2px}
   .guide .gbtn:active{transform:translateY(1px)}
   @media(max-width:360px){.guide .gxin{flex-direction:column}.guide .gfig svg{width:128px;height:128px}}
+  .toast{
+    position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);
+    background:var(--ink);color:#fff;font-size:13px;
+    padding:9px 20px;border-radius:20px;opacity:0;pointer-events:none;
+    transition:opacity .25s,transform .25s;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (prefers-reduced-motion:reduce){.toast{transition:none}}
 </style>
 </head>
 <body>
@@ -386,6 +394,15 @@ var RAD=Math.PI/180, LB="ABCDEFGH";
 var MAXPART=8, MAXHOLE=200;   /* 複製配置（PCD各点にパターン複製）で穴数が増えるため拡大 */
 function numOK(v){ return typeof v==="number" && isFinite(v); }  /* isFinite(null)===true なので型も見る */
 function g(id){ return document.getElementById(id); }
+
+/* ═══ 通知トースト（全ツール共通） ═══
+     alert は confirm と同じく PWA 等でダイアログが無効化されるため使いません */
+var toastTimer=null;
+function toast(msg){
+  var t=g("toast");t.textContent=msg;t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(function(){t.classList.remove("show")},1600);
+}
 function pf(v){ var x=parseFloat(v); return isFinite(x)? x : NaN; }
 function f3(v){ return numOK(v)? v.toFixed(3) : "-"; }
 function f2(v){ return numOK(v)? v.toFixed(2) : "-"; }
@@ -400,7 +417,7 @@ var S={ parts:[], work:{w:NaN,h:NaN,org:"center"},
 
 /* ═══ 部品の編集 ═══ */
 function addPart(t,mode){
-  if(S.parts.length>=MAXPART){ alert("部品は "+MAXPART+" までです。"); return; }
+  if(S.parts.length>=MAXPART){ toast("部品は "+MAXPART+" までです。"); return; }
   if(t==="circle") S.parts.push({t:"circle",cx:0,cy:0,pcd:NaN,mode:mode,n:NaN,th0:0,dir:1,angMode:"rel",angs:""});
   else if(t==="hole") S.parts.push({t:"hole",mode:"xy",x:0,y:0,th:0,r:0,ex:0,ey:0});
   else S.parts.push({t:"axis",bx:0,by:0,th:45,L:50,tip:0,left:"15",right:"15",
@@ -979,7 +996,7 @@ function draw(){
 
 /* ═══ 記録表 ═══ */
 function addRec(){
-  if(!(S.sel&&S.sel.length===2)){ alert("穴間ピッチの一覧から1組選んでください。"); return; }
+  if(!(S.sel&&S.sel.length===2)){ toast("穴間ピッチの一覧から1組選んでください。"); return; }
   var k=S.sel[0]+"|"+S.sel[1];
   if(S.rec.some(function(r){ return r.ka+"|"+r.kb===k; })) return;
   S.rec.push({ka:S.sel[0], kb:S.sel[1], meas:""});
@@ -1009,11 +1026,11 @@ function renderRec(){
 function toClip(rows, what, note){
   var txt2=rows.map(function(r){return r.join(",");}).join("\n");
   if(navigator.clipboard&&navigator.clipboard.writeText)
-    navigator.clipboard.writeText(txt2).then(function(){ alert(what+"をコピーしました（"+(rows.length-1)+" 行）"+(note?"\n"+note:"")); },function(){ alert("コピーできませんでした"); });
-  else alert("この端末ではコピーできません");
+    navigator.clipboard.writeText(txt2).then(function(){ toast(what+"をコピーしました（"+(rows.length-1)+" 行）"+(note?" ／ "+note:"")); },function(){ toast("コピーできませんでした"); });
+  else toast("この端末ではコピーできません");
 }
 function copyPos(){
-  if(!H.length){ alert("先に部品を追加してください。"); return; }
+  if(!H.length){ toast("先に部品を追加してください。"); return; }
   var O=origin(), rows=[["hole","X","Y","source"]];
   H.forEach(function(p){ rows.push([p.key, f3(p.x-O.x), f3(p.y-O.y), p.src]); });
   toClip(rows, "座標", "原点＝"+O.lb);
@@ -1061,25 +1078,6 @@ function restore(){
             x:numOK(q.x)?q.x:0, y:numOK(q.y)?q.y:0 };
     if(o.v) IDS.forEach(function(i){ if(o.v[i]!=null&&o.v[i]!=="") g(i).value=o.v[i]; });
   }catch(e){}
-}
-function armClear(btn){
-  if(!btn.getAttribute("data-armed")){
-    btn.setAttribute("data-armed","1");
-    if(!btn.getAttribute("data-lbl")) btn.setAttribute("data-lbl", btn.textContent);
-    btn.textContent="もう一度押すと消去";
-    setTimeout(function(){ if(btn.getAttribute("data-armed")){ btn.removeAttribute("data-armed"); btn.textContent=btn.getAttribute("data-lbl"); } }, 3000);
-    return;
-  }
-  try{ localStorage.removeItem("holemap_v1"); }catch(e){}
-  S.parts=[]; S.work={w:NaN,h:NaN,org:"center"}; S.sel=null; S.rec=[]; S.org={kind:"common",pi:0,key:"",x:0,y:0}; try{ renderParts(); calc(); }catch(e){}
-  try{ location.reload(); }catch(e){}
-}
-function wipe(){
-  if(!confirm("この端末に保存された入力・記録をすべて消します。よろしいですか？")) return;
-  try{ localStorage.removeItem(KEY); }catch(e){}
-  S.parts=[]; S.work={w:NaN,h:NaN,org:"center"}; S.sel=null; S.rec=[];
-  S.org={kind:"common",pi:0,key:"",x:0,y:0};
-  renderParts(); calc();
 }
 
 /* ═══ 起動 ═══ */
@@ -1279,5 +1277,38 @@ renderParts(); calc();
   };
 })();
 </script>
+<script>
+/* ═══ 一括消去の共通処理（全ツール共通 / 確認ダイアログは使いません） ═══
+     1回目 … ボタンが「もう一度押すと消去」に変わります（3秒で自動解除）
+     2回目 … 保存データを消して、最初の状態に戻します
+     ※ 確認ポップアップ（ダイアログ）はPWA等で無効化されるため使いません      */
+(function(){
+  "use strict";
+  var KEY = "holemap_v1";
+  window.armClear = function(btn){
+    if(!btn || !btn.getAttribute) return;
+    if(!btn.getAttribute("data-armed")){
+      btn.setAttribute("data-armed","1");
+      if(!btn.getAttribute("data-lbl")) btn.setAttribute("data-lbl", btn.textContent);
+      btn.textContent = "もう一度押すと消去";
+      if(btn.classList) btn.classList.add("arm");
+      setTimeout(function(){
+        if(btn.getAttribute("data-armed")){
+          btn.removeAttribute("data-armed");
+          btn.textContent = btn.getAttribute("data-lbl");
+          if(btn.classList) btn.classList.remove("arm");
+        }
+      }, 3000);
+      return;
+    }
+    btn.removeAttribute("data-armed");
+    if(btn.classList) btn.classList.remove("arm");
+    if(btn.getAttribute("data-lbl")) btn.textContent = btn.getAttribute("data-lbl");
+    try{ localStorage.removeItem(KEY); }catch(e){}
+    try{ location.reload(); }catch(e){}
+  };
+})();
+</script>
+<div class="toast" id="toast"></div>
 </body>
 </html>

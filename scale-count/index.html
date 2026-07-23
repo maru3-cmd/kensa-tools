@@ -229,7 +229,7 @@
     <h1>はかり数取器<small>重量カウント:小分け記録と総個数</small></h1>
     <a href="../index.html">≡ ツール一覧</a>
   </header>
-  <div class="topClear noprint" style="display:flex;justify-content:flex-end;margin:6px 2px 0"><button type="button" aria-label="一括消去して新しく始める" style="font-weight:700;font-size:12px;color:#B23B2E;background:#FBECEA;border:1px solid #E7B7B0;border-radius:9px;padding:7px 13px;cursor:pointer" onclick="if(confirm('このツールの入力・データをすべて消して新しく始めますか？（元に戻せません）')){try{localStorage.removeItem('scale-count-v1');}catch(e){}location.reload();}">一括消去（新しく始める）</button></div>
+  <div class="topClear noprint" style="display:flex;justify-content:flex-end;margin:6px 2px 0"><button type="button" aria-label="一括消去して新しく始める" style="font-weight:700;font-size:12px;color:#B23B2E;background:#FBECEA;border:1px solid #E7B7B0;border-radius:9px;padding:7px 13px;cursor:pointer" onclick="armClear(this)">一括消去（新しく始める）</button></div>
 
 <details class="guide noprint">
   <summary>使い方と例を見る</summary>
@@ -354,7 +354,7 @@
     <div class="caphint" id="planHint"></div>
   </div>
 
-  <button class="clearBtn" type="button" id="clearBtn">すべて消去(記録と設定)</button>
+  <button class="clearBtn" type="button" id="clearBtn" onclick="armClear(this)">すべて消去(記録と設定)</button>
 
   <footer>
     入力値はどこにも送信されません。記録はこの端末のブラウザ内にのみ保存され、<br>
@@ -569,28 +569,7 @@
   });
 
   // すべて消去(2度押し)
-  var armTimer=null;
-  $('clearBtn').addEventListener('click',function(){
-    var b=$('clearBtn');
-    if(!b.classList.contains('arm')){
-      b.classList.add('arm');
-      b.textContent='もう一度タップで完全消去';
-      armTimer=setTimeout(function(){
-        b.classList.remove('arm');
-        b.textContent='すべて消去(記録と設定)';
-      },3000);
-      return;
-    }
-    clearTimeout(armTimer);
-    state={date:today(),n:'',g:'',tare:'',batches:[]};
-    try{localStorage.removeItem(KEY)}catch(e){}
-    b.classList.remove('arm');
-    b.textContent='すべて消去(記録と設定)';
-    $('qtyIn').value='';
-    toast('すべて消去しました');
-    render();
-  });
-
+  
   // 記録コピー
   $('copyRec').addEventListener('click',function(){
     var u=unitW(), tare=tareG();
@@ -830,6 +809,38 @@
     if(gd) gd.open=false;
     var fig=document.querySelector('svg#fig, svg#dwg, figure svg, #fig, #dwg');
     if(fig && fig.scrollIntoView) fig.scrollIntoView({behavior:'smooth',block:'center'});
+  };
+})();
+</script>
+<script>
+/* ═══ 一括消去の共通処理（全ツール共通 / 確認ダイアログは使いません） ═══
+     1回目 … ボタンが「もう一度押すと消去」に変わります（3秒で自動解除）
+     2回目 … 保存データを消して、最初の状態に戻します
+     ※ 確認ポップアップ（ダイアログ）はPWA等で無効化されるため使いません      */
+(function(){
+  "use strict";
+  var KEY = "scale-count-v1";
+  window.armClear = function(btn){
+    if(!btn || !btn.getAttribute) return;
+    if(!btn.getAttribute("data-armed")){
+      btn.setAttribute("data-armed","1");
+      if(!btn.getAttribute("data-lbl")) btn.setAttribute("data-lbl", btn.textContent);
+      btn.textContent = "もう一度押すと消去";
+      if(btn.classList) btn.classList.add("arm");
+      setTimeout(function(){
+        if(btn.getAttribute("data-armed")){
+          btn.removeAttribute("data-armed");
+          btn.textContent = btn.getAttribute("data-lbl");
+          if(btn.classList) btn.classList.remove("arm");
+        }
+      }, 3000);
+      return;
+    }
+    btn.removeAttribute("data-armed");
+    if(btn.classList) btn.classList.remove("arm");
+    if(btn.getAttribute("data-lbl")) btn.textContent = btn.getAttribute("data-lbl");
+    try{ localStorage.removeItem(KEY); }catch(e){}
+    try{ location.reload(); }catch(e){}
   };
 })();
 </script>

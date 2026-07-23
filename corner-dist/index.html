@@ -200,6 +200,14 @@
   .guide .gbtn{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;font:inherit;font-size:11.5px;font-weight:600;border:1px solid #1F3341;border-radius:6px;background:#fff;color:#1F3341;cursor:pointer;margin-top:2px}
   .guide .gbtn:active{transform:translateY(1px)}
   @media(max-width:360px){.guide .gxin{flex-direction:column}.guide .gfig svg{width:128px;height:128px}}
+  .toast{
+    position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);
+    background:var(--ink);color:#fff;font-size:13px;
+    padding:9px 20px;border-radius:20px;opacity:0;pointer-events:none;
+    transition:opacity .25s,transform .25s;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (prefers-reduced-motion:reduce){.toast{transition:none}}
 </style>
 </head>
 <body>
@@ -209,7 +217,7 @@
   <h1>角－角 距離<small>凹み形状の全頂点間も</small></h1>
   <a href="../index.html">≡ ツール一覧</a>
 </header>
-  <div class="topClear noprint" style="display:flex;justify-content:flex-end;margin:6px 2px 0"><button type="button" aria-label="一括消去して新しく始める" style="font-weight:700;font-size:12px;color:#B23B2E;background:#FBECEA;border:1px solid #E7B7B0;border-radius:9px;padding:7px 13px;cursor:pointer" onclick="if(confirm('このツールの入力・データをすべて消して新しく始めますか？（元に戻せません）')){try{localStorage.removeItem('cornerdist_v1');}catch(e){}location.reload();}">一括消去（新しく始める）</button></div>
+  <div class="topClear noprint" style="display:flex;justify-content:flex-end;margin:6px 2px 0"><button type="button" aria-label="一括消去して新しく始める" style="font-weight:700;font-size:12px;color:#B23B2E;background:#FBECEA;border:1px solid #E7B7B0;border-radius:9px;padding:7px 13px;cursor:pointer" onclick="armClear(this)">一括消去（新しく始める）</button></div>
 
 <details class="guide noprint">
   <summary>使い方と例を見る</summary>
@@ -481,7 +489,7 @@
     </div>
     <div class="btnrow noprint" style="margin-top:10px">
       <button class="btn" onclick="window.print()">印刷 / PDF</button>
-      <button class="btn warn sm" onclick="wipe()">保存データを消去</button>
+      <button class="btn warn sm" onclick="armClear(this)">保存データを消去</button>
     </div>
   </div>
 
@@ -512,6 +520,15 @@ function numOK(v){ return typeof v==="number" && isFinite(v); }  /* isFinite(nul
 function f(v){ return (numOK(v)? v.toFixed(DEC) : "-"); }
 function f1(v){ return (isFinite(v)? v.toFixed(1) : "-"); }
 function num(id){ var v = parseFloat(document.getElementById(id).value); return isFinite(v)? v : NaN; }
+
+/* ═══ 通知トースト（全ツール共通） ═══
+     alert は confirm と同じく PWA 等でダイアログが無効化されるため使いません */
+var toastTimer=null;
+function toast(msg){
+  var t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(function(){t.classList.remove("show")},1600);
+}
 
 /* ─────────── 状態 ─────────── */
 var S = {
@@ -762,27 +779,27 @@ function presetInfo(){
 function applyPreset(){
   var t=document.getElementById("preset").value;
   var L=num("pL"), W=num("pW"), a=num("pa"), b=num("pb");
-  if(!(L>0&&W>0)){ alert("L と W を入れてください。"); return; }
+  if(!(L>0&&W>0)){ toast("L と W を入れてください。"); return; }
   var v=[];
   if(t==="rect")      v=[[0,0],[L,0],[L,W],[0,W]];
-  else if(t==="chamfer"){ if(!(a>0)){alert("隅切り量 c を入れてください。");return;} v=[[a,0],[L-a,0],[L,a],[L,W-a],[L-a,W],[a,W],[0,W-a],[0,a]]; }
-  else if(t==="notch"){   if(!(a>0&&b>0)){alert("a と b を入れてください。");return;} v=[[0,0],[L,0],[L,W-b],[L-a,W-b],[L-a,W],[0,W]]; }
-  else if(t==="lshape"){  if(!(a>0&&b>0)){alert("a と b を入れてください。");return;} v=[[0,0],[L,0],[L,b],[a,b],[a,W],[0,W]]; }
-  else if(t==="center"){  if(!(a>0&&b>0)){alert("a と b を入れてください。");return;} v=[[0,0],[L,0],[L,W],[(L+a)/2,W],[(L+a)/2,W-b],[(L-a)/2,W-b],[(L-a)/2,W],[0,W]]; }
+  else if(t==="chamfer"){ if(!(a>0)){toast("隅切り量 c を入れてください。");return;} v=[[a,0],[L-a,0],[L,a],[L,W-a],[L-a,W],[a,W],[0,W-a],[0,a]]; }
+  else if(t==="notch"){   if(!(a>0&&b>0)){toast("a と b を入れてください。");return;} v=[[0,0],[L,0],[L,W-b],[L-a,W-b],[L-a,W],[0,W]]; }
+  else if(t==="lshape"){  if(!(a>0&&b>0)){toast("a と b を入れてください。");return;} v=[[0,0],[L,0],[L,b],[a,b],[a,W],[0,W]]; }
+  else if(t==="center"){  if(!(a>0&&b>0)){toast("a と b を入れてください。");return;} v=[[0,0],[L,0],[L,W],[(L+a)/2,W],[(L+a)/2,W-b],[(L-a)/2,W-b],[(L-a)/2,W],[0,W]]; }
   S.contour = v.map(function(p){ return {x:p[0], y:p[1], z:null}; });
   S.sel=null; refreshCon();
 }
 function clearContour(){ S.contour=[]; S.sel=null; refreshCon(); }
 function addVertex(){
-  if(S.contour.length>=20){ alert("輪郭は 20 点までです。"); return; }
+  if(S.contour.length>=20){ toast("輪郭は 20 点までです。"); return; }
   var last = S.contour[S.contour.length-1] || {x:0,y:0};
   S.contour.push({x:last.x, y:last.y, z:null}); refreshCon();
 }
 function delVertex(i){ S.contour.splice(i,1); S.sel=null; refreshCon(); }
 function stepV(dx,dy){
   var len=num("stepLen");
-  if(!isFinite(len)||len===0){ alert("長さを入れてください。"); return; }
-  if(S.contour.length>=20){ alert("輪郭は 20 点までです。"); return; }
+  if(!isFinite(len)||len===0){ toast("長さを入れてください。"); return; }
+  if(S.contour.length>=20){ toast("輪郭は 20 点までです。"); return; }
   var last = S.contour[S.contour.length-1] || {x:0,y:0};
   S.contour.push({x:last.x+dx*len, y:last.y+dy*len, z:null}); refreshCon();
 }
@@ -809,7 +826,7 @@ function refreshCon(){ renderVT(); renderFigs(); renderPairs(); renderDRO(); ren
 
 /* ═══════════ 座標タブ ═══════════ */
 function addFree(){
-  if(S.free.length>=40){ alert("点は 40 までです。"); return; }
+  if(S.free.length>=40){ toast("点は 40 までです。"); return; }
   S.free.push({label:"P"+(S.free.length+1), x:0, y:0, z:0}); refreshFree();
 }
 function clearFree(){ S.free=[]; S.sel=null; refreshFree(); }
@@ -837,7 +854,7 @@ function refreshFree(){ renderFT(); renderFigs(); renderPairs(); renderDRO(); re
 
 /* ═══════════ 記録表 ═══════════ */
 function addToList(){
-  if(!S.sel){ alert("距離の一覧から 1 組選んでください。"); return; }
+  if(!S.sel){ toast("距離の一覧から 1 組選んでください。"); return; }
   var k=S.sel[0]+"|"+S.sel[1];
   if(S.list.some(function(r){ return r.la+"|"+r.lb===k; })){ return; }
   S.list.push({la:S.sel[0], lb:S.sel[1], meas:""});
@@ -870,9 +887,9 @@ function copyCSV(){
   pairs().forEach(function(p){ rows.push([p.a.label+"-"+p.b.label, f(p.d), f(p.b.x-p.a.x), f(p.b.y-p.a.y), f(p.b.z-p.a.z)]); });
   var txt = rows.map(function(r){return r.join(",");}).join("\n");
   if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(txt).then(function(){ alert("距離表をコピーしました（"+(rows.length-1)+" 行）"); },function(){ fallback(txt); });
+    navigator.clipboard.writeText(txt).then(function(){ toast("距離表をコピーしました（"+(rows.length-1)+" 行）"); },function(){ fallback(txt); });
   } else fallback(txt);
-  function fallback(t){ var ta=document.createElement("textarea"); ta.value=t; document.body.appendChild(ta); ta.select(); try{document.execCommand("copy"); alert("コピーしました");}catch(e){alert("コピーできませんでした");} document.body.removeChild(ta); }
+  function fallback(t){ var ta=document.createElement("textarea"); ta.value=t; document.body.appendChild(ta); ta.select(); try{document.execCommand("copy"); toast("コピーしました");}catch(e){toast("コピーできませんでした");} document.body.removeChild(ta); }
 }
 
 /* ═══════════ 保存 ═══════════ */
@@ -903,12 +920,6 @@ function restore(){
     if(d.by)   document.getElementById("recBy").value=d.by;
     if(d.tol)  document.getElementById("recTol").value=d.tol;
   }catch(e){}
-}
-function wipe(){
-  if(!confirm("この端末に保存された入力・記録をすべて消します。よろしいですか？")) return;
-  try{ localStorage.removeItem(KEY); }catch(e){}
-  S.contour=[]; S.free=[]; S.list=[]; S.sel=null;
-  refreshCon(); refreshFree();
 }
 
 /* ═══════════ タブ ═══════════ */
@@ -1129,5 +1140,38 @@ setTab(S.savedTab || "box");
   };
 })();
 </script>
+<script>
+/* ═══ 一括消去の共通処理（全ツール共通 / 確認ダイアログは使いません） ═══
+     1回目 … ボタンが「もう一度押すと消去」に変わります（3秒で自動解除）
+     2回目 … 保存データを消して、最初の状態に戻します
+     ※ 確認ポップアップ（ダイアログ）はPWA等で無効化されるため使いません      */
+(function(){
+  "use strict";
+  var KEY = "cornerdist_v1";
+  window.armClear = function(btn){
+    if(!btn || !btn.getAttribute) return;
+    if(!btn.getAttribute("data-armed")){
+      btn.setAttribute("data-armed","1");
+      if(!btn.getAttribute("data-lbl")) btn.setAttribute("data-lbl", btn.textContent);
+      btn.textContent = "もう一度押すと消去";
+      if(btn.classList) btn.classList.add("arm");
+      setTimeout(function(){
+        if(btn.getAttribute("data-armed")){
+          btn.removeAttribute("data-armed");
+          btn.textContent = btn.getAttribute("data-lbl");
+          if(btn.classList) btn.classList.remove("arm");
+        }
+      }, 3000);
+      return;
+    }
+    btn.removeAttribute("data-armed");
+    if(btn.classList) btn.classList.remove("arm");
+    if(btn.getAttribute("data-lbl")) btn.textContent = btn.getAttribute("data-lbl");
+    try{ localStorage.removeItem(KEY); }catch(e){}
+    try{ location.reload(); }catch(e){}
+  };
+})();
+</script>
+<div class="toast" id="toast"></div>
 </body>
 </html>

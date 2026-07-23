@@ -623,20 +623,6 @@ function doClearAll(){
   S={ tot:"", tags:[] }; var i; for(i=0;i<NF;i++) S.tags.push(newTag());
   var ti=g("totIn"); if(ti) ti.value=""; renderTags(); calc(); persist(); toast("消去しました");
 }
-var armed=false, armTimer=null;
-function onClear(){
-  var b=g("clearBtn");
-  if(!armed){ armed=true; b.classList.add("arm"); b.textContent="もう一度押すと消去"; armTimer=setTimeout(function(){armed=false;b.classList.remove("arm");b.textContent="すべて消去";},2500); return; }
-  clearTimeout(armTimer); armed=false; b.classList.remove("arm"); b.textContent="すべて消去";
-  doClearAll();
-}
-var armedTop=false, armTopTimer=null;
-function onClearTop(){
-  var b=g("clearTop");
-  if(!armedTop){ armedTop=true; if(b){ b.textContent="もう一度で消去"; b.classList.add("arm"); } armTopTimer=setTimeout(function(){ armedTop=false; if(b){ b.textContent="すべて消去"; b.classList.remove("arm"); } },2500); return; }
-  clearTimeout(armTopTimer); armedTop=false; if(b){ b.textContent="すべて消去"; b.classList.remove("arm"); }
-  doClearAll();
-}
 var tt=null; function toast(m){ var t=g("toast"); t.textContent=m; t.classList.add("show"); clearTimeout(tt); tt=setTimeout(function(){t.classList.remove("show");},1600); }
 
 /* ── 保存 ── */
@@ -675,11 +661,43 @@ function init(){
   var b;
   b=g("totIn"); if(b) b.addEventListener("input",function(){ var v=this.value.replace(/[^\d]/g,""); if(this.value!==v)this.value=v; S.tot=v; calc(); persist(); });
   b=g("copyBtn"); if(b) b.addEventListener("click",copyRec);
-  b=g("clearBtn"); if(b) b.addEventListener("click",onClear);
-  b=g("clearTop"); if(b) b.addEventListener("click",onClearTop);
+  b=g("clearBtn"); if(b) b.addEventListener("click",function(){armClear(this)});
+  b=g("clearTop"); if(b) b.addEventListener("click",function(){armClear(this)});
   b=g("exBtn"); if(b) b.addEventListener("click",tryExample);
 }
 if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",init); else init();
+</script>
+<script>
+/* ═══ 一括消去の共通処理（全ツール共通 / 確認ダイアログは使いません） ═══
+     1回目 … ボタンが「もう一度押すと消去」に変わります（3秒で自動解除）
+     2回目 … 保存データを消して、最初の状態に戻します
+     ※ 確認ポップアップ（ダイアログ）はPWA等で無効化されるため使いません      */
+(function(){
+  "use strict";
+  var KEY = "tally_count_v3";
+  window.armClear = function(btn){
+    if(!btn || !btn.getAttribute) return;
+    if(!btn.getAttribute("data-armed")){
+      btn.setAttribute("data-armed","1");
+      if(!btn.getAttribute("data-lbl")) btn.setAttribute("data-lbl", btn.textContent);
+      btn.textContent = "もう一度押すと消去";
+      if(btn.classList) btn.classList.add("arm");
+      setTimeout(function(){
+        if(btn.getAttribute("data-armed")){
+          btn.removeAttribute("data-armed");
+          btn.textContent = btn.getAttribute("data-lbl");
+          if(btn.classList) btn.classList.remove("arm");
+        }
+      }, 3000);
+      return;
+    }
+    btn.removeAttribute("data-armed");
+    if(btn.classList) btn.classList.remove("arm");
+    if(btn.getAttribute("data-lbl")) btn.textContent = btn.getAttribute("data-lbl");
+    try{ localStorage.removeItem(KEY); }catch(e){}
+    try{ location.reload(); }catch(e){}
+  };
+})();
 </script>
 </body>
 </html>
