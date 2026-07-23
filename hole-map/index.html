@@ -136,6 +136,33 @@
   .guide .gbtn{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;font:inherit;font-size:11.5px;font-weight:600;border:1px solid #1F3341;border-radius:6px;background:#fff;color:#1F3341;cursor:pointer;margin-top:2px}
   .guide .gbtn:active{transform:translateY(1px)}
   @media(max-width:360px){.guide .gxin{flex-direction:column}.guide .gfig svg{width:128px;height:128px}}
+  /* ── 作り直しUI（v25）：部品カード一覧・段階フォーム ── */
+  .plist{margin:2px 0 4px}
+  .pcard{display:flex;align-items:flex-start;gap:8px;background:var(--sheet);border:1px solid #D5DDE2;border-left:4px solid var(--ink);border-radius:9px;padding:8px 10px;margin-bottom:6px}
+  .pcard.baseA{border-left-color:#8FA2AF;align-items:center}
+  .pcard.editing{border-color:#2C5FA0;border-left-color:#2C5FA0;background:#F3F7FB}
+  .pcard .pn{font-weight:800;font-size:13.5px;min-width:30px;letter-spacing:.02em;padding-top:1px}
+  .pcard .pd{flex:1;font-size:11.5px;color:#42586A;line-height:1.55;min-width:0}
+  .pcard .pd b{color:#1F3341}
+  .pcard .err{font-size:10.5px;color:var(--red);font-weight:700;margin-top:3px}
+  .pcard .note{font-size:10.5px;color:var(--green);font-weight:700;margin-top:3px}
+  .pcard .act{font-size:11px;font-weight:700;color:#2C5FA0;cursor:pointer;padding:4px 2px;background:none;border:none;font-family:inherit;flex:none}
+  .pcard .act.del{color:#B23B2E;margin-left:2px}
+  .addform{background:var(--sheet);border:1.5px dashed var(--ink);border-radius:11px;padding:11px 12px 12px;margin-bottom:12px}
+  .addform.edit{border-style:solid;border-color:#2C5FA0}
+  .stephead{font-size:13px;font-weight:800;letter-spacing:.03em;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .ebadge{display:none;font-size:10px;font-weight:700;color:#fff;background:#2C5FA0;border-radius:5px;padding:2px 7px}
+  .addform.edit .ebadge{display:inline-block}
+  .steplab{font-size:10.5px;font-weight:700;color:#8FA2AF;letter-spacing:.08em;margin:10px 0 5px}
+  .chips2{display:flex;flex-wrap:wrap;gap:6px}
+  .chip2{font-size:12px;font-weight:700;padding:7px 11px;border:1.5px solid var(--ink);border-radius:8px;background:var(--sheet);color:var(--ink);cursor:pointer;font-family:inherit}
+  .chip2.on{background:var(--ink);color:#fff}
+  .chip2.blue.on{background:#2C5FA0;border-color:#2C5FA0}
+  .addgo{width:100%;margin-top:12px;font-size:13px;font-weight:800;padding:11px 8px;border:none;border-radius:9px;background:var(--ink);color:#fff;cursor:pointer;font-family:inherit}
+  .addgo:active{background:#D63426}
+  .cancelE{display:none;width:100%;margin-top:6px;font-size:11.5px;font-weight:700;padding:8px;border:1px solid #8FA2AF;border-radius:8px;background:#fff;color:#5B707E;cursor:pointer;font-family:inherit}
+  .addform.edit .cancelE{display:block}
+  .convnote{font-size:10.5px;color:#5B707E;margin:0 2px 8px;line-height:1.6}
   .toast{
     position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);
     background:var(--ink);color:#fff;font-size:13px;
@@ -160,10 +187,10 @@
   <div class="gb">
     <h4>使い方</h4>
     <ol>
-      <li>「＋ PCD（等配／不等配）」「＋ 任意穴」「＋ 軸配置」で部品を足し、<b>ひとつの共通原点 (0,0)</b> の上に自由に重ねます。</li>
-      <li>角度は<b>真上0°・時計回り＋</b>。任意穴は「X,Yで」「角度と距離で」「端面から」の3通り。</li>
-      <li>図面まるごとを1枚で入れると、<b>全穴の座標</b>と<b>総当たりの穴間ピッチ</b>が出ます。行をタップで図と連動します。</li>
-      <li><b>同じ穴パターンが PCD の各点にあるとき</b>は、「＋軸配置」で<b>「PCDの各点に同じパターンを複製する」</b>にチェック。1点ぶん入れるだけで全点に複製され、<b>別の点どうしの穴の距離</b>まで一気に出ます。既定の「隣り合う点だけ」フィルタで、隣の点との距離だけを拾えます（PCDの基準穴は除外）。</li>
+      <li>部品は「<b>1. なにを置く？</b>（PCDの穴／1つの穴／中心線で左右に振る）→ <b>2. どこから測る？</b>（基準）→ <b>3. どう置く？と数値</b>」の順に入れて「この部品を追加」。すべての部品が<b>ひとつの原点 (0, 0)</b> の上に載ります。</li>
+      <li>追加した部品は上の一覧に「<b>A：PCD100 に 6穴 等配…</b>」のように日本語で残り、<b>編集・削除</b>できます。入力中は図に<b>プレビュー（破線の赤丸・寸法線・角度）</b>がその場で描かれます。</li>
+      <li>角度は<b>真上0°・時計回り＋</b>。図面まるごとを1枚で入れると、<b>全穴の座標</b>と<b>総当たりの穴間ピッチ</b>が出ます。行をタップで図と連動します。</li>
+      <li><b>同じ穴パターンが PCD の各点にあるとき</b>は、「中心線で左右に振る」の基準で<b>「PCD ◯ の各点」</b>を選びます。1点ぶん入れるだけで全点に複製され、<b>別の点どうしの穴の距離</b>まで一気に出ます。既定の「隣り合う点だけ」フィルタで、隣の点との距離だけを拾えます（PCDの基準穴は除外）。</li>
       <li>単一PCDの穴間ピッチや単純な弦長だけなら PCD穴ピッチ（TOOL-02）が手軽です。複数PCDや任意穴の混在はこの画面でまとめられます。</li>
     </ol>
     <div class="gx">
@@ -183,7 +210,7 @@
         </svg></div>
         <div class="gtxt">
           <p>まずは1部品だけ。PCD100 に6穴を等配したときの穴間ピッチは？</p>
-          <p class="gset">＋PCD（等配） ／ PCD 100 ／ 穴数 6 ／ 起点角 0</p>
+          <p class="gset">PCDの穴 ／ 等配 ／ PCD 100 ／ 穴数 6 ／ 起点角 0</p>
           <p class="gread">読み方：全6穴の座標と 15組の穴間ピッチが出ます。隣り合う穴は <b>50.000mm</b>、対角は 100.000mm（表の行をタップで拡大表示）。</p>
           <button class="gbtn" type="button" data-ex='{"set":[{"setState":{"parts":[{"t":"circle","cx":0,"cy":0,"pcd":100,"mode":"eq","n":6,"th0":0,"dir":1,"angMode":"rel","angs":""}]},"apply":"renderParts;build;calc;persist"}]}' onclick="tryExample(this)">この例を試す</button>
         </div>
@@ -213,7 +240,7 @@
         </svg></div>
         <div class="gtxt">
           <p>PCD の 20 点それぞれに、中心線上へ左 25・右 35、外向き 40 の先端穴がある部品。<b>1点ぶんだけ入力</b>すれば 20 点すべてに複製され、<b>別の点どうしの穴の距離</b>まで出ます。</p>
-          <p class="gset">＋PCD（等配）→ PCD 100／穴数 20／起点角 0<br>＋軸配置 →「PCDの各点に複製」ON／PCD A／向き＝半径方向を0／角度 30／L 40／左 25／右 35／先端 ON</p>
+          <p class="gset">PCDの穴 → PCD 100／穴数 20／起点角 0<br>中心線で左右に振る → 基準「PCD A の各点」／向き＝外向き（半径方向）を0／L 40／角度 30／左 25／右 35／先端 ON</p>
           <p class="gread">読み方：全 80 穴の座標が出ます。既定の「隣り合う点だけ」フィルタで、<b>隣の点の先端どうし＝27.211mm</b>、左穴どうし＝30.397mm などが並びます（この例の数値）。表の行をタップで図に距離線。</p>
           <button class="gbtn" type="button" data-ex='{"set":[{"setState":{"parts":[{"t":"circle","cx":0,"cy":0,"pcd":100,"mode":"eq","n":20,"th0":0,"dir":1,"angMode":"rel","angs":""},{"t":"axis","bx":0,"by":0,"th":30,"L":40,"tip":1,"left":"25","right":"35","rep":1,"repPi":0,"repAng":"radial","repWhich":"all","repList":""}],"filter":"gadj"},"apply":"renderParts;build;calc;persist"}]}' onclick="tryExample(this)">この例を試す</button>
         </div>
@@ -232,29 +259,138 @@
 </div>
 
 <div class="card">
-  <h2>部品の入力<span class="tag" id="cCount">0 個</span></h2>
-  <div class="banner">角度は<b>真上（12時）が 0°</b>、<b>時計回りが＋</b>です（PCD穴ピッチと同じ規約）。すべての部品が<b>ひとつの共通原点 (0, 0)</b> の上に載ります。</div>
-  <div id="cBox"></div>
-  <div class="btnrow">
-    <button class="btn primary sm" onclick="addPart('circle','eq')">＋ PCD（等配）</button>
-    <button class="btn sm" onclick="addPart('circle','un')">＋ PCD（不等配）</button>
+  <h2>部品の一覧<span class="tag" id="cCount">0 個</span></h2>
+  <div class="convnote">角度は<b>真上（12時）が 0°・時計回りが＋</b>（PCD穴ピッチと同じ規約）。すべての部品は<b>ひとつの原点 (0, 0)</b> から測ります。</div>
+  <div class="plist" id="cBox"></div>
+</div>
+
+<div class="addform noprint" id="addForm">
+  <div class="stephead">部品を追加<span class="ebadge" id="ebadge">編集中</span></div>
+  <div class="steplab">1. なにを置く？</div>
+  <div class="chips2" id="typeChips">
+    <button type="button" class="chip2 on" data-t="circle">PCDの穴</button>
+    <button type="button" class="chip2" data-t="hole">1つの穴</button>
+    <button type="button" class="chip2" data-t="axis">中心線で左右に振る</button>
   </div>
-  <div class="btnrow" style="margin-top:8px">
-    <button class="btn sm" onclick="addPart('hole')">＋ 任意穴</button>
-    <button class="btn sm" onclick="addPart('axis')">＋ 軸配置</button>
+  <div class="steplab">2. どこから測る？（基準）</div>
+  <div class="chips2" id="baseChips"></div>
+  <div class="steplab">3. どう置く？と数値</div>
+
+  <div id="fg_circle">
+    <div class="chips2" id="cModeChips">
+      <button type="button" class="chip2 on" data-cm="eq">等配</button>
+      <button type="button" class="chip2" data-cm="un">不等配</button>
+    </div>
+    <div id="fCxy" class="row" style="display:none;margin-top:8px">
+      <div><label class="f">中心X（原点から右＋）</label><input type="text" inputmode="decimal" autocomplete="off" id="fCx" placeholder="0"></div>
+      <div><label class="f">中心Y（上＋）</label><input type="text" inputmode="decimal" autocomplete="off" id="fCy" placeholder="0"></div>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <div><label class="f">PCD</label><input type="text" inputmode="decimal" autocomplete="off" id="fPcd" placeholder="100" data-fk="dist"></div>
+      <div><label class="f">回り方向</label>
+        <div class="chips2" id="cDirChips" style="margin-top:3px">
+          <button type="button" class="chip2 on" data-cd="1">時計回り</button>
+          <button type="button" class="chip2" data-cd="-1">反時計</button>
+        </div>
+      </div>
+    </div>
+    <div id="fEq">
+      <div class="row">
+        <div><label class="f">穴数 n</label><input type="text" inputmode="numeric" autocomplete="off" id="fN" placeholder="6"></div>
+        <div><label class="f">起点角 θ₀（真上＝0）</label><input type="text" inputmode="decimal" autocomplete="off" id="fTh0" placeholder="0" data-fk="ang"></div>
+      </div>
+      <div class="chips" id="nQuick" role="group" aria-label="穴数を選ぶ（2〜12）">
+        <button type="button" data-n="2" aria-pressed="false">2</button><button type="button" data-n="3" aria-pressed="false">3</button><button type="button" data-n="4" aria-pressed="false">4</button><button type="button" data-n="5" aria-pressed="false">5</button><button type="button" data-n="6" aria-pressed="false">6</button><button type="button" data-n="7" aria-pressed="false">7</button><button type="button" data-n="8" aria-pressed="false">8</button><button type="button" data-n="9" aria-pressed="false">9</button><button type="button" data-n="10" aria-pressed="false">10</button><button type="button" data-n="11" aria-pressed="false">11</button><button type="button" data-n="12" aria-pressed="false">12</button>
+      </div>
+    </div>
+    <div id="fUn" style="display:none">
+      <div class="chips2" id="angModeChips">
+        <button type="button" class="chip2 on" data-am="rel">隣との角度（最後は省略可）</button>
+        <button type="button" class="chip2" data-am="abs">真上からの角度</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <div style="flex:2"><label class="f">角度の並び（スペース区切り）</label><input type="text" inputmode="decimal" autocomplete="off" id="fAngs" placeholder="30 150 30 150"></div>
+        <div><label class="f">起点角 θ₀</label><input type="text" inputmode="decimal" autocomplete="off" id="fTh0u" placeholder="0" data-fk="ang"></div>
+      </div>
+    </div>
   </div>
+
+  <div id="fg_hole" style="display:none">
+    <div id="fHplace" class="chips2">
+      <button type="button" class="chip2 on" data-hp="xy">X・Yで</button>
+      <button type="button" class="chip2" data-hp="polar">距離と角度で</button>
+    </div>
+    <div id="fHxy" class="row" style="margin-top:8px">
+      <div><label class="f">原点から X（右＋）</label><input type="text" inputmode="decimal" autocomplete="off" id="fHx" placeholder="―" data-fk="dist"></div>
+      <div><label class="f">原点から Y（上＋）</label><input type="text" inputmode="decimal" autocomplete="off" id="fHy" placeholder="―" data-fk="dist"></div>
+    </div>
+    <div id="fHpolar" class="row" style="display:none;margin-top:8px">
+      <div><label class="f">原点からの距離</label><input type="text" inputmode="decimal" autocomplete="off" id="fHr" placeholder="―" data-fk="dist"></div>
+      <div><label class="f">角度（真上＝0・時計＋）</label><input type="text" inputmode="decimal" autocomplete="off" id="fHth" placeholder="―" data-fk="ang"></div>
+    </div>
+    <div id="fHedge" style="display:none">
+      <div class="row" style="margin-top:8px">
+        <div><label class="f">外形の幅 W</label><input type="text" inputmode="decimal" autocomplete="off" id="fWw" placeholder="―"></div>
+        <div><label class="f">外形の高さ H</label><input type="text" inputmode="decimal" autocomplete="off" id="fWh" placeholder="―"></div>
+        <div><label class="f">原点の位置</label>
+          <select id="fWorg"><option value="center">外形の中心</option><option value="corner">外形の左下隅</option></select>
+        </div>
+      </div>
+      <div class="row">
+        <div><label class="f">左端面から X</label><input type="text" inputmode="decimal" autocomplete="off" id="fEx" placeholder="―" data-fk="dist"></div>
+        <div><label class="f">下端面から Y</label><input type="text" inputmode="decimal" autocomplete="off" id="fEy" placeholder="―" data-fk="dist"></div>
+      </div>
+      <div class="hint">W・H と原点の位置は、下の「ワーク外形」と同じもの（どちらで入れても連動します）。</div>
+    </div>
+  </div>
+
+  <div id="fg_axis" style="display:none">
+    <div id="fAxy" class="row">
+      <div><label class="f">基点X（原点から右＋）</label><input type="text" inputmode="decimal" autocomplete="off" id="fBx" placeholder="0"></div>
+      <div><label class="f">基点Y（上＋）</label><input type="text" inputmode="decimal" autocomplete="off" id="fBy" placeholder="0"></div>
+    </div>
+    <div id="fArep" style="display:none">
+      <div class="chips2">
+        <span id="repAngChips" class="chips2" style="gap:6px">
+          <button type="button" class="chip2 on" data-ra="radial">外向き（半径方向）を0</button>
+          <button type="button" class="chip2" data-ra="abs">真上を0（絶対角）</button>
+        </span>
+      </div>
+      <div class="chips2" id="repWhichChips" style="margin-top:6px">
+        <button type="button" class="chip2 on" data-rw="all">すべての点に</button>
+        <button type="button" class="chip2" data-rw="list">番号・範囲で指定</button>
+      </div>
+      <div id="fRepListRow" style="display:none;margin-top:6px">
+        <label class="f">点番号（起点角の穴から時計回りに 1,2,3…　例 1,5 または 1-7）</label>
+        <input type="text" inputmode="decimal" autocomplete="off" id="fRepList" placeholder="1-7">
+      </div>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <div><label class="f"><span id="aFromLb">基点</span>からの距離 L</label><input type="text" inputmode="decimal" autocomplete="off" id="fL" placeholder="50" data-fk="dist"></div>
+      <div><label class="f">中心線の角度（<span id="aAngLb">真上＝0</span>）</label><input type="text" inputmode="decimal" autocomplete="off" id="fTh" placeholder="45" data-fk="ang"></div>
+    </div>
+    <div class="ckrow"><input type="checkbox" id="fTip"><label for="fTip">先端（L 進んだ位置）にも穴を置く</label></div>
+    <div class="row">
+      <div><label class="f">左へ（スペース区切り）</label><input type="text" inputmode="decimal" autocomplete="off" id="fLeft" placeholder="15"></div>
+      <div><label class="f">右へ</label><input type="text" inputmode="decimal" autocomplete="off" id="fRight" placeholder="15"></div>
+    </div>
+    <div class="hint">左右は<b>基点（各点）から先端を見たときの左手・右手</b>です。中心線と直角に振ります。</div>
+  </div>
+
+  <button class="addgo" type="button" id="addGo">この部品を追加</button>
+  <button class="cancelE" type="button" id="cancelEdit">編集をやめる（変更を破棄）</button>
 </div>
 
 <div class="card">
   <h2>ワーク外形<span class="tag">端面基準を使うときだけ</span></h2>
   <details id="workDtl">
-  <summary style="font-size:12px;font-weight:700;color:#5B707E;cursor:pointer;padding:2px 0 8px">▼ 外形を入れる（任意穴の「端面から」に必要）</summary>
+  <summary style="font-size:12px;font-weight:700;color:#5B707E;cursor:pointer;padding:2px 0 8px">▼ 外形を入れる（「端面から」の穴に必要）</summary>
   <div class="row">
     <div><label class="f">幅 W（X方向）</label><input type="text" inputmode="decimal" autocomplete="off" id="wkW" oninput="workSet('w',this)"></div>
     <div><label class="f">高さ H（Y方向）</label><input type="text" inputmode="decimal" autocomplete="off" id="wkH" oninput="workSet('h',this)"></div>
   </div>
   <div class="row">
-    <div><label class="f">共通原点 (0,0) の位置</label>
+    <div><label class="f">原点 (0, 0) の位置（外形に対して）</label>
       <select id="wkOrg" onchange="workSet('org',this)">
         <option value="center">外形の中心</option>
         <option value="corner">外形の左下隅</option>
@@ -267,7 +403,7 @@
 
 <div class="card">
   <h2>図<span class="tag">タップで選択と連動</span></h2>
-  <figure><svg id="fig" viewBox="0 0 300 300" role="img" aria-label="部品を合成した穴配置の図"></svg><figcaption>上 が 0°／緑の十字が座標の原点</figcaption></figure>
+  <figure><svg id="fig" viewBox="0 0 300 300" role="img" aria-label="部品を合成した穴配置の図"></svg><figcaption>上 が 0°／緑の十字が読み替え原点（既定は原点 0,0）</figcaption></figure>
 </div>
 
 <div class="card">
@@ -276,11 +412,11 @@
   <summary style="font-size:12px;font-weight:700;color:#5B707E;cursor:pointer;padding:2px 0 8px">▼ 座標を表示する（加工用・検査では通常不要）</summary>
   <div class="banner">加工の<b>ワーク原点</b>に合わせて座標を出せます。原点を変えても<b>穴間ピッチは変わりません</b>（相対距離のため）。検査の判定には影響しません。</div>
   <div class="row noprint">
-    <div style="flex:1.1"><label class="f">原点にする場所</label>
+    <div style="flex:1.1"><label class="f">読み替え原点</label>
       <select id="orgKind" onchange="orgSet('kind',this)">
-        <option value="common">共通原点 (0,0)</option>
+        <option value="common">原点 (0, 0) のまま</option>
         <option value="part">部品の基準点</option>
-        <option value="hole">穴</option>
+        <option value="hole">穴を原点に</option>
         <option value="xy">指定した点</option>
       </select>
     </div>
@@ -374,7 +510,7 @@
       <li>離れた部品どうしの穴ピッチは、<b>基準点の位置の精度がそのまま乗ります</b>。中心のズレ（X・Y）や基点は図面値ではなく、可能なら現物で確認してください。</li>
       <li>不等配の「隣との角度」は、<b>最後の1つを省略できます</b>。残り（360°−合計）を自動で補います。例：<b>30 150 30</b> → 4穴目の閉じ角 150°を自動補完。全部（合計360°ちょうど）入れても従来どおり動きます。合計が360°を超えるとエラーになります。</li>
       <li>回り方向を間違えると、鏡像になって同じPCD内のピッチは合うのに他の部品との距離だけ合わない、という紛らわしい形で出ます。図と現物を必ず見比べてください。</li>
-      <li>端面基準は、ワーク外形の <b>W・H と「共通原点の位置」</b>に依存します。中心と左下隅を取り違えると、その穴だけが W/2・H/2 ずれます。図で外形と穴の関係を確認してください。</li>
+      <li>端面基準は、ワーク外形の <b>W・H と「原点の位置」</b>に依存します。中心と左下隅を取り違えると、その穴だけが W/2・H/2 ずれます。図で外形と穴の関係を確認してください。</li>
       <li>ここで出るのは理論値です。合否は記録表の実測との差で判定してください。真位置度で見る場合は真位置度判定ツールへ。</li>
       <li><b>加工に座標を渡す場合。</b>この画面の値は入力した数値から計算したものです。入力を間違えると、間違った座標で加工し、同じ間違った値で検査して「合格」と出ます（検査が独立でなくなる）。加工用に使うときは、必ず図面で照合してから渡してください。</li>
       <li>原点を切り替えても穴間ピッチ・ΔX・ΔY は変わりません（平行移動のため）。検査の判定に影響しない作りにしてあります。</li>
@@ -415,47 +551,15 @@ var S={ parts:[], work:{w:NaN,h:NaN,org:"center"},
         sel:null, filter:"all", sort:"order", rec:[],
         org:{kind:"common", pi:0, key:"", x:0, y:0} };
 
-/* ═══ 部品の編集 ═══ */
-function addPart(t,mode){
-  if(S.parts.length>=MAXPART){ toast("部品は "+MAXPART+" までです。"); return; }
-  if(t==="circle") S.parts.push({t:"circle",cx:0,cy:0,pcd:NaN,mode:mode,n:NaN,th0:0,dir:1,angMode:"rel",angs:""});
-  else if(t==="hole") S.parts.push({t:"hole",mode:"xy",x:0,y:0,th:0,r:0,ex:0,ey:0});
-  else S.parts.push({t:"axis",bx:0,by:0,th:45,L:50,tip:0,left:"15",right:"15",
-                     rep:0,repPi:0,repAng:"radial",repWhich:"all",repList:""});
-  renderParts(); calc(); persist();
-}
-function delPart(i){ S.parts.splice(i,1); S.sel=null; renderParts(); calc(); persist(); }
-function up(i,k,el){
-  var p=S.parts[i], v=el.value;
-  if(k==="mode"||k==="angMode"||k==="repAng"||k==="repWhich"){ p[k]=v; renderParts(); }
-  else if(k==="rep"){ p.rep=el.checked?1:0; if(p.rep && (S.filter==="all"||S.filter==="gcross")) S.filter="gadj"; renderParts(); }
-  else if(k==="repPi"){ p.repPi=parseInt(v,10); }
-  else if(k==="dir"){ p.dir=parseInt(v,10); }
-  else if(k==="angs"||k==="left"||k==="right"||k==="repList"){ p[k]=v; }
-  else if(k==="tip"){ p.tip=el.checked?1:0; }
-  else p[k]=pf(v);
-  S.sel=null; calc(); persist();
-}
-function workSet(k,el){
-  if(k==="org") S.work.org=el.value;
-  else S.work[k]=pf(el.value);
-  S.sel=null; calc(); persist();
-}
-function inp(i,k,v,ph){
-  return '<input type="text" inputmode="decimal" autocomplete="off" value="'+(numOK(v)?v:"")+'" placeholder="'+(ph||"")+'" oninput="up('+i+',\''+k+'\',this)">';
-}
-function nchips(i,cur){
-  var h='',k; for(k=2;k<=12;k++){ h+='<button type="button" aria-pressed="'+(cur===k?'true':'false')+'" onclick="setPartN('+i+','+k+')">'+k+'</button>'; }
-  return h;
-}
-function setPartN(i,v){ if(S.parts[i]){ S.parts[i].n=v; renderParts(); calc(); persist(); } }
-function txt(i,k,v,ph){
-  return '<input type="text" inputmode="decimal" autocomplete="off" value="'+String(v||"").replace(/"/g,"&quot;")+'" oninput="up('+i+',\''+k+'\',this)" placeholder="'+(ph||"")+'">';
-}
-function opt(cur,v,l){ return '<option value="'+v+'"'+(cur===v?" selected":"")+'>'+l+'</option>'; }
+/* ═══ 部品の編集（v25 作り直し：カード一覧＋段階フォーム＋ライブプレビュー） ═══
+   S.parts のスキーマ・build() の計算・保存形式は従来と完全に同一。
+   変わるのは入力のさせ方（UI）だけで、計算結果には触れていない。      */
 
-/* ═══ 複製配置（PCD各点にローカルパターンを複製）用ヘルパー ═══ */
-/* 自分より前にある circle 部品の一覧 {i, nm} を返す（循環防止のため自分の手前まで） */
+function esc(v){ return String(v==null?"":v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function dsp(v){ return numOK(v)? esc(v) : "―"; }
+
+/* ── 複製配置（PCD各点にローカルパターンを複製）用ヘルパー ──
+   自分より前にある circle 部品の一覧 {i, nm} を返す（循環防止のため自分の手前まで） */
 function circleParts(selfIdx){
   var list=[], k;
   for(k=0;k<S.parts.length;k++){ if(k===selfIdx) break; if(S.parts[k].t==="circle") list.push({i:k, nm:LB.charAt(k)}); }
@@ -474,104 +578,452 @@ function parseIdxList(s,n){
   return out;
 }
 
+/* ── 部品カードの日本語表示 ── */
+function partDesc(p){
+  if(p.t==="circle"){
+    var c=(numOK(p.cx)&&numOK(p.cy)&&(p.cx!==0||p.cy!==0))? "中心 ("+dsp(p.cx)+", "+dsp(p.cy)+")" : "中心＝原点";
+    var d=(p.dir===-1)? "反時計回り":"時計回り";
+    if(p.mode==="eq")
+      return "<b>PCD"+dsp(p.pcd)+"</b> に <b>"+dsp(p.n)+"穴 等配</b>・起点"+dsp(p.th0)+"°・"+d+"・"+c;
+    return "<b>PCD"+dsp(p.pcd)+"</b> <b>不等配</b>（"+(p.angMode==="rel"?"隣との角度 ":"真上から ")+(String(p.angs||"").trim()?esc(p.angs):"―")+"）・起点"+dsp(p.th0)+"°・"+d+"・"+c;
+  }
+  if(p.t==="hole"){
+    if(p.mode==="xy")    return "<b>穴 1つ</b>：原点から <b>X "+dsp(p.x)+"・Y "+dsp(p.y)+"</b>";
+    if(p.mode==="polar") return "<b>穴 1つ</b>：原点から <b>距離"+dsp(p.r)+"・角度"+dsp(p.th)+"°</b>";
+    return "<b>穴 1つ</b>：<b>左端面から "+dsp(p.ex)+"・下端面から "+dsp(p.ey)+"</b>";
+  }
+  var lr=[], lt=String(p.left||"").trim(), rt=String(p.right||"").trim();
+  if(p.tip) lr.push("先端");
+  if(lt) lr.push("左 "+esc(lt));
+  if(rt) lr.push("右 "+esc(rt));
+  var tail=lr.length? lr.join("・") : "―";
+  if(p.rep){
+    var w=(p.repWhich==="list")? "点 "+(String(p.repList||"").trim()?esc(p.repList):"―")+" に" : "全点に";
+    return "<b>PCD "+LB.charAt(p.repPi)+"</b> の<b>"+w+"複製</b>：中心線 "+(p.repAng==="radial"?"外向き":"真上")+"基準 "+dsp(p.th)+"°・L"+dsp(p.L)+" → "+tail;
+  }
+  return "<b>中心線で振る</b>：("+dsp(p.bx)+", "+dsp(p.by)+") から L"+dsp(p.L)+"・向き"+dsp(p.th)+"° → "+tail;
+}
+
 function renderParts(){
   var box=g("cBox"), h="";
   g("cCount").textContent=S.parts.length+" 個";
+  h+='<div class="pcard baseA"><span class="pn">原点</span><div class="pd"><b>(0, 0)</b>｜すべての部品はここから測ります</div></div>';
   S.parts.forEach(function(p,i){
     var nm=LB.charAt(i);
-    h+='<div class="circ"><div class="hd"><span class="nm">'+nm+'</span>';
-    if(p.t==="circle"){
-      h+='<select onchange="up('+i+',\'mode\',this)">'+opt(p.mode,"eq","PCD 等配")+opt(p.mode,"un","PCD 不等配")+'</select>'
-       + '<select onchange="up('+i+',\'dir\',this)">'+opt(p.dir,1,"時計回り")+opt(p.dir,-1,"反時計回り")+'</select>';
-    } else if(p.t==="hole"){
-      h+='<span class="ty">任意穴</span>'
-       + '<select onchange="up('+i+',\'mode\',this)">'+opt(p.mode,"xy","X・Y で")+opt(p.mode,"polar","角度と距離で")+opt(p.mode,"edge","端面から")+'</select>';
-    } else {
-      h+='<span class="ty">軸配置</span><span style="flex:1"></span>';
-    }
-    h+='<button class="xbtn" onclick="delPart('+i+')" aria-label="部品'+nm+'を削除">×</button></div>';
-
-    if(p.t==="circle"){
-      h+='<div class="row"><div><label class="f">PCD</label>'+inp(i,"pcd",p.pcd,"100")+'</div>'
-        +'<div><label class="f">中心X（0＝原点）</label>'+inp(i,"cx",p.cx)+'</div>'
-        +'<div><label class="f">中心Y</label>'+inp(i,"cy",p.cy)+'</div></div>';
-      if(p.mode==="eq"){
-        h+='<div class="row"><div><label class="f">穴数 n</label>'
-          +'<input type="text" inputmode="numeric" autocomplete="off" placeholder="6" value="'+(numOK(p.n)?p.n:"")+'" oninput="up('+i+',\'n\',this)"></div>'
-          +'<div><label class="f">起点角 θ₀（真上＝0）</label>'+inp(i,"th0",p.th0)+'</div></div>'
-          +'<div class="chips nchips" role="group" aria-label="穴数を選ぶ（2〜12）">'+nchips(i,p.n)+'</div>';
-      } else {
-        h+='<div class="row"><div style="flex:2"><label class="f">角度の指定</label>'
-          +'<select onchange="up('+i+',\'angMode\',this)">'+opt(p.angMode,"rel","隣との角度（最後は省略可）")+opt(p.angMode,"abs","真上からの角度")+'</select></div>'
-          +'<div><label class="f">起点角 θ₀</label>'+inp(i,"th0",p.th0)+'</div></div>'
-          +'<div><label class="f">角度の並び（スペース区切り）</label>'+txt(i,"angs",p.angs,"30 150 30 150")+'</div>';
-      }
-    }
-
-    else if(p.t==="hole"){
-      if(p.mode==="xy"){
-        h+='<div class="row"><div><label class="f">X</label>'+inp(i,"x",p.x)+'</div>'
-          +'<div><label class="f">Y</label>'+inp(i,"y",p.y)+'</div></div>';
-      } else if(p.mode==="polar"){
-        h+='<div class="row"><div><label class="f">角度（真上＝0・時計＋）</label>'+inp(i,"th",p.th)+'</div>'
-          +'<div><label class="f">原点からの距離</label>'+inp(i,"r",p.r)+'</div></div>';
-      } else {
-        h+='<div class="row"><div><label class="f">左端面から X</label>'+inp(i,"ex",p.ex)+'</div>'
-          +'<div><label class="f">下端面から Y</label>'+inp(i,"ey",p.ey)+'</div></div>';
-      }
-    }
-
-    else {
-      var cps=circleParts(i);
-      /* 複製ON/OFF切替 */
-      h+='<div class="ckrow" style="margin-top:2px"><input type="checkbox" id="rep'+i+'"'+(p.rep?" checked":"")
-        +' onchange="up('+i+',\'rep\',this)"'+(cps.length?"":' disabled')+'>'
-        +'<label for="rep'+i+'">PCDの各点に同じパターンを複製する'
-        +(cps.length?'':'<span style="color:#B23B2E">（先にPCDを追加してください）</span>')+'</label></div>';
-
-      if(p.rep && cps.length){
-        /* ── 複製モード ── 基点XYの代わりにPCDを選ぶ */
-        var sel='<select onchange="up('+i+',\'repPi\',this)">';
-        cps.forEach(function(c){ sel+='<option value="'+c.i+'"'+(p.repPi===c.i?" selected":"")+'>PCD '+c.nm+'</option>'; });
-        sel+='</select>';
-        if(cps.length && !cps.some(function(c){return c.i===p.repPi;})) p.repPi=cps[0].i;
-        h+='<div class="row"><div><label class="f">どのPCDに乗せる</label>'+sel+'</div>'
-          +'<div><label class="f">中心線の向き</label><select onchange="up('+i+',\'repAng\',this)">'
-          +opt(p.repAng,"radial","半径方向を0とする")+opt(p.repAng,"abs","真上を0（絶対角）")+'</select></div></div>'
-          +'<div class="row"><div><label class="f">中心線の角度'
-          +(p.repAng==="radial"?'（外向き＝0）':'（真上＝0）')+'</label>'+inp(i,"th",p.th)+'</div>'
-          +'<div><label class="f">中心点からの距離 L</label>'+inp(i,"L",p.L)+'</div></div>'
-          +'<div class="row"><div><label class="f">複製する点</label><select onchange="up('+i+',\'repWhich\',this)">'
-          +opt(p.repWhich,"all","すべての点")+opt(p.repWhich,"list","番号・範囲で指定")+'</select></div>'
-          +'<div>'+(p.repWhich==="list"
-              ?'<label class="f">点番号（例 1,5 または 1-7）</label>'+txt(i,"repList",p.repList,"1-7")
-              :'<label class="f">&nbsp;</label><div class="hint" style="margin:8px 0 0">起点角の穴から時計回りに1,2,3…</div>')
-          +'</div></div>'
-          +'<div class="ckrow"><input type="checkbox" id="tip'+i+'"'+(p.tip?" checked":"")+' onchange="up('+i+',\'tip\',this)"><label for="tip'+i+'">先端（L 進んだ位置）にも穴を置く</label></div>'
-          +'<div class="row"><div><label class="f">左へ（スペース区切り）</label>'+txt(i,"left",p.left,"25")+'</div>'
-          +'<div><label class="f">右へ</label>'+txt(i,"right",p.right,"35")+'</div></div>'
-          +'<div class="hint" style="margin:0 0 6px">各点で、中心（PCD中心→その点の外向き）を基準に同じパターンを複製します。'
-          +'左右は<b>中心点から先端を見たときの左手・右手</b>です。</div>';
-      } else {
-        /* ── 従来モード ── 基点XY直接 */
-        h+='<div class="row"><div><label class="f">基点X</label>'+inp(i,"bx",p.bx)+'</div>'
-          +'<div><label class="f">基点Y</label>'+inp(i,"by",p.by)+'</div></div>'
-          +'<div class="row"><div><label class="f">中心線の角度（真上＝0）</label>'+inp(i,"th",p.th)+'</div>'
-          +'<div><label class="f">基点からの距離 L</label>'+inp(i,"L",p.L)+'</div></div>'
-          +'<div class="ckrow"><input type="checkbox" id="tip'+i+'"'+(p.tip?" checked":"")+' onchange="up('+i+',\'tip\',this)"><label for="tip'+i+'">中心線の先端にも穴を置く</label></div>'
-          +'<div class="row"><div><label class="f">左へ（スペース区切り）</label>'+txt(i,"left",p.left,"15")+'</div>'
-          +'<div><label class="f">右へ</label>'+txt(i,"right",p.right,"15")+'</div></div>'
-          +'<div class="hint" style="margin:0 0 6px">左右は<b>基点から先端を見たときの左手・右手</b>です。中心線と直角に振ります。</div>';
-      }
-    }
-
-    h+='<div class="err" id="cErr'+i+'" style="display:none"></div><div class="note" id="cNote'+i+'" style="display:none"></div></div>';
+    h+='<div class="pcard'+(i===editIdx?' editing':'')+'"><span class="pn">'+nm+'</span>'
+      +'<div class="pd">'+partDesc(p)
+      +'<div class="err" id="cErr'+i+'" style="display:none"></div>'
+      +'<div class="note" id="cNote'+i+'" style="display:none"></div></div>'
+      +'<button type="button" class="act" data-edit="'+i+'">編集</button>'
+      +'<button type="button" class="act del" data-del="'+i+'">削除</button></div>';
   });
-  if(!S.parts.length) h='<div class="hint" style="padding:6px 2px 10px">下のボタンから部品を追加してください。PCD・単独の穴・軸配置を、ひとつの原点の上で好きに重ねられます。</div>';
+  if(!S.parts.length) h+='<div class="hint" style="padding:2px 2px 6px">まだ部品がありません。下のフォーム「1. なにを置く？」から追加してください。</div>';
   box.innerHTML=h;
   g("wkW").value = numOK(S.work.w)? S.work.w : "";
   g("wkH").value = numOK(S.work.h)? S.work.h : "";
   g("wkOrg").value = S.work.org;
+  syncWorkFields();
+}
+
+function workSet(k,el){
+  if(k==="org") S.work.org=el.value;
+  else S.work[k]=pf(el.value);
+  S.sel=null; syncWorkFields(); calc(); persist();
+}
+function syncWorkFields(){
+  var a=g("fWw"), b=g("fWh"), c=g("fWorg");
+  if(!a) return;
+  a.value = numOK(S.work.w)? S.work.w : "";
+  b.value = numOK(S.work.h)? S.work.h : "";
+  c.value = S.work.org;
+}
+
+/* ── フォーム状態 ── */
+var FS={type:"circle", cBase:"org", cMode:"eq", cDir:1, angMode:"rel",
+        hBase:"org", hPlace:"xy",
+        aBase:"xy", repPi:0, repAng:"radial", repWhich:"all"};
+var editIdx=-1, focusKey="";
+
+function fnum(id){ return pf(g(id).value); }
+function th0v(id){ var v=g(id).value; return (String(v).replace(/\s/g,"")==="")? 0 : pf(v); }
+function setv(id,v){ g(id).value=(v==null||(typeof v==="number"&&!isFinite(v)))? "" : v; }
+
+/* buildのcircle妥当性判定の写し（メッセージ無し版・複製の乗せ先チェック用） */
+function circleOK(cp){
+  if(!cp||cp.t!=="circle") return false;
+  if(!numOK(cp.pcd)||cp.pcd<=0||!numOK(cp.cx)||!numOK(cp.cy)||!numOK(cp.th0)) return false;
+  if(cp.mode==="eq") return numOK(cp.n)&&cp.n>=1&&cp.n===Math.floor(cp.n)&&cp.n<=36;
+  var a=parseNums(cp.angs); if(a.length<2) return false;
+  if(cp.angMode!=="rel") return true;
+  var s=0,k; for(k=0;k<a.length;k++) s+=a[k]; return s<=360.001;
+}
+
+/* フォーム → S.parts と同一スキーマの部品。strict=true は追加/保存用（不足はメッセージ）、
+   strict=false はプレビュー用（不足は null）。メッセージは build() と同じ文言。 */
+function readFormToPart(strict){
+  var t=FS.type, p, e=null, a, sum, k, Ln, Rn, cp;
+  if(t==="circle"){
+    p={t:"circle",
+       cx:(FS.cBase==="xy")? fnum("fCx") : 0,
+       cy:(FS.cBase==="xy")? fnum("fCy") : 0,
+       pcd:fnum("fPcd"), mode:FS.cMode, n:NaN,
+       th0:(FS.cMode==="eq")? th0v("fTh0") : th0v("fTh0u"),
+       dir:FS.cDir, angMode:FS.angMode, angs:""};
+    if(p.mode==="eq") p.n=fnum("fN"); else p.angs=g("fAngs").value;
+    if(strict){
+      if(!(numOK(p.pcd)&&p.pcd>0)) e="PCD を入れてください";
+      else if(!numOK(p.cx)||!numOK(p.cy)) e="中心 X・Y を入れてください";
+      else if(p.mode==="eq"){
+        if(!numOK(p.n)||p.n<1||p.n!==Math.floor(p.n)) e="穴数は 1 以上の整数で";
+        else if(p.n>36) e="穴数は 36 までです";
+      } else {
+        a=parseNums(p.angs);
+        if(a.length<2) e="角度を2つ以上入れてください";
+        else if(p.angMode==="rel"){ sum=0; for(k=0;k<a.length;k++) sum+=a[k];
+          if(sum>360.001) e="隣との角度の合計が "+f2(sum)+"° で 360° を超えています"; }
+      }
+    } else if(!circleOK(p)) return null;
+  }
+  else if(t==="hole"){
+    p={t:"hole", mode:(FS.hBase==="edge")?"edge":FS.hPlace, x:0,y:0,th:0,r:0,ex:0,ey:0};
+    if(p.mode==="xy"){
+      p.x=fnum("fHx"); p.y=fnum("fHy");
+      if(!numOK(p.x)||!numOK(p.y)){ if(strict) e="X・Y を入れてください"; else return null; }
+    } else if(p.mode==="polar"){
+      p.r=fnum("fHr"); p.th=fnum("fHth");
+      if(strict){ if(!numOK(p.th)||!numOK(p.r)) e="角度と距離を入れてください"; else if(p.r<0) e="距離は 0 以上で"; }
+      else if(!numOK(p.th)||!numOK(p.r)||p.r<0) return null;
+    } else {
+      p.ex=fnum("fEx"); p.ey=fnum("fEy");
+      if(strict){
+        if(!numOK(p.ex)||!numOK(p.ey)) e="端面からの寸法を入れてください";
+        else if(S.work.org==="center"&&(!numOK(S.work.w)||!numOK(S.work.h)||S.work.w<=0||S.work.h<=0)) e="ワーク外形の W・H を入れてください（原点が中心のため）";
+      } else {
+        if(!numOK(p.ex)||!numOK(p.ey)) return null;
+        if(S.work.org==="center"&&!(S.work.w>0&&S.work.h>0)) return null;
+      }
+    }
+  }
+  else {
+    p={t:"axis", bx:0,by:0, th:fnum("fTh"), L:fnum("fL"),
+       tip:g("fTip").checked?1:0, left:g("fLeft").value, right:g("fRight").value,
+       rep:0, repPi:0, repAng:"radial", repWhich:"all", repList:""};
+    Ln=parseNums(p.left); Rn=parseNums(p.right);
+    if(FS.aBase==="rep"){
+      p.rep=1; p.repPi=FS.repPi; p.repAng=FS.repAng; p.repWhich=FS.repWhich; p.repList=g("fRepList").value;
+      cp=S.parts[p.repPi];
+      if(strict){
+        if(!cp||cp.t!=="circle") e="乗せる PCD を選んでください";
+        else if(!numOK(p.th)) e="中心線の角度を入れてください";
+        else if(!numOK(p.L)||p.L<0) e="中心点からの距離 L を入れてください（0 以上）";
+        else if(!p.tip&&!Ln.length&&!Rn.length) e="先端にチェックを入れるか、左右のオフセットを入れてください";
+        else if(!circleOK(cp)) e="乗せる PCD の設定を先に正しく入れてください";
+        else if(p.repWhich==="list"&&!parseIdxList(p.repList,9999).length) e="複製する点が指定されていません（例：1,5 または 1-7）";
+      } else {
+        if(!cp||cp.t!=="circle"||!numOK(p.th)||!numOK(p.L)||p.L<0) return null;
+        if(!p.tip&&!Ln.length&&!Rn.length) return null;
+        if(!circleOK(cp)) return null;
+        if(p.repWhich==="list"&&!parseIdxList(p.repList,9999).length) return null;
+      }
+    } else {
+      p.bx=fnum("fBx"); p.by=fnum("fBy");
+      if(strict){
+        if(!numOK(p.bx)||!numOK(p.by)) e="基点 X・Y を入れてください";
+        else if(!numOK(p.th)) e="中心線の角度を入れてください";
+        else if(!numOK(p.L)||p.L<0) e="基点からの距離 L を入れてください（0 以上）";
+        else if(!p.tip&&!Ln.length&&!Rn.length) e="先端の穴にチェックを入れるか、左右のオフセットを入れてください";
+      } else {
+        if(!numOK(p.bx)||!numOK(p.by)||!numOK(p.th)||!numOK(p.L)||p.L<0) return null;
+        if(!p.tip&&!Ln.length&&!Rn.length) return null;
+      }
+    }
+  }
+  if(strict) return e? {err:e} : {part:p};
+  return p;
+}
+
+/* ── 追加・編集・削除 ── */
+function clearFormVals(){
+  ["fPcd","fN","fTh0","fTh0u","fAngs","fCx","fCy","fHx","fHy","fHr","fHth","fEx","fEy",
+   "fBx","fBy","fL","fTh","fLeft","fRight","fRepList"].forEach(function(id){ g(id).value=""; });
+  g("fTip").checked=false;
+}
+function submitPart(){
+  if(editIdx<0 && S.parts.length>=MAXPART){ toast("部品は "+MAXPART+" までです。"); return; }
+  var r=readFormToPart(true), p, nm, j, q;
+  if(r.err){ toast(r.err); return; }
+  p=r.part;
+  if(editIdx>=0){
+    var old=S.parts[editIdx];
+    if(old&&old.t==="circle"&&p.t!=="circle"){
+      for(j=editIdx+1;j<S.parts.length;j++){
+        q=S.parts[j];
+        if(q.t==="axis"&&q.rep&&q.repPi===editIdx){ toast("PCD "+LB.charAt(editIdx)+" に複製した軸配置（"+LB.charAt(j)+"）があるため、種類は変えられません"); return; }
+      }
+    }
+    nm=LB.charAt(editIdx);
+    S.parts[editIdx]=p;
+    endEdit(); calc(); persist();
+    toast("部品 "+nm+" の変更を保存しました"); return;
+  }
+  S.parts.push(p); nm=LB.charAt(S.parts.length-1);
+  clearFormVals(); renderParts(); renderBaseChips(); renderFormFields(); calc(); persist();
+  toast("部品 "+nm+" を追加しました");
+}
+function startEdit(i){
+  var p=S.parts[i]; if(!p) return;
+  editIdx=i;
+  g("addForm").classList.add("edit");
+  g("addGo").textContent="変更を保存";
+  clearFormVals();
+  if(p.t==="circle"){
+    FS.type="circle"; FS.cMode=(p.mode==="un")?"un":"eq"; FS.cDir=(p.dir===-1)?-1:1;
+    FS.angMode=(p.angMode==="abs")?"abs":"rel";
+    FS.cBase=((numOK(p.cx)&&p.cx!==0)||(numOK(p.cy)&&p.cy!==0))?"xy":"org";
+    setv("fPcd",p.pcd); setv("fCx",p.cx); setv("fCy",p.cy);
+    if(FS.cMode==="eq"){ setv("fN",p.n); setv("fTh0",p.th0); }
+    else { g("fAngs").value=String(p.angs||""); setv("fTh0u",p.th0); }
+  } else if(p.t==="hole"){
+    FS.type="hole";
+    if(p.mode==="edge"){ FS.hBase="edge"; setv("fEx",p.ex); setv("fEy",p.ey); }
+    else { FS.hBase="org"; FS.hPlace=(p.mode==="polar")?"polar":"xy";
+           setv("fHx",p.x); setv("fHy",p.y); setv("fHr",p.r); setv("fHth",p.th); }
+  } else {
+    FS.type="axis";
+    if(p.rep){ FS.aBase="rep"; FS.repPi=(typeof p.repPi==="number")?p.repPi:0;
+               FS.repAng=(p.repAng==="abs")?"abs":"radial"; FS.repWhich=(p.repWhich==="list")?"list":"all";
+               g("fRepList").value=String(p.repList||""); }
+    else { FS.aBase="xy"; setv("fBx",p.bx); setv("fBy",p.by); }
+    setv("fL",p.L); setv("fTh",p.th);
+    g("fTip").checked=!!p.tip;
+    g("fLeft").value=String(p.left||""); g("fRight").value=String(p.right||"");
+  }
+  renderBaseChips(); renderFormFields(); renderParts(); updatePreview();
+}
+function endEdit(){
+  editIdx=-1;
+  g("addForm").classList.remove("edit");
+  g("addGo").textContent="この部品を追加";
+  clearFormVals();
+  renderBaseChips(); renderFormFields(); renderParts(); updatePreview();
+}
+function delPart(i){
+  var p=S.parts[i], j, q, k, r;
+  if(!p) return;
+  if(p.t==="circle"){
+    for(j=i+1;j<S.parts.length;j++){
+      q=S.parts[j];
+      if(q.t==="axis"&&q.rep&&q.repPi===i){ toast("PCD "+LB.charAt(i)+" に複製した軸配置（"+LB.charAt(j)+"）があるため、先にそちらを削除してください"); return; }
+    }
+  }
+  S.parts.splice(i,1);
+  for(k=0;k<S.parts.length;k++){ r=S.parts[k]; if(r.t==="axis"&&r.rep&&r.repPi>i) r.repPi--; }
+  if(editIdx===i) endEdit();
+  else if(editIdx>i) editIdx--;
+  S.sel=null; renderParts(); renderBaseChips(); renderFormFields(); calc(); persist(); updatePreview();
+}
+
+/* ── フォーム描画 ── */
+function chipsOn(boxId,attr,val){
+  var box=g(boxId); if(!box) return;
+  Array.prototype.forEach.call(box.querySelectorAll("button"),function(b){
+    b.classList.toggle("on", b.getAttribute(attr)===String(val));
+  });
+}
+function renderBaseChips(){
+  var h="", cps;
+  if(FS.type==="circle"){
+    h+='<button type="button" class="chip2 blue'+(FS.cBase==="org"?" on":"")+'" data-b="org">原点が中心</button>'
+      +'<button type="button" class="chip2 blue'+(FS.cBase==="xy"?" on":"")+'" data-b="xy">中心をずらす（X・Y）</button>';
+  } else if(FS.type==="hole"){
+    h+='<button type="button" class="chip2 blue'+(FS.hBase==="org"?" on":"")+'" data-b="org">原点から</button>'
+      +'<button type="button" class="chip2 blue'+(FS.hBase==="edge"?" on":"")+'" data-b="edge">端面から</button>';
+  } else {
+    cps=circleParts(editIdx>=0? editIdx : S.parts.length);
+    if(FS.aBase==="rep" && !cps.some(function(c){return c.i===FS.repPi;})){
+      if(cps.length) FS.repPi=cps[0].i; else FS.aBase="xy";
+    }
+    h+='<button type="button" class="chip2 blue'+(FS.aBase==="xy"?" on":"")+'" data-b="xy">点 (X, Y) から</button>';
+    cps.forEach(function(c){
+      h+='<button type="button" class="chip2 blue'+((FS.aBase==="rep"&&FS.repPi===c.i)?" on":"")+'" data-b="rep:'+c.i+'">PCD '+c.nm+' の各点</button>';
+    });
+    if(!cps.length) h+='<span class="hint" style="align-self:center;margin:0">（PCD を追加すると「各点に複製」も選べます）</span>';
+  }
+  g("baseChips").innerHTML=h;
+}
+function syncNQuick(){
+  var v=parseInt(g("fN").value,10);
+  Array.prototype.forEach.call(g("nQuick").querySelectorAll("button"),function(b){
+    b.setAttribute("aria-pressed", parseInt(b.getAttribute("data-n"),10)===v ? "true":"false");
+  });
+}
+function renderFormFields(){
+  chipsOn("typeChips","data-t",FS.type);
+  g("fg_circle").style.display=(FS.type==="circle")?"":"none";
+  g("fg_hole").style.display=(FS.type==="hole")?"":"none";
+  g("fg_axis").style.display=(FS.type==="axis")?"":"none";
+  if(FS.type==="circle"){
+    chipsOn("cModeChips","data-cm",FS.cMode);
+    chipsOn("cDirChips","data-cd",FS.cDir);
+    chipsOn("angModeChips","data-am",FS.angMode);
+    g("fCxy").style.display=(FS.cBase==="xy")?"":"none";
+    g("fEq").style.display=(FS.cMode==="eq")?"":"none";
+    g("fUn").style.display=(FS.cMode==="un")?"":"none";
+    syncNQuick();
+  } else if(FS.type==="hole"){
+    chipsOn("fHplace","data-hp",FS.hPlace);
+    g("fHplace").style.display=(FS.hBase==="edge")?"none":"";
+    g("fHxy").style.display=(FS.hBase!=="edge"&&FS.hPlace==="xy")?"":"none";
+    g("fHpolar").style.display=(FS.hBase!=="edge"&&FS.hPlace==="polar")?"":"none";
+    g("fHedge").style.display=(FS.hBase==="edge")?"":"none";
+    if(FS.hBase==="edge") syncWorkFields();
+  } else {
+    chipsOn("repAngChips","data-ra",FS.repAng);
+    chipsOn("repWhichChips","data-rw",FS.repWhich);
+    g("fAxy").style.display=(FS.aBase==="xy")?"":"none";
+    g("fArep").style.display=(FS.aBase==="rep")?"":"none";
+    g("fRepListRow").style.display=(FS.aBase==="rep"&&FS.repWhich==="list")?"":"none";
+    g("aFromLb").textContent=(FS.aBase==="rep")?"各点":"基点";
+    g("aAngLb").textContent=(FS.aBase==="rep"&&FS.repAng==="radial")?"外向き＝0":"真上＝0";
+  }
+}
+
+/* ── ライブプレビュー ──
+   フォームが完全に埋まったら、その部品を一時的に S.parts に入れて build() を実行し
+   「本番と同じ式」で仮の穴を作る（終わったら元に戻して再 build）。式の二重持ちをしない。 */
+function tempHoles(part){
+  var idx, res={holes:[],base:null}, saved=null, i;
+  if(editIdx>=0){ saved=S.parts[editIdx]; S.parts[editIdx]=part; idx=editIdx; }
+  else { S.parts.push(part); idx=S.parts.length-1; }
+  build();
+  for(i=0;i<H.length;i++) if(H[i].pi===idx) res.holes.push({x:H[i].x,y:H[i].y,key:H[i].key});
+  res.base=BASE[idx]||null;
+  if(editIdx>=0) S.parts[editIdx]=saved; else S.parts.pop();
+  build();
+  return res;
+}
+function formTouched(){
+  var ids, i, el;
+  if(FS.type==="circle") ids=["fPcd","fN","fAngs","fCx","fCy","fTh0","fTh0u"];
+  else if(FS.type==="hole") ids=(FS.hBase==="edge")?["fEx","fEy"]:["fHx","fHy","fHr","fHth"];
+  else ids=(FS.aBase==="rep")?["fL","fTh","fLeft","fRight","fRepList"]:["fBx","fBy","fL","fTh","fLeft","fRight"];
+  for(i=0;i<ids.length;i++){ el=g(ids[i]); if(el&&String(el.value).replace(/\s/g,"")!=="") return true; }
+  if(FS.type==="axis"&&g("fTip").checked) return true;
+  return false;
+}
+function buildPreview(){
+  if(!formTouched()) return null;
+  var pv={any:false, holes:[], base:null, circle:null, line:null, dim:null, arc:null, xyg:null, edge:null, zero:false};
+  var t=FS.type, cx, cy, pcd, x0, y0, ex, ey, r, th, u, X, Y, cp, bx, by, L2, t2, uu, part, tmp;
+  if(t==="circle"){
+    cx=(FS.cBase==="xy")? fnum("fCx"):0; cy=(FS.cBase==="xy")? fnum("fCy"):0;
+    if(!numOK(cx)) cx=0; if(!numOK(cy)) cy=0;
+    pv.base={x:cx,y:cy}; pv.zero=true; pv.any=true;
+    pcd=fnum("fPcd");
+    if(numOK(pcd)&&pcd>0) pv.circle={cx:cx,cy:cy,r:pcd/2};
+  } else if(t==="hole"){
+    if(FS.hBase==="edge"){
+      if(S.work.org!=="center" || (S.work.w>0&&S.work.h>0)){
+        x0=(S.work.org==="center")? -S.work.w/2 : 0;
+        y0=(S.work.org==="center")? -S.work.h/2 : 0;
+        pv.base={x:x0,y:y0}; pv.any=true;
+        ex=fnum("fEx"); ey=fnum("fEy");
+        if(numOK(ex)&&numOK(ey)) pv.edge={x:x0+ex,y:y0+ey,x0:x0,y0:y0,ex:ex,ey:ey};
+      }
+    } else {
+      pv.base={x:0,y:0}; pv.any=true;
+      if(FS.hPlace==="polar"){
+        r=fnum("fHr"); th=fnum("fHth");
+        if(numOK(th)||numOK(r)){ pv.zero=true; pv.arc={a:numOK(th)?th:0}; }
+        if(numOK(r)&&numOK(th)){ u=uvec(th); pv.dim={x1:0,y1:0,x2:r*u.x,y2:r*u.y,val:r}; }
+      } else {
+        X=fnum("fHx"); Y=fnum("fHy");
+        if(numOK(X)&&numOK(Y)) pv.xyg={X:X,Y:Y};
+      }
+    }
+  } else {
+    if(FS.aBase==="rep"){
+      cp=S.parts[FS.repPi];
+      if(cp&&cp.t==="circle"&&numOK(cp.cx)&&numOK(cp.cy)){ pv.base={x:cp.cx,y:cp.cy}; pv.any=true; }
+    } else {
+      bx=fnum("fBx"); by=fnum("fBy");
+      if(numOK(bx)&&numOK(by)){
+        pv.base={x:bx,y:by}; pv.any=true;
+        L2=fnum("fL"); t2=fnum("fTh");
+        if(numOK(L2)&&numOK(t2)){
+          uu=uvec(t2);
+          pv.line={x1:bx,y1:by,x2:bx+L2*uu.x,y2:by+L2*uu.y};
+          pv.dim={x1:bx,y1:by,x2:pv.line.x2,y2:pv.line.y2,val:L2};
+        }
+      }
+    }
+  }
+  part=readFormToPart(false);
+  if(part && !(editIdx<0 && S.parts.length>=MAXPART)){
+    tmp=tempHoles(part);
+    pv.holes=tmp.holes;
+    if(tmp.base&&!pv.base) pv.base={x:tmp.base.x,y:tmp.base.y};
+    if(pv.holes.length) pv.any=true;
+  }
+  return pv.any? pv : null;
+}
+function updatePreview(){ draw(buildPreview()); }
+
+/* ── フォームの結線 ── */
+function initForm(){
+  g("cBox").addEventListener("click",function(e){
+    var b=e.target.closest? e.target.closest("button[data-edit],button[data-del]"):null;
+    if(!b) return;
+    if(b.hasAttribute("data-edit")) startEdit(parseInt(b.getAttribute("data-edit"),10));
+    else delPart(parseInt(b.getAttribute("data-del"),10));
+  });
+  g("addForm").addEventListener("click",function(e){
+    var b=e.target.closest? e.target.closest("button"):null, v;
+    if(!b) return;
+    if(b.id==="addGo"){ submitPart(); return; }
+    if(b.id==="cancelEdit"){ endEdit(); return; }
+    if(b.hasAttribute("data-t")) FS.type=b.getAttribute("data-t");
+    else if(b.hasAttribute("data-b")){
+      v=b.getAttribute("data-b");
+      if(FS.type==="circle") FS.cBase=v;
+      else if(FS.type==="hole") FS.hBase=v;
+      else if(v.indexOf("rep:")===0){ FS.aBase="rep"; FS.repPi=parseInt(v.slice(4),10); }
+      else FS.aBase="xy";
+    }
+    else if(b.hasAttribute("data-cm")) FS.cMode=b.getAttribute("data-cm");
+    else if(b.hasAttribute("data-cd")) FS.cDir=parseInt(b.getAttribute("data-cd"),10);
+    else if(b.hasAttribute("data-am")) FS.angMode=b.getAttribute("data-am");
+    else if(b.hasAttribute("data-hp")) FS.hPlace=b.getAttribute("data-hp");
+    else if(b.hasAttribute("data-ra")) FS.repAng=b.getAttribute("data-ra");
+    else if(b.hasAttribute("data-rw")) FS.repWhich=b.getAttribute("data-rw");
+    else if(b.hasAttribute("data-n")){ g("fN").value=b.getAttribute("data-n"); }
+    else return;
+    renderBaseChips(); renderFormFields(); updatePreview();
+  });
+  g("addForm").addEventListener("input",function(e){
+    var el=e.target;
+    if(el.id==="fWw"||el.id==="fWh"){
+      S.work[el.id==="fWw"?"w":"h"]=pf(el.value);
+      g(el.id==="fWw"?"wkW":"wkH").value=el.value;
+      S.sel=null; calc(); persist();
+    }
+    if(el.id==="fN") syncNQuick();
+    updatePreview();
+  });
+  g("addForm").addEventListener("change",function(e){
+    if(e.target.id==="fWorg"){
+      S.work.org=e.target.value; g("wkOrg").value=e.target.value;
+      S.sel=null; calc(); persist(); updatePreview();
+    } else if(e.target.id==="fTip"){ updatePreview(); }
+  });
+  g("addForm").addEventListener("focusin",function(e){
+    var fk=(e.target.getAttribute&&e.target.getAttribute("data-fk"))||"";
+    if(fk!==focusKey){ focusKey=fk; updatePreview(); }
+  });
+  g("addForm").addEventListener("focusout",function(){
+    if(focusKey!==""){ focusKey=""; updatePreview(); }
+  });
+  renderBaseChips(); renderFormFields();
 }
 
 /* ═══ 穴の生成 ═══ */
@@ -795,7 +1247,7 @@ function origin(){
     var b=BASE[o.pi];
     if(b) return {x:b.x, y:b.y, lb:b.lb};
   }
-  return {x:0, y:0, lb:"共通原点 (0, 0)"};
+  return {x:0, y:0, lb:"原点 (0, 0)"};
 }
 function orgSet(k,el){
   if(k==="kind") S.org.kind=el.value;
@@ -840,7 +1292,7 @@ function renderPos(){
   var tb=g("posBody"), h="";
   g("hCount").textContent=H.length+" 穴";
   var O=origin();
-  g("orgNow").textContent = "原点：" + O.lb;
+  g("orgNow").textContent = "読み替え原点：" + O.lb;
   H.forEach(function(p){
     var X=p.x-O.x, Y=p.y-O.y;
     h+='<tr data-k="'+p.key+'"'+(S.sel&&(S.sel[0]===p.key||S.sel[1]===p.key)?' aria-selected="true"':'')+'>'
@@ -907,9 +1359,9 @@ function renderDRO(){
   g("dAz").textContent=f2(az)+"°";
 }
 
-function draw(){
+function draw(pv){
   var svg=g("fig");
-  if(!H.length){ svg.innerHTML=""; return; }
+  if(!H.length && !pv){ svg.innerHTML=""; return; }
   var xs=[], ys=[];
   S.parts.forEach(function(p){
     if(p.t==="circle" && numOK(p.pcd)&&numOK(p.cx)&&numOK(p.cy)){
@@ -924,6 +1376,15 @@ function draw(){
     xs.push(wx0, wx0+S.work.w); ys.push(wy0, wy0+S.work.h);
   }
   H.forEach(function(p){ xs.push(p.x); ys.push(p.y); });
+  if(pv){
+    if(pv.base){ xs.push(pv.base.x); ys.push(pv.base.y); }
+    if(pv.circle){ xs.push(pv.circle.cx-pv.circle.r, pv.circle.cx+pv.circle.r); ys.push(pv.circle.cy-pv.circle.r, pv.circle.cy+pv.circle.r); }
+    if(pv.line){ xs.push(pv.line.x1, pv.line.x2); ys.push(pv.line.y1, pv.line.y2); }
+    if(pv.dim){ xs.push(pv.dim.x1, pv.dim.x2); ys.push(pv.dim.y1, pv.dim.y2); }
+    if(pv.xyg){ xs.push(0, pv.xyg.X); ys.push(0, pv.xyg.Y); }
+    if(pv.edge){ xs.push(pv.edge.x0, pv.edge.x); ys.push(pv.edge.y0, pv.edge.y); }
+    pv.holes.forEach(function(p2){ xs.push(p2.x); ys.push(p2.y); });
+  }
   var O=origin(); xs.push(O.x); ys.push(O.y);
   if(!xs.length){ svg.innerHTML=""; return; }
   var mnx=Math.min.apply(null,xs), mxx=Math.max.apply(null,xs);
@@ -991,6 +1452,60 @@ function draw(){
       h+='<text x="'+((pa[0]+pb[0])/2).toFixed(1)+'" y="'+((pa[1]+pb[1])/2-5).toFixed(1)+'" font-size="10" fill="#D63426" text-anchor="middle" font-family="monospace" stroke="#fff" stroke-width="3" paint-order="stroke">'+f3(Math.hypot(b.x-a.x,b.y-a.y))+'</text>';
     }
   }
+  /* ── 入力中プレビュー（v25）：追加フォームの内容をその場に描く（表示のみ） ── */
+  if(pv){
+    var DW=(focusKey==="dist")?2.6:1.5, AW2=(focusKey==="ang")?2.6:1.5;
+    var pb=null, pray=null;
+    if(pv.circle){
+      var pcc=M(pv.circle.cx,pv.circle.cy);
+      h+='<circle cx="'+pcc[0].toFixed(1)+'" cy="'+pcc[1].toFixed(1)+'" r="'+(pv.circle.r*s).toFixed(1)+'" fill="none" stroke="#2C5FA0" stroke-width="'+DW+'" stroke-dasharray="4 3"/>';
+    }
+    if(pv.line){
+      var pl0=M(pv.line.x1,pv.line.y1), pl1=M(pv.line.x2,pv.line.y2);
+      h+='<line x1="'+pl0[0].toFixed(1)+'" y1="'+pl0[1].toFixed(1)+'" x2="'+pl1[0].toFixed(1)+'" y2="'+pl1[1].toFixed(1)+'" stroke="#2C5FA0" stroke-width="1.2" stroke-dasharray="5 3"/>';
+    }
+    if(pv.base){
+      pb=M(pv.base.x,pv.base.y);
+      pray=function(ang,len){ return [pb[0]+len*Math.sin(ang*RAD), pb[1]-len*Math.cos(ang*RAD)]; };
+      h+='<circle cx="'+pb[0].toFixed(1)+'" cy="'+pb[1].toFixed(1)+'" r="10" fill="none" stroke="#2C5FA0" stroke-width="2"/>';
+      if(pv.zero) h+='<line x1="'+pb[0].toFixed(1)+'" y1="'+pb[1].toFixed(1)+'" x2="'+pb[0].toFixed(1)+'" y2="'+(pb[1]-26).toFixed(1)+'" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="3 2"/>';
+    }
+    if(pv.arc&&pb){
+      var paa=pv.arc.a, prr=18;
+      if(Math.abs(paa)>0.05){
+        var pq0=pray(0,prr), pq1=pray(paa,prr);
+        var plg=(Math.abs(paa)%360>180)?1:0, psw=(paa>=0)?1:0;
+        h+='<path d="M'+pq0[0].toFixed(1)+' '+pq0[1].toFixed(1)+' A'+prr+' '+prr+' 0 '+plg+' '+psw+' '+pq1[0].toFixed(1)+' '+pq1[1].toFixed(1)+'" fill="none" stroke="#D63426" stroke-width="'+AW2+'"/>';
+      }
+      var ptq=pray(paa/2,prr+11);
+      h+='<text x="'+ptq[0].toFixed(1)+'" y="'+ptq[1].toFixed(1)+'" font-size="9" font-weight="700" fill="#D63426" text-anchor="middle" stroke="#fff" stroke-width="2.5" paint-order="stroke">'+f2(paa)+'°</text>';
+    }
+    if(pv.xyg){
+      var pg0=M(0,0), pg1=M(pv.xyg.X,0), pg2=M(pv.xyg.X,pv.xyg.Y);
+      h+='<line x1="'+pg0[0].toFixed(1)+'" y1="'+pg0[1].toFixed(1)+'" x2="'+pg1[0].toFixed(1)+'" y2="'+pg1[1].toFixed(1)+'" stroke="#D63426" stroke-width="'+DW+'" stroke-dasharray="5 3"/>';
+      h+='<line x1="'+pg1[0].toFixed(1)+'" y1="'+pg1[1].toFixed(1)+'" x2="'+pg2[0].toFixed(1)+'" y2="'+pg2[1].toFixed(1)+'" stroke="#D63426" stroke-width="'+DW+'" stroke-dasharray="5 3"/>';
+      h+='<text x="'+((pg0[0]+pg1[0])/2).toFixed(1)+'" y="'+(pg0[1]-5).toFixed(1)+'" font-size="9" font-weight="700" fill="#D63426" text-anchor="middle" stroke="#fff" stroke-width="2.5" paint-order="stroke">X '+f3(pv.xyg.X)+'</text>';
+      h+='<text x="'+(pg1[0]+5).toFixed(1)+'" y="'+((pg1[1]+pg2[1])/2).toFixed(1)+'" font-size="9" font-weight="700" fill="#D63426" stroke="#fff" stroke-width="2.5" paint-order="stroke">Y '+f3(pv.xyg.Y)+'</text>';
+    }
+    if(pv.edge){
+      var pe0=M(pv.edge.x0,pv.edge.y), peh=M(pv.edge.x,pv.edge.y), pev=M(pv.edge.x,pv.edge.y0);
+      h+='<line x1="'+pe0[0].toFixed(1)+'" y1="'+pe0[1].toFixed(1)+'" x2="'+peh[0].toFixed(1)+'" y2="'+peh[1].toFixed(1)+'" stroke="#D63426" stroke-width="'+DW+'" stroke-dasharray="5 3"/>';
+      h+='<line x1="'+pev[0].toFixed(1)+'" y1="'+pev[1].toFixed(1)+'" x2="'+peh[0].toFixed(1)+'" y2="'+peh[1].toFixed(1)+'" stroke="#D63426" stroke-width="'+DW+'" stroke-dasharray="5 3"/>';
+      h+='<text x="'+((pe0[0]+peh[0])/2).toFixed(1)+'" y="'+(pe0[1]-5).toFixed(1)+'" font-size="9" font-weight="700" fill="#D63426" text-anchor="middle" stroke="#fff" stroke-width="2.5" paint-order="stroke">'+f3(pv.edge.ex)+'</text>';
+      h+='<text x="'+(pev[0]+5).toFixed(1)+'" y="'+((pev[1]+peh[1])/2).toFixed(1)+'" font-size="9" font-weight="700" fill="#D63426" stroke="#fff" stroke-width="2.5" paint-order="stroke">'+f3(pv.edge.ey)+'</text>';
+    }
+    if(pv.dim){
+      var pd0=M(pv.dim.x1,pv.dim.y1), pd1=M(pv.dim.x2,pv.dim.y2);
+      h+='<line x1="'+pd0[0].toFixed(1)+'" y1="'+pd0[1].toFixed(1)+'" x2="'+pd1[0].toFixed(1)+'" y2="'+pd1[1].toFixed(1)+'" stroke="#D63426" stroke-width="'+DW+'"/>';
+      h+='<text x="'+((pd0[0]+pd1[0])/2).toFixed(1)+'" y="'+((pd0[1]+pd1[1])/2-6).toFixed(1)+'" font-size="9" font-weight="700" fill="#D63426" text-anchor="middle" stroke="#fff" stroke-width="2.5" paint-order="stroke">'+f3(pv.dim.val)+'</text>';
+    }
+    var pvLbl=(pv.holes.length<=24);
+    pv.holes.forEach(function(p2){
+      var pq2=M(p2.x,p2.y);
+      h+='<circle cx="'+pq2[0].toFixed(1)+'" cy="'+pq2[1].toFixed(1)+'" r="4.6" fill="#FBECEA" stroke="#D63426" stroke-width="1.4" stroke-dasharray="3 2"/>';
+      if(pvLbl) h+='<text x="'+(pq2[0]+5.5).toFixed(1)+'" y="'+(pq2[1]-4).toFixed(1)+'" font-size="8.5" fill="#D63426" font-family="monospace">'+p2.key+'</text>';
+    });
+  }
   svg.innerHTML=h;
 }
 
@@ -1021,7 +1536,7 @@ function renderRec(){
   });
   if(!S.rec.length) h='<tr><td colspan="5" style="text-align:center;color:#8FA2AF;font-family:inherit;padding:12px">ペアを選んで「記録表に追加」</td></tr>';
   tb.innerHTML=h;
-  g("recHead").innerHTML="部品名："+(g("recName").value||"—")+"　／　検査日："+(g("recDate").value||"—")+"　／　検査者："+(g("recBy").value||"—")+"　／　公差 ±"+(isFinite(tol)?tol:"—")+" mm　／　座標の原点："+origin().lb;
+  g("recHead").innerHTML="部品名："+(g("recName").value||"—")+"　／　検査日："+(g("recDate").value||"—")+"　／　検査者："+(g("recBy").value||"—")+"　／　公差 ±"+(isFinite(tol)?tol:"—")+" mm　／　読み替え原点："+origin().lb;
 }
 function toClip(rows, what, note){
   var txt2=rows.map(function(r){return r.join(",");}).join("\n");
@@ -1033,7 +1548,7 @@ function copyPos(){
   if(!H.length){ toast("先に部品を追加してください。"); return; }
   var O=origin(), rows=[["hole","X","Y","source"]];
   H.forEach(function(p){ rows.push([p.key, f3(p.x-O.x), f3(p.y-O.y), p.src]); });
-  toClip(rows, "座標", "原点＝"+O.lb);
+  toClip(rows, "座標", "読み替え原点＝"+O.lb);
 }
 function copyCSV(){
   var rows=[["pair","pitch","dX","dY"]];
@@ -1088,7 +1603,7 @@ if(!g("recDate").value){
 }
 Array.prototype.forEach.call(g("fltChips").children,function(b){ b.setAttribute("aria-pressed", b.getAttribute("onclick").indexOf("'"+S.filter+"'")>=0 ? "true":"false"); });
 Array.prototype.forEach.call(g("srtChips").children,function(b){ b.setAttribute("aria-pressed", b.getAttribute("onclick").indexOf("'"+S.sort+"'")>=0 ? "true":"false"); });
-renderParts(); calc();
+renderParts(); initForm(); calc();
 </script>
 
 <!-- ═══ 数字入力の補助（共通スニペット / 全ツール同一） ═══
