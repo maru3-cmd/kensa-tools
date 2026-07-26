@@ -488,7 +488,7 @@ function drawFig(A){
 
 /* ─ 印刷ヘッダ ─ */
 function prep(){
-  g("recHead").innerHTML="部品名："+(g("recName").value||"—")+"　／　方向："+(g("axis").value||"—")+"　／　検査日："+(g("recDate").value||"—");
+  g("recHead").textContent="部品名："+(g("recName").value||"—")+"　／　方向："+(g("axis").value||"—")+"　／　検査日："+(g("recDate").value||"—");
 }
 
 /* ─ 保存 ─ */

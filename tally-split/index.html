@@ -393,7 +393,7 @@ function ts_half(v){
 }
 function pint(v){ var s=ts_half(v).replace(/[^\d]/g,""); if(s==="") return NaN; var n=parseInt(s,10); return isFinite(n)?n:NaN; }
 function pintS(v){ var s=ts_half(v).replace(/[^\d-]/g,""); s=s.replace(/(?!^)-/g,""); if(s===""||s==="-") return NaN; var n=parseInt(s,10); return isFinite(n)?n:NaN; }
-function cleanS(v){ var s=String(v==null?"":v).replace(/[^\d-]/g,""); return s.replace(/(?!^)-/g,""); }
+function cleanS(v){ var s=ts_half(v).replace(/[^\d-]/g,""); return s.replace(/(?!^)-/g,""); }
 function num(v){ var n=pint(v); return isFinite(n)?n:0; }
 function isSet(v){ return String(v==null?"":v).trim()!=="" && isFinite(pint(v)); }
 function sumA(a){ var s=0,i; for(i=0;i<a.length;i++) s+=a[i]; return s; }

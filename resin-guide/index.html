@@ -424,9 +424,22 @@
   function objKeys(o){var a=[],k;for(k in o){if(o.hasOwnProperty(k)&&o[k])a.push(k);}return a;}
   function anySel(){return sel.float||objKeys(sel.color).length||objKeys(sel.feel).length||objKeys(sel.smell).length;}
 
+  /* 共通スニペットが入力欄を半角化しているため現状は問題ないが、
+     復元など input イベントを経ない経路に備えて単体でも正規化する（v36） */
+  function rgNum(v){
+    var s=String(v==null?'':v)
+      .replace(/[０-９]/g,function(c){ return String.fromCharCode(c.charCodeAt(0)-65248); })
+      .replace(/[．。･・]/g,'.')
+      .replace(/[－−―ーｰ‐–—]/g,'-')
+      .replace(/[\s\u3000,，、]/g,'');
+    if(s==='' || !/^-?(?:\d+(?:\.\d*)?|\.\d+)$/.test(s)) return NaN;
+    var n=Number(s);
+    return isFinite(n)?n:NaN;
+  }
+
   function corrText(m){
-    var L=parseFloat((g('cL').value||'').replace(/[^0-9.\-]/g,''));
-    var T=parseFloat((g('cT').value||'').replace(/[^0-9.\-]/g,''));
+    var L=rgNum(g('cL').value);
+    var T=rgNum(g('cT').value);
     if(isFinite(L)&&isFinite(T)&&L>0){
       var d=L*m.cte*1e-6*T;
       var s=(d>=0?'＋':'−')+Math.abs(d).toFixed(3)+' mm';
