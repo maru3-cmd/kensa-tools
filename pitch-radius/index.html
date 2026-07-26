@@ -92,6 +92,11 @@
   .dms-grid .u{font-size:11px;color:#5B707E}
   .hidden{display:none !important}
   .angle-head{display:flex;align-items:center;gap:8px}
+  .mode-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .mode-row .mode{margin-left:0}
+  .modeCap{font-size:10.5px;color:#8FA2AF;font-weight:700;letter-spacing:.05em}
+  .tolnote{font-size:11px;color:#5B707E;line-height:1.7;margin:16px 2px 0}
+  .tolnote b{color:var(--ink)}
 
   /* ---- 結果表示器 ---- */
   .dro{
@@ -185,7 +190,8 @@
     <ol>
       <li>2穴が<b>同じ半径</b>なら「同半径(角度)」を選び、<b>半径 r</b> と 2半径線の間の<b>角度 θ</b>を入れます（弦の公式 L=2·r·sin(θ/2)）。</li>
       <li>半径が違うときは「異半径」に切り替え、<b>r₁・r₂・θ</b>を入れます（余弦定理）。</li>
-      <li>角度は <b>60</b> でも <b>60 30</b>（度 分）でも入れられます。下に穴間ピッチ L が出ます。</li>
+      <li>角度は <b>60</b> でも <b>60 30</b>（度 分）でも入れられます（入力欄の下のボタンで10進／度分秒を切替）。下に穴間ピッチ L が出ます。</li>
+      <li>角度に <b>±公差</b>（例 ±0.2°）が付いているときは、いちばん下の<b>「角度公差 → ピッチの許容範囲」</b>へ。実測ピッチを入れると合否も出ます。</li>
     </ol>
     <div class="gx">
       <h4>例 ── 半径50・角度60°</h4>
@@ -358,10 +364,6 @@
       <span class="badge" id="angBadge">2</span>
       <div class="angle-head">
         <label for="deg">角度 θ<small>2つの半径線の間</small></label>
-        <div class="mode" role="group" aria-label="角度の入力形式">
-          <button type="button" id="mDec" class="on">10進</button>
-          <button type="button" id="mDms">度分秒</button>
-        </div>
       </div>
       <span></span>
       <div id="decBox" style="display:flex;align-items:baseline;gap:6px">
@@ -372,6 +374,14 @@
         <div class="cell"><input id="dmsD" type="text" inputmode="numeric" autocomplete="off" placeholder="0" style="border:none;border-bottom:2px solid var(--ink);background:transparent;text-align:right;width:100%;font-weight:600;outline:none"><span class="u">度</span></div>
         <div class="cell"><input id="dmsM" type="text" inputmode="numeric" autocomplete="off" placeholder="0" style="border:none;border-bottom:2px solid var(--ink);background:transparent;text-align:right;width:100%;font-weight:600;outline:none"><span class="u">分</span></div>
         <div class="cell"><input id="dmsS" type="text" inputmode="decimal" autocomplete="off" placeholder="0" style="border:none;border-bottom:2px solid var(--ink);background:transparent;text-align:right;width:100%;font-weight:600;outline:none"><span class="u">秒</span></div>
+      </div>
+      <span></span>
+      <div class="mode-row">
+        <span class="modeCap">入力の形式</span>
+        <div class="mode" role="group" aria-label="角度の入力形式">
+          <button type="button" id="mDec" class="on">10進</button>
+          <button type="button" id="mDms">度分秒</button>
+        </div>
       </div>
     </div>
   </div>
@@ -390,6 +400,35 @@
     <div class="dro-foot">
       <span class="formula" id="formulaTxt">L = 2·r·sin(θ/2)</span>
       <button class="copy" id="copyBtn" type="button">コピー</button>
+    </div>
+  </div>
+
+
+  <div class="tolnote"><b>角度公差 → ピッチの許容範囲</b>：図面の角度に ±公差（例 ±0.2°、「0 12」＝0°12′）が付いているとき、ノギスで測る<b>ピッチ L の許容範囲</b>に換算します。半径・角度は上の入力を使います。±は<b>2つの穴の間の角度</b>に付いた公差として扱います（半径そのものの公差は別途）。</div>
+  <div class="inputs">
+    <div class="row">
+      <span class="badge">±</span>
+      <label for="inTol">角度の公差 ±<small>「0.2」または「0 12」＝0°12′</small></label>
+      <input id="inTol" type="text" inputmode="decimal" autocomplete="off" placeholder="0.2">
+      <span class="unit">°</span>
+    </div>
+    <div class="row">
+      <span class="badge">L</span>
+      <label for="inMeasL">実測ピッチ L<small>任意：入れると合否判定</small></label>
+      <input id="inMeasL" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+    </div>
+  </div>
+  <div class="dro">
+    <div class="dro-line">
+      <span class="dro-label">L許容</span>
+      <span class="dro-val" id="tolOut" style="font-size:24px">―</span>
+      <span class="dro-unit">mm</span>
+    </div>
+    <div class="dro-sub" id="tolSub"><span>θ の振れ幅 = ―</span></div>
+    <div class="dro-sub" id="tolJdg" style="display:none"></div>
+    <div class="dro-foot">
+      <span class="formula" id="tolStat">±公差(°)を入れると許容範囲が出ます</span>
     </div>
   </div>
 
@@ -423,6 +462,7 @@
   }
 
   function recalc(){
+    tolCalc();
     var th=angleDeg();
     var angOk=!isNaN(th)&&th>0&&th<360;
     lastResult=null;
@@ -495,6 +535,64 @@
     $('dmsBox').classList.remove('hidden');$('decBox').classList.add('hidden');
     recalc();
   });
+
+
+  /* ---- 角度公差 → ピッチの許容範囲(v33) ---- */
+  function parseTol(v){
+    if(v==null)return NaN;
+    v=String(v).replace(/[０-９．]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0)}).replace(/。/g,'.').trim();
+    if(v==='')return NaN;
+    var t=v.split(/\s+/), d=Number(t[0]);
+    if(isNaN(d))return NaN;
+    var a=Math.abs(d), m, s;
+    if(t.length>1){ m=Number(t[1]); if(isNaN(m))return NaN; a+=Math.abs(m)/60; }
+    if(t.length>2){ s=Number(t[2]); if(isNaN(s))return NaN; a+=Math.abs(s)/3600; }
+    return a;
+  }
+  function fmtTol(t){
+    var s=String(Math.round(t*10000)/10000)+'°';
+    if(t<1){ var mm=Math.round(t*60*100)/100; if(Math.abs(t*60-mm)<1e-9) s+='（'+mm+'′）'; }
+    return s;
+  }
+  function chordAt(th){                     /* θ(度) → L。タブに応じた式 */
+    var rad=th*Math.PI/180;
+    if(tab==='same'){ var r=num($('rS').value); return 2*r*Math.sin(rad/2); }
+    var r1=num($('r1').value), r2=num($('r2').value);
+    return Math.sqrt(r1*r1+r2*r2-2*r1*r2*Math.cos(rad));
+  }
+  function tolCalc(){
+    var t=parseTol($('inTol').value);
+    var th=angleDeg();
+    var rOk=(tab==='same')?(num($('rS').value)>0):(num($('r1').value)>0&&num($('r2').value)>0);
+    function clr(msg){
+      $('tolOut').textContent='―';
+      $('tolSub').innerHTML='<span>θ の振れ幅 = ―</span>';
+      $('tolJdg').style.display='none';$('tolJdg').textContent='';
+      $('tolStat').textContent=msg;
+    }
+    if(!(t>0)){clr('±公差(°)を入れると許容範囲が出ます');return;}
+    if(!(rOk&&!isNaN(th)&&th>0&&th<360)){clr('先に上の半径と角度を入れてください');return;}
+    var thMin=th-t, thMax=th+t;
+    if(thMin<=0||thMax>=360){clr('公差が大きすぎます(θ± が 0°〜360° を出ます)');return;}
+    var a=chordAt(thMin), b=chordAt(thMax);
+    var lo=Math.min(a,b);
+    var hi=(thMin<180&&thMax>180)?chordAt(180):Math.max(a,b);
+    $('tolOut').textContent=lo.toFixed(3)+' 〜 '+hi.toFixed(3);
+    var rc=(tab==='same')?num($('rS').value):num($('r2').value);
+    var arc=rc*t*Math.PI/180;
+    $('tolSub').innerHTML='<span>θ = '+th.toFixed(3)+'° ± '+fmtTol(t)+'</span>'
+      +'<span>幅 '+(hi-lo).toFixed(3)+' mm</span>'
+      +'<span>円周方向 ±'+arc.toFixed(3)+' mm'+(tab==='same'?'':'(穴B)')+'</span>';
+    var m=num($('inMeasL').value), jd=$('tolJdg');
+    if(m>0){
+      jd.style.display='';
+      if(m<lo-1e-9) jd.innerHTML='<span>実測 '+m.toFixed(3)+' → × 小さい（下限まで +'+(lo-m).toFixed(3)+' mm）</span>';
+      else if(m>hi+1e-9) jd.innerHTML='<span>実測 '+m.toFixed(3)+' → × 大きい（上限を '+(m-hi).toFixed(3)+' mm 超過）</span>';
+      else jd.innerHTML='<span>実測 '+m.toFixed(3)+' → ○ 合格（余裕 −'+(m-lo).toFixed(3)+' / +'+(hi-m).toFixed(3)+' mm）</span>';
+    }else{ jd.style.display='none'; jd.textContent=''; }
+    $('tolStat').textContent=(tab==='same')?'許容 L = 2·r·sin((θ±公差)/2)':'許容 L = √(r₁²+r₂²−2·r₁·r₂·cos(θ±公差))';
+  }
+  ['inTol','inMeasL'].forEach(function(id){$(id).addEventListener('input',tolCalc)});
 
   var toastTimer=null;
   function toast(msg){
