@@ -54,7 +54,7 @@
 
   .inputs{margin-top:12px;display:flex;flex-direction:column;gap:10px}
   .row{
-    display:grid;grid-template-columns:26px 1fr 130px 40px;
+    display:grid;grid-template-columns:26px minmax(0,1fr) minmax(0,130px) 40px;
     align-items:center;gap:8px;
     background:var(--sheet);border:1px solid #D5DDE2;border-radius:10px;
     padding:10px 12px;
@@ -97,7 +97,21 @@
   .note{font-size:11px;color:#5B707E;line-height:1.7;margin-top:8px;padding:0 2px}
   .note b{color:var(--ink)}
 
-  .tolrow{display:flex;gap:8px;align-items:center;margin-top:10px}
+  .tolrow{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
+  .tolrow .row{flex:1 1 200px;min-width:0}
+  /* 狭い画面での横はみ出し対策（v35）
+     ・固定幅トラックを minmax(0,…) にして、縮む余地を与える
+     ・grid/flex の子は既定が min-width:auto なので 0 を明示する      */
+  .row{min-width:0}
+  .row>*{min-width:0}
+  .row input{min-width:0;max-width:100%}
+  .dro-grid{min-width:0}
+  .cellv{min-width:0;overflow-wrap:anywhere}
+  @media(max-width:430px){
+    .tolrow{flex-direction:column;align-items:stretch}
+    .tolrow .mode{align-self:flex-start}
+    .tolrow .row{flex:1 1 auto;width:100%}
+  }
   .mode{display:inline-flex;border:1px solid var(--ink);border-radius:7px;overflow:hidden;flex:none}
   .mode button{font-size:11px;padding:6px 10px;border:none;background:var(--sheet);color:var(--ink);font-weight:700}
   .mode button.on{background:var(--ink);color:#fff}
@@ -166,6 +180,10 @@
   .guide .gx h4{margin-top:6px}
   .guide .gxin{display:flex;gap:12px;align-items:flex-start;margin-top:4px}
   .guide .gfig{flex:none}
+  .guide .gfigw{margin:7px 0 9px}
+  .guide .gfigw svg{width:100%;max-width:340px;display:block;background:#FBFCFC;border:1px solid #EDF1F3;border-radius:8px}
+  .measrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:-4px 0 10px}
+  .measlbl{font-size:11px;font-weight:700;color:#5B707E}
   .guide .gfig svg{width:112px;height:112px;display:block;background:#FBFCFC;border:1px solid #EDF1F3;border-radius:8px}
   .guide .gtxt{flex:1;font-size:11.5px;line-height:1.6;color:#1F3341}
   .guide .gtxt p{margin:0 0 7px}
@@ -179,7 +197,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>位相ズレ<small>回転の合わせズレ: 角度⇔円周ズレ量</small></h1>
+    <h1>位相ズレ<small>回転の合わせズレ: 実測mm ⇔ 位相角</small></h1>
     <a href="../index.html">≡ ツール一覧</a>
   </header>
 <details class="guide noprint">
@@ -187,13 +205,65 @@
   <div class="gb">
     <h4>使い方</h4>
     <ol>
-      <li>「角度 → ズレ量」か「ズレ量 → 角度」を選びます。</li>
-      <li><b>PCD</b> と <b>位相角 δ</b>（または円周方向のズレ量）を入れると、相互に換算します。</li>
-      <li>等配穴の折り返しや、傾斜計の2点読み（A・B）から δ=B−A を求める補助もあります（±180°に正規化）。</li>
-      <li>公差は角度でも mm でも判定できます。</li>
+      <li>現場で測った mm から角度を出すなら<b>「実測mm → 角度」</b>。図面の角度公差を、現場で使う mm の限界値に翻訳するなら<b>「角度 → 許容mm」</b>。</li>
+      <li><b>mmの測り方</b>を選びます。<b>円周ズレ</b>＝穴1つが円周方向に動く量。<b>2穴の高さ差</b>＝向かい合う2穴のピン頂点の高さ差（Δh）。</li>
+      <li>高さ差は<b>効きが2倍</b>になりますが、÷2 はツールが自動で行います。手計算は不要です。</li>
+      <li><b>PCD</b> と実測値を入れると換算します。公差は角度でも mm でも判定できます。</li>
     </ol>
     <div class="gx">
-      <h4>例 ── PCD100 で位相 1°</h4>
+      <h4>測り方 ── ダンベルフランジの位相</h4>
+      <div class="gfigw"><svg viewBox="0 0 300 132" role="img" aria-label="定盤に置いたダンベル形フランジ。基準側Aは向かい合う2穴が同じ高さ、対象側Bは高さ差Δhが出る図">
+        <rect x="110" y="44" width="70" height="36" rx="5" fill="#F2F6F8" stroke="#8FA2AF" stroke-width="1"/>
+        <circle cx="76" cy="62" r="42" fill="#F2F6F8" stroke="#8FA2AF" stroke-width="1"/>
+        <circle cx="214" cy="62" r="42" fill="#F2F6F8" stroke="#8FA2AF" stroke-width="1"/>
+        <line x1="44" y1="62" x2="108" y2="62" stroke="#1F3341" stroke-width="0.8" stroke-dasharray="7 2 1.5 2"/>
+        <line x1="187.4" y1="70.7" x2="272" y2="70.7" stroke="#D63426" stroke-width="0.7" stroke-dasharray="3 2"/>
+        <line x1="240.6" y1="53.3" x2="272" y2="53.3" stroke="#D63426" stroke-width="0.7" stroke-dasharray="3 2"/>
+        <circle cx="76" cy="62" r="9" fill="#fff" stroke="#1F3341" stroke-width="1"/>
+        <circle cx="214" cy="62" r="9" fill="#fff" stroke="#1F3341" stroke-width="1"/>
+        <circle cx="90" cy="37.8" r="3.6" fill="#fff" stroke="#1F3341" stroke-width="1"/>
+        <circle cx="62" cy="37.8" r="3.6" fill="#fff" stroke="#1F3341" stroke-width="1"/>
+        <circle cx="62" cy="86.2" r="3.6" fill="#fff" stroke="#1F3341" stroke-width="1"/>
+        <circle cx="90" cy="86.2" r="3.6" fill="#fff" stroke="#1F3341" stroke-width="1"/>
+        <circle cx="104" cy="62" r="4.2" fill="#fff" stroke="#1F3341" stroke-width="1.8"/>
+        <circle cx="48" cy="62" r="4.2" fill="#fff" stroke="#1F3341" stroke-width="1.8"/>
+        <circle cx="219.8" cy="34.6" r="3.6" fill="#fff" stroke="#1F3341" stroke-width="1"/>
+        <circle cx="193.2" cy="43.3" r="3.6" fill="#fff" stroke="#1F3341" stroke-width="1"/>
+        <circle cx="208.2" cy="89.4" r="3.6" fill="#fff" stroke="#1F3341" stroke-width="1"/>
+        <circle cx="234.8" cy="80.7" r="3.6" fill="#fff" stroke="#1F3341" stroke-width="1"/>
+        <circle cx="240.6" cy="53.3" r="4.2" fill="#D63426"/>
+        <circle cx="187.4" cy="70.7" r="4.2" fill="#D63426"/>
+        <line x1="276" y1="53.3" x2="276" y2="70.7" stroke="#D63426" stroke-width="1.2"/>
+        <polygon points="276,53.3 273.4,57.5 278.6,57.5" fill="#D63426"/>
+        <polygon points="276,70.7 273.4,66.5 278.6,66.5" fill="#D63426"/>
+        <text x="281" y="65" font-size="8.5" fill="#D63426">Δh</text>
+        <line x1="14" y1="108" x2="286" y2="108" stroke="#5B707E" stroke-width="1.4"/>
+        <line x1="24" y1="108" x2="18" y2="114" stroke="#5B707E" stroke-width="0.7"/>
+        <line x1="54" y1="108" x2="48" y2="114" stroke="#5B707E" stroke-width="0.7"/>
+        <line x1="84" y1="108" x2="78" y2="114" stroke="#5B707E" stroke-width="0.7"/>
+        <line x1="114" y1="108" x2="108" y2="114" stroke="#5B707E" stroke-width="0.7"/>
+        <line x1="144" y1="108" x2="138" y2="114" stroke="#5B707E" stroke-width="0.7"/>
+        <line x1="174" y1="108" x2="168" y2="114" stroke="#5B707E" stroke-width="0.7"/>
+        <line x1="204" y1="108" x2="198" y2="114" stroke="#5B707E" stroke-width="0.7"/>
+        <line x1="234" y1="108" x2="228" y2="114" stroke="#5B707E" stroke-width="0.7"/>
+        <line x1="264" y1="108" x2="258" y2="114" stroke="#5B707E" stroke-width="0.7"/>
+        <text x="16" y="104" font-size="7.5" fill="#5B707E">定盤</text>
+        <text x="76" y="126" font-size="8.5" fill="#1F3341" text-anchor="middle">A 基準側(高さを揃える)</text>
+        <text x="214" y="126" font-size="8.5" fill="#D63426" text-anchor="middle">B 対象側(差が出る)</text>
+      </svg></div>
+      <p>位相角をベベルスコヤで直読すると、実力は ±0.3〜0.5° 程度で判定になりません。定盤に置いて<b>向かい合う2穴の高さ差</b>を読むほうが確実です。</p>
+      <ol>
+        <li>A側の向かい合う2穴（6穴なら1番と4番）が<b>同じ高さ</b>になるように据える。これが基準。</li>
+        <li>その2穴に<b>同じピン</b>を入れ、ピン頂点の高さを読む。差がゼロになるまで追い込む。</li>
+        <li><b>部品を動かさずに</b>、B側の対応する2穴も同じピンで読む。その差が Δh。</li>
+      </ol>
+      <p>同じピンなら径が打ち消し合うので、頂点同士の差＝穴中心同士の差になります。</p>
+      <p class="gset">実測mm → 角度 ／ mmの測り方: 2穴の高さ差 ／ PCD 100 ／ Δh 0.5</p>
+      <p class="gread">読み方：位相角 ≈ <b>0.287°</b>。Δh = PCD×sin(位相角) で、穴1つぶんの円周ズレはこの半分（0.250mm）です。</p>
+      <button class="gbtn" type="button" data-ex='{"set":[{"click":"#mDist"},{"click":"#mDh"},{"id":"fPcd","v":100},{"id":"fS","v":0.5},{"id":"fDeg","v":""},{"id":"fN","v":""},{"id":"fTol","v":""}]}' onclick="tryExample(this)">この例を試す</button>
+    </div>
+    <div class="gx">
+      <h4>例 ── 図面の ±0.2° は現場で何mm？</h4>
       <div class="gxin">
         <div class="gfig"><svg viewBox="0 0 120 120" role="img" aria-label="位相角δだけずれた穴の円周方向ズレ量の図">
           <circle cx="60" cy="60" r="38" fill="none" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="4 2"/>
@@ -207,10 +277,10 @@
           <text x="66" y="41" font-size="8" fill="#D63426">δ</text>
         </svg></div>
         <div class="gtxt">
-          <p>PCD100 の穴が正規位置から 1°ずれていたら、円周方向では何 mm ずれている？</p>
-          <p class="gset">角度 → ズレ量 ／ PCD 100 ／ 位相角 1</p>
-          <p class="gread">読み方：円周方向ズレ（弧長）≈ <b>0.873mm</b>（＝π×100×1/360）。</p>
-          <button class="gbtn" type="button" data-ex='{"set":[{"click":"#mAng"},{"id":"fPcd","v":100},{"id":"fDeg","v":1}]}' onclick="tryExample(this)">この例を試す</button>
+          <p>PCD100 に ±0.2° の位相公差。現場に出る前に mm の限界値へ翻訳しておく。</p>
+          <p class="gset">角度 → 許容mm ／ mmの測り方: 2穴の高さ差 ／ PCD 100 ／ 位相角 0.2</p>
+          <p class="gread">読み方：高さ差 Δh で <b>0.349mm</b> まで。これを紙に書いて現場へ。（円周ズレで見るなら半分の 0.175mm）</p>
+          <button class="gbtn" type="button" data-ex='{"set":[{"click":"#mAng"},{"click":"#mDh"},{"id":"fPcd","v":100},{"id":"fDeg","v":0.2},{"id":"fS","v":""},{"id":"fN","v":""},{"id":"fTol","v":""}]}' onclick="tryExample(this)">この例を試す</button>
         </div>
       </div>
     </div>
@@ -220,9 +290,18 @@
 
 
   <div class="mode-lg" role="group" aria-label="計算方向">
-    <button type="button" id="mAng" class="on">角度 → ズレ量</button>
-    <button type="button" id="mDist">ズレ量 → 角度</button>
+    <button type="button" id="mDist" class="on">実測mm → 角度</button>
+    <button type="button" id="mAng">角度 → 許容mm</button>
   </div>
+
+  <div class="measrow">
+    <span class="measlbl">mmの測り方</span>
+    <div class="mode" role="group" aria-label="mmの測り方">
+      <button type="button" id="mArc" class="on">円周ズレ</button>
+      <button type="button" id="mDh">2穴の高さ差</button>
+    </div>
+  </div>
+  <div class="note" id="measNote">穴1つが円周方向に動く量で見ます（弧長 s = r×θ）。</div>
 
   <!-- 図面シート -->
   <div class="sheet">
@@ -242,7 +321,7 @@
       </svg>
       <div class="titleblock">
         <div><b>品名</b> 位相ズレ</div>
-        <div><b>方式</b> 弧長=r×θ</div>
+        <div><b>方式</b> <span id="tbMethod">弧長=r×θ</span></div>
         <div>TOOL-17</div>
       </div>
     </div>
@@ -256,15 +335,15 @@
       <input id="fPcd" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
       <span class="unit">mm</span>
     </div>
-    <div class="row" id="rowAng">
+    <div class="row" id="rowAng" style="display:none">
       <span class="badge">2</span>
       <label for="fDeg">位相角の差 δ<small>度分秒可(例: 0 30 = 0.5°)</small></label>
       <input id="fDeg" type="text" inputmode="decimal" autocomplete="off" placeholder="±―">
       <span class="unit">°</span>
     </div>
-    <div class="row" id="rowDist" style="display:none">
+    <div class="row" id="rowDist">
       <span class="badge">2</span>
-      <label for="fS">円周方向ズレ量<small>PCD上での実測(±)</small></label>
+      <label for="fS" id="labS">円周方向ズレ量<small id="labSs">PCD上での実測(±)</small></label>
       <input id="fS" type="text" inputmode="decimal" autocomplete="off" placeholder="±―">
       <span class="unit">mm</span>
     </div>
@@ -276,7 +355,7 @@
     </div>
   </div>
 
-  <button class="instTgl" type="button" id="incTgl" style="display:flex">
+  <button class="instTgl" type="button" id="incTgl" style="display:none">
     <span>傾斜計2点入力(基準側A・対象側B)</span>
     <span class="sw"></span>
   </button>
@@ -303,7 +382,7 @@
       <button type="button" id="tAng" class="on">公差: 角度で</button>
       <button type="button" id="tDist">公差: mmで</button>
     </div>
-    <div class="row" style="flex:1;grid-template-columns:1fr 110px 34px;padding:8px 12px">
+    <div class="row" style="grid-template-columns:minmax(0,1fr) minmax(0,110px) 34px;padding:8px 12px">
       <label for="fTol" style="font-size:12px">許容 ±</label>
       <input id="fTol" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
       <span class="unit" id="tolUnit">°</span>
@@ -319,7 +398,7 @@
     <div class="dro-grid">
       <div class="cellv" id="cDeg"><span class="k">位相角</span><span class="v" id="vDeg">―</span><span class="s" id="vDms">°</span></div>
       <div class="cellv" id="cFold"><span class="k">等配折返し後</span><span class="v" id="vFold">―</span><span class="s" id="vFoldS">°</span></div>
-      <div class="cellv" id="cArc"><span class="k">弧長 s = r×θ</span><span class="v" id="vArc">―</span><span class="s">mm</span></div>
+      <div class="cellv" id="cArc"><span class="k" id="kArc">弧長 s ／ 高さ差 Δh</span><span class="v" id="vArc">―</span><span class="s">mm</span></div>
       <div class="cellv" id="cSens"><span class="k">感度(1°あたり)</span><span class="v" id="vSens">―</span><span class="s">mm/°</span></div>
     </div>
     <div class="dro-foot">
@@ -340,7 +419,8 @@
 (function(){
   var $=function(id){return document.getElementById(id)};
   var NS='http://www.w3.org/2000/svg';
-  var mode='ang';        // ang: 角度→距離 / dist: 距離→角度
+  var mode='dist';       // dist: 実測mm→角度(既定) / ang: 角度→許容mm
+  var meas='arc';        // arc: 穴1つの円周ズレ / dh: 向かい合う2穴の高さ差
   var tolMode='ang';
   var incOn=false;
   var lastCopy=null;
@@ -440,6 +520,7 @@
   function recalc(){
     var pcd=num($('fPcd').value);
     var n=num($('fN').value);
+    var rangeErr=false;
     var nOk=(!isNaN(n)&&n>=2&&n===Math.floor(n));
     lastCopy=null;
 
@@ -457,7 +538,14 @@
       if(!isNaN(deg))deg=wrap180(deg);
     }else{
       var s=num($('fS').value);
-      if(!isNaN(s)&&pcd>0)deg=s/(pcd/2)*180/Math.PI;
+      if(!isNaN(s)&&pcd>0){
+        if(meas==='dh'){
+          if(Math.abs(s)<=pcd){deg=Math.asin(s/pcd)*180/Math.PI}
+          else{rangeErr=true}
+        }else{
+          deg=s/(pcd/2)*180/Math.PI;
+        }
+      }
     }
 
     var r=pcd>0?pcd/2:NaN;
@@ -477,7 +565,7 @@
       $('vDms').textContent='°';$('vFoldS').textContent='°';
       $('resTxt').textContent='値を入力してください';
       $('resTxt').className='res none';
-      $('statusTxt').textContent=(mode==='ang')?'PCDと位相角を入力してください':'PCDとズレ量を入力してください';
+      $('statusTxt').textContent=rangeErr?('高さ差が PCD('+pcd+'mm)を超えています。入力を確認してください'):((mode==='ang')?'PCDと位相角を入力してください':'PCDと実測mmを入力してください');
       $('statusTxt').className='statusTxt';
       draw(null);
       return;
@@ -487,11 +575,13 @@
     var rad=evalDeg*Math.PI/180;
     var arc=r*rad;
     var chord=2*r*Math.sin(rad/2);
-    var sens=r*Math.PI/180;
+    var dh=pcd*Math.sin(rad);
+    var outMm=(meas==='dh')?dh:arc;
+    var mmName=(meas==='dh')?'2穴の高さ差 Δh':'円周方向ズレ(弧長)';
+    var sens=(meas==='dh')?(pcd*Math.cos(rad)*Math.PI/180):(r*Math.PI/180);
 
-    var main=(mode==='ang')?arc:evalDeg;
-    $('mainK').textContent=(mode==='ang')?'円周方向ズレ(弧長)':'位相角(評価値)';
-    $('mainV').textContent=(mode==='ang')?((arc>=0?'+':'')+arc.toFixed(3)+' mm'):((evalDeg>=0?'+':'')+evalDeg.toFixed(4)+'°');
+    $('mainK').textContent=(mode==='ang')?mmName:'位相角(評価値)';
+    $('mainV').textContent=(mode==='ang')?((outMm>=0?'+':'')+outMm.toFixed(3)+' mm'):((evalDeg>=0?'+':'')+evalDeg.toFixed(4)+'°');
 
     $('vDeg').textContent=(deg>=0?'+':'')+deg.toFixed(4);
     $('vDms').textContent=dmsStr(deg);
@@ -502,14 +592,14 @@
       $('vFold').textContent='―';
       $('vFoldS').textContent='(穴数n未入力)';
     }
-    $('vArc').textContent=(arc>=0?'+':'')+arc.toFixed(3)+' / 弦'+(chord>=0?'+':'')+chord.toFixed(3);
+    $('vArc').textContent=(arc>=0?'+':'')+arc.toFixed(3)+' / '+(dh>=0?'+':'')+dh.toFixed(3);
     $('vSens').textContent=sens.toFixed(3);
 
     // 判定
     var tol=num($('fTol').value);
     var res=$('resTxt');
     if(tol>0){
-      var val=(tolMode==='ang')?Math.abs(evalDeg):Math.abs(arc);
+      var val=(tolMode==='ang')?Math.abs(evalDeg):Math.abs(outMm);
       var ok=val<=tol+1e-12;
       res.textContent=ok?'合格':'不合格';
       res.className='res '+(ok?'ok':'ng');
@@ -518,14 +608,14 @@
       res.className='res none';
     }
 
-    var st='弧長 = 半径 × 角度(rad)。小さい角度では弧長≒弦長です';
+    var st=(meas==='dh')?'高さ差 Δh = PCD × sin(位相角)。円周ズレの約2倍で効きます(÷2は自動)':'弧長 = 半径 × 角度(rad)。小さい角度では弧長≒弦長です';
     if(nOk&&k!==0)st='等配'+n+'穴: '+(k>0?'+':'')+k+'穴ぶんの回転を除いた残差で評価しています';
     $('statusTxt').textContent=st;
     $('statusTxt').className='statusTxt';
 
     lastCopy='[位相ズレ] δ='+(deg>=0?'+':'')+deg.toFixed(4)+'°('+dmsStr(deg)+')'+
       (nOk?' 折返し後='+(fold>=0?'+':'')+fold.toFixed(4)+'°('+(k>0?'+':'')+k+'穴)':'')+
-      ' 弧長='+(arc>=0?'+':'')+arc.toFixed(3)+'mm 弦='+(chord>=0?'+':'')+chord.toFixed(3)+'mm @PCD'+pcd;
+      ' 弧長='+(arc>=0?'+':'')+arc.toFixed(3)+'mm 弦='+(chord>=0?'+':'')+chord.toFixed(3)+'mm 2穴高さ差='+(dh>=0?'+':'')+dh.toFixed(3)+'mm @PCD'+pcd;
 
     draw(evalDeg,nOk?n:0);
   }
@@ -542,6 +632,26 @@
   }
   $('mAng').addEventListener('click',function(){setMode('ang')});
   $('mDist').addEventListener('click',function(){setMode('dist')});
+
+  function setMeas(m){
+    meas=m;
+    $('mArc').classList.toggle('on',m==='arc');
+    $('mDh').classList.toggle('on',m==='dh');
+    if(m==='dh'){
+      $('labS').firstChild.nodeValue='向かい合う2穴の高さ差';
+      $('labSs').textContent='定盤+ハイトゲージで実測(±)';
+      $('measNote').textContent='向かい合う2穴のピン頂点の高さ差(Δh)で見ます。Δh = PCD × sin(位相角) で円周ズレの約2倍。÷2 はツールが自動で行います。';
+      $('tbMethod').textContent='Δh=PCD×sinθ';
+    }else{
+      $('labS').firstChild.nodeValue='円周方向ズレ量';
+      $('labSs').textContent='PCD上での実測(±)';
+      $('measNote').textContent='穴1つが円周方向に動く量で見ます（弧長 s = r×θ）。';
+      $('tbMethod').textContent='弧長=r×θ';
+    }
+    recalc();
+  }
+  $('mArc').addEventListener('click',function(){setMeas('arc')});
+  $('mDh').addEventListener('click',function(){setMeas('dh')});
 
   $('incTgl').addEventListener('click',function(){
     incOn=!incOn;

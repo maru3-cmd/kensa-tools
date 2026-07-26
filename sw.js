@@ -2,7 +2,7 @@
  * オフライン専用機向け：全ツールを事前キャッシュし、キャッシュ優先で即表示。
  * 更新時は下の CACHE のバージョン(v1→v2…)を上げるだけ。古いキャッシュは自動削除。
  */
-var CACHE = "kensa-tools-v33";
+var CACHE = "kensa-tools-v35";
 
 /* プリキャッシュで取りこぼしたURLの記録先。ページからの診断に使う（外部通信はしない） */
 var FAILKEY = "./__precache_failed";
@@ -78,16 +78,28 @@ var PRECACHE = [
 ];
 
 self.addEventListener("install", function(e){
+  /* 全件そろったときだけ新版を有効化する。
+     1件でも取りこぼしたら install を失敗させ、稼働中の旧版と旧キャッシュを
+     そのまま残す（不完全な新版が完全な旧版を潰すのを防ぐ）。
+     電波が戻れば同じ sw.js で自動的に再試行される。 */
   e.waitUntil(
-    caches.open(CACHE).then(function(c){
-      // 1件失敗で全体を巻き込まないよう個別に投入。ただし失敗は握り潰さず記録する
-      var failed = [];
-      return Promise.all(PRECACHE.map(function(u){
-        return c.add(new Request(u, {cache:"reload"})).catch(function(){ failed.push(u); });
-      })).then(function(){
-        return c.put(FAILKEY, new Response(JSON.stringify(failed), {
-          headers:{"Content-Type":"application/json"}
-        }));
+    caches.has(CACHE).then(function(existed){
+      return caches.open(CACHE).then(function(c){
+        var failed = [];
+        return Promise.all(PRECACHE.map(function(u){
+          return c.add(new Request(u, {cache:"reload"})).catch(function(){ failed.push(u); });
+        })).then(function(){
+          if(failed.length){
+            // 作りかけの新キャッシュは残さない。ただし同名の既存キャッシュ
+            // （＝同版の入れ直し）は稼働中なので消さない。
+            return (existed ? Promise.resolve() : caches.delete(CACHE)).then(function(){
+              throw new Error("precache incomplete: "+failed.length+" of "+PRECACHE.length);
+            });
+          }
+          return c.put(FAILKEY, new Response(JSON.stringify([]), {
+            headers:{"Content-Type":"application/json"}
+          }));
+        });
       });
     }).then(function(){ return self.skipWaiting(); })
   );

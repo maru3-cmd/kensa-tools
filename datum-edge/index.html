@@ -552,7 +552,7 @@ function renderRec(){
   });
   if(!S.rec.length) h='<tr><td colspan="6" style="text-align:center;color:#8FA2AF;font-family:inherit;padding:12px">穴を選んで「記録表へ」</td></tr>';
   tb.innerHTML=h;
-  g("recHead").innerHTML="部品名："+(g("recName").value||"—")+"　／　検査日："+(g("recDate").value||"—")+"　／　検査者："+(g("recBy").value||"—")+"　／　公差 ±"+(isFinite(tol)?tol:"—")+" mm";
+  g("recHead").textContent="部品名："+(g("recName").value||"—")+"　／　検査日："+(g("recDate").value||"—")+"　／　検査者："+(g("recBy").value||"—")+"　／　公差 ±"+(isFinite(tol)?tol:"—")+" mm";
 }
 
 /* ═══ 保存 ═══ */

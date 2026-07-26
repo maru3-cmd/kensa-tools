@@ -60,12 +60,17 @@
   a.tool{
     display:grid;grid-template-columns:50px 1fr 30px 14px;gap:10px;align-items:center;
     background:var(--sheet);border:1.5px solid var(--ink);border-radius:10px;
-    padding:10px 12px;margin-bottom:8px;
+    padding:10px 12px;
     text-decoration:none;color:var(--ink);
   }
   a.tool:active{background:#E8EDF0}
-  a.tool.hide{display:none}
+  /* カードは <a> とお気に入り <button> の兄弟コンテナ（v35）。
+     <a> の中に <button> を置くのは不正なHTMLで、キーボード操作も壊れるため。 */
+  .tool-card{position:relative;margin-bottom:8px}
+  .tool-card.hide{display:none}
+  a.tool .chev{grid-column:4}
   .pin{
+    position:absolute;top:0;bottom:0;right:36px;margin:auto 0;
     width:32px;height:32px;border:none;border-radius:50%;
     background:transparent;font-size:19px;line-height:1;padding:0;
     color:#B8C4CC;
@@ -146,6 +151,7 @@
 
   <h2>穴・位置の測定</h2>
 
+  <div class="tool-card">
   <a class="tool" href="pitch-radius/">
     <span class="icon"><svg viewBox="0 0 44 44">
       <line x1="7" y1="37" x2="17" y2="12" stroke="#1F3341" stroke-width="1.4"/>
@@ -162,6 +168,8 @@
     </span>
     <span class="chev">›</span>
   </a>
+  </div>
+  <div class="tool-card">
   <a class="tool" href="pcd-pitch/">
     <span class="icon"><svg viewBox="0 0 44 44">
       <circle cx="22" cy="22" r="14" fill="none" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="6 2 1.5 2"/>
@@ -180,6 +188,8 @@
     </span>
     <span class="chev">›</span>
   </a>
+  </div>
+  <div class="tool-card">
   <a class="tool" href="hole-map/">
     <span class="icon"><svg viewBox="0 0 44 44">
       <circle cx="17" cy="24" r="11" fill="none" stroke="#8FA2AF" stroke-width="1.1" stroke-dasharray="5 2 1.2 2"/>
@@ -198,6 +208,8 @@
     </span>
     <span class="chev">›</span>
   </a>
+  </div>
+  <div class="tool-card">
   <a class="tool" href="true-position/">
     <span class="icon"><svg viewBox="0 0 44 44">
       <line x1="5" y1="22" x2="39" y2="22" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="6 2 1.5 2"/>
@@ -213,6 +225,8 @@
     </span>
     <span class="chev">›</span>
   </a>
+  </div>
+  <div class="tool-card">
   <a class="tool" href="phase-shift/">
     <span class="icon"><svg viewBox="0 0 44 44">
       <circle cx="22" cy="24" r="15" fill="none" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="5 2 1.5 2"/>
@@ -224,11 +238,13 @@
     <span>
       <span class="no">TOOL-17</span>
       <div class="nm">位相ズレ</div>
-      <div class="ds">回転方向の合わせズレ(クロッキング)。角度⇔円周のズレ量を換算、等配穴は「何穴ぶん＋残り」に読み替え。傾斜計の2点読みにも対応</div>
+      <div class="ds">回転方向の合わせズレ(クロッキング)。実測mm⇔角度を換算。定盤で向かい合う2穴の高さ差を読む測り方つき。等配穴は「何穴ぶん＋残り」に読み替え</div>
     </span>
     <span class="chev">›</span>
   </a>
+  </div>
 
+  <div class="tool-card">
   <a class="tool" href="hole-builder/">
     <span class="icon"><svg viewBox="0 0 44 44">
       <circle cx="11" cy="30" r="2" fill="#1F3341"/>
@@ -247,7 +263,9 @@
     </span>
     <span class="chev">›</span>
   </a>
+  </div>
 
+  <div class="tool-card">
   <a class="tool" href="right-triangle/">
     <span class="icon"><svg viewBox="0 0 44 44">
       <polygon points="7,35 37,35 37,12" fill="#EFF2F4" stroke="#1F3341" stroke-width="1.7"/>
@@ -262,6 +280,8 @@
     </span>
     <span class="chev">›</span>
   </a>
+  </div>
+  <div class="tool-card">
   <a class="tool" href="corner-dist/">
     <span class="icon"><svg viewBox="0 0 44 44">
       <path d="M 8 16 L 14 10 L 36 10 L 30 16 Z" fill="#fff" stroke="#1F3341" stroke-width="1.5"/>
@@ -278,6 +298,8 @@
     </span>
     <span class="chev">›</span>
   </a>
+  </div>
+  <div class="tool-card">
   <a class="tool" href="axis-tilt/">
     <span class="icon"><svg viewBox="0 0 44 44">
       <line x1="6" y1="34" x2="38" y2="34" stroke="#1F3341" stroke-width="2"/>
@@ -295,6 +317,8 @@
     </span>
     <span class="chev">›</span>
   </a>
+  </div>
+  <div class="tool-card">
   <a class="tool" href="datum-edge/">
     <span class="icon"><svg viewBox="0 0 44 44">
       <rect x="5" y="9" width="34" height="26" fill="#fff" stroke="#1F3341" stroke-width="1.5"/>
@@ -312,6 +336,8 @@
     </span>
     <span class="chev">›</span>
   </a>
+  </div>
+  <div class="tool-card">
   <a class="tool" href="pitch-row/">
     <span class="icon"><svg viewBox="0 0 44 44">
       <path d="M 9 12 V 32 M 9 32 l -3 4 M 9 27 l -3 4" stroke="#1F3341" stroke-width="1.5" fill="none"/>
@@ -329,9 +355,11 @@
     </span>
     <span class="chev">›</span>
   </a>
+  </div>
 
   <h2>円弧・曲げ</h2>
 
+  <div class="tool-card">
   <a class="tool" href="chord-r/">
     <span class="icon"><svg viewBox="0 0 44 44">
       <path d="M 5 32 Q 22 2 39 32" fill="none" stroke="#1F3341" stroke-width="1.8"/>
@@ -347,6 +375,8 @@
     </span>
     <span class="chev">›</span>
   </a>
+  </div>
+  <div class="tool-card">
   <a class="tool" href="bend-guide/">
     <span class="icon"><svg viewBox="0 0 44 44">
       <path d="M 9 38 L 9 18 A 9 9 0 0 1 27 18 L 27 26" fill="none" stroke="#1F3341" stroke-width="2.4" stroke-linecap="round"/>
@@ -361,6 +391,8 @@
     </span>
     <span class="chev">›</span>
   </a>
+  </div>
+  <div class="tool-card">
   <a class="tool" href="bend-guide-3d/">
     <span class="icon"><svg viewBox="0 0 44 44">
       <path d="M 9 38 L 9 20 Q 9 12 17 12 L 25 12 Q 31 12 33 18 L 36 27" fill="none" stroke="#1F3341" stroke-width="2.4" stroke-linecap="round"/>
@@ -378,9 +410,11 @@
     </span>
     <span class="chev">›</span>
   </a>
+  </div>
 
   <h2>ねじ・歯車</h2>
 
+  <div class="tool-card">
   <a class="tool" href="tolerance/">
     <span class="icon"><svg viewBox="0 0 44 44">
       <line x1="4" y1="24" x2="40" y2="24" stroke="#1F3341" stroke-width="1.2" stroke-dasharray="6 2 1.5 2"/>
@@ -395,6 +429,8 @@
     </span>
     <span class="chev">›</span>
   </a>
+  </div>
+  <div class="tool-card">
   <a class="tool" href="gear-w/">
     <span class="icon"><svg viewBox="0 0 44 44">
       <path d="M 4 34 L 8 34 L 10.5 21 L 17.5 21 L 20 34
@@ -410,6 +446,8 @@
     </span>
     <span class="chev">›</span>
   </a>
+  </div>
+  <div class="tool-card">
   <a class="tool" href="over-pin/">
     <span class="icon"><svg viewBox="0 0 44 44">
       <path d="M 6 16 L 14 7 L 22 16 L 30 7 L 38 16" fill="none" stroke="#1F3341" stroke-width="1.6"/>
@@ -425,6 +463,8 @@
     </span>
     <span class="chev">›</span>
   </a>
+  </div>
+  <div class="tool-card">
   <a class="tool" href="pin-wire/">
     <span class="icon"><svg viewBox="0 0 44 44">
       <path d="M 5 31 L 13 13 L 21 31 L 29 13 L 37 31" fill="none" stroke="#1F3341" stroke-width="1.7"/>
@@ -438,6 +478,8 @@
     </span>
     <span class="chev">›</span>
   </a>
+  </div>
+  <div class="tool-card">
   <a class="tool" href="pipe-thread/">
     <span class="icon"><svg viewBox="0 0 44 44">
       <line x1="4" y1="14" x2="20" y2="14" stroke="#1F3341" stroke-width="1.8"/>
@@ -454,6 +496,8 @@
     </span>
     <span class="chev">›</span>
   </a>
+  </div>
+  <div class="tool-card">
   <a class="tool" href="tap-drill/">
     <span class="icon"><svg viewBox="0 0 44 44">
       <path d="M 4 30 L 12 12 L 20 30 L 28 12 L 36 30" fill="none" stroke="#1F3341" stroke-width="1.6"/>
@@ -469,9 +513,11 @@
     </span>
     <span class="chev">›</span>
   </a>
+  </div>
 
   <h2>円すい・寸法補正</h2>
 
+  <div class="tool-card">
   <a class="tool" href="taper/">
     <span class="icon"><svg viewBox="0 0 44 44">
       <line x1="4" y1="22" x2="40" y2="22" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="5 2 1.5 2"/>
@@ -486,6 +532,8 @@
     </span>
     <span class="chev">›</span>
   </a>
+  </div>
+  <div class="tool-card">
   <a class="tool" href="temp-comp/">
     <span class="icon"><svg viewBox="0 0 44 44">
       <rect x="6" y="11" width="24" height="8" fill="none" stroke="#8FA2AF" stroke-width="1.3" stroke-dasharray="4 3"/>
@@ -502,9 +550,11 @@
     </span>
     <span class="chev">›</span>
   </a>
+  </div>
 
   <h2>機構・カム</h2>
 
+  <div class="tool-card">
   <a class="tool" href="cam-profile/">
     <span class="icon"><svg viewBox="0 0 44 44">
       <line x1="5" y1="34" x2="39" y2="34" stroke="#C9D3DA" stroke-width="1"/>
@@ -519,9 +569,11 @@
     </span>
     <span class="chev">›</span>
   </a>
+  </div>
 
   <h2>材料・品質</h2>
 
+  <div class="tool-card">
   <a class="tool" href="hardness/">
     <span class="icon"><svg viewBox="0 0 44 44">
       <line x1="10" y1="8" x2="10" y2="36" stroke="#1F3341" stroke-width="1.5"/>
@@ -539,6 +591,8 @@
     </span>
     <span class="chev">›</span>
   </a>
+  </div>
+  <div class="tool-card">
   <a class="tool" href="cpk/">
     <span class="icon"><svg viewBox="0 0 44 44">
       <line x1="5" y1="36" x2="39" y2="36" stroke="#1F3341" stroke-width="1.4"/>
@@ -557,6 +611,8 @@
     </span>
     <span class="chev">›</span>
   </a>
+  </div>
+  <div class="tool-card">
   <a class="tool" href="resin-guide/">
     <span class="icon"><svg viewBox="0 0 44 44">
       <path d="M13 9 L13 34 Q13 37 16 37 L28 37 Q31 37 31 34 L31 9" fill="none" stroke="#1F3341" stroke-width="1.6"/>
@@ -572,9 +628,11 @@
     </span>
     <span class="chev">›</span>
   </a>
+  </div>
 
   <h2>記録ツール(端末内に保存)</h2>
 
+  <div class="tool-card">
   <a class="tool" href="scale-count/">
     <span class="icon"><svg viewBox="0 0 44 44">
       <line x1="8" y1="18" x2="36" y2="18" stroke="#1F3341" stroke-width="2.2"/>
@@ -590,6 +648,8 @@
     </span>
     <span class="chev">›</span>
   </a>
+  </div>
+  <div class="tool-card">
   <a class="tool" href="frame-check/">
     <span class="icon"><svg viewBox="0 0 44 44">
       <path d="M 7 17 L 13 10 L 39 10 L 33 17 Z" fill="#fff" stroke="#1F3341" stroke-width="1.5"/>
@@ -604,8 +664,10 @@
     </span>
     <span class="chev">›</span>
   </a>
+  </div>
   <!-- TOOL-08 ここまで -->
 
+  <div class="tool-card">
   <a class="tool" href="tally-split/">
     <span class="icon"><svg viewBox="0 0 44 44">
       <path d="M 10 9 L 27 9 L 35 17 L 35 35 L 10 35 Z" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
@@ -621,6 +683,8 @@
     </span>
     <span class="chev">›</span>
   </a>
+  </div>
+  <div class="tool-card">
   <a class="tool" href="belt-length/">
     <span class="icon"><svg viewBox="0 0 44 44">
       <path d="M 13 11 A 9 9 0 1 0 13 33 L 31 30 A 6 6 0 1 0 31 14 Z" fill="none" stroke="#D63426" stroke-width="2"/>
@@ -636,6 +700,7 @@
     </span>
     <span class="chev">›</span>
   </a>
+  </div>
 
   <div class="note">
     <b>使い方のヒント</b><br>
@@ -671,7 +736,7 @@
     'pin-wire/':'三針 ピン測定 アリ溝 V溝 有効径 溝幅 ダブテール',
     'over-pin/':'オーバーピン 歯車 ピン径 ビトウィーン',
     'hardness/':'硬さ HRC HV HB ロックウェル ビッカース ブリネル 引張強さ 焼入れ',
-    'phase-shift/':'位相 クロッキング フランジ 傾斜計 等配 回転ズレ',
+    'phase-shift/':'位相 クロッキング フランジ ダンベル 傾斜計 等配 回転ズレ 高さ差 定盤 ハイトゲージ ピン ベベルスコヤ 測り方',
     'taper/':'テーパ 勾配 サインバー モールス MT BT NT 角度 円すい',
     'pipe-thread/':'管用 ねじ R Rc Rp G PT PF PS 下穴 NPT 配管 継手',
     'tap-drill/':'下穴 タップ ひっかかり率 引っかかり メートルねじ 並目 細目 転造 SUS ドリル 2級 6H 6g 内径判定 外径判定 ねじ外径 限界寸法',
@@ -709,7 +774,7 @@
 
   var favs=loadFav();
   var wrap=document.querySelector('.wrap');
-  var cards=[].slice.call(document.querySelectorAll('.wrap > a.tool'));
+  var cards=[].slice.call(document.querySelectorAll('.wrap > .tool-card'));
   var favHead=document.getElementById('favHead');
   var favBox=document.getElementById('favBox');
   var noHit=document.getElementById('noHit');
@@ -717,29 +782,31 @@
   var h2s=[].slice.call(document.querySelectorAll('.wrap > h2')).filter(function(h){return h.id!=='favHead'});
 
   // ピンを全カードに注入(chevの前)
-  cards.forEach(function(a){
+  cards.forEach(function(card){
     var b=document.createElement('button');
     b.type='button';
     b.className='pin';
     b.setAttribute('aria-label','お気に入りに追加/解除');
+    b.setAttribute('aria-pressed','false');
     b.textContent='☆';
-    a.insertBefore(b,a.querySelector('.chev'));
+    card.appendChild(b);   // <a> の外＝兄弟として置く
   });
 
   function updatePins(){
-    [].slice.call(document.querySelectorAll('a.tool')).forEach(function(a){
-      var p=a.querySelector('.pin');
-      if(!p)return;
+    [].slice.call(document.querySelectorAll('.tool-card')).forEach(function(card){
+      var p=card.querySelector('.pin'), a=card.querySelector('a.tool');
+      if(!p||!a)return;
       var on=favs.indexOf(a.getAttribute('href'))>=0;
       p.textContent=on?'★':'☆';
+      p.setAttribute('aria-pressed',on?'true':'false');
       if(on)p.classList.add('on');else p.classList.remove('on');
     });
   }
   function renderFav(){
     favBox.innerHTML='';
     favs.forEach(function(h){
-      var src=document.querySelector('.wrap > a.tool[href="'+h+'"]');
-      if(src)favBox.appendChild(src.cloneNode(true));
+      var src=document.querySelector('.wrap > .tool-card > a.tool[href="'+h+'"]');
+      if(src)favBox.appendChild(src.parentNode.cloneNode(true));
     });
     updatePins();
     applyFilter();
@@ -754,20 +821,21 @@
   function applyFilter(){
     var terms=norm(qInput.value).split(/\s+/).filter(function(t){return t!==''});
     var visible=0;
-    cards.forEach(function(a){
-      var txt=norm(a.textContent+' '+(KW[a.getAttribute('href')]||''));
+    cards.forEach(function(card){
+      var a=card.querySelector('a.tool');
+      var txt=norm(card.textContent+' '+(KW[a.getAttribute('href')]||''));
       var hit=true;
       for(var i=0;i<terms.length;i++){
         if(txt.indexOf(terms[i])<0){hit=false;break}
       }
-      if(terms.length&&!hit)a.classList.add('hide');else a.classList.remove('hide');
+      if(terms.length&&!hit)card.classList.add('hide');else card.classList.remove('hide');
       if(!terms.length||hit)visible++;
     });
     // セクション見出し: 中身が全部隠れたら見出しも隠す
     h2s.forEach(function(h){
       var any=false, el=h.nextElementSibling;
       while(el&&el.tagName!=='H2'){
-        if(el.classList&&el.classList.contains('tool')&&!el.classList.contains('hide'))any=true;
+        if(el.classList&&el.classList.contains('tool-card')&&!el.classList.contains('hide'))any=true;
         el=el.nextElementSibling;
       }
       h.style.display=any?'':'none';
@@ -785,7 +853,8 @@
     if(!p)return;
     e.preventDefault();
     e.stopPropagation();
-    var a=p.closest('a.tool');
+    var card=p.closest('.tool-card');
+    var a=card?card.querySelector('a.tool'):null;
     if(a)toggleFav(a.getAttribute('href'));
   });
   qInput.addEventListener('input',applyFilter);
@@ -867,7 +936,16 @@
         if(reg.installing || reg.waiting){
           var sw=reg.installing||reg.waiting;
           var first=!navigator.serviceWorker.controller;
+          var reached=false;
           sw.addEventListener('statechange', function(){
+            if(sw.state==='activated') reached=true;
+            // 有効化に至らないまま破棄された＝プリキャッシュが揃わなかった
+            if(sw.state==='redundant' && !reached){
+              toast(first
+                ? 'オフライン準備が完了しませんでした。電波の良い場所でこの画面を開き直してください。'
+                : '更新の保存に失敗しました。今お使いの版はそのまま使えます。電波の良い場所で開き直してください。', true);
+              return;
+            }
             if(sw.state!=='activated' || !first) return;
             // claim() で controller が付いてからでないと件数を聞けない
             if(navigator.serviceWorker.controller){ reportInstall(); return; }

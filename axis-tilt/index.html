@@ -643,7 +643,7 @@ function renderRec(){
   });
   if(!REC.length) h='<tr><td colspan="5" style="text-align:center;color:#8FA2AF;font-family:inherit;padding:12px">「現在の結果を記録」で追加</td></tr>';
   g("recBody").innerHTML=h;
-  g("recHead").innerHTML = "部品名："+(g("recName").value||"—")+"　／　検査日："+(g("recDate").value||"—")+"　／　検査者："+(g("recBy").value||"—")+"　／　スパン S："+(g("span").value||"—")+" mm";
+  g("recHead").textContent = "部品名："+(g("recName").value||"—")+"　／　検査日："+(g("recDate").value||"—")+"　／　検査者："+(g("recBy").value||"—")+"　／　スパン S："+(g("span").value||"—")+" mm";
 }
 
 /* ═══ 保存 ═══ */

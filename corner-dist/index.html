@@ -1179,7 +1179,7 @@ function renderList(){
   if(!S.list.length) h='<tr><td colspan="5" style="text-align:center;color:#8FA2AF;font-family:inherit;padding:12px">ペアを選んで「記録表に追加」</td></tr>';
   tb.innerHTML=h;
   var nm=document.getElementById("recName").value||"—", dt=document.getElementById("recDate").value||"—", by=document.getElementById("recBy").value||"—";
-  document.getElementById("recHead").innerHTML = "部品名："+nm+"　／　検査日："+dt+"　／　検査者："+by+"　／　公差 ±"+(isFinite(tol)?tol:"—")+" mm";
+  document.getElementById("recHead").textContent = "部品名："+nm+"　／　検査日："+dt+"　／　検査者："+by+"　／　公差 ±"+(isFinite(tol)?tol:"—")+" mm";
 }
 function copyCSV(){
   var rows=[["pair","distance","dX","dY","dZ"]];

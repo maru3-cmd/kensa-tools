@@ -1537,7 +1537,7 @@ function renderRec(){
   });
   if(!S.rec.length) h='<tr><td colspan="5" style="text-align:center;color:#8FA2AF;font-family:inherit;padding:12px">ペアを選んで「記録表に追加」</td></tr>';
   tb.innerHTML=h;
-  g("recHead").innerHTML="部品名："+(g("recName").value||"—")+"　／　検査日："+(g("recDate").value||"—")+"　／　検査者："+(g("recBy").value||"—")+"　／　公差 ±"+(isFinite(tol)?tol:"—")+" mm　／　読み替え原点："+origin().lb;
+  g("recHead").textContent="部品名："+(g("recName").value||"—")+"　／　検査日："+(g("recDate").value||"—")+"　／　検査者："+(g("recBy").value||"—")+"　／　公差 ±"+(isFinite(tol)?tol:"—")+" mm　／　読み替え原点："+origin().lb;
 }
 function toClip(rows, what, note){
   var txt2=rows.map(function(r){return r.join(",");}).join("\n");
