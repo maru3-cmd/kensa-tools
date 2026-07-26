@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#1F3341">
-<meta name="description" content="弦(スパン)と矢高から円弧の半径Rを計算。R既知なら期待矢高の逆算も可能。計算は端末内で完結し、入力値はどこにも送信されません。">
+<meta name="description" content="弦(スパン)と矢高から円弧の半径Rを計算。R既知なら期待矢高の逆算も。Rと開き角から周長・弦と角度指示の穴の割り出し(円弧カバー)にも対応。計算は端末内で完結し、入力値はどこにも送信されません。">
 <title>弦・矢高とR | 検査計算ツール</title>
 <style>
   :root{
@@ -128,12 +128,27 @@
   .guide .gbtn{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;font:inherit;font-size:11.5px;font-weight:600;border:1px solid #1F3341;border-radius:6px;background:#fff;color:#1F3341;cursor:pointer;margin-top:2px}
   .guide .gbtn:active{transform:translateY(1px)}
   @media(max-width:360px){.guide .gxin{flex-direction:column}.guide .gfig svg{width:128px;height:128px}}
+  /* ── R・角度から割り出し（v30 追加タブ） ── */
+  .tabbar{display:flex;gap:6px;margin:0 0 12px}
+  .tabbar button{flex:1;font:inherit;font-size:12.5px;font-weight:700;padding:9px 6px;border:1.5px solid #1F3341;border-radius:9px;background:#fff;color:#1F3341;cursor:pointer}
+  .tabbar button.on{background:#1F3341;color:#fff}
+  .achips{display:flex;gap:6px;margin:10px 0 8px}
+  .achips button{font:inherit;font-size:12px;font-weight:700;padding:7px 11px;border:1.5px solid #1F3341;border-radius:8px;background:#fff;color:#1F3341;cursor:pointer}
+  .achips button.on{background:#1F3341;color:#fff}
+  .htblwrap{overflow-x:auto}
+  .htbl{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:10px}
+  .htbl th{font-size:10px;color:#5B707E;letter-spacing:.05em;text-align:right;padding:4px 6px;border-bottom:1.5px solid #1F3341;white-space:nowrap}
+  .htbl th:first-child,.htbl td:first-child{text-align:center}
+  .htbl td{padding:6px;border-bottom:1px solid #E3E9EC;text-align:right;font-family:ui-monospace,Menlo,monospace;white-space:nowrap}
+  .htbl td.warn{color:#B23B2E;font-weight:700}
+  .acopy{margin-top:10px;font:inherit;font-size:12px;font-weight:700;padding:9px 14px;border:1.5px solid #1F3341;border-radius:9px;background:#fff;color:#1F3341;cursor:pointer}
+  .acopy:active{background:#1F3341;color:#fff}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <h1>弦・矢高とR<small>大きなRの半径測定(弦・矢高法)</small></h1>
+    <h1>弦・矢高とR<small>弦・矢高⇔R ／ R・開き角→周長・穴割り出し</small></h1>
     <a href="../index.html">≡ ツール一覧</a>
   </header>
 <details class="guide noprint">
@@ -144,6 +159,7 @@
       <li>直定規やゲージを円弧面に当て、<b>弦 c</b>（当て幅）と<b>矢高 h</b>（弦の中央から円弧までの高さ）を測ります。</li>
       <li>c・h・R の<b>どれか2つ</b>を入れると、残りが赤字で出ます。</li>
       <li>図面のRと定規のスパン c から「合格時の矢高 h」を逆算することもできます。</li>
+      <li>円弧カバーなど「<b>R と開き角</b>」の図面は、上の<b>「R・角度から割り出し」タブ</b>へ。周長・弦と、角度指示の穴の<b>左端からの周長・弦</b>が出ます（開き角は「117 30」＝117°30′のように度・分でも可）。</li>
     </ol>
     <div class="gx">
       <h4>例 ── 弦100・矢高10 の大きなR</h4>
@@ -162,7 +178,29 @@
           <p>弦 c=100、矢高 h=10 を測ったときの半径 R は？</p>
           <p class="gset">弦 c 100 ／ 矢高 h 10</p>
           <p class="gread">読み方：R =(c²+4h²)/(8h)=(100²+4×10²)/(8×10)= <b>130.000mm</b>。</p>
-          <button class="gbtn" type="button" data-ex='{"set":[{"id":"fR","v":""},{"id":"fC","v":100},{"id":"fH","v":10}]}' onclick="tryExample(this)">この例を試す</button>
+          <button class="gbtn" type="button" data-ex='{"set":[{"click":"#tCH"},{"id":"fR","v":""},{"id":"fC","v":100},{"id":"fH","v":10}]}' onclick="tryExample(this)">この例を試す</button>
+        </div>
+      </div>
+    </div>
+    <div class="gx">
+      <h4>例 ── R200・開き角90°のカバー、穴3つの割り出し</h4>
+      <div class="gxin">
+        <div class="gfig"><svg viewBox="0 0 120 120" role="img" aria-label="開き角90°の円弧カバーと3つの穴の図">
+          <path d="M 21.1 61.1 A 55 55 0 0 1 98.9 61.1" fill="none" stroke="#1F3341" stroke-width="2"/>
+          <line x1="21.1" y1="61.1" x2="98.9" y2="61.1" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="3 2"/>
+          <line x1="21.1" y1="61.1" x2="26.6" y2="66.6" stroke="#1F3341" stroke-width="1.2"/>
+          <line x1="98.9" y1="61.1" x2="93.4" y2="66.6" stroke="#1F3341" stroke-width="1.2"/>
+          <circle cx="32.5" cy="52.4" r="3" fill="#fff" stroke="#D63426" stroke-width="1.4"/>
+          <circle cx="60"   cy="45"   r="3" fill="#fff" stroke="#D63426" stroke-width="1.4"/>
+          <circle cx="87.5" cy="52.4" r="3" fill="#fff" stroke="#D63426" stroke-width="1.4"/>
+          <text x="16" y="75" font-size="7.5" fill="#5B707E">左端</text>
+          <text x="60" y="110" font-size="7.5" fill="#5B707E" text-anchor="middle">R200・開き90°</text>
+        </svg></div>
+        <div class="gtxt">
+          <p>R200・開き角90°のカバー。穴が左端から 15°・45°・75°。テープで測る位置は？</p>
+          <p class="gset">R・角度から割り出し ／ R 200 ／ θ 90 ／ 穴 15 45 75</p>
+          <p class="gread">読み方：周長 <b>314.159</b>・弦 <b>282.843</b>。穴2は左端から周長 <b>157.080</b>（弦 153.073）、隣の穴とは周長 104.720（弦 103.528）。</p>
+          <button class="gbtn" type="button" data-ex='{"set":[{"click":"#tArc"},{"id":"fAR","v":200},{"id":"fATh","v":90},{"id":"fAHr","v":""},{"id":"fAAngs","v":"15 45 75"}]}' onclick="tryExample(this)">この例を試す</button>
         </div>
       </div>
     </div>
@@ -171,6 +209,12 @@
 
 
 
+  <div class="tabbar noprint">
+    <button type="button" id="tCH" class="on">弦・矢高 ⇔ R</button>
+    <button type="button" id="tArc">R・角度から割り出し</button>
+  </div>
+
+  <section id="paneCH">
   <!-- 図面シート -->
   <div class="sheet">
     <div class="sheet-inner">
@@ -271,6 +315,79 @@
       <span class="taphint">値をタップでコピー</span>
     </div>
   </div>
+
+  </section>
+
+  <section id="paneArc" hidden>
+  <div class="sheet">
+    <div class="sheet-inner">
+      <svg id="figArc" viewBox="0 0 340 250" role="img" aria-label="Rと開き角の円弧カバーと角度指示の穴の図"></svg>
+      <div class="titleblock">
+        <div><b>品名</b> 弦・矢高とR</div>
+        <div><b>方式</b> R・角度割り出し</div>
+        <div>TOOL-04</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hint">円弧カバーなど「<b>R と開き角</b>」で描かれた図面用です。周長・弦が出て、<b>角度で指示された穴</b>を、左端からの<b>周長（テープ・スケールで測る値）</b>と<b>弦（ノギスで測る値）</b>に割り出します。</div>
+
+  <div class="inputs">
+    <div class="row">
+      <span class="badge">1</span>
+      <label for="fAR">半径 R<small>測る面の円弧の半径</small></label>
+      <input id="fAR" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row">
+      <span class="badge">2</span>
+      <label for="fATh">開き角 θ<small>端から端まで。「117 30」=117°30′も可</small></label>
+      <input id="fATh" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">°</span>
+    </div>
+    <div class="row">
+      <span class="badge">3</span>
+      <label for="fAHr">穴の並ぶ半径<small>空欄なら R と同じ</small></label>
+      <input id="fAHr" type="text" inputmode="decimal" autocomplete="off" placeholder="=R">
+      <span class="unit">mm</span>
+    </div>
+  </div>
+
+  <div class="achips" id="abChips">
+    <button type="button" data-ab="left" class="on">穴の角度は左端から</button>
+    <button type="button" data-ab="center">中央から（±）</button>
+  </div>
+  <div class="inputs">
+    <div class="row">
+      <span class="badge">4</span>
+      <label for="fAAngs">穴の角度の並び<small>スペース区切り・度の小数で</small></label>
+      <input id="fAAngs" type="text" inputmode="decimal" autocomplete="off" placeholder="15 45 75">
+      <span class="unit">°</span>
+    </div>
+  </div>
+
+  <div class="dro">
+    <div class="dro-grid">
+      <div class="cellv" id="cAL"><span class="k">周長</span><span class="v dim" id="vAL">―</span><span class="s">mm</span></div>
+      <div class="cellv" id="cAC"><span class="k">弦</span><span class="v dim" id="vAC">―</span><span class="s">mm</span></div>
+      <div class="cellv" id="cAH"><span class="k">矢高</span><span class="v dim" id="vAH">―</span><span class="s">mm</span></div>
+    </div>
+    <div class="dro-sub" id="aSub">中心角 = ― | 穴の半径 = ―</div>
+    <div class="dro-foot">
+      <span class="statusTxt" id="aStatus">R と開き角を入れてください</span>
+      <span class="taphint">値をタップでコピー</span>
+    </div>
+  </div>
+
+  <div class="htblwrap">
+    <table class="htbl" id="aTbl" style="display:none">
+      <thead><tr><th>穴</th><th>左端から<br>角度</th><th>左端から<br>周長</th><th>左端から<br>弦</th><th>隣から<br>周長</th><th>隣から<br>弦</th></tr></thead>
+      <tbody id="aBody"></tbody>
+    </table>
+  </div>
+  <button type="button" class="acopy noprint" id="aCopy" style="display:none">穴の表をコピー</button>
+  <div class="hint" id="aNote" style="display:none">周長・弦は<b>「穴の並ぶ半径」の円弧上</b>の値です（左端＝その円弧の端 0°）。⚠は開き角の外にある穴、隣の⚠は並び順が逆の穴です。</div>
+  </section>
 
   <footer>
     このページは計算のみを行います。<br>
@@ -460,6 +577,233 @@
         document.body.removeChild(ta);
       }
     });
+  });
+})();
+</script>
+
+<script>
+/* ═══ R・角度から割り出し（v30 追加タブ）════════════════════════
+   円弧カバー等「R＋開き角＋角度指示の穴」の図面 → 周長・弦・穴の割り出し。
+   既存タブ（弦・矢高⇔R）の計算・DOMには一切触れていない。 */
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var RAD=Math.PI/180;
+  var abMode='left';
+  var lastRows=null, lastHead=null;
+
+  /* ── タブ切替 ── */
+  function setTab(w){
+    $('tCH').className  = (w==='ch')  ? 'on' : '';
+    $('tArc').className = (w==='arc') ? 'on' : '';
+    $('paneCH').hidden  = (w!=='ch');
+    $('paneArc').hidden = (w!=='arc');
+  }
+  $('tCH').addEventListener('click',function(){ setTab('ch'); });
+  $('tArc').addEventListener('click',function(){ setTab('arc'); });
+
+  /* ── 数値まわり ── */
+  function numA(v){
+    if(v==null) return NaN;
+    v=String(v).replace(/[０-９．]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0)}).replace(/。/g,'.').trim();
+    if(v==='') return NaN;
+    return Number(v);
+  }
+  /* 開き角：「117 30」=117°30′、「117 30 15」=117°30′15″、小数も可 */
+  function parseAng(v){
+    if(v==null) return NaN;
+    v=String(v).replace(/[０-９．]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0)}).replace(/。/g,'.').trim();
+    if(v==='') return NaN;
+    var t=v.split(/\s+/), d=Number(t[0]);
+    if(isNaN(d)) return NaN;
+    var s=(d<0||t[0].charAt(0)==='-')?-1:1, a=Math.abs(d);
+    if(t.length>1){ var m=Number(t[1]); if(isNaN(m)) return NaN; a+=m/60; }
+    if(t.length>2){ var sec=Number(t[2]); if(isNaN(sec)) return NaN; a+=sec/3600; }
+    return s*a;
+  }
+  function parseList(v){
+    var t=String(v||'').split(/[\s,、，]+/), out=[], i, x;
+    for(i=0;i<t.length;i++){
+      if(t[i]==='') continue;
+      x=numA(t[i]);
+      if(isNaN(x)) return null;      /* 1つでも数値でなければエラー */
+      out.push(x);
+    }
+    return out;
+  }
+  function fmt(x){ return x.toFixed(3); }
+  function fa(x){ return String(Math.round(x*1000)/1000); }   /* 角度の表示 */
+
+  /* ── トースト（既存 #toast を利用） ── */
+  var tt=null;
+  function toastA(msg){
+    var t=$('toast'); t.textContent=msg; t.classList.add('show');
+    clearTimeout(tt); tt=setTimeout(function(){ t.classList.remove('show'); },1600);
+  }
+
+  function setSt(msg,isErr){
+    var s=$('aStatus'); s.textContent=msg;
+    s.className='statusTxt'+(isErr?' err':'');
+  }
+  function clearOut(){
+    ['vAL','vAC','vAH'].forEach(function(id){ var e=$(id); e.textContent='―'; e.className='v dim'; });
+    $('aSub').textContent='中心角 = ― | 穴の半径 = ―';
+    $('aTbl').style.display='none'; $('aCopy').style.display='none'; $('aNote').style.display='none';
+    $('aBody').innerHTML=''; lastRows=null;
+    $('figArc').innerHTML='';
+  }
+
+  /* ── 図 ── */
+  function drawArc(R,th,rh,holes){
+    var pts=[], i, a, g, r2;
+    function mp(r,aL){ var gg=(aL-th/2)*RAD; return [r*Math.sin(gg), -r*Math.cos(gg)]; }
+    for(i=0;i<=60;i++) pts.push(mp(R,th*i/60));
+    for(i=0;i<holes.length;i++) pts.push(mp(rh,holes[i]));
+    pts.push(mp(R,0)); pts.push(mp(R,th));
+    if(th>=120) pts.push([0,0]);
+    var mnx=1e9,mxx=-1e9,mny=1e9,mxy=-1e9;
+    for(i=0;i<pts.length;i++){ if(pts[i][0]<mnx)mnx=pts[i][0]; if(pts[i][0]>mxx)mxx=pts[i][0]; if(pts[i][1]<mny)mny=pts[i][1]; if(pts[i][1]>mxy)mxy=pts[i][1]; }
+    var pad=30, k=Math.min((340-2*pad)/((mxx-mnx)||1),(250-2*pad)/((mxy-mny)||1));
+    if(!isFinite(k)||k<=0) k=1;
+    var ox=pad+(340-2*pad-(mxx-mnx)*k)/2 - mnx*k;
+    var oy=pad+(250-2*pad-(mxy-mny)*k)/2 - mny*k;
+    function P(r,aL){ var q=mp(r,aL); return [(ox+q[0]*k), (oy+q[1]*k)]; }
+    var p0=P(R,0), p1=P(R,th), laf=(th>180)?1:0, h='';
+    /* 弦 */
+    h+='<line x1="'+p0[0].toFixed(1)+'" y1="'+p0[1].toFixed(1)+'" x2="'+p1[0].toFixed(1)+'" y2="'+p1[1].toFixed(1)+'" stroke="#8FA2AF" stroke-width="1.1" stroke-dasharray="4 3"/>';
+    /* 穴の半径の円弧（R と違うとき） */
+    if(Math.abs(rh-R)>1e-9){
+      var q0=P(rh,0), q1=P(rh,th);
+      h+='<path d="M '+q0[0].toFixed(1)+' '+q0[1].toFixed(1)+' A '+(rh*k).toFixed(1)+' '+(rh*k).toFixed(1)+' 0 '+laf+' 1 '+q1[0].toFixed(1)+' '+q1[1].toFixed(1)+'" fill="none" stroke="#C9D3DA" stroke-width="1.1" stroke-dasharray="5 3"/>';
+    }
+    /* 円弧本体＋端の立ち下げ */
+    h+='<path d="M '+p0[0].toFixed(1)+' '+p0[1].toFixed(1)+' A '+(R*k).toFixed(1)+' '+(R*k).toFixed(1)+' 0 '+laf+' 1 '+p1[0].toFixed(1)+' '+p1[1].toFixed(1)+'" fill="none" stroke="#1F3341" stroke-width="2.4"/>';
+    for(i=0;i<2;i++){
+      a=(i===0)?0:th; r2=R*0.9;
+      var e1=P(R,a), e2=P(r2,a);
+      h+='<line x1="'+e1[0].toFixed(1)+'" y1="'+e1[1].toFixed(1)+'" x2="'+e2[0].toFixed(1)+'" y2="'+e2[1].toFixed(1)+'" stroke="#1F3341" stroke-width="1.4"/>';
+    }
+    /* 左端ラベル */
+    var lb=P(R*1.06,0);
+    h+='<text x="'+lb[0].toFixed(1)+'" y="'+lb[1].toFixed(1)+'" font-size="9.5" fill="#5B707E" text-anchor="middle">左端 0°</text>';
+    /* 穴 */
+    for(i=0;i<holes.length;i++){
+      var hp=P(rh,holes[i]);
+      h+='<circle cx="'+hp[0].toFixed(1)+'" cy="'+hp[1].toFixed(1)+'" r="4.6" fill="#fff" stroke="#D63426" stroke-width="1.6"/>';
+      var tp=P(rh*0.88,holes[i]);
+      h+='<text x="'+tp[0].toFixed(1)+'" y="'+(tp[1]+3).toFixed(1)+'" font-size="9" font-weight="700" fill="#D63426" text-anchor="middle">'+(i+1)+'</text>';
+    }
+    /* 中心 */
+    if(th>=120){
+      var c0=P(0,0);
+      h+='<circle cx="'+c0[0].toFixed(1)+'" cy="'+c0[1].toFixed(1)+'" r="2.4" fill="#1F3341"/>';
+    }
+    $('figArc').innerHTML=h;
+  }
+
+  /* ── 本体 ── */
+  function calcArc(){
+    var rTxt=$('fAR').value.trim(), tTxt=$('fATh').value.trim();
+    if(rTxt===''||tTxt===''){ clearOut(); setSt('入力待ち(R と開き角 θ を入れてください)',false); return; }
+    var R=numA(rTxt), th=parseAng(tTxt);
+    if(isNaN(R)||R<=0){ clearOut(); setSt('R は正の値で入力してください',true); return; }
+    if(isNaN(th)||th<=0){ clearOut(); setSt('θ は正の値で入力してください(「117 30」=117°30′も可)',true); return; }
+    if(th>360){ clearOut(); setSt('θ は 360° 以下で入力してください',true); return; }
+    var rhRaw=$('fAHr').value.trim();
+    var rh=(rhRaw==='')? R : numA(rhRaw);
+    if(isNaN(rh)||rh<=0){ clearOut(); setSt('穴の並ぶ半径は正の値で(空欄なら R と同じ)',true); return; }
+
+    var L=R*th*RAD, C=2*R*Math.sin(th/2*RAD), H=R*(1-Math.cos(th/2*RAD));
+    $('vAL').textContent=fmt(L); $('vAL').className='v led';
+    $('vAC').textContent=fmt(C); $('vAC').className='v led';
+    $('vAH').textContent=fmt(H); $('vAH').className='v led';
+    $('aSub').textContent='中心角 = '+fa(th)+'° | 穴の半径 = '+fmt(rh)+(rhRaw===''?' (=R)':'');
+    lastHead={L:L,C:C,H:H};
+
+    var list=parseList($('fAAngs').value);
+    if(list===null){ $('aTbl').style.display='none'; $('aCopy').style.display='none'; $('aNote').style.display='none'; lastRows=null;
+      setSt('穴の角度は「15 45 75」のように度の小数で入れてください',true); drawArc(R,th,rh,[]); return; }
+    if(!list.length){
+      $('aTbl').style.display='none'; $('aCopy').style.display='none'; $('aNote').style.display='none'; lastRows=null;
+      setSt('周長・弦を計算しました(穴の角度を入れると割り出し表が出ます)',false);
+      drawArc(R,th,rh,[]); return;
+    }
+    var rows=[], i, aL, prev=null, warnAny=false;
+    for(i=0;i<list.length;i++){
+      aL=(abMode==='center')? th/2+list[i] : list[i];
+      var w1=(aL<-1e-9||aL>th+1e-9);
+      var s=rh*aL*RAD, cd=2*rh*Math.sin(aL/2*RAD);
+      var da=null, dArc=null, dCd=null, w2=false;
+      if(prev!==null){
+        da=aL-prev; dArc=rh*da*RAD; dCd=2*rh*Math.sin(Math.abs(da)/2*RAD);
+        if(da<=1e-12) w2=true;   /* 並びが逆・同角 */
+      }
+      if(w1||w2) warnAny=true;
+      rows.push({n:i+1, aL:aL, s:s, cd:cd, dArc:dArc, dCd:dCd, warn:w1, warn2:w2});
+      prev=aL;
+    }
+    var h='';
+    for(i=0;i<rows.length;i++){
+      var r0=rows[i];
+      h+='<tr><td>'+r0.n+'</td>'
+        +'<td'+(r0.warn?' class="warn"':'')+'>'+fa(r0.aL)+'°'+(r0.warn?' ⚠':'')+'</td>'
+        +'<td'+(r0.warn?' class="warn"':'')+'>'+fmt(r0.s)+'</td>'
+        +'<td'+(r0.warn?' class="warn"':'')+'>'+fmt(r0.cd)+'</td>'
+        +'<td'+(r0.warn2?' class="warn"':'')+'>'+(r0.dArc===null?'―':fmt(r0.dArc)+(r0.warn2?' ⚠':''))+'</td>'
+        +'<td'+(r0.warn2?' class="warn"':'')+'>'+(r0.dCd===null?'―':fmt(r0.dCd))+'</td></tr>';
+    }
+    $('aBody').innerHTML=h;
+    $('aTbl').style.display=''; $('aCopy').style.display=''; $('aNote').style.display='';
+    lastRows=rows;
+    setSt('計算しました（穴 '+rows.length+' 個'+(warnAny?'・⚠あり':'')+'）',false);
+    drawArc(R,th,rh,rows.map(function(r){return r.aL;}));
+  }
+
+  ['fAR','fATh','fAHr','fAAngs'].forEach(function(id){
+    $(id).addEventListener('input',calcArc);
+  });
+  $('abChips').addEventListener('click',function(e){
+    var b=e.target.closest? e.target.closest('button[data-ab]') : null;
+    if(!b) return;
+    abMode=b.getAttribute('data-ab');
+    var bs=$('abChips').querySelectorAll('button');
+    for(var i=0;i<bs.length;i++) bs[i].className=(bs[i]===b)?'on':'';
+    calcArc();
+  });
+
+  /* 値タップでコピー */
+  [['cAL','vAL','周長'],['cAC','vAC','弦'],['cAH','vAH','矢高']].forEach(function(cf){
+    $(cf[0]).addEventListener('click',function(){
+      var v=$(cf[1]).textContent;
+      if(v==='―'){ toastA('まだ値がありません'); return; }
+      if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(v).then(function(){toastA(cf[2]+' をコピーしました')},function(){toastA('コピーできませんでした')});
+      }else{
+        var ta=document.createElement('textarea');
+        ta.value=v; document.body.appendChild(ta); ta.select();
+        try{ document.execCommand('copy'); toastA(cf[2]+' をコピーしました'); }catch(e){ toastA('コピーできませんでした'); }
+        document.body.removeChild(ta);
+      }
+    });
+  });
+
+  /* 表をコピー（TSV） */
+  $('aCopy').addEventListener('click',function(){
+    if(!lastRows){ toastA('まだ表がありません'); return; }
+    var out=['穴\t左端から角度°\t左端から周長\t左端から弦\t隣から周長\t隣から弦'];
+    for(var i=0;i<lastRows.length;i++){
+      var r0=lastRows[i];
+      out.push(r0.n+'\t'+fa(r0.aL)+'\t'+fmt(r0.s)+'\t'+fmt(r0.cd)+'\t'+(r0.dArc===null?'':fmt(r0.dArc))+'\t'+(r0.dCd===null?'':fmt(r0.dCd)));
+    }
+    if(lastHead) out.push('周長\t'+fmt(lastHead.L)+'\t弦\t'+fmt(lastHead.C)+'\t矢高\t'+fmt(lastHead.H));
+    var s=out.join('\n');
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(s).then(function(){toastA('穴の表をコピーしました（'+lastRows.length+' 行）')},function(){toastA('コピーできませんでした')});
+    }else if(document.execCommand){
+      var ta=document.createElement('textarea');
+      ta.value=s; document.body.appendChild(ta); ta.select();
+      try{ document.execCommand('copy'); toastA('穴の表をコピーしました（'+lastRows.length+' 行）'); }catch(e){ toastA('コピーできませんでした'); }
+      document.body.removeChild(ta);
+    }else{ toastA('この端末ではコピーできません'); }
   });
 })();
 </script>

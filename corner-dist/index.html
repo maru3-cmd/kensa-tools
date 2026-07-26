@@ -200,6 +200,34 @@
   .guide .gbtn{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;font:inherit;font-size:11.5px;font-weight:600;border:1px solid #1F3341;border-radius:6px;background:#fff;color:#1F3341;cursor:pointer;margin-top:2px}
   .guide .gbtn:active{transform:translateY(1px)}
   @media(max-width:360px){.guide .gxin{flex-direction:column}.guide .gfig svg{width:128px;height:128px}}
+  /* ── 作り直しUI（v25）：部品カード一覧・段階フォーム ── */
+  .plist{margin:2px 0 4px}
+  .pcard{display:flex;align-items:flex-start;gap:8px;background:var(--sheet);border:1px solid #D5DDE2;border-left:4px solid var(--ink);border-radius:9px;padding:8px 10px;margin-bottom:6px}
+  .pcard.baseA{border-left-color:#8FA2AF;align-items:center}
+  .pcard.editing{border-color:#2C5FA0;border-left-color:#2C5FA0;background:#F3F7FB}
+  .pcard .pn{font-weight:800;font-size:13.5px;min-width:30px;letter-spacing:.02em;padding-top:1px}
+  .pcard .pd{flex:1;font-size:11.5px;color:#42586A;line-height:1.55;min-width:0}
+  .pcard .pd b{color:#1F3341}
+  .pcard .err{font-size:10.5px;color:var(--red);font-weight:700;margin-top:3px}
+  .pcard .note{font-size:10.5px;color:var(--green);font-weight:700;margin-top:3px}
+  .pcard .act{font-size:11px;font-weight:700;color:#2C5FA0;cursor:pointer;padding:4px 2px;background:none;border:none;font-family:inherit;flex:none}
+  .pcard .act.del{color:#B23B2E;margin-left:2px}
+  .addform{background:var(--sheet);border:1.5px dashed var(--ink);border-radius:11px;padding:11px 12px 12px;margin-bottom:12px}
+  .addform.edit{border-style:solid;border-color:#2C5FA0}
+  .stephead{font-size:13px;font-weight:800;letter-spacing:.03em;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .ebadge{display:none;font-size:10px;font-weight:700;color:#fff;background:#2C5FA0;border-radius:5px;padding:2px 7px}
+  .addform.edit .ebadge{display:inline-block}
+  .steplab{font-size:10.5px;font-weight:700;color:#8FA2AF;letter-spacing:.08em;margin:10px 0 5px}
+  .chips2{display:flex;flex-wrap:wrap;gap:6px}
+  .chip2{font-size:12px;font-weight:700;padding:7px 11px;border:1.5px solid var(--ink);border-radius:8px;background:var(--sheet);color:var(--ink);cursor:pointer;font-family:inherit}
+  .chip2.on{background:var(--ink);color:#fff}
+  .chip2.blue.on{background:#2C5FA0;border-color:#2C5FA0}
+  .addgo{width:100%;margin-top:12px;font-size:13px;font-weight:800;padding:11px 8px;border:none;border-radius:9px;background:var(--ink);color:#fff;cursor:pointer;font-family:inherit}
+  .addgo:active{background:#D63426}
+  .cancelE{display:none;width:100%;margin-top:6px;font-size:11.5px;font-weight:700;padding:8px;border:1px solid #8FA2AF;border-radius:8px;background:#fff;color:#5B707E;cursor:pointer;font-family:inherit}
+  .addform.edit .cancelE{display:block}
+  .convnote{font-size:10.5px;color:#5B707E;margin:0 2px 8px;line-height:1.6}
+  .pcard .pd .ngt,.pcard .pd .ngt b{color:#B23B2E;font-weight:700}
   .toast{
     position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);
     background:var(--ink);color:#fff;font-size:13px;
@@ -225,7 +253,7 @@
     <h4>使い方</h4>
     <ol>
       <li>「直方体」タブで <b>L（長さ）・W（幅）・H（高さ）</b> を入れると、<b>空間対角</b>が出ます。</li>
-      <li>隅切り・切欠きなど凹み形状は「輪郭で作る」、測定機の座標そのままは「座標で作る」を使います。</li>
+      <li>隅切り・切欠きなど凹み形状は「輪郭で作る」で、ひな形を選ぶか<b>図面の外形を辺カードで一周なぞる</b>ように入れます。測定機の座標そのままは「座標で作る」へ。</li>
       <li>角にRや面取りがある部品は理論交点そのものは測れないので、基準面から測って座標で入れると確実です。</li>
     </ol>
     <div class="gx">
@@ -246,6 +274,26 @@
           <p class="gset">直方体 ／ L 100 ／ W 60 ／ H 40</p>
           <p class="gread">読み方：空間対角 = √(100²+60²+40²) = <b>123.288mm</b>。</p>
           <button class="gbtn" type="button" data-ex='{"set":[{"click":"#tabBox"},{"id":"bL","v":100},{"id":"bW","v":60},{"id":"bH","v":40}]}' onclick="tryExample(this)">この例を試す</button>
+        </div>
+      </div>
+    </div>
+    <div class="gx">
+      <h4>例 ── L字を「なぞって」作り、対角を読む</h4>
+      <div class="gxin">
+        <div class="gfig"><svg viewBox="0 0 120 120" role="img" aria-label="L字輪郭の角2から角5への対角の図">
+          <polygon points="15,105 105,105 105,78 51,78 51,33 15,33" fill="#EEF3F5" stroke="#1F3341" stroke-width="1.4" stroke-linejoin="round"/>
+          <line x1="105" y1="105" x2="51" y2="33" stroke="#D63426" stroke-width="1.7"/>
+          <circle cx="105" cy="105" r="2.6" fill="#D63426"/>
+          <circle cx="51" cy="33" r="2.6" fill="#D63426"/>
+          <text x="108" y="102" font-size="8" fill="#5B707E">2</text>
+          <text x="55" y="31" font-size="8" fill="#5B707E">5</text>
+          <text x="60" y="118" font-size="7" fill="#5B707E" text-anchor="middle">L字（入隅つき）</text>
+        </svg></div>
+        <div class="gtxt">
+          <p>L字（L100・W80・腕 a40・b30）の、角2から入隅の上の角5までの距離は？</p>
+          <p class="gset">輪郭で作る ／ ひな形 L字 ／ L 100・W 80・a 40・b 30 →「輪郭を作る」<br>辺カードに「辺 2→3：上へ 30」…と一周が日本語で並びます（「閉じ」カードで検算）</p>
+          <p class="gread">読み方：距離の一覧で <b>2–5 ＝ 100.000mm</b>（=√(60²+80²)）。行をタップで図に赤線。</p>
+          <button class="gbtn" type="button" data-ex='{"set":[{"click":"#tabCon"},{"sel":"#preset","v":"lshape"},{"id":"pL","v":100},{"id":"pW","v":80},{"id":"pa","v":40},{"id":"pb","v":30},{"click":"#applyPresetBtn"}]}' onclick="tryExample(this)">この例を試す</button>
         </div>
       </div>
     </div>
@@ -364,36 +412,59 @@
     </div>
     <div class="hint" id="presetHint"></div>
     <div class="btnrow" style="margin-top:10px">
-      <button class="btn primary" onclick="applyPreset()">輪郭を作る</button>
+      <button class="btn primary" id="applyPresetBtn" onclick="applyPreset()">輪郭を作る</button>
       <button class="btn sm" onclick="clearContour()">頂点を全消去</button>
     </div>
   </div>
 
   <div class="card">
-    <h2>頂点（平面・反時計回り）<span class="tag" id="cnCount">0 点</span></h2>
-    <div class="banner">下面は Z＝0 固定です。<b>上面 Z</b> を頂点ごとに変えれば、段差のある天面も表せます（空欄なら H）。</div>
-    <table class="vt">
-      <thead><tr><th>#</th><th style="text-align:left">X</th><th style="text-align:left">Y</th><th style="text-align:left">上面 Z</th><th></th></tr></thead>
-      <tbody id="vtBody"></tbody>
-    </table>
-    <div class="btnrow" style="margin-top:10px">
-      <button class="btn sm" onclick="addVertex()">＋ 頂点を追加</button>
-    </div>
+    <h2>輪郭（辺のつながり）<span class="tag" id="cnCount">0 点</span></h2>
+    <div class="convnote">図面の外形を<b>一周なぞる</b>ように入れます。最後の点から始点へは<b>自動で閉じます</b>（「閉じ」カードで、一周して図面どおり戻るかを検算できます）。辺を消すと、それ以降は詰めて続きます。</div>
+    <div class="plist" id="edgeList"></div>
+    <details id="vtDtl">
+      <summary style="font-size:12px;font-weight:700;color:#5B707E;cursor:pointer;padding:2px 0 8px">▼ 頂点の座標を直接なおす（上面Z・頂点だけの削除はこちら）</summary>
+      <div class="banner">下面は Z＝0 固定です。<b>上面 Z</b> を頂点ごとに変えれば、段差のある天面も表せます（空欄なら H）。ここで頂点を消すと、<b>前後の辺がつながります</b>（詰めません）。</div>
+      <table class="vt">
+        <thead><tr><th>#</th><th style="text-align:left">X</th><th style="text-align:left">Y</th><th style="text-align:left">上面 Z</th><th></th></tr></thead>
+        <tbody id="vtBody"></tbody>
+      </table>
+      <div class="btnrow" style="margin-top:10px">
+        <button class="btn sm" onclick="addVertex()">＋ 頂点を追加</button>
+      </div>
+    </details>
+  </div>
 
-    <h2 style="margin-top:16px">辺送りで追加<span class="tag">図面をなぞる</span></h2>
-    <div class="row">
-      <div><label class="f">長さ</label><input type="text" inputmode="decimal" autocomplete="off" id="stepLen" value="100"></div>
-      <div style="flex:2">
-        <label class="f">方向</label>
-        <div class="btnrow">
-          <button class="btn sm" onclick="stepV(1,0)">→ ＋X</button>
-          <button class="btn sm" onclick="stepV(-1,0)">← －X</button>
-          <button class="btn sm" onclick="stepV(0,1)">↑ ＋Y</button>
-          <button class="btn sm" onclick="stepV(0,-1)">↓ －Y</button>
-        </div>
+  <div class="addform noprint" id="edgeForm">
+    <div class="stephead">辺を足す（図面をなぞる）<span class="ebadge">編集中</span></div>
+    <div class="steplab">1. どこから？</div>
+    <div class="chips2" id="edgeBase"></div>
+    <div id="fStartRow" class="row" style="display:none;margin-top:8px">
+      <div><label class="f">始点 X（空＝0）</label><input type="text" inputmode="decimal" autocomplete="off" id="fSx" placeholder="0"></div>
+      <div><label class="f">始点 Y（空＝0）</label><input type="text" inputmode="decimal" autocomplete="off" id="fSy" placeholder="0"></div>
+    </div>
+    <div id="edgeSteps">
+      <div class="steplab">2. どっちへ？</div>
+      <div class="chips2" id="dirChips">
+        <button type="button" class="chip2 on" data-d="r">→ 右へ</button>
+        <button type="button" class="chip2" data-d="l">← 左へ</button>
+        <button type="button" class="chip2" data-d="u">↑ 上へ</button>
+        <button type="button" class="chip2" data-d="d">↓ 下へ</button>
+        <button type="button" class="chip2" data-d="diag">↗ 斜め（X・Y）</button>
+      </div>
+      <div class="steplab">3. 数値</div>
+      <div id="fLenRow" class="row">
+        <div><label class="f">長さ</label><input type="text" inputmode="decimal" autocomplete="off" id="fLen" placeholder="100" data-fk="len"></div>
+      </div>
+      <div id="fDiagRow" class="row" style="display:none">
+        <div><label class="f">X 方向へ（右＋）</label><input type="text" inputmode="decimal" autocomplete="off" id="fDx" placeholder="―" data-fk="len"></div>
+        <div><label class="f">Y 方向へ（上＋）</label><input type="text" inputmode="decimal" autocomplete="off" id="fDy" placeholder="―" data-fk="len"></div>
+      </div>
+      <div class="row">
+        <div><label class="f">この点の上面Z（段差があるとき・空＝H）</label><input type="text" inputmode="decimal" autocomplete="off" id="fZv" placeholder="H"></div>
       </div>
     </div>
-    <div class="hint">最後の頂点から相対で1点ずつ足します。図面の外形を辿るように入力できます。</div>
+    <button class="addgo" type="button" id="edgeGo">この辺を追加</button>
+    <button class="cancelE" type="button" id="edgeCancel">編集をやめる（変更を破棄）</button>
   </div>
 
   <div id="conResultSlot"></div>
@@ -702,10 +773,10 @@ function renderDRO(){
 }
 
 /* ═══════════ 図 ═══════════ */
-function renderFigs(){
+function renderFigs(pv){
   var P = points().filter(valid);
   var plan=document.getElementById("svgPlan"), iso=document.getElementById("svgIso");
-  if(P.length<1){ plan.innerHTML=""; iso.innerHTML=""; return; }
+  if(P.length<1 && !(pv&&pv.base)){ plan.innerHTML=""; iso.innerHTML=""; return; }
   var a = S.sel? byLabel(S.sel[0]):null, b = S.sel? byLabel(S.sel[1]):null;
   var selOK = a&&b&&valid(a)&&valid(b);
 
@@ -717,7 +788,10 @@ function renderFigs(){
   base = base.filter(function(p){ return isFinite(p.x)&&isFinite(p.y); });
   if(base.length){
     var pr = base.map(function(p){ return planP([p.x,p.y,0]); });
-    var m = fit(pr,300,220,26), s = pr.map(m), h="";
+    var fitPts = pr.slice();
+    if(pv&&pv.base) fitPts.push(planP([pv.base.x,pv.base.y,0]));
+    if(pv&&pv.to)   fitPts.push(planP([pv.to.x,pv.to.y,0]));
+    var m = fit(fitPts,300,220,26), s = pr.map(m), h="";
     if(closed){
       h+='<path d="M'+s.map(function(q){return q[0].toFixed(1)+","+q[1].toFixed(1);}).join(" L")+' Z" fill="#EEF3F5" stroke="#1F3341" stroke-width="1.6" stroke-linejoin="round"/>';
     }
@@ -729,7 +803,27 @@ function renderFigs(){
       var pa=m(planP([a.x,a.y,0])), pb=m(planP([b.x,b.y,0]));
       h+='<line x1="'+pa[0].toFixed(1)+'" y1="'+pa[1].toFixed(1)+'" x2="'+pb[0].toFixed(1)+'" y2="'+pb[1].toFixed(1)+'" stroke="#D63426" stroke-width="1.8"/>';
     }
+    /* ── 入力中の辺プレビュー（v26・表示のみ） ── */
+    if(pv){
+      var LW=(edgeFocus==="len")?3:2;
+      if(pv.editK>=0 && s[pv.editK] && s[pv.editK+1]){
+        h+='<line x1="'+s[pv.editK][0].toFixed(1)+'" y1="'+s[pv.editK][1].toFixed(1)+'" x2="'+s[pv.editK+1][0].toFixed(1)+'" y2="'+s[pv.editK+1][1].toFixed(1)+'" stroke="#2C5FA0" stroke-width="2.6"/>';
+      }
+      var pB=m(planP([pv.base.x,pv.base.y,0]));
+      h+='<circle cx="'+pB[0].toFixed(1)+'" cy="'+pB[1].toFixed(1)+'" r="9" fill="none" stroke="#2C5FA0" stroke-width="2"/>';
+      if(pv.to){
+        var pT=m(planP([pv.to.x,pv.to.y,0]));
+        h+='<line x1="'+pB[0].toFixed(1)+'" y1="'+pB[1].toFixed(1)+'" x2="'+pT[0].toFixed(1)+'" y2="'+pT[1].toFixed(1)+'" stroke="#D63426" stroke-width="'+LW+'" stroke-dasharray="5 3"/>';
+        h+='<circle cx="'+pT[0].toFixed(1)+'" cy="'+pT[1].toFixed(1)+'" r="5" fill="#FBECEA" stroke="#D63426" stroke-width="1.4" stroke-dasharray="3 2"/>';
+        h+='<text x="'+((pB[0]+pT[0])/2).toFixed(1)+'" y="'+((pB[1]+pT[1])/2-6).toFixed(1)+'" font-size="10" font-weight="700" fill="#D63426" text-anchor="middle" stroke="#fff" stroke-width="2.5" paint-order="stroke">'+f(pv.len)+'</text>';
+      }
+    }
     plan.innerHTML=h;
+  } else if(pv&&pv.base){
+    var m0=fit([planP([pv.base.x,pv.base.y,0])],300,220,26);
+    var q0=m0(planP([pv.base.x,pv.base.y,0]));
+    plan.innerHTML='<circle cx="'+q0[0].toFixed(1)+'" cy="'+q0[1].toFixed(1)+'" r="9" fill="none" stroke="#2C5FA0" stroke-width="2"/>'
+      +'<circle cx="'+q0[0].toFixed(1)+'" cy="'+q0[1].toFixed(1)+'" r="4" fill="#FBECEA" stroke="#D63426" stroke-width="1.4" stroke-dasharray="3 2"/>';
   } else plan.innerHTML="";
 
   /* --- 等角図 --- */
@@ -787,27 +881,24 @@ function applyPreset(){
   else if(t==="lshape"){  if(!(a>0&&b>0)){toast("a と b を入れてください。");return;} v=[[0,0],[L,0],[L,b],[a,b],[a,W],[0,W]]; }
   else if(t==="center"){  if(!(a>0&&b>0)){toast("a と b を入れてください。");return;} v=[[0,0],[L,0],[L,W],[(L+a)/2,W],[(L+a)/2,W-b],[(L-a)/2,W-b],[(L-a)/2,W],[0,W]]; }
   S.contour = v.map(function(p){ return {x:p[0], y:p[1], z:null}; });
-  S.sel=null; refreshCon();
+  S.sel=null; cancelEdgeModes(); refreshCon();
 }
-function clearContour(){ S.contour=[]; S.sel=null; refreshCon(); }
+function clearContour(){ S.contour=[]; S.sel=null; cancelEdgeModes(); refreshCon(); }
 function addVertex(){
   if(S.contour.length>=20){ toast("輪郭は 20 点までです。"); return; }
   var last = S.contour[S.contour.length-1] || {x:0,y:0};
   S.contour.push({x:last.x, y:last.y, z:null}); refreshCon();
 }
-function delVertex(i){ S.contour.splice(i,1); S.sel=null; refreshCon(); }
-function stepV(dx,dy){
-  var len=num("stepLen");
-  if(!isFinite(len)||len===0){ toast("長さを入れてください。"); return; }
-  if(S.contour.length>=20){ toast("輪郭は 20 点までです。"); return; }
-  var last = S.contour[S.contour.length-1] || {x:0,y:0};
-  S.contour.push({x:last.x+dx*len, y:last.y+dy*len, z:null}); refreshCon();
+function delVertex(i){
+  S.contour.splice(i,1); S.sel=null;
+  if(editEdge>=0){ if(editEdge===i||editEdge===i-1) cancelEdgeModes(); else if(editEdge>i) editEdge--; }
+  refreshCon();
 }
 function editV(i,k,el){
   var v = el.value.trim();
   if(k==="z") S.contour[i].z = (v==="")? null : parseFloat(v);
   else S.contour[i][k] = parseFloat(v);
-  S.sel=null; renderFigs(); renderPairs(); renderDRO(); renderList(); persist();
+  S.sel=null; renderEdges(); renderFigs(); renderPairs(); renderDRO(); renderList(); persist();
 }
 function renderVT(){
   var tb=document.getElementById("vtBody"), h="";
@@ -822,7 +913,215 @@ function renderVT(){
   if(!S.contour.length) h='<tr><td colspan="5" style="text-align:center;color:#8FA2AF;padding:12px">ひな形を選んで「輪郭を作る」を押してください</td></tr>';
   tb.innerHTML=h;
 }
-function refreshCon(){ renderVT(); renderFigs(); renderPairs(); renderDRO(); renderList(); persist(); }
+
+/* ═══ 辺カード＋段階フォーム（v26 作り直し）═══════════════════════
+   S.contour（頂点配列）・points()・pairs()・保存形式は従来のまま。
+   「辺」は隣り合う頂点の差分から導出した見せ方で、辺の編集は差分を
+   書き替えて後続の頂点を平行移動する（図面を一周なぞる読み方と同じ）。 */
+var FSC={dir:"r"}, editEdge=-1, editStart=false, edgeFocus="";
+function nfmt(v){ var r=Math.round(v*1000)/1000; return String(r); }
+function zTag(p){ return (p&&numOK(p.z))? "・上面Z "+nfmt(p.z) : ""; }
+function edgeDesc(dx,dy){
+  if(!isFinite(dx)||!isFinite(dy)) return '<span class="ngt">⚠ 座標が未入力の頂点があります（下の頂点表で確認）</span>';
+  var seg=[];
+  if(Math.abs(dx)>1e-9) seg.push((dx>0?"右へ ":"左へ ")+"<b>"+nfmt(Math.abs(dx))+"</b>");
+  if(Math.abs(dy)>1e-9) seg.push((dy>0?"上へ ":"下へ ")+"<b>"+nfmt(Math.abs(dy))+"</b>");
+  if(!seg.length) return '<span class="ngt">長さ 0（同じ位置）</span>';
+  var t=seg.join("・");
+  if(seg.length===2) t+="（斜め・長さ "+f(Math.hypot(dx,dy))+"）";
+  return t;
+}
+function renderEdges(){
+  var n=S.contour.length;
+  if(editEdge>n-2) editEdge=-1;
+  var box=document.getElementById("edgeList"), h="", i, p, dx, dy;
+  if(!n){
+    box.innerHTML='<div class="hint" style="padding:2px 2px 6px">まだ輪郭がありません。上のひな形か、下のフォームで<b>始点</b>を置いてください。</div>';
+    syncEdgeForm(); return;
+  }
+  p=S.contour[0];
+  h+='<div class="pcard baseA'+(editStart?' editing':'')+'"><span class="pn">始点 1</span><div class="pd">'
+    +((numOK(p.x)&&numOK(p.y))? "<b>("+nfmt(p.x)+", "+nfmt(p.y)+")</b>｜ここから一周なぞります" : '<span class="ngt">⚠ 座標が未入力です（下の頂点表で確認）</span>')
+    +zTag(p)+'</div><button type="button" class="act" data-estart="1">編集</button></div>';
+  for(i=0;i<n-1;i++){
+    dx=S.contour[i+1].x-S.contour[i].x; dy=S.contour[i+1].y-S.contour[i].y;
+    h+='<div class="pcard'+(i===editEdge?' editing':'')+'"><span class="pn">辺 '+(i+1)+'→'+(i+2)+'</span>'
+      +'<div class="pd">'+edgeDesc(dx,dy)+zTag(S.contour[i+1])+'</div>'
+      +'<button type="button" class="act" data-eedit="'+i+'">編集</button>'
+      +'<button type="button" class="act del" data-edel="'+i+'">削除</button></div>';
+  }
+  if(n>=3){
+    dx=S.contour[0].x-S.contour[n-1].x; dy=S.contour[0].y-S.contour[n-1].y;
+    h+='<div class="pcard baseA"><span class="pn">閉じ '+n+'→1</span><div class="pd">'
+      +((isFinite(dx)&&isFinite(dy))? edgeDesc(dx,dy)+'｜自動で閉じます（図面の寸法どおり一周で戻るかの検算に）' : '<span class="ngt">⚠ 座標が未入力の頂点があります</span>')
+      +'</div></div>';
+  } else {
+    h+='<div class="hint" style="padding:2px 2px 6px">あと '+(3-n)+' 点で面として閉じます。</div>';
+  }
+  box.innerHTML=h;
+  syncEdgeForm();
+}
+function cancelEdgeModes(){ editEdge=-1; editStart=false; clearEdgeVals(); }
+function clearEdgeVals(){
+  ["fLen","fDx","fDy","fZv","fSx","fSy"].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.value="";
+  });
+}
+function syncEdgeForm(){
+  var n=S.contour.length, startMode=(n===0)||editStart;
+  var base=document.getElementById("edgeBase"), go=document.getElementById("edgeGo");
+  if(!base) return;
+  Array.prototype.forEach.call(document.querySelectorAll("#dirChips button"),function(b){
+    b.classList.toggle("on", b.getAttribute("data-d")===FSC.dir);
+  });
+  document.getElementById("fStartRow").style.display=startMode?"":"none";
+  document.getElementById("edgeSteps").style.display=startMode?"none":"";
+  document.getElementById("fLenRow").style.display=(FSC.dir==="diag")?"none":"";
+  document.getElementById("fDiagRow").style.display=(FSC.dir==="diag")?"":"none";
+  if(startMode){
+    base.innerHTML='<button type="button" class="chip2 blue on" data-noop="1">'+(editStart?"始点をなおす（輪郭全体が平行移動）":"最初の点を置く")+'</button>';
+  } else {
+    var last=S.contour[n-1];
+    base.innerHTML='<button type="button" class="chip2 blue on" data-noop="1">点 '+n+'（'
+      +((numOK(last.x)&&numOK(last.y))?(nfmt(last.x)+", "+nfmt(last.y)):"—")+'）から続き</button>';
+  }
+  go.textContent = editStart? "始点を保存" : (n===0? "この点から始める" : (editEdge>=0? "変更を保存" : "この辺を追加"));
+  document.getElementById("edgeForm").classList.toggle("edit", editStart||editEdge>=0);
+}
+function readEdgeForm(strict){
+  if(FSC.dir==="diag"){
+    var dx=num("fDx"), dy=num("fDy");
+    if(!isFinite(dx)||!isFinite(dy)||(dx===0&&dy===0)) return strict? {err:"斜めの X・Y を入れてください。"} : null;
+    return {dx:dx, dy:dy};
+  }
+  var len=num("fLen");
+  if(!isFinite(len)||len<=0) return strict? {err:"長さを入れてください。"} : null;
+  if(FSC.dir==="r") return {dx:len, dy:0};
+  if(FSC.dir==="l") return {dx:-len, dy:0};
+  if(FSC.dir==="u") return {dx:0, dy:len};
+  return {dx:0, dy:-len};
+}
+function readZ(){ var v=document.getElementById("fZv").value.trim(); return (v==="")? null : parseFloat(v); }
+function submitEdge(){
+  var n=S.contour.length, r, last, v0, sx, sy, k, nm;
+  if(editStart||n===0){
+    sx=document.getElementById("fSx").value; sy=document.getElementById("fSy").value;
+    sx=(String(sx).replace(/\s/g,"")==="")? 0 : parseFloat(sx);
+    sy=(String(sy).replace(/\s/g,"")==="")? 0 : parseFloat(sy);
+    if(!isFinite(sx)||!isFinite(sy)){ toast("始点の X・Y を確認してください。"); return; }
+    if(editStart){
+      v0=S.contour[0];
+      if(numOK(v0.x)&&numOK(v0.y)){
+        var ddx=sx-v0.x, ddy=sy-v0.y;
+        for(k=0;k<S.contour.length;k++){ S.contour[k].x+=ddx; S.contour[k].y+=ddy; }
+      } else { v0.x=sx; v0.y=sy; }
+      cancelEdgeModes(); S.sel=null; refreshCon();
+      toast("始点を動かしました（輪郭全体を平行移動）"); return;
+    }
+    S.contour.push({x:sx, y:sy, z:null});
+    clearEdgeVals(); refreshCon(); toast("始点 1 を置きました"); return;
+  }
+  if(editEdge>=0){
+    r=readEdgeForm(true); if(r.err){ toast(r.err); return; }
+    var a=S.contour[editEdge], b=S.contour[editEdge+1];
+    if(!numOK(a.x)||!numOK(a.y)||!numOK(b.x)||!numOK(b.y)){ toast("座標が未入力の頂点があります。先に「頂点の座標」で直してください。"); return; }
+    var d2x=(a.x+r.dx)-b.x, d2y=(a.y+r.dy)-b.y;
+    for(k=editEdge+1;k<S.contour.length;k++){ S.contour[k].x+=d2x; S.contour[k].y+=d2y; }
+    S.contour[editEdge+1].z=readZ();
+    nm=editEdge; cancelEdgeModes(); S.sel=null; refreshCon();
+    toast("辺 "+(nm+1)+"→"+(nm+2)+" を変更しました（後続は平行移動）"); return;
+  }
+  if(n>=20){ toast("輪郭は 20 点までです。"); return; }
+  r=readEdgeForm(true); if(r.err){ toast(r.err); return; }
+  last=S.contour[n-1];
+  if(!numOK(last.x)||!numOK(last.y)){ toast("直前の頂点の座標が未入力です。先に「頂点の座標」で直してください。"); return; }
+  S.contour.push({x:last.x+r.dx, y:last.y+r.dy, z:readZ()});
+  ["fLen","fDx","fDy","fZv"].forEach(function(id){ document.getElementById(id).value=""; });
+  refreshCon();
+  toast("辺 "+(S.contour.length-1)+"→"+S.contour.length+" を足しました");
+}
+function startEditEdge(k){
+  var a=S.contour[k], b=S.contour[k+1];
+  if(!a||!b) return;
+  var dx=b.x-a.x, dy=b.y-a.y;
+  if(!isFinite(dx)||!isFinite(dy)){ toast("座標が未入力の頂点があります。先に「頂点の座標」で直してください。"); return; }
+  editEdge=k; editStart=false; clearEdgeVals();
+  var ax=Math.abs(dx)<1e-9, ay=Math.abs(dy)<1e-9;
+  if(ay&&!ax){ FSC.dir=(dx>0)?"r":"l"; document.getElementById("fLen").value=nfmt(Math.abs(dx)); }
+  else if(ax&&!ay){ FSC.dir=(dy>0)?"u":"d"; document.getElementById("fLen").value=nfmt(Math.abs(dy)); }
+  else { FSC.dir="diag"; document.getElementById("fDx").value=nfmt(dx); document.getElementById("fDy").value=nfmt(dy); }
+  var z=S.contour[k+1].z;
+  document.getElementById("fZv").value = numOK(z)? nfmt(z) : "";
+  renderEdges(); updateEdgePreview();
+}
+function startEditStart(){
+  var p=S.contour[0]; if(!p) return;
+  editStart=true; editEdge=-1; clearEdgeVals();
+  document.getElementById("fSx").value = numOK(p.x)? nfmt(p.x) : "";
+  document.getElementById("fSy").value = numOK(p.y)? nfmt(p.y) : "";
+  renderEdges(); updateEdgePreview();
+}
+function endEdgeEdit(){ cancelEdgeModes(); renderEdges(); updateEdgePreview(); }
+function delEdge(k){
+  var a=S.contour[k], b=S.contour[k+1], i;
+  if(!a||!b) return;
+  var dx=b.x-a.x, dy=b.y-a.y, fin=isFinite(dx)&&isFinite(dy);
+  S.contour.splice(k+1,1);
+  if(fin) for(i=k+1;i<S.contour.length;i++){ S.contour[i].x-=dx; S.contour[i].y-=dy; }
+  if(editEdge===k) cancelEdgeModes();
+  else if(editEdge>k) editEdge--;
+  S.sel=null; refreshCon();
+  toast("辺を消して詰めました");
+}
+function edgeTouched(){
+  var ids=["fLen","fDx","fDy"], i, el;
+  for(i=0;i<ids.length;i++){ el=document.getElementById(ids[i]); if(el&&String(el.value).replace(/\s/g,"")!=="") return true; }
+  return false;
+}
+function edgePv(){
+  var n=S.contour.length, r, sx, sy;
+  if(editStart||n===0){
+    sx=document.getElementById("fSx").value; sy=document.getElementById("fSy").value;
+    var tx=(String(sx).replace(/\s/g,"")===""), ty=(String(sy).replace(/\s/g,"")==="");
+    if(n===0 && tx && ty) return null;
+    sx=tx?0:parseFloat(sx); sy=ty?0:parseFloat(sy);
+    if(!isFinite(sx)||!isFinite(sy)) return null;
+    return {base:{x:sx,y:sy}, to:null, len:null, editK:-1};
+  }
+  var k=(editEdge>=0)? editEdge : (n-1);
+  var bp=S.contour[k];
+  if(!numOK(bp.x)||!numOK(bp.y)) return null;
+  if(editEdge<0 && !edgeTouched()) return null;
+  var pv={base:{x:bp.x,y:bp.y}, to:null, len:null, editK:editEdge};
+  r=readEdgeForm(false);
+  if(r){ pv.to={x:bp.x+r.dx, y:bp.y+r.dy}; pv.len=Math.hypot(r.dx,r.dy); }
+  return pv;
+}
+function updateEdgePreview(){ if(S.tab!=="con") return; renderFigs(edgePv()); }
+function initEdgeForm(){
+  document.getElementById("edgeList").addEventListener("click",function(e){
+    var b=e.target.closest? e.target.closest("button[data-eedit],button[data-edel],button[data-estart]"):null;
+    if(!b) return;
+    if(b.hasAttribute("data-estart")) startEditStart();
+    else if(b.hasAttribute("data-eedit")) startEditEdge(parseInt(b.getAttribute("data-eedit"),10));
+    else delEdge(parseInt(b.getAttribute("data-edel"),10));
+  });
+  var form=document.getElementById("edgeForm");
+  form.addEventListener("click",function(e){
+    var b=e.target.closest? e.target.closest("button"):null;
+    if(!b) return;
+    if(b.id==="edgeGo"){ submitEdge(); return; }
+    if(b.id==="edgeCancel"){ endEdgeEdit(); return; }
+    if(b.hasAttribute("data-d")){ FSC.dir=b.getAttribute("data-d"); syncEdgeForm(); updateEdgePreview(); }
+  });
+  form.addEventListener("input",function(){ updateEdgePreview(); });
+  form.addEventListener("focusin",function(e){
+    var fk=(e.target.getAttribute&&e.target.getAttribute("data-fk"))||"";
+    if(fk!==edgeFocus){ edgeFocus=fk; updateEdgePreview(); }
+  });
+  form.addEventListener("focusout",function(){ if(edgeFocus!==""){ edgeFocus=""; updateEdgePreview(); } });
+}
+function refreshCon(){ renderVT(); renderEdges(); renderFigs(); renderPairs(); renderDRO(); renderList(); persist(); }
 
 /* ═══════════ 座標タブ ═══════════ */
 function addFree(){
@@ -946,7 +1245,7 @@ function setTab(t){
 restore();
 presetInfo();
 calcBox(); calcSq(); calcQ();
-renderVT(); renderFT();
+renderVT(); renderFT(); initEdgeForm(); renderEdges();
 if(!document.getElementById("recDate").value){
   var n=new Date(); document.getElementById("recDate").value = n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0")+"-"+String(n.getDate()).padStart(2,"0");
 }

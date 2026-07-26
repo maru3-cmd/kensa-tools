@@ -165,8 +165,9 @@
     <ol>
       <li>「PCD → ピッチ」を選び、<b>PCD</b>（ピッチ円直径）と<b>穴数 n</b>を入れます。</li>
       <li><b>穴とび k</b>は、隣どうしなら 1、1つ飛ばしなら 2…です。</li>
+      <li>図面の角度に <b>±公差</b>（例 ±0.2°）が付いているときは、下の<b>「角度公差 → ピッチの許容範囲」</b>へ。「間の角度に±」か「各穴の位置に±（間では2倍）」を選び、実測ピッチで合否も出せます。</li>
       <li>下に <b>ピッチ p</b> と <b>中心角 θ</b> が出ます。実測ピッチから PCD を出すときは「ピッチ → PCD」に切り替えます。</li>
-      <li>座標・偏心・不等配が要るときは <b>穴配置 総合（TOOL-30）</b>へ。</li>
+      <li>座標・偏心・不等配が要るときは <b>図面まるごと穴ピッチ（TOOL-30）</b>へ。</li>
     </ol>
     <div class="gx">
       <h4>例 ── PCD100 に 6穴</h4>
@@ -298,9 +299,43 @@
     </div>
   </div>
 
+  <div class="hint" style="margin-top:14px"><b>角度公差 → ピッチの許容範囲</b>：図面の角度に ±公差（例 ±0.2°）が付いているとき、ノギスで測る<b>ピッチ(弦)の許容範囲</b>と、PCD上の<b>円周方向のズレ量</b>に換算します。PCD・穴数・とびは上の入力を使います。※換算は PCD が図面どおりの前提です（PCD自体の公差は別途）。</div>
+  <div class="inputs">
+    <div class="row">
+      <span class="badge">4</span>
+      <label for="inTol">角度の公差 ±<small>図面の ±値（片側）</small></label>
+      <input id="inTol" type="text" inputmode="decimal" autocomplete="off" placeholder="0.2">
+      <span class="unit">°</span>
+    </div>
+  </div>
+  <div class="chips" id="tolKind" role="group" aria-label="公差の付き方" style="margin:0 0 8px 34px">
+    <button type="button" data-tk="between" aria-pressed="true">穴と穴の間の角度に ±</button>
+    <button type="button" data-tk="each" aria-pressed="false">各穴の位置に ±（間では2倍）</button>
+  </div>
+  <div class="inputs">
+    <div class="row">
+      <span class="badge">5</span>
+      <label for="inMeasP">実測ピッチ<small>任意：入れると合否判定</small></label>
+      <input id="inMeasP" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+    </div>
+  </div>
+  <div class="dro">
+    <div class="dro-line">
+      <span class="dro-label">p許容</span>
+      <span class="dro-val" id="tolOut" style="font-size:22px;letter-spacing:.02em">―</span>
+      <span class="dro-unit">mm</span>
+    </div>
+    <div class="dro-sub" id="tolSub">θ の振れ幅 = ― ／ 円周方向 = ―</div>
+    <div class="dro-sub" id="tolJdg"></div>
+    <div class="dro-foot">
+      <span class="formula" id="tolStat">±公差(°)を入れると許容範囲が出ます</span>
+    </div>
+  </div>
+
   <footer>
     穴の座標(X・Y)が要るとき、中心をずらした別のPCDと重なるとき、角度が等配でないときは
-    <a href="../hole-map/" style="color:#5B707E">穴配置 総合(TOOL-30)</a> をどうぞ。<br>
+    <a href="../hole-map/" style="color:#5B707E">図面まるごと穴ピッチ(TOOL-30)</a> をどうぞ。<br>
     このページは計算のみを行います。<br>
     入力値の送信・保存は一切ありません(端末内で完結)。
   </footer>
@@ -450,6 +485,7 @@
     $('out').textContent = ok ? lastResult : '―.―――';
     $('thOut').textContent = ok ? ('中心角 θ = '+th.toFixed(3)+'°') : '中心角 θ = ―';
     draw(nOk?n:8, kOk?k:1, ok?lastResult:'―');
+    tolCalc();
   }
 
   function setMode(m){
@@ -480,6 +516,54 @@
   }
   $('kMinus').addEventListener('click',function(){bump(-1)});
   $('kPlus').addEventListener('click',function(){bump(1)});
+
+
+  /* ---- 角度公差 → ピッチの許容範囲(v32) ---- */
+  var RAD2=Math.PI/180;
+  var tolEach=false;
+  function tolCalc(){
+    var t=num($('inTol').value);
+    var v1=num($('in1').value);
+    var n2=intVal($('inN').value);
+    var k2=intVal($('inK').value); if(isNaN(k2))k2=1;
+    var nOk=!isNaN(n2)&&n2>=2, kOk=k2>=1&&(!nOk||k2<=n2-1);
+    function clr(msg){
+      $('tolOut').textContent='―';
+      $('tolSub').textContent='θ の振れ幅 = ― ／ 円周方向 = ―';
+      $('tolJdg').textContent='';
+      $('tolStat').textContent=msg;
+    }
+    if(mode!=='fwd'){clr('角度公差の換算は「PCD→ピッチ」側で使います');return;}
+    if(!(t>0)){clr('±公差(°)を入れると許容範囲が出ます');return;}
+    if(!(v1>0&&nOk&&kOk)){clr('先に上の PCD・穴数・とびを入れてください');return;}
+    var dt=tolEach? 2*t : t;
+    var th=k2*360/n2, thMin=th-dt, thMax=th+dt;
+    if(thMin<=0||thMax>=360){clr('公差が大きすぎます(θ±の範囲が 0°〜360° を出ます)');return;}
+    var pA=v1*Math.sin(thMin/2*RAD2), pB=v1*Math.sin(thMax/2*RAD2);
+    var pLo=Math.min(pA,pB), pHi=(thMin<180&&thMax>180)? v1 : Math.max(pA,pB);
+    var s=(v1/2)*dt*RAD2;
+    $('tolOut').textContent=pLo.toFixed(3)+' 〜 '+pHi.toFixed(3);
+    $('tolSub').textContent='θ = '+th.toFixed(3)+'° ± '+(Math.round(dt*1000)/1000)+'°'
+      +(tolEach?'（各穴±'+t+'°が両側で効くため2倍）':'')
+      +' ／ 円周方向 ±'+s.toFixed(3)+' mm(PCD上の弧)';
+    var m=num($('inMeasP').value);
+    if(m>0){
+      if(m<pLo-1e-9) $('tolJdg').textContent='実測 '+m.toFixed(3)+' → × 小さい（下限まで +'+(pLo-m).toFixed(3)+' mm）';
+      else if(m>pHi+1e-9) $('tolJdg').textContent='実測 '+m.toFixed(3)+' → × 大きい（上限を '+(m-pHi).toFixed(3)+' mm 超過）';
+      else $('tolJdg').textContent='実測 '+m.toFixed(3)+' → ○ 合格（余裕 −'+(m-pLo).toFixed(3)+' / +'+(pHi-m).toFixed(3)+' mm）';
+    }else $('tolJdg').textContent='';
+    $('tolStat').textContent='許容 p = PCD × sin((θ±公差)÷2)';
+  }
+  ['inTol','inMeasP'].forEach(function(id){$(id).addEventListener('input',tolCalc)});
+  Array.prototype.forEach.call(document.querySelectorAll('#tolKind button'),function(b){
+    b.addEventListener('click',function(){
+      tolEach=(b.getAttribute('data-tk')==='each');
+      Array.prototype.forEach.call(document.querySelectorAll('#tolKind button'),function(x){
+        x.setAttribute('aria-pressed', x===b ? 'true':'false');
+      });
+      tolCalc();
+    });
+  });
 
   var toastTimer=null;
   function toast(msg){

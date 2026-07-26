@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#1F3341">
-<meta name="description" content="穴間ピッチの計算。同半径2穴を角度から求める弦の公式(既定)と、半径違いの2穴の余弦定理をタブで切替。計算は端末内で完結します。">
-<title>穴間ピッチ | 検査計算ツール</title>
+<meta name="description" content="中心からの半径と角度から穴間ピッチを計算。同半径2穴の弦の公式(既定)と、半径違いの2穴の余弦定理をタブで切替。計算は端末内で完結します。">
+<title>角度から穴ピッチ | 検査計算ツール</title>
 <style>
   :root{
     --paper:#F2F4F5;      /* 背景(図面台紙) */
@@ -175,7 +175,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>穴間ピッチ<small>同半径(角度)/ 異半径</small></h1>
+    <h1>角度から穴ピッチ<small>中心からの半径と角度 → 2穴の距離</small></h1>
     <a href="../index.html">≡ ツール一覧</a>
   </header>
 <details class="guide noprint">
@@ -325,7 +325,7 @@
         </g>
       </svg>
       <div class="titleblock">
-        <div><b>品名</b> <span id="tbName">穴間ピッチ(同半径)</span></div>
+        <div><b>品名</b> <span id="tbName">角度から穴ピッチ(同半径)</span></div>
         <div><b>方式</b> <span id="tbMethod">弦の公式</span></div>
         <div>TOOL-01</div>
       </div>
@@ -471,7 +471,7 @@
     $('rowR2').style.display=same?'none':'';
     $('subBox').style.display=same?'':'none';
     $('angBadge').textContent=same?'2':'3';
-    $('tbName').textContent=same?'穴間ピッチ(同半径)':'穴間距離(異半径)';
+    $('tbName').textContent=same?'角度から穴ピッチ(同半径)':'角度から穴ピッチ(異半径)';
     $('tbMethod').textContent=same?'弦の公式':'余弦定理';
     $('formulaTxt').textContent=same?'L = 2·r·sin(θ/2)':'L = √(r₁² + r₂² − 2·r₁·r₂·cosθ)';
     recalc();

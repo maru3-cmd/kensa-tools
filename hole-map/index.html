@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#1F3341">
 <meta name="description" content="PCD・単独の穴・中心線からの左右振り分け・端面からの寸法を1枚の図の上で合成し、全ての穴の座標と穴間ピッチをまとめて計算します。計算は端末内で完結します。">
-<title>穴配置 総合 | 検査計算ツール</title>
+<title>図面まるごと穴ピッチ | 検査計算ツール</title>
 <style>
   :root{
     --paper:#F2F4F5; --sheet:#FFFFFF; --ink:#1F3341; --line:#8FA2AF; --red:#D63426;
@@ -177,10 +177,11 @@
 <div class="wrap">
 
 <header class="noprint">
-  <h1>穴配置 総合<small>PCD・任意穴・軸配置・端面をまとめて</small></h1>
+  <h1>図面まるごと穴ピッチ<small>PCD・任意穴・軸配置・端面をまとめて</small></h1>
   <a href="../index.html">≡ ツール一覧</a>
 </header>
   <div class="topClear noprint" style="display:flex;justify-content:flex-end;margin:6px 2px 0"><button type="button" aria-label="一括消去して新しく始める" style="font-weight:700;font-size:12px;color:#B23B2E;background:#FBECEA;border:1px solid #E7B7B0;border-radius:9px;padding:7px 13px;cursor:pointer" onclick="armClear(this)">一括消去（新しく始める）</button></div>
+  <div class="hint noprint" style="margin:8px 2px 0">数点だけその場でつないで確かめたいときは <a href="../hole-builder/" style="color:#5B707E"><b>点つなぎピッチ（TOOL-22）</b></a> が手軽です。／ 旧称：穴配置 総合</div>
 
 <details class="guide noprint">
   <summary>使い方と例を見る</summary>
@@ -191,7 +192,7 @@
       <li>追加した部品は上の一覧に「<b>A：PCD100 に 6穴 等配…</b>」のように日本語で残り、<b>編集・削除</b>できます。入力中は図に<b>プレビュー（破線の赤丸・寸法線・角度）</b>がその場で描かれます。</li>
       <li>角度は<b>真上0°・時計回り＋</b>。図面まるごとを1枚で入れると、<b>全穴の座標</b>と<b>総当たりの穴間ピッチ</b>が出ます。行をタップで図と連動します。</li>
       <li><b>同じ穴パターンが PCD の各点にあるとき</b>は、「中心線で左右に振る」の基準で<b>「PCD ◯ の各点」</b>を選びます。1点ぶん入れるだけで全点に複製され、<b>別の点どうしの穴の距離</b>まで一気に出ます。既定の「隣り合う点だけ」フィルタで、隣の点との距離だけを拾えます（PCDの基準穴は除外）。</li>
-      <li>単一PCDの穴間ピッチや単純な弦長だけなら PCD穴ピッチ（TOOL-02）が手軽です。複数PCDや任意穴の混在はこの画面でまとめられます。</li>
+      <li>単一PCDの穴間ピッチや単純な弦長だけなら PCD穴ピッチ（TOOL-02）、点を数個その場でつなぐだけなら点つなぎピッチ（TOOL-22）が手軽です。複数PCDや任意穴の混在はこの画面でまとめられます。</li>
     </ol>
     <div class="gx">
       <h4>例 ── PCD100 に 6穴（等配）</h4>

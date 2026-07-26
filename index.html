@@ -157,8 +157,8 @@
     </svg></span>
     <span>
       <span class="no">TOOL-01</span>
-      <div class="nm">穴間ピッチ</div>
-      <div class="ds">同半径(角度)を既定に、異半径の余弦定理もタブで切替</div>
+      <div class="nm">角度から穴ピッチ</div>
+      <div class="ds">中心からの半径と、間の角度から2穴の距離。半径が違う2穴にも対応。旧称：穴間ピッチ</div>
     </span>
     <span class="chev">›</span>
   </a>
@@ -176,7 +176,7 @@
     <span>
       <span class="no">TOOL-02</span>
       <div class="nm">PCD穴ピッチ</div>
-      <div class="ds">PCDと穴数から穴間ピッチ。実測ピッチからPCDの逆算も</div>
+      <div class="ds">PCDと穴数から穴間ピッチ。実測ピッチからPCDの逆算も。角度±公差→ピッチ許容範囲の換算も</div>
     </span>
     <span class="chev">›</span>
   </a>
@@ -193,8 +193,8 @@
     </svg></span>
     <span>
       <span class="no">TOOL-30</span>
-      <div class="nm">穴配置 総合</div>
-      <div class="ds">PCD・任意穴・中心線からの左右振り分け・端面基準を1枚に重ねて全穴の座標とピッチ</div>
+      <div class="nm">図面まるごと穴ピッチ</div>
+      <div class="ds">図面1枚ぶんの穴（PCD・任意穴・左右振り分け・端面基準）をまとめて入れ、全穴の座標と総当たりピッチ。旧称：穴配置 総合</div>
     </span>
     <span class="chev">›</span>
   </a>
@@ -209,7 +209,7 @@
     <span>
       <span class="no">TOOL-13</span>
       <div class="nm">真位置度判定</div>
-      <div class="ds">2√(ΔX²+ΔY²)で合否判定。公差円に実測位置を図示、Ⓜ対応</div>
+      <div class="ds">2√(ΔX²+ΔY²)で合否判定。公差円に実測位置を図示。最大実体Ⓜのボーナス公差にも対応</div>
     </span>
     <span class="chev">›</span>
   </a>
@@ -224,7 +224,7 @@
     <span>
       <span class="no">TOOL-17</span>
       <div class="nm">位相ズレ</div>
-      <div class="ds">クロッキング: 位相角⇔円周ズレ量。等配穴の折返し、傾斜計2点入力</div>
+      <div class="ds">回転方向の合わせズレ(クロッキング)。角度⇔円周のズレ量を換算、等配穴は「何穴ぶん＋残り」に読み替え。傾斜計の2点読みにも対応</div>
     </span>
     <span class="chev">›</span>
   </a>
@@ -242,8 +242,8 @@
     </svg></span>
     <span>
       <span class="no">TOOL-22</span>
-      <div class="nm">穴位置ビルダー</div>
-      <div class="ds">複数の中心を持つ穴配置の座標算出。実測距離から位置(縦横)も逆算</div>
+      <div class="nm">点つなぎピッチ</div>
+      <div class="ds">2〜3点をつないで、その場で距離・角度。実測距離から位置(縦横)の逆算も。旧称：穴位置ビルダー</div>
     </span>
     <span class="chev">›</span>
   </a>
@@ -291,7 +291,7 @@
     <span>
       <span class="no">TOOL-26</span>
       <div class="nm">軸の傾き</div>
-      <div class="ds">検査棒の2点読みから角度・勾配・直角度判定。すき間ロッキングの有効性判定つき</div>
+      <div class="ds">検査棒の2点読みから角度・勾配・直角度判定。穴とのガタ(すき間)で読みが有効かの判定つき</div>
     </span>
     <span class="chev">›</span>
   </a>
@@ -308,7 +308,7 @@
     <span>
       <span class="no">TOOL-27</span>
       <div class="nm">端面からの穴位置</div>
-      <div class="ds">基準点・基準線の図面指示を端面からの読みに換算。穴から角度の連鎖対応</div>
+      <div class="ds">基準点・基準線の図面指示を、左端・下端からの読みに換算。穴を基準にした角度指示のつなぎにも対応</div>
     </span>
     <span class="chev">›</span>
   </a>
@@ -343,7 +343,7 @@
     <span>
       <span class="no">TOOL-04</span>
       <div class="nm">弦・矢高とR</div>
-      <div class="ds">定規を当てて弦と矢高から大きなRを計算。期待矢高の逆算も</div>
+      <div class="ds">定規を当てた弦の長さと、中央のすき間(矢高)から大きなRを計算。期待矢高の逆算も。Rと開き角から周長・弦・角度指示の穴の割り出し(円弧カバー)にも対応</div>
     </span>
     <span class="chev">›</span>
   </a>
@@ -391,7 +391,7 @@
     <span>
       <span class="no">TOOL-05</span>
       <div class="nm">公差判定・公差表</div>
-      <div class="ds">JISはめあい公差(h7・H7など)。実測値の合否を即判定</div>
+      <div class="ds">JISはめあい公差(h7・H7・e8など)。実測の合否判定、めっき厚の補正、穴×軸の最大最小すきまも</div>
     </span>
     <span class="chev">›</span>
   </a>
@@ -465,7 +465,7 @@
     <span>
       <span class="no">TOOL-20</span>
       <div class="nm">ねじ下穴・ひっかかり率</div>
-      <div class="ds">並目/細目・切削/転造。材質別の限度%(編集可)で下穴を判定</div>
+      <div class="ds">並目/細目・切削/転造。材質別の限度%(編集可)で下穴を判定。実測内径・外径の2級(6H/6g)合否も</div>
     </span>
     <span class="chev">›</span>
   </a>
@@ -515,7 +515,7 @@
     <span>
       <span class="no">TOOL-23</span>
       <div class="nm">カム変位線図</div>
-      <div class="ds">板カムの区間ごとの運動曲線→リフト・速度・加速度と任意角の照合</div>
+      <div class="ds">板カムを区間割りで入力してリフト線図を作成。任意の角度のリフト・速度・加速度を照合</div>
     </span>
     <span class="chev">›</span>
   </a>
@@ -567,8 +567,8 @@
     </svg></span>
     <span>
       <span class="no">TOOL-33</span>
-      <div class="nm">樹脂ガイド</div>
-      <div class="ds">搬送系樹脂の色・密度・線膨張・吸水と、浮沈/燃焼での見分け方</div>
+      <div class="nm">樹脂の見分け・物性</div>
+      <div class="ds">搬送系樹脂の色・密度・線膨張・吸水と、浮沈/燃焼での見分け方。旧称：樹脂ガイド</div>
     </span>
     <span class="chev">›</span>
   </a>
@@ -631,7 +631,7 @@
     </svg></span>
     <span>
       <span class="no">TOOL-32</span>
-      <div class="nm">ベルト周長</div>
+      <div class="nm">ベルト周長（図面から）</div>
       <div class="ds">プーリー配置(位置・直径)から歯付/平ベルトの周長を算出。仕様と照合</div>
     </span>
     <span class="chev">›</span>
@@ -658,12 +658,12 @@
 (function(){
   // 検索用の追加キーワード(名前・説明に出てこない言い回しを補完)
   var KW={
-    'pitch-radius/':'余弦定理 2穴 ピッチ 距離 はんけい 弦 同半径 異半径 角度',
-    'chord-r/':'アール 半径 弦 矢高 コード 円弧 R測定',
+    'pitch-radius/':'余弦定理 2穴 ピッチ 距離 はんけい 弦 同半径 異半径 角度 穴間ピッチ 角度から穴ピッチ 中心 振り角',
+    'chord-r/':'アール 半径 弦 矢高 コード 円弧 R測定 カバー 開き角 中心角 周長 展開 展開長 扇 割り出し 盾 シールド 度分',
     'right-triangle/':'直角三角形 三平方 ピタゴラス 斜辺 底辺 高さ サイン コサイン タンジェント 勾配 角度 三角比',
-    'tolerance/':'はめあい 公差 H7 h7 g6 js k m p s 軸 穴 合否 寸法許容差',
+    'tolerance/':'はめあい 公差 H7 h7 g6 js k m p s 軸 穴 合否 寸法許容差 めっき メッキ 下地 すきま 隙間 しめしろ 締め代 圧入 e8 e9 E8',
     'gear-w/':'歯車 またぎ歯厚 W寸法 モジュール 転位 歯厚マイクロ',
-    'hole-builder/':'穴位置 中心 データム 座標 三辺測量 逆算 縦横 位置 XY 割り出し 多穴 多穴間距離 穴間距離 相対角度 前の穴から 総当たり 穴1基準 CMM',
+    'hole-builder/':'穴位置 中心 データム 座標 三辺測量 逆算 縦横 位置 XY 割り出し 多穴 多穴間距離 穴間距離 相対角度 前の穴から 総当たり 穴1基準 CMM 点つなぎ 点つなぎピッチ その場計算 穴位置ビルダー ビルダー',
     'bend-guide/':'パイプ チューブ 曲げ 展開長 R曲げ ベンダー',
     'bend-guide-3d/':'3D 立体 ひねり 回転 三面図 YBC パイプ',
     'temp-comp/':'温度 熱膨張 20度 線膨張 樹脂 補正 20℃',
@@ -674,7 +674,7 @@
     'phase-shift/':'位相 クロッキング フランジ 傾斜計 等配 回転ズレ',
     'taper/':'テーパ 勾配 サインバー モールス MT BT NT 角度 円すい',
     'pipe-thread/':'管用 ねじ R Rc Rp G PT PF PS 下穴 NPT 配管 継手',
-    'tap-drill/':'下穴 タップ ひっかかり率 引っかかり メートルねじ 並目 細目 転造 SUS ドリル',
+    'tap-drill/':'下穴 タップ ひっかかり率 引っかかり メートルねじ 並目 細目 転造 SUS ドリル 2級 6H 6g 内径判定 外径判定 ねじ外径 限界寸法',
     'cpk/':'Cpk Cp 工程能力 標準偏差 シグマ ヒストグラム 統計 ばらつき 不良率',
     'cam-profile/':'カム 板カム 変位線図 リフト 揚程 サイクロイド 単弦 等加速度 修正台形 速度 加速度 回転角',
     'scale-count/':'はかり 数取器 単重 個数 計数 秤',
@@ -685,9 +685,9 @@
     'axis-tilt/':'傾き 傾斜 軸 検査棒 テストピース 芯 直角度 直角 スコヤ ダイヤルゲージ 2点読み 定盤 ガタ すき間 ロッキング 首振り 反転法 勾配 mm/m 度分秒 デジタル傾斜計 てこ式',
     'datum-edge/':'基準点 基準線 データム 端面 平板 大板 板 コンベックス スケール メジャー 換算 連鎖 極座標 けがき 罫書き 墨出し 左端 下端 縁読み 座標変換',
     'pitch-row/':'ピッチ 穴間 並び 並び寸法 累進 累積 逐次 端面 端面から 間隔 等ピッチ 等間隔 穴ピッチ 引き算 差 コンベックス スケール 連続寸法',
-    'hole-map/':'総合 複合 合成 まとめて 穴配置 PCD PCD複合 任意穴 単独穴 軸配置 中心線 左右 振り分け 端面 ワーク外形 原点 座標 図面まるごと 二重 多重 同心 偏心 芯ズレ 中心違い 別PCD 起点角 位相 不等配 不等分割 等配 割り出し ボルト穴 フランジ',
-    'resin-guide/':'樹脂 プラスチック 材質 見分け 識別 種類 判別 搬送 コンベア UHMW-PE ポリエチレン PE HDPE PP ポリプロピレン POM ジュラコン デルリン ナイロン MC901 MCナイロン PA PTFE テフロン フッ素 PET エステル PC ポリカ 塩ビ PVC PEEK PVDF PPS ベークライト フェノール アクリル PMMA ABS 密度 比重 浮く 沈む 線膨張 熱膨張 膨張係数 吸水 吸湿 燃焼試験 炎 におい 色 摺動 ウェアストリップ ガイドレール ローラー スプロケット',
-    'pcd-pitch/':'PCD ピッチ円 ボルト穴 等配 弦 穴とび'
+    'hole-map/':'総合 複合 合成 まとめて 穴配置 PCD PCD複合 任意穴 単独穴 軸配置 中心線 左右 振り分け 端面 ワーク外形 原点 座標 図面まるごと 図面まるごと穴ピッチ 穴配置総合 二重 多重 同心 偏心 芯ズレ 中心違い 別PCD 起点角 位相 不等配 不等分割 等配 割り出し ボルト穴 フランジ',
+    'resin-guide/':'樹脂ガイド 樹脂 プラスチック 材質 見分け 識別 種類 判別 搬送 コンベア UHMW-PE ポリエチレン PE HDPE PP ポリプロピレン POM ジュラコン デルリン ナイロン MC901 MCナイロン PA PTFE テフロン フッ素 PET エステル PC ポリカ 塩ビ PVC PEEK PVDF PPS ベークライト フェノール アクリル PMMA ABS 密度 比重 浮く 沈む 線膨張 熱膨張 膨張係数 吸水 吸湿 燃焼試験 炎 におい 色 摺動 ウェアストリップ ガイドレール ローラー スプロケット',
+    'pcd-pitch/':'PCD ピッチ円 ボルト穴 等配 弦 穴とび 角度公差 ±0.2 許容範囲 許容値 度公差'
   };
   var FAVKEY='kensa-fav';
 

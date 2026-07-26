@@ -202,6 +202,8 @@
       <li>「軸(小文字)」か「穴(大文字)」を選び、下のチップで<b>公差域クラス</b>（h7 など）を選びます。</li>
       <li><b>呼び寸法</b>（図面の基準寸法φ）を入れると、上下の許容差と最大・最小許容寸法が出ます。</li>
       <li><b>実測値</b>を入れると、公差域内かどうかを合否判定します（空欄なら許容差だけ表示）。</li>
+      <li>めっき品は<b>「めっき厚(片面)」</b>を入れると、めっき前の狙い寸法が出ます（実測がめっき前なら切替で判定。図面公差はめっき後に適用）。</li>
+      <li>下の<b>「はめあいのすきま」</b>で、穴×軸の組合せの<b>最大・最小すきま</b>（負ならしめしろ）が出ます。</li>
     </ol>
     <div class="gx">
       <h4>例 ── φ20 h7 の軸</h4>
@@ -272,6 +274,16 @@
       <input id="fM" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
       <span class="unit">mm</span>
     </div>
+    <div class="row">
+      <span class="badge">3</span>
+      <label for="fPl">めっき厚(片面)<small>空欄=なし。径では2倍で効きます</small></label>
+      <input id="fPl" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">µm</span>
+    </div>
+  </div>
+  <div class="mode-lg noprint" id="plState" style="display:none" role="group" aria-label="実測の状態">
+    <button type="button" id="plAfter" class="on">実測は めっき後</button>
+    <button type="button" id="plBefore">実測は めっき前</button>
   </div>
 
   <!-- 結果 -->
@@ -281,6 +293,7 @@
       <span class="res none" id="resTxt">呼び寸法を入力してください</span>
     </div>
     <div class="judge-sub" id="judgeSub"></div>
+    <div class="judge-sub" id="plSub"></div>
     <div class="dro-grid">
       <div class="cellv" id="cES"><span class="k">上の許容差</span><span class="v" id="vES">―</span><span class="s">µm</span></div>
       <div class="cellv" id="cEI"><span class="k">下の許容差</span><span class="v" id="vEI">―</span><span class="s">µm</span></div>
@@ -296,9 +309,36 @@
   <button class="tbl-btn" type="button" id="tblBtn">▼ この公差域の表を見る</button>
   <div class="tblWrap" id="tblWrap"></div>
 
+  <button class="tbl-btn" type="button" id="fitBtn">▼ はめあいのすきま（穴×軸）を見る</button>
+  <div class="tblWrap" id="fitWrap">
+    <div class="inputs" style="margin-top:10px">
+      <div class="row" style="grid-template-columns:26px 1fr 130px 40px">
+        <span class="badge">穴</span>
+        <label for="fitHole">穴の公差域クラス</label>
+        <select id="fitHole"></select>
+        <span class="unit"></span>
+      </div>
+      <div class="row" style="grid-template-columns:26px 1fr 130px 40px">
+        <span class="badge">軸</span>
+        <label for="fitShaft">軸の公差域クラス</label>
+        <select id="fitShaft"></select>
+        <span class="unit"></span>
+      </div>
+    </div>
+    <div class="dro" style="margin-top:10px">
+      <div class="dro-grid" style="grid-template-columns:1fr 1fr">
+        <div class="cellv"><span class="k">最大すきま</span><span class="v" id="vFitMax">―</span><span class="s">µm</span></div>
+        <div class="cellv"><span class="k">最小すきま</span><span class="v" id="vFitMin">―</span><span class="s">µm</span></div>
+      </div>
+      <div class="dro-sub" id="fitKind">呼び寸法(上の欄)と組合せを選ぶと、すきまが出ます</div>
+      <div class="dro-foot"><span class="statusTxt" id="fitSub"></span></div>
+    </div>
+    <div class="tbl-note">最大すきま＝穴の最大−軸の最小 ／ 最小すきま＝穴の最小−軸の最大。<b>負の値は「しめしろ」</b>（軸の方が太い＝圧入代）。呼び寸法は上の入力と共通です。</div>
+  </div>
+
   <footer>
     このページは計算のみを行います。入力値の送信・保存は一切ありません(端末内で完結)。<br>
-    規格値はJIS B 0401(ISO 286)に基づき内蔵しています。<br>
+    規格値はJIS B 0401(ISO 286)に基づき内蔵しています(e は φ500 まで、その他は表記の範囲)。<br>
     運用前に、お手元の公差表と数点照合することをおすすめします。
   </footer>
 </div>
@@ -324,7 +364,7 @@
   // 基礎となる許容差(µm)。d,e,f,g は軸の上の許容差es(負)、k,m,p,s は軸の下の許容差ei(正)
   var FUND={
     d:[-20,-30,-40,-50,-65,-80,-100,-120,-145,-170],
-    e:[-14,-20,-25,-32,-40,-50],
+    e:[-14,-20,-25,-32,-40,-50,-60,-72,-85,-100,-110,-125,-135],
     f:[-6,-10,-13,-16,-20,-25],
     g:[-2,-4,-5,-6,-7,-9],
     k:[0,1,1,1,2,2],
@@ -333,11 +373,12 @@
     s:[14,19,23,28,35,43]
   };
   // 対応する公差域クラスと呼び寸法の上限(mm)
-  var CLASSES=['d9','e7','f7','f8','g6','g7','h6','h7','h8','h9','h10','js7','js8','k7','k8','m6','p6','s6','s7'];
-  var LIMITS={d:200,e:50,f:50,g:50,h:500,js:50,k:50,m:50,p:50,s:50};
+  var CLASSES=['d9','e7','e8','e9','f7','f8','g6','g7','h6','h7','h8','h9','h10','js7','js8','k7','k8','m6','p6','s6','s7'];
+  var LIMITS={d:200,e:500,f:50,g:50,h:500,js:50,k:50,m:50,p:50,s:50};
 
   /* ============ 状態 ============ */
   var isHole=false;
+  var plBefore=false;
   var curClass='h7';
   var lastVals={es:null,ei:null,max:null,min:null};
 
@@ -500,7 +541,7 @@
 
     if(isNaN(n)){
       res.textContent='呼び寸法を入力してください';res.className='res none';
-      $('judgeSub').textContent='';
+      $('judgeSub').textContent='';$('plSub').textContent='';
       ['vES','vEI','vMax','vMin'].forEach(function(id){$(id).textContent='―'});
       drawZone(null);
       setStatus('公差域クラスを選び、呼び寸法を入力',false);
@@ -509,7 +550,7 @@
     }
     if(n<=0||n>lim){
       res.textContent='範囲外';res.className='res none';
-      $('judgeSub').textContent='';
+      $('judgeSub').textContent='';$('plSub').textContent='';
       ['vES','vEI','vMax','vMin'].forEach(function(id){$(id).textContent='―'});
       drawZone(null);
       setStatus(dispClass(curClass)+' は呼び寸法 0 を超え φ'+lim+' までの対応です',true);
@@ -528,27 +569,83 @@
     $('vMax').textContent=fmtMm(maxD,half);
     $('vMin').textContent=fmtMm(minD,half);
 
-    var devUm=null;
+    /* めっき厚(片面) : 図面公差はめっき後に適用。めっき前の狙い＝軸は −2t、穴は ＋2t */
+    var pl=num($('fPl').value);
+    var plOn=(pl>0);
+    $('plState').style.display=plOn?'':'none';
+    var grow=isHole?-2*pl:2*pl;          // めっき後に径がどれだけ変わるか(µm)
+    if(plOn){
+      var bMax=maxD-grow/1000, bMin=minD-grow/1000;
+      $('plSub').textContent='めっき前の狙い: '+fmtMm(bMin,half)+' 〜 '+fmtMm(bMax,half)+' mm（片面 '+pl+' µm → 径で '+(grow>0?'+':'')+grow.toFixed(0)+' µm）';
+    }else{
+      $('plSub').textContent='';
+    }
+
+    var devUm=null, devEff=null, plPre=(plOn&&plBefore);
     if(!isNaN(m)){
       devUm=(m-n)*1000;
-      var ok=(devUm>=d.ei-1e-9&&devUm<=d.es+1e-9);
+      devEff=plPre? devUm+grow : devUm;   // めっき前実測 → めっき後予測に換算して図面公差で判定
+      var ok=(devEff>=d.ei-1e-9&&devEff<=d.es+1e-9);
+      var pref=plPre?('めっき前実測 '+fmtUm(devUm)+' µm → めっき後予測 '):('実測偏差 ');
       if(ok){
         res.textContent='合格';res.className='res ok';
-        $('judgeSub').textContent='実測偏差 '+fmtUm(devUm)+' µm(公差域内)';
+        $('judgeSub').textContent=pref+fmtUm(devEff)+' µm(公差域内)';
       }else{
         res.textContent='不合格';res.className='res ng';
-        var over=(devUm>d.es)?('上の許容差を +'+(devUm-d.es).toFixed(1)+' µm 超過')
-                             :('下の許容差を '+(d.ei-devUm).toFixed(1)+' µm 不足');
-        $('judgeSub').innerHTML='実測偏差 '+fmtUm(devUm)+' µm(<b>'+over+'</b>)';
+        var over=(devEff>d.es)?('上の許容差を +'+(devEff-d.es).toFixed(1)+' µm 超過')
+                             :('下の許容差を '+(d.ei-devEff).toFixed(1)+' µm 不足');
+        $('judgeSub').innerHTML=pref+fmtUm(devEff)+' µm(<b>'+over+'</b>)';
       }
     }else{
       res.textContent='実測値の入力で合否判定';res.className='res none';
       $('judgeSub').textContent='';
     }
 
-    drawZone(d.es,d.ei,devUm);
+    drawZone(d.es,d.ei,devEff);
     setStatus('区分: '+RANGES[ri][0]+'を超え'+RANGES[ri][1]+'以下 | IT'+p.grade+' = '+IT[p.grade][ri]+' µm',false);
     if($('tblWrap').classList.contains('show'))buildTable();
+  }
+
+  /* ============ はめあいのすきま(穴×軸) ============ */
+  function buildFitSel(){
+    var hs=$('fitHole'), ss=$('fitShaft'), i, o;
+    for(i=0;i<CLASSES.length;i++){
+      o=document.createElement('option'); o.value=CLASSES[i]; o.textContent=CLASSES[i].toUpperCase();
+      if(CLASSES[i]==='h7') o.selected=true;
+      hs.appendChild(o);
+    }
+    var d=hs.querySelector('option[value="h7"]'); if(d){d.selected=true;}
+    for(i=0;i<CLASSES.length;i++){
+      o=document.createElement('option'); o.value=CLASSES[i]; o.textContent=CLASSES[i];
+      if(CLASSES[i]==='g6') o.selected=true;
+      ss.appendChild(o);
+    }
+  }
+  function calcFit(){
+    var n=num($('fN').value);
+    var hc=$('fitHole').value, sc=$('fitShaft').value;
+    var K=$('fitKind'), S=$('fitSub');
+    if(isNaN(n)||n<=0){
+      $('vFitMax').textContent='―';$('vFitMin').textContent='―';
+      K.textContent='呼び寸法(上の欄)と組合せを選ぶと、すきまが出ます';S.textContent='';return;
+    }
+    var ph=parseClass(hc), ps=parseClass(sc);
+    if(n>LIMITS[ph.letter]||n>LIMITS[ps.letter]){
+      $('vFitMax').textContent='―';$('vFitMin').textContent='―';
+      K.textContent='φ'+n+' は '+(n>LIMITS[ph.letter]?hc.toUpperCase():sc)+' の対応範囲外です(〜φ'+Math.min(LIMITS[ph.letter],LIMITS[ps.letter])+')';S.textContent='';return;
+    }
+    var ri=rangeIndex(n);
+    var H=deviations(ph.letter,ph.grade,true,ri,n);
+    var A=deviations(ps.letter,ps.grade,false,ri,n);
+    var cmax=H.es-A.ei, cmin=H.ei-A.es;
+    $('vFitMax').textContent=fmtUm(cmax);
+    $('vFitMin').textContent=fmtUm(cmin);
+    var kind;
+    if(cmin>=0) kind='すきまばめ（常にすきま '+fmtUm(cmin)+'〜'+fmtUm(cmax)+' µm）';
+    else if(cmax<=0) kind='しまりばめ（常にしめしろ '+fmtUm(-cmax)+'〜'+fmtUm(-cmin)+' µm）';
+    else kind='中間ばめ（すきま最大 '+fmtUm(cmax)+' µm ／ しめしろ最大 '+fmtUm(-cmin)+' µm）';
+    K.textContent=hc.toUpperCase()+'/'+sc+'：'+kind;
+    S.textContent='穴 '+hc.toUpperCase()+' '+fmtUm(H.es)+'/'+fmtUm(H.ei)+' µm ／ 軸 '+sc+' '+fmtUm(A.es)+'/'+fmtUm(A.ei)+' µm';
   }
 
   /* ============ イベント ============ */
@@ -563,6 +660,21 @@
   $('mHole').addEventListener('click',function(){setHole(true)});
   $('fN').addEventListener('input',recalc);
   $('fM').addEventListener('input',recalc);
+  $('fPl').addEventListener('input',recalc);
+  $('plAfter').addEventListener('click',function(){plBefore=false;$('plAfter').classList.add('on');$('plBefore').classList.remove('on');recalc()});
+  $('plBefore').addEventListener('click',function(){plBefore=true;$('plBefore').classList.add('on');$('plAfter').classList.remove('on');recalc()});
+  $('fN').addEventListener('input',calcFit);
+
+  buildFitSel();
+  $('fitHole').addEventListener('change',calcFit);
+  $('fitShaft').addEventListener('change',calcFit);
+  $('fitBtn').addEventListener('click',function(){
+    var w=$('fitWrap');
+    var show=!w.classList.contains('show');
+    w.classList.toggle('show',show);
+    $('fitBtn').textContent=show?'▲ はめあいのすきまを閉じる':'▼ はめあいのすきま（穴×軸）を見る';
+    if(show)calcFit();
+  });
 
   $('tblBtn').addEventListener('click',function(){
     var w=$('tblWrap');

@@ -158,7 +158,7 @@
   <div class="gb">
     <h4>使い方</h4>
     <ol>
-      <li>「傾きを出す」タブで、<b>測定スパン S</b> と、手前・先端側の<b>ダイヤル読み r₁・r₂</b>を入れます。</li>
+      <li>画面上部の<b>共通の入力</b>に、単位・<b>測定スパン S</b>・手前と先端側の<b>ダイヤル読み r₁・r₂</b>を入れます。「傾きを出す」の換算・判定、「ガタの影響」の比較、記録表は、みなこの読みを使います。</li>
       <li>差 Δ=r₂−r₁ から、角度・度分秒・mm/m・mm/100mm・こう配 1:N が一度に出ます。</li>
       <li>「ガタの影響」タブでは、穴とのすき間で許されるロッキング量を出し、その読みが本当に傾きか（測定が有効か）を判定できます。</li>
     </ol>
@@ -178,7 +178,7 @@
         </svg></div>
         <div class="gtxt">
           <p>スパン200mmで、手前0・先端0.20mm の読み差があったときの傾きは？</p>
-          <p class="gset">傾きを出す ／ S 200 ／ r₁ 0 ／ r₂ 0.20</p>
+          <p class="gset">共通の入力 ／ S 200 ／ r₁ 0 ／ r₂ 0.20</p>
           <p class="gread">読み方：θ≈<b>0.0573°</b>、こう配 <b>1:1000</b>、mm/100mm=<b>0.100</b>。</p>
           <button class="gbtn" type="button" data-ex='{"set":[{"click":"#tA"},{"id":"span","v":200},{"id":"alpha","v":0},{"id":"r1","v":0},{"id":"r2","v":0.20}]}' onclick="tryExample(this)">この例を試す</button>
         </div>
@@ -197,6 +197,7 @@
 </div>
 
 <div class="card noprint" style="padding:10px 14px">
+  <h2 style="margin-top:2px">共通の入力<span class="tag">全タブと記録表が参照</span></h2>
   <div class="row" style="margin:0">
     <div><label class="f">ダイヤルの読みの単位</label>
       <select id="unit" onchange="allCalc()">
@@ -206,7 +207,15 @@
     </div>
     <div><label class="f">測定スパン S（mm）</label><input type="text" inputmode="decimal" autocomplete="off" id="span" value="200" oninput="allCalc()"></div>
   </div>
-  <div class="hint">S は「2点の接触位置どうしの、軸に沿った距離」です。全タブ共通で使います。</div>
+  <div class="row">
+    <div><label class="f">読み r₁（手前）</label><input type="text" inputmode="decimal" autocomplete="off" id="r1" value="0" oninput="allCalc()"></div>
+    <div><label class="f">読み r₂（先端側）</label><input type="text" inputmode="decimal" autocomplete="off" id="r2" value="0.15" oninput="allCalc()"></div>
+  </div>
+  <div class="row">
+    <div><label class="f">てこ式の傾き α（°・任意）</label><input type="text" inputmode="decimal" autocomplete="off" id="alpha" value="0" min="0" max="60" oninput="allCalc()"></div>
+    <div><label class="f">Δ ＝ r₂ − r₁</label><input type="text" id="dShow" readonly style="background:#EDF1F3"></div>
+  </div>
+  <div class="hint">S は「2点の接触位置どうしの、軸に沿った距離」。α はてこ式ダイヤルゲージのスタイラスが測定方向となす角で、実値＝読み×cos α に補正します（スピンドル式は 0 のまま）。<b>この読みから出した傾き</b>を、「傾きを出す」の換算・公差判定、「ガタの影響」の実測比較、記録表が共通で使います。「反転法・2軸」は測り方が違うため、そのタブ内の Δ を使います。</div>
 </div>
 
 <div class="tabs noprint" role="tablist">
@@ -218,21 +227,8 @@
 <!-- ════════ A: 傾きを出す ════════ -->
 <section id="paneA">
   <div class="card">
-    <h2>2点読み<span class="tag">Δ ⁄ S</span></h2>
-    <div class="row">
-      <div><label class="f">読み r₁（手前）</label><input type="text" inputmode="decimal" autocomplete="off" id="r1" value="0" oninput="allCalc()"></div>
-      <div><label class="f">読み r₂（先端側）</label><input type="text" inputmode="decimal" autocomplete="off" id="r2" value="0.15" oninput="allCalc()"></div>
-    </div>
-    <div class="row">
-      <div><label class="f">てこ式の傾き α（°・任意）</label><input type="text" inputmode="decimal" autocomplete="off" id="alpha" value="0" min="0" max="60" oninput="allCalc()"></div>
-      <div><label class="f">Δ ＝ r₂ − r₁</label><input type="text" id="dShow" readonly style="background:#EDF1F3"></div>
-    </div>
-    <div class="hint">α はてこ式ダイヤルゲージのスタイラスが測定方向となす角。実値＝読み×cos α で補正します。スピンドル式（0°）ならそのまま。</div>
-    <figure style="margin-top:10px"><svg id="figA" viewBox="0 0 300 170" role="img" aria-label="定盤上の検査棒と2点読みの模式図"></svg><figcaption>側 面 図（傾きは誇張）</figcaption></figure>
-  </div>
-
-  <div class="card">
-    <div class="dro">
+    <figure><svg id="figA" viewBox="0 0 300 170" role="img" aria-label="定盤上の検査棒と2点読みの模式図"></svg><figcaption>側 面 図（傾きは誇張）／読みは上の「共通の入力」</figcaption></figure>
+    <div class="dro" style="margin-top:10px">
       <div class="lbl">傾き θ</div>
       <div class="big"><span id="aDeg">0.0000</span><span class="u">°</span></div>
       <div class="sub">
@@ -297,6 +293,7 @@
       <div><span class="k">すき間（D − d）</span><span class="v" id="bGap">-</span></div>
       <div><span class="k">ロッキング最大角 θmax</span><span class="v hl" id="bTmax">-</span></div>
       <div><span class="k">S 上に生じる読み差</span><span class="v hl" id="bDmax">-</span></div>
+      <div><span class="k">比べる実測 Δ（上の共通の読み）</span><span class="v" id="bMeas">-</span></div>
       <div><span class="k">実測 Δ に対する割合</span><span class="v" id="bRatio">-</span></div>
       <div><span class="k">穴の傾きの取りうる範囲</span><span class="v" id="bRange">-</span></div>
     </div>
@@ -373,6 +370,7 @@
       <tbody id="recBody"></tbody>
     </table>
   </div>
+  <div class="hint">記録されるのは、上の「共通の入力」の読みから出した傾き（θ・mm/m・ℓ_spec 偏差・判定）です。反転法・2軸の結果は各タブで読み取ってください。</div>
   <div class="btnrow noprint" style="margin-top:10px">
     <button class="btn primary" onclick="addRec()">現在の結果を記録</button>
     <button class="btn" onclick="window.print()">印刷 / PDF</button>
@@ -511,6 +509,7 @@ function calcB(){
   g("bDmax").textContent = isFinite(dmax)? "±"+dmax.toFixed(4)+" mm":"-";
 
   var meas = Math.abs(A.tan)*(isFinite(S)?S:NaN);
+  g("bMeas").textContent = isFinite(meas)? meas.toFixed(4)+" mm（"+(Math.abs(A.tan)*1000).toFixed(3)+" mm/m）" : "—（上の共通の読みが未入力）";
   var ratio = (isFinite(dmax)&&isFinite(meas)&&meas>0)? dmax/meas : NaN;
   g("bRatio").textContent = isFinite(ratio)? (ratio*100).toFixed(0)+" %":"-";
 
@@ -628,7 +627,7 @@ function drawC(tx,ty,phi){
 /* ═══ 記録表 ═══ */
 var REC=[];
 function addRec(){
-  if(!isFinite(A.deg)){ toast("先に「傾きを出す」タブで読みを入れてください。"); return; }
+  if(!isFinite(A.deg)){ toast("先に上の「共通の入力」に S と読み r₁・r₂ を入れてください。"); return; }
   REC.push({spot:g("recSpot").value||"—", deg:A.deg, mpm:A.tan*1000, dev:A.dev, judge:A.judge});
   g("recSpot").value=""; renderRec(); persist();
 }
@@ -644,7 +643,7 @@ function renderRec(){
   });
   if(!REC.length) h='<tr><td colspan="5" style="text-align:center;color:#8FA2AF;font-family:inherit;padding:12px">「現在の結果を記録」で追加</td></tr>';
   g("recBody").innerHTML=h;
-  g("recHead").innerHTML = "部品名："+(g("recName").value||"—")+"　／　検査日："+(g("recDate").value||"—")+"　／　検査者："+(g("recBy").value||"—");
+  g("recHead").innerHTML = "部品名："+(g("recName").value||"—")+"　／　検査日："+(g("recDate").value||"—")+"　／　検査者："+(g("recBy").value||"—")+"　／　スパン S："+(g("span").value||"—")+" mm";
 }
 
 /* ═══ 保存 ═══ */

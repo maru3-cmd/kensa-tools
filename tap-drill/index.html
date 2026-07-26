@@ -206,6 +206,7 @@
     <ol>
       <li>ねじサイズ（M8 など）と、<b>切削タップ／転造</b>を選びます。並目/細目のピッチは自動です。</li>
       <li><b>慣用の下穴 D−P</b>（呼び径−ピッチ）と、基準めねじ内径が出ます。</li>
+      <li>下の<b>「実測の判定」</b>に、タップ後の<b>めねじ内径</b>やボルトの<b>おねじ外径</b>の実測を入れると、<b>2級相当(6H/6g)</b>の許容限界(JIS B 0209-2)で合否が出ます。並目・細目どちらも対応。</li>
       <li>ひっかかり率の目標％や材質別の限度帯から、より詳しい推奨下穴も出せます。</li>
     </ol>
     <div class="gx">
@@ -333,6 +334,34 @@
 
   <button class="tbl-btn" type="button" id="tblBtn">▼ 下穴表を表示(現在の設定で計算)</button>
   <div class="tblWrap" id="tblWrap"></div>
+
+  <h2>実測の判定(2級相当 6H/6g)</h2>
+  <div class="inputs">
+    <div class="row">
+      <span class="badge">3</span>
+      <label for="fMeasIn">めねじ内径の実測<small>タップ後の内径(6Hで判定)</small></label>
+      <input id="fMeasIn" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row">
+      <span class="badge">4</span>
+      <label for="fMeasOd">おねじ外径の実測<small>ボルト側(6gで判定)</small></label>
+      <input id="fMeasOd" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+    </div>
+  </div>
+  <div class="dro">
+    <div class="dro-grid">
+      <div class="cellv"><span class="k">めねじ内径 6H 許容</span><span class="v" id="vLimIn">―</span><span class="s">mm</span></div>
+      <div class="cellv"><span class="k">内径の判定</span><span class="v" id="vJdgIn">―</span><span class="s" id="vJdgInS"></span></div>
+      <div class="cellv"><span class="k">おねじ外径 6g 許容</span><span class="v" id="vLimOd">―</span><span class="s">mm</span></div>
+      <div class="cellv"><span class="k">外径の判定</span><span class="v" id="vJdgOd">―</span><span class="s" id="vJdgOdS"></span></div>
+    </div>
+    <div class="dro-foot">
+      <span class="statusTxt" id="thStatus">ねじを選ぶと許容限界(JIS B 0209-2)が出ます</span>
+    </div>
+  </div>
+  <div class="note" style="margin-top:8px;line-height:1.7">図面に等級指定がないメートルねじは<b>6H(めねじ)／6g(おねじ)</b>＝旧2級相当・はめあい区分"中"が適用されます(JIS B 0209-1)。めっき指定のねじの公差は<b>めっき前</b>の寸法に適用します(JIS B 0209-2)。並目・細目とも判定できます。</div>
 
   <footer>
     このページは計算のみを行います。入力値の送信・保存は一切ありません(端末内で完結)。<br>
@@ -485,8 +514,46 @@
     }
   }
 
+  /* ---- 実測の判定(6H/6g) : JIS B 0209-1 表1(es)・表4(Td6)・表3(TD1) ----
+     ピッチ→[おねじes(6g), おねじ外径公差Td6, めねじ内径公差TD1(6)] 単位µm。
+     JIS B 0209-2 の許容限界寸法の全行(並目15・細目13)と一致することを検証済み。 */
+  var PT={'0.3':[-18,75,85],'0.35':[-19,85,100],'0.4':[-19,95,112],'0.45':[-20,100,125],
+    '0.5':[-20,106,140],'0.6':[-21,125,160],'0.7':[-22,140,180],'0.75':[-22,140,190],
+    '0.8':[-24,150,200],'1':[-26,180,236],'1.25':[-28,212,265],'1.5':[-32,236,300],
+    '1.75':[-34,265,335],'2':[-38,280,375],'2.5':[-42,335,450],'3':[-48,375,500],'3.5':[-53,425,560]};
+  function r3(x){return Math.ceil(x*1000-0.5)/1000}  /* 0.5µm端数はJIS基準寸法表に合わせ切り捨て側 */
+  function thJudge(){
+    var dp=curDP(), D=dp.D, P=dp.P;
+    var st=$('thStatus');
+    function clr(msg){
+      ['vLimIn','vJdgIn','vLimOd','vJdgOd'].forEach(function(id){$(id).textContent='―'});
+      $('vJdgInS').textContent='';$('vJdgOdS').textContent='';
+      st.textContent=msg;
+    }
+    if(!(D>0&&P>0&&P<D)){clr('ねじを選ぶと許容限界(JIS B 0209-2)が出ます');return;}
+    var t=PT[String(P)];
+    if(!t){clr('ピッチ '+P+' は判定表の対象外です(0.3〜3.5)');return;}
+    var d1min=r3(D-1.0825*P), d1max=r3(d1min+t[2]/1000);
+    var odmax=r3(D+t[0]/1000), odmin=r3(odmax-t[1]/1000);
+    $('vLimIn').textContent=d1min.toFixed(3)+' 〜 '+d1max.toFixed(3);
+    $('vLimOd').textContent=odmin.toFixed(3)+' 〜 '+odmax.toFixed(3);
+    function jd(v,mn,mx,idV,idS){
+      if(!(v>0)){$(idV).textContent='―';$(idS).textContent='';return;}
+      if(v<mn-1e-9){$(idV).textContent='× 小さい';$(idS).textContent='最小まであと +'+((mn-v)*1000).toFixed(0)+'µm';}
+      else if(v>mx+1e-9){$(idV).textContent='× 大きい';$(idS).textContent='最大を '+((v-mx)*1000).toFixed(0)+'µm 超過';}
+      else{$(idV).textContent='○ 合格';$(idS).textContent='余裕 −'+((v-mn)*1000).toFixed(0)+'/+'+((mx-v)*1000).toFixed(0)+'µm';}
+    }
+    jd(num($('fMeasIn').value),d1min,d1max,'vJdgIn','vJdgInS');
+    jd(num($('fMeasOd').value),odmax-t[1]/1000,odmax,'vJdgOd','vJdgOdS');
+    st.textContent='6H内径: 基準内径〜+'+t[2]+'µm ／ 6g外径: 呼び'+t[0]+'µm から −'+t[1]+'µm 幅(JIS B 0209-1/-2)';
+  }
+
+  $('fMeasIn').addEventListener('input',function(){thJudge()});
+  $('fMeasOd').addEventListener('input',function(){thJudge()});
+
   /* ---- 計算 ---- */
   function recalc(){
+    thJudge();
     var dp=curDP();
     var D=dp.D, P=dp.P;
     var c=TAPS[tapIdx].c;
