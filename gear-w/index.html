@@ -138,6 +138,38 @@
   .guide .gbtn{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;font:inherit;font-size:11.5px;font-weight:600;border:1px solid #1F3341;border-radius:6px;background:#fff;color:#1F3341;cursor:pointer;margin-top:2px}
   .guide .gbtn:active{transform:translateY(1px)}
   @media(max-width:360px){.guide .gxin{flex-direction:column}.guide .gfig svg{width:128px;height:128px}}
+  /* 一括消去ボタン（v37 / 全ツール共通の見た目） */
+  .topclear{display:flex;justify-content:flex-end;margin:2px 2px 10px}
+  .topclear button{font-size:12px;font-weight:700;color:#B23B2E;background:#FBECEA;border:1px solid #E7B7B0;border-radius:9px;padding:7px 14px;cursor:pointer}
+  .topclear button:active{background:#F6DAD5}
+  .topclear button.arm{background:#B23B2E;color:#fff;border-color:#B23B2E}
+  .clearBtn{width:100%;font-size:13px;font-weight:700;padding:12px 4px;border:1.5px solid #C9D3DA;border-radius:10px;background:var(--sheet);color:#5B707E;letter-spacing:.05em;margin-bottom:6px;cursor:pointer}
+  .clearBtn.arm{border-color:var(--red);color:var(--red);background:#FCF0EF}
+  /* ── 図面合否判定・歯厚減少量の換算（v38） ── */
+  .jsec{margin-top:16px}
+  .jhead{font-size:12px;font-weight:800;color:#5B707E;letter-spacing:.06em;margin:0 2px 8px}
+  .jmode{display:inline-flex;border:1px solid #C9D3DA;border-radius:9px;overflow:hidden;background:var(--sheet);margin-bottom:8px}
+  .jmode button{font-size:11px;font-weight:700;padding:7px 12px;border:none;background:transparent;color:#5B707E;cursor:pointer}
+  .jmode button.on{background:var(--ink);color:#fff}
+  .barbox{background:var(--sheet);border:1px solid #D5DDE2;border-radius:10px;padding:11px 12px 9px;margin-top:9px}
+  .barbox svg{width:100%;display:block}
+  .resrow{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-top:7px;flex-wrap:wrap}
+  .res{font-size:25px;font-weight:800;letter-spacing:.12em}
+  .res.ok{color:#1E9E5A}
+  .res.ng{color:#C9342A}
+  .res.none{color:#8FA2AF;font-size:12px;font-weight:600;letter-spacing:.03em}
+  .resd{font-size:12px;color:#5B707E;font-variant-numeric:tabular-nums}
+  .jnote{font-size:11px;color:#5B707E;line-height:1.65;margin:7px 2px 0}
+  .jwarn{font-size:11px;color:#B23B2E;background:#FBECEA;border:1px solid #E7B7B0;border-radius:8px;padding:8px 10px;margin:8px 0 0;line-height:1.65}
+  details.jconv{margin-top:14px;border:1px solid #D5DDE2;border-radius:10px;background:var(--sheet);overflow:hidden}
+  details.jconv>summary{list-style:none;cursor:pointer;padding:11px 13px;font-size:12px;font-weight:800;color:#5B707E;letter-spacing:.04em}
+  details.jconv>summary::-webkit-details-marker{display:none}
+  details.jconv>summary::after{content:"▼";float:right;font-size:9px;color:#8FA2AF}
+  details.jconv[open]>summary::after{content:"▲"}
+  details.jconv .jbody{padding:0 11px 12px}
+  .jout{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;border-top:1px solid #E4EAEE;margin-top:10px;padding-top:10px}
+  .jout div{font-size:12px;color:#5B707E;display:flex;justify-content:space-between;gap:6px}
+  .jout b{color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums}
 </style>
 </head>
 <body>
@@ -146,6 +178,9 @@
     <h1>またぎ歯厚<small>平歯車のW寸法(標準・転位対応)</small></h1>
     <a href="../index.html">≡ ツール一覧</a>
   </header>
+
+  <div class="topclear"><button type="button" aria-label="入力をすべて消去して最初から始める" onclick="armClear(this)">すべて消去</button></div>
+
 <details class="guide noprint">
   <summary>使い方と例を見る</summary>
   <div class="gb">
@@ -153,8 +188,30 @@
     <ol>
       <li><b>モジュール m</b> と <b>歯数 z</b> を入れます（圧力角 α は既定20°、転位 x は既定0）。</li>
       <li><b>またぎ歯数 k</b> は自動で算出されます（手入力も可）。</li>
-      <li>下に<b>またぎ歯厚 W</b> が出ます。実測 W を入れると差 Δ も表示します。</li>
+      <li>下に<b>またぎ歯厚 W</b>（理論値）が出ます。実測 W を入れると差 Δ も表示します。</li>
+      <li>図面の<b>上限・下限</b>を入れると、合否と範囲バーが出ます（入れなければ従来どおり理論値だけ）。</li>
     </ol>
+
+    <div class="gx">
+      <h4>まず知っておくこと ── 図面値は計算値より必ず小さい</h4>
+      <p>このツールが出す W は<b>理論値（歯厚を1ミリも削っていない状態）</b>です。図面に書かれた値は、これより必ずマイナス側になります。</p>
+      <p>理由は<b>バックラッシ</b>です。歯車どうしが完全にぴったり噛み合うと、熱で膨らんだとき・油膜が入ったときに逃げ場がなく、噛み込んで焼き付きます。そこであらかじめ歯を薄く削って隙間を作ります。この削る量が<b>歯厚減少量</b>で、必要なバックラッシは用途（温度・潤滑・回転条件）から設計者が決め、かみ合う2つの歯車に振り分けます。</p>
+      <p><b>理論値と図面値の差は、不良ではなくバックラッシの前渡し分です。</b>実測が理論値より小さいのは正常な状態です。</p>
+    </div>
+
+    <div class="gx">
+      <h4>許容差は JIS の精度等級では決まりません</h4>
+      <p>「N5級だから歯厚の公差はいくつ」という決め方は<b>できません</b>。JIS B 1702系の等級が決めているのは、ピッチ誤差・歯形誤差・歯すじ誤差・歯溝の振れなど<b>歯の位置と形の正しさ＝回り方の滑らかさ</b>であって、歯厚は対象外だからです（数字が小さいほど高精度）。</p>
+      <p class="gread"><b>等級＝回り方の質、歯厚＝バックラッシの量。</b>別々に管理されるので、等級から歯厚の許容差は出てきません。<b>図面に書かれた値がそのまま合否基準</b>です。図面に上下限が無ければ設計に問い合わせてください。</p>
+      <p>なお現行規格の等級は旧JIS（1976年版）と区別するため<b>「N○級」</b>と表示されます。古い図面の「4級」と現行の「N4」は<b>別物</b>です。読み替えないでください。</p>
+    </div>
+
+    <div class="gx">
+      <h4>歯厚を減らすと、またぎ歯厚はどれだけ減る？</h4>
+      <p>同じ量だけ減るわけではありません。少しだけ小さくなります。</p>
+      <p class="gread">20°の平歯車なら、歯厚を<b>0.1mm</b>減らすと、またぎ歯厚は<b>約0.094mm</b>減ります（0.1×cos20°）。</p>
+      <p>式は JIS B 1752 の <b>δsm = −cosβ・cosαn・δs</b>。δs が歯厚の減少量、δsm がまたぎ歯厚の変化量、β がねじれ角（平歯車は0）です。下の「歯厚減少量 ⇄ またぎ歯厚 の換算」で計算できます。</p>
+    </div>
     <div class="gx">
       <h4>例 ── m2・z20 の標準平歯車</h4>
       <div class="gxin">
@@ -172,6 +229,26 @@
           <p class="gread">読み方：またぎ歯数 k=<b>3</b> 枚、W≈<b>15.321mm</b>。</p>
           <button class="gbtn" type="button" data-ex='{"set":[{"id":"fM","v":2},{"id":"fZ","v":20}]}' onclick="tryExample(this)">この例を試す</button>
         </div>
+      </div>
+    </div>
+
+    <div class="gx">
+      <h4>例 ── 図面 15.25／15.18 に対して実測 15.21</h4>
+      <div class="gtxt">
+        <p>m2・z20 の歯車。理論値は 15.321 だが、図面は 15.25〜15.18 で指示されている。実測 15.21 は合格か？</p>
+        <p class="gset">m 2 ／ z 20 ／ 実測W 15.21 ／ 図面 上限 15.25 ／ 下限 15.18</p>
+        <p class="gread">読み方：<b>合格</b>。理論値との差 Δ は −0.111mm だが、これはバックラッシ用の歯厚減少ぶんなので問題ない。範囲バーで、図面の帯が理論値より左にあることを確認できる。</p>
+        <button class="gbtn" type="button" data-ex='{"set":[{"click":"#jLim"},{"id":"fM","v":2},{"id":"fZ","v":20},{"id":"fA","v":20},{"id":"fX","v":0},{"id":"fW","v":15.21},{"id":"fHi","v":15.25},{"id":"fLo","v":15.18}]}' onclick="tryExample(this)">この例を試す</button>
+      </div>
+    </div>
+
+    <div class="gx">
+      <h4>例 ── 図面が「歯厚減少量」で書かれている場合</h4>
+      <div class="gtxt">
+        <p>図面に「歯厚減少量 0.10〜0.18」とある。またぎ歯厚では何ミリの範囲か？</p>
+        <p class="gset">m 2 ／ z 20 ／ δs 小さい方 0.10 ／ δs 大きい方 0.18</p>
+        <p class="gread">読み方：δsm は <b>−0.0940</b> と <b>−0.1691</b>。理論値 15.321 から引いて、<b>W 上限 15.227 ／ 下限 15.152</b>。この範囲が合否基準になる。</p>
+        <button class="gbtn" type="button" id="exConv" data-ex='{"set":[{"id":"fM","v":2},{"id":"fZ","v":20},{"id":"fA","v":20},{"id":"fX","v":0},{"id":"fBeta","v":0},{"id":"fDsU","v":0.10},{"id":"fDsL","v":0.18}]}' onclick="tryExample(this)">この例を試す</button>
       </div>
     </div>
   </div>
@@ -298,6 +375,105 @@
       <span class="taphint">値をタップでコピー</span>
     </div>
   </div>
+
+  <!-- ═══ 図面値との合否判定（v38 / 任意） ═══ -->
+  <div class="jsec">
+    <div class="jhead">図面値との合否判定（入れなければ従来どおり理論値だけ出ます）</div>
+    <div class="jmode" role="group" aria-label="図面の書き方">
+      <button type="button" id="jLim" class="on">上限・下限</button>
+      <button type="button" id="jTol">基準＋許容差</button>
+    </div>
+
+    <div class="inputs" id="rowLim">
+      <div class="row">
+        <span class="badge">7</span>
+        <label for="fHi">図面 上限<small>大きい方の値</small></label>
+        <input id="fHi" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+        <span class="unit">mm</span>
+      </div>
+      <div class="row">
+        <span class="badge">8</span>
+        <label for="fLo">図面 下限<small>小さい方の値</small></label>
+        <input id="fLo" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+        <span class="unit">mm</span>
+      </div>
+    </div>
+
+    <div class="inputs" id="rowTol" style="display:none">
+      <div class="row">
+        <span class="badge">7</span>
+        <label for="fNom">図面 基準値<small>指示されている W</small></label>
+        <input id="fNom" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+        <span class="unit">mm</span>
+      </div>
+      <div class="row">
+        <span class="badge">8</span>
+        <label for="fUp">上の許容差<small>ふつうマイナス 例 -0.050</small></label>
+        <input id="fUp" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+        <span class="unit">mm</span>
+      </div>
+      <div class="row">
+        <span class="badge">9</span>
+        <label for="fLw">下の許容差<small>ふつうマイナス 例 -0.120</small></label>
+        <input id="fLw" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+        <span class="unit">mm</span>
+      </div>
+    </div>
+
+    <div class="barbox">
+      <svg id="barSvg" viewBox="0 0 300 74" role="img" aria-label="図面の許容範囲と実測位置"></svg>
+      <div class="resrow">
+        <span class="res none" id="jRes">図面の上下限と実測Wを入れると判定します</span>
+        <span class="resd" id="jDelta"></span>
+      </div>
+    </div>
+    <div class="jnote" id="jNote">図面の値がそのまま合否基準です。理論値より小さいのが正常で、その差はバックラッシのための歯厚減少量です。</div>
+  </div>
+
+  <!-- ═══ 歯厚減少量 ⇄ またぎ歯厚（v38） ═══ -->
+  <details class="jconv" id="convBox">
+    <summary>歯厚減少量 ⇄ またぎ歯厚 の換算</summary>
+    <div class="jbody">
+      <div class="jnote" style="margin-top:0">図面が「歯厚減少量」や「バックラッシ配分」で書かれているときに使います。<br>JIS B 1752：<b>δsm = −cosβ・cosαn・δs</b>（δsm=またぎ歯厚の変化量、δs=ピッチ円上の円弧歯厚減少量）</div>
+      <div class="inputs" style="margin-top:9px">
+        <div class="row">
+          <span class="badge">β</span>
+          <label for="fBeta">ねじれ角 β<small>平歯車は 0</small></label>
+          <input id="fBeta" type="text" inputmode="decimal" autocomplete="off" value="0">
+          <span class="unit">°</span>
+        </div>
+        <div class="row">
+          <span class="badge">↓</span>
+          <label for="fDsU">歯厚減少量 δs 小さい方<small>減らす量。正の数で入れます</small></label>
+          <input id="fDsU" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+          <span class="unit">mm</span>
+        </div>
+        <div class="row">
+          <span class="badge">↓</span>
+          <label for="fDsL">歯厚減少量 δs 大きい方<small>同上</small></label>
+          <input id="fDsL" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+          <span class="unit">mm</span>
+        </div>
+      </div>
+      <div id="convWarn"></div>
+      <div class="jout">
+        <div><span>またぎ歯厚の変化 δsm（小）</span><b id="oDsmU">―</b></div>
+        <div><span>またぎ歯厚の変化 δsm（大）</span><b id="oDsmL">―</b></div>
+        <div><span>換算した W 上限</span><b id="oWhi">―</b></div>
+        <div><span>換算した W 下限</span><b id="oWlo">―</b></div>
+      </div>
+      <div class="jnote" style="margin-top:11px;border-top:1px solid #E4EAEE;padding-top:10px"><b>逆算（参考値）</b>　実測Wと理論値の差から、この歯車が持つ歯厚減少量とバックラッシ分を戻します。</div>
+      <div class="jout" style="border-top:none;margin-top:6px;padding-top:0">
+        <div><span>実測との差 Δ（＝δsm）</span><b id="oRevDsm">―</b></div>
+        <div><span>歯厚減少量 δs</span><b id="oRevDs">―</b></div>
+        <div><span>この歯車単体のバックラッシ分</span><b id="oRevBl">―</b></div>
+        <div><span>　</span><b>　</b></div>
+      </div>
+      <div class="jnote">いずれも<b>参考値</b>です。実際のかみ合いバックラッシは相手歯車の減少量と合算した値になります。中心距離のずれや温度でも変わります。</div>
+    </div>
+  </details>
+
+  <button class="clearBtn" type="button" onclick="armClear(this)">すべて消去</button>
 
   <footer>
     このページは計算のみを行います。入力値の送信・保存は一切ありません(端末内で完結)。<br>
@@ -465,7 +641,139 @@
     }
   }
 
+  /* ═══ 図面合否判定・歯厚減少量の換算（v38 / 既存 recalc は一切変更していません） ═══ */
+  var jMode='lim';
+
+  function setJMode(mo){
+    jMode=mo;
+    $('jLim').classList.toggle('on',mo==='lim');
+    $('jTol').classList.toggle('on',mo==='tol');
+    $('rowLim').style.display=(mo==='lim')?'':'none';
+    $('rowTol').style.display=(mo==='tol')?'':'none';
+    updateExt();
+  }
+
+  /* 図面の上下限を得る。得られなければ null */
+  function jLimits(){
+    var hi,lo;
+    if(jMode==='lim'){
+      hi=num($('fHi').value); lo=num($('fLo').value);
+    }else{
+      var nom=num($('fNom').value), up=num($('fUp').value), lw=num($('fLw').value);
+      if(isNaN(nom)||isNaN(up)||isNaN(lw)) return null;
+      hi=nom+up; lo=nom+lw;
+    }
+    if(isNaN(hi)||isNaN(lo)) return null;
+    return {hi:Math.max(hi,lo), lo:Math.min(hi,lo)};
+  }
+
+  function drawBar(lo,hi,W,meas){
+    var svg=$('barSvg'), pts=[], h='';
+    if(isFinite(lo))pts.push(lo);
+    if(isFinite(hi))pts.push(hi);
+    if(isFinite(W))pts.push(W);
+    if(isFinite(meas))pts.push(meas);
+    if(pts.length<2){ svg.innerHTML=''; return; }
+    var mn=Math.min.apply(null,pts), mx=Math.max.apply(null,pts);
+    var sp=mx-mn; if(sp<=0)sp=0.02;
+    var v0=mn-sp*0.28, v1=mx+sp*0.28, X0=26, X1=274;
+    function px(v){ return X0+(v-v0)/(v1-v0)*(X1-X0); }
+    h+='<line x1="'+X0+'" y1="38" x2="'+X1+'" y2="38" stroke="#D5DDE2" stroke-width="2"/>';
+    if(isFinite(lo)&&isFinite(hi)){
+      var xl=px(lo), xh=px(hi);
+      h+='<rect x="'+xl.toFixed(1)+'" y="30" width="'+Math.max(2,xh-xl).toFixed(1)+'" height="16" rx="3" fill="#DFF1E6" stroke="#1E9E5A" stroke-width="1"/>';
+      h+='<text x="'+xl.toFixed(1)+'" y="58" font-size="8.5" fill="#1E9E5A" text-anchor="middle">'+lo.toFixed(3)+'</text>';
+      h+='<text x="'+xh.toFixed(1)+'" y="58" font-size="8.5" fill="#1E9E5A" text-anchor="middle">'+hi.toFixed(3)+'</text>';
+    }
+    if(isFinite(W)){
+      var xw=px(W);
+      h+='<line x1="'+xw.toFixed(1)+'" y1="26" x2="'+xw.toFixed(1)+'" y2="50" stroke="#8FA2AF" stroke-width="1.5" stroke-dasharray="3 2"/>';
+      h+='<text x="'+xw.toFixed(1)+'" y="70" font-size="8.5" fill="#8FA2AF" text-anchor="middle">理論 '+W.toFixed(3)+'</text>';
+    }
+    if(isFinite(meas)){
+      var xm=px(meas);
+      var inRange=(isFinite(lo)&&isFinite(hi))?(meas>=lo&&meas<=hi):true;
+      var c=inRange?'#1E9E5A':'#C9342A';
+      h+='<polygon points="'+xm.toFixed(1)+',32 '+(xm-5).toFixed(1)+',21 '+(xm+5).toFixed(1)+',21" fill="'+c+'"/>';
+      h+='<text x="'+xm.toFixed(1)+'" y="15" font-size="8.5" font-weight="700" fill="'+c+'" text-anchor="middle">実測 '+meas.toFixed(3)+'</text>';
+    }
+    svg.innerHTML=h;
+  }
+
+  /* JIS B 1752 : δsm = −cosβ・cosαn・δs */
+  function dsmOf(ds,betaDeg,alphaDeg){
+    return -Math.cos(betaDeg*Math.PI/180)*Math.cos(alphaDeg*Math.PI/180)*ds;
+  }
+  window.dsmOf=dsmOf;
+
+  function updateConv(){
+    var b=num($('fBeta').value); if(isNaN(b))b=0;
+    var a=num($('fA').value); if(isNaN(a))a=20;
+    var fac=Math.cos(b*Math.PI/180)*Math.cos(a*Math.PI/180);
+    var spur=(Math.abs(b)<1e-9);
+    $('convWarn').innerHTML = spur ? '' :
+      '<div class="jwarn">β に 0 以外が入っています。このツールの W 計算は<b>平歯車専用</b>です。はすば歯車では上の W と「換算した W 上限・下限」は使えません。<b>δs ⇄ δsm の換算だけ</b>が有効です。</div>';
+    function mm4(v){ return (v>=0?'+':'')+v.toFixed(4)+' mm'; }
+    var W=vals.W;
+    var pair=[['fDsU','oDsmU','oWhi'],['fDsL','oDsmL','oWlo']];
+    for(var i=0;i<pair.length;i++){
+      var ds=num($(pair[i][0]).value);
+      if(isNaN(ds)){ $(pair[i][1]).textContent='―'; $(pair[i][2]).textContent='―'; continue; }
+      var dm=dsmOf(ds,b,a);
+      $(pair[i][1]).textContent=mm4(dm);
+      $(pair[i][2]).textContent=(W!=null&&spur)?((W+dm).toFixed(3)+' mm'):'―';
+    }
+    var dl=vals.delta;
+    if(dl!=null&&isFinite(dl)){
+      $('oRevDsm').textContent=mm4(dl);
+      var ds2=(fac!==0)?(-dl/fac):NaN;
+      $('oRevDs').textContent=isFinite(ds2)?(ds2.toFixed(4)+' mm'):'―';
+      $('oRevBl').textContent=isFinite(ds2)?(ds2.toFixed(4)+' mm'):'―';
+    }else{
+      $('oRevDsm').textContent='―'; $('oRevDs').textContent='―'; $('oRevBl').textContent='―';
+    }
+  }
+
+  function updateExt(){
+    var lim=jLimits();
+    var meas=num($('fW').value);
+    var W=(vals.W==null)?NaN:vals.W;
+    drawBar(lim?lim.lo:NaN, lim?lim.hi:NaN, W, meas);
+    var r=$('jRes'), dd=$('jDelta');
+    if(!lim){
+      r.className='res none';
+      r.textContent='図面の上下限と実測Wを入れると判定します';
+      dd.textContent='';
+    }else if(isNaN(meas)){
+      r.className='res none';
+      r.textContent='実測W（欄6）を入れると判定します';
+      dd.textContent='図面の幅 '+((lim.hi-lim.lo)*1000).toFixed(0)+'µm';
+    }else{
+      var ok=(meas>=lim.lo&&meas<=lim.hi);
+      r.className='res '+(ok?'ok':'ng');
+      r.textContent=ok?'合格':'範囲外';
+      var mid=(lim.hi+lim.lo)/2, dm=meas-mid;
+      var t='中央から '+(dm>=0?'+':'')+dm.toFixed(3)+' mm';
+      if(!ok){
+        t+=' ／ '+(meas>lim.hi ? ('上限を +'+(meas-lim.hi).toFixed(3)) : ('下限を −'+(lim.lo-meas).toFixed(3)))+' mm 外れ';
+      }
+      dd.textContent=t;
+    }
+    updateConv();
+  }
+  window.updateExt=updateExt;
+
+  /* 既存リスナーの後に追加登録する（既存の recalc は先に走る） */
+  ['fM','fZ','fA','fX','fW','fK'].forEach(function(id){ $(id).addEventListener('input',updateExt); });
+  $('kAuto').addEventListener('click',updateExt);
+  ['fHi','fLo','fNom','fUp','fLw','fBeta','fDsU','fDsL'].forEach(function(id){ $(id).addEventListener('input',updateExt); });
+  $('jLim').addEventListener('click',function(){ setJMode('lim'); });
+  $('jTol').addEventListener('click',function(){ setJMode('tol'); });
+  /* 換算の例ボタンを押したら、たたんである換算欄を開く */
+  if($('exConv')) $('exConv').addEventListener('click',function(){ $('convBox').open=true; });
+
   recalc();
+  updateExt();
 })();
 </script>
 
@@ -639,6 +947,39 @@
     if(gd) gd.open=false;
     var fig=document.querySelector('svg#fig, svg#dwg, figure svg, #fig, #dwg');
     if(fig && fig.scrollIntoView) fig.scrollIntoView({behavior:'smooth',block:'center'});
+  };
+})();
+</script>
+
+<script>
+/* ═══ 一括消去の共通処理（全ツール共通 / 確認ダイアログは使いません）═══
+     1回目 … ボタンが「もう一度押すと消去」に変わります（3秒で自動解除）
+     2回目 … 最初の状態に戻します
+     ※ 確認ポップアップ（ダイアログ）はPWA等で無効化されるため使いません      */
+(function(){
+  "use strict";
+  var KEY = "";   /* このツールは保存を持たないため、再読み込みだけで初期状態に戻ります */
+  window.armClear = function(btn){
+    if(!btn || !btn.getAttribute) return;
+    if(!btn.getAttribute("data-armed")){
+      btn.setAttribute("data-armed","1");
+      if(!btn.getAttribute("data-lbl")) btn.setAttribute("data-lbl", btn.textContent);
+      btn.textContent = "もう一度押すと消去";
+      if(btn.classList) btn.classList.add("arm");
+      setTimeout(function(){
+        if(btn.getAttribute("data-armed")){
+          btn.removeAttribute("data-armed");
+          btn.textContent = btn.getAttribute("data-lbl");
+          if(btn.classList) btn.classList.remove("arm");
+        }
+      }, 3000);
+      return;
+    }
+    btn.removeAttribute("data-armed");
+    if(btn.classList) btn.classList.remove("arm");
+    if(btn.getAttribute("data-lbl")) btn.textContent = btn.getAttribute("data-lbl");
+    if(KEY){ try{ localStorage.removeItem(KEY); }catch(e){} }
+    try{ location.reload(); }catch(e){}
   };
 })();
 </script>

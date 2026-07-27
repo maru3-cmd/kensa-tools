@@ -142,6 +142,8 @@
   }
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+  /* 2度押し待ちの表示（v37）。上部ボタンはインライン指定のため !important で上書き */
+  .arm{background:#B23B2E !important;color:#fff !important;border-color:#B23B2E !important}
 </style>
 </head>
 <body>
@@ -151,7 +153,7 @@
   <h1>軸の傾き<small>2点読みからガタ判定まで</small></h1>
   <a href="../index.html">≡ ツール一覧</a>
 </header>
-  <div class="topClear noprint" style="display:flex;justify-content:flex-end;margin:6px 2px 0"><button type="button" aria-label="一括消去して新しく始める" style="font-weight:700;font-size:12px;color:#B23B2E;background:#FBECEA;border:1px solid #E7B7B0;border-radius:9px;padding:7px 13px;cursor:pointer" onclick="armClear(this)">一括消去（新しく始める）</button></div>
+  <div class="topClear noprint" style="display:flex;justify-content:flex-end;margin:6px 2px 0"><button type="button" aria-label="一括消去して新しく始める" style="font-weight:700;font-size:12px;color:#B23B2E;background:#FBECEA;border:1px solid #E7B7B0;border-radius:9px;padding:7px 13px;cursor:pointer" onclick="armClear(this)">すべて消去</button></div>
 
 <details class="guide noprint">
   <summary>使い方と例を見る</summary>
@@ -374,7 +376,7 @@
   <div class="btnrow noprint" style="margin-top:10px">
     <button class="btn primary" onclick="addRec()">現在の結果を記録</button>
     <button class="btn" onclick="window.print()">印刷 / PDF</button>
-    <button class="btn warn sm" onclick="armClear(this)">保存データを消去</button>
+    <button class="btn warn sm" onclick="armClear(this)">すべて消去</button>
   </div>
 </div>
 

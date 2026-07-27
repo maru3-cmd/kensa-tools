@@ -84,6 +84,12 @@
   .guide .gbtn{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;font:inherit;font-size:11.5px;font-weight:600;border:1px solid #1F3341;border-radius:6px;background:#fff;color:#1F3341;cursor:pointer;margin-top:2px}
   .guide .gbtn:active{transform:translateY(1px)}
   @media(max-width:360px){.guide .gxin{flex-direction:column}.guide .gfig svg{width:128px;height:128px}}
+  /* 一括消去ボタン（v37 / 全ツール共通の見た目） */
+  .topclear{display:flex;justify-content:flex-end;margin:2px 2px 10px}
+  .topclear button{font-size:12px;font-weight:700;color:#B23B2E;background:#FBECEA;border:1px solid #E7B7B0;border-radius:9px;padding:7px 14px;cursor:pointer}
+  .topclear button:active{background:#F6DAD5}
+  .topclear button.arm{background:#B23B2E;color:#fff;border-color:#B23B2E}
+  .clearBtn.arm{border-color:var(--red);color:var(--red);background:#FCF0EF}
 </style>
 </head>
 <body>
@@ -92,6 +98,9 @@
     <h1>直角三角形<small>2つ入れれば残りが出る</small></h1>
     <a href="../index.html">≡ ツール一覧</a>
   </header>
+
+  <div class="topclear"><button type="button" aria-label="入力をすべて消去して最初から始める" onclick="armClear(this)">すべて消去</button></div>
+
 <details class="guide noprint">
   <summary>使い方と例を見る</summary>
   <div class="gb">
@@ -118,7 +127,7 @@
           <p>底辺 a=30、高さ b=40 を入れると残りが出ます。</p>
           <p class="gset">底辺 a 30 ／ 高さ b 40</p>
           <p class="gread">読み方：斜辺 c=<b>50.000</b>、α≈<b>53.13°</b>、β≈<b>36.87°</b>、斜辺からの高さ=24.000。</p>
-          <button class="gbtn" type="button" data-ex='{"set":[{"click":"#clearBtn"},{"id":"fa","v":30},{"id":"fb","v":40}]}' onclick="tryExample(this)">この例を試す</button>
+          <button class="gbtn" type="button" data-ex='{"set":[{"id":"fc","v":""},{"id":"fal","v":""},{"id":"fbe","v":""},{"id":"fa","v":30},{"id":"fb","v":40}]}' onclick="tryExample(this)">この例を試す</button>
         </div>
       </div>
     </div>
@@ -194,7 +203,6 @@
       <span class="unit">°</span>
     </div>
   </div>
-  <button class="clearBtn" type="button" id="clearBtn">すべてクリア</button>
 
   <div class="dro">
     <div class="dro-grid">
@@ -210,6 +218,8 @@
       <button class="copy" type="button" id="copyBtn">結果コピー</button>
     </div>
   </div>
+
+  <button class="clearBtn" type="button" onclick="armClear(this)">すべて消去</button>
 
   <footer>
     このページは計算のみを行います。入力値の送信・保存は一切ありません(端末内で完結)。<br>
@@ -391,11 +401,12 @@
       recalc();
     });
   });
-  $('clearBtn').addEventListener('click',function(){
+  /* 例ボタン用の内部リセット。表示上の「すべて消去」は armClear（2度押し）に統一（v37） */
+  window.rtReset=function(){
     queue=[];
     KEYS.forEach(function(k){$(IDS[k]).value='';$(ROWS[k]).classList.remove('computed')});
     recalc();
-  });
+  };
 
   var toastTimer=null;
   function toast(msg){var t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(function(){t.classList.remove('show')},1600)}
@@ -579,6 +590,39 @@
     if(gd) gd.open=false;
     var fig=document.querySelector('svg#fig, svg#dwg, figure svg, #fig, #dwg');
     if(fig && fig.scrollIntoView) fig.scrollIntoView({behavior:'smooth',block:'center'});
+  };
+})();
+</script>
+
+<script>
+/* ═══ 一括消去の共通処理（全ツール共通 / 確認ダイアログは使いません）═══
+     1回目 … ボタンが「もう一度押すと消去」に変わります（3秒で自動解除）
+     2回目 … 最初の状態に戻します
+     ※ 確認ポップアップ（ダイアログ）はPWA等で無効化されるため使いません      */
+(function(){
+  "use strict";
+  var KEY = "";   /* このツールは保存を持たないため、再読み込みだけで初期状態に戻ります */
+  window.armClear = function(btn){
+    if(!btn || !btn.getAttribute) return;
+    if(!btn.getAttribute("data-armed")){
+      btn.setAttribute("data-armed","1");
+      if(!btn.getAttribute("data-lbl")) btn.setAttribute("data-lbl", btn.textContent);
+      btn.textContent = "もう一度押すと消去";
+      if(btn.classList) btn.classList.add("arm");
+      setTimeout(function(){
+        if(btn.getAttribute("data-armed")){
+          btn.removeAttribute("data-armed");
+          btn.textContent = btn.getAttribute("data-lbl");
+          if(btn.classList) btn.classList.remove("arm");
+        }
+      }, 3000);
+      return;
+    }
+    btn.removeAttribute("data-armed");
+    if(btn.classList) btn.classList.remove("arm");
+    if(btn.getAttribute("data-lbl")) btn.textContent = btn.getAttribute("data-lbl");
+    if(KEY){ try{ localStorage.removeItem(KEY); }catch(e){} }
+    try{ location.reload(); }catch(e){}
   };
 })();
 </script>

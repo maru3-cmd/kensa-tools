@@ -150,6 +150,13 @@
   .chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
   .chips button{padding:5px 9px;font:inherit;font-size:11px;border:1px solid #C9D3DA;background:#fff;color:#5B707E;border-radius:20px;cursor:pointer}
   .chips button[aria-pressed="true"]{background:#1F3341;color:#fff;border-color:#1F3341}
+  /* 一括消去ボタン（v37 / 全ツール共通の見た目） */
+  .topclear{display:flex;justify-content:flex-end;margin:2px 2px 10px}
+  .topclear button{font-size:12px;font-weight:700;color:#B23B2E;background:#FBECEA;border:1px solid #E7B7B0;border-radius:9px;padding:7px 14px;cursor:pointer}
+  .topclear button:active{background:#F6DAD5}
+  .topclear button.arm{background:#B23B2E;color:#fff;border-color:#B23B2E}
+  .clearBtn{width:100%;font-size:13px;font-weight:700;padding:12px 4px;border:1.5px solid #C9D3DA;border-radius:10px;background:var(--sheet);color:#5B707E;letter-spacing:.05em;margin-bottom:6px;cursor:pointer}
+  .clearBtn.arm{border-color:var(--red);color:var(--red);background:#FCF0EF}
 </style>
 </head>
 <body>
@@ -158,6 +165,9 @@
     <h1>PCD穴ピッチ<small>ピッチ円上の穴間距離</small></h1>
     <a href="../index.html">≡ ツール一覧</a>
   </header>
+
+  <div class="topclear"><button type="button" aria-label="入力をすべて消去して最初から始める" onclick="armClear(this)">すべて消去</button></div>
+
 <details class="guide noprint">
   <summary>使い方と例を見る</summary>
   <div class="gb">
@@ -328,6 +338,8 @@
       <span class="formula" id="tolStat">±公差(°)を入れると許容範囲が出ます</span>
     </div>
   </div>
+
+  <button class="clearBtn" type="button" onclick="armClear(this)">すべて消去</button>
 
   <footer>
     穴の座標(X・Y)が要るとき、中心をずらした別のPCDと重なるとき、角度が等配でないときは
@@ -754,6 +766,39 @@
   function fire(el){ var ev; try{ev=new Event("input",{bubbles:true});}catch(e){ev=document.createEvent("Event");ev.initEvent("input",true,true);} el.dispatchEvent(ev); }
   for(var j=0;j<btns.length;j++){ (function(b){ b.addEventListener("click",function(){ inN.value=b.getAttribute("data-n"); fire(inN); sync(); }); })(btns[j]); }
   inN.addEventListener("input",sync); sync();
+})();
+</script>
+
+<script>
+/* ═══ 一括消去の共通処理（全ツール共通 / 確認ダイアログは使いません）═══
+     1回目 … ボタンが「もう一度押すと消去」に変わります（3秒で自動解除）
+     2回目 … 最初の状態に戻します
+     ※ 確認ポップアップ（ダイアログ）はPWA等で無効化されるため使いません      */
+(function(){
+  "use strict";
+  var KEY = "";   /* このツールは保存を持たないため、再読み込みだけで初期状態に戻ります */
+  window.armClear = function(btn){
+    if(!btn || !btn.getAttribute) return;
+    if(!btn.getAttribute("data-armed")){
+      btn.setAttribute("data-armed","1");
+      if(!btn.getAttribute("data-lbl")) btn.setAttribute("data-lbl", btn.textContent);
+      btn.textContent = "もう一度押すと消去";
+      if(btn.classList) btn.classList.add("arm");
+      setTimeout(function(){
+        if(btn.getAttribute("data-armed")){
+          btn.removeAttribute("data-armed");
+          btn.textContent = btn.getAttribute("data-lbl");
+          if(btn.classList) btn.classList.remove("arm");
+        }
+      }, 3000);
+      return;
+    }
+    btn.removeAttribute("data-armed");
+    if(btn.classList) btn.classList.remove("arm");
+    if(btn.getAttribute("data-lbl")) btn.textContent = btn.getAttribute("data-lbl");
+    if(KEY){ try{ localStorage.removeItem(KEY); }catch(e){} }
+    try{ location.reload(); }catch(e){}
+  };
 })();
 </script>
 </body>
