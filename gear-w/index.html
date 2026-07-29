@@ -170,16 +170,23 @@
   .jout{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;border-top:1px solid #E4EAEE;margin-top:10px;padding-top:10px}
   .jout div{font-size:12px;color:#5B707E;display:flex;justify-content:space-between;gap:6px}
   .jout b{color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums}
+  /* 一覧へ戻る導線：スマホで押しやすいよう、消去ボタンと同じ高さの左端に置く */
+  .topclear,.topClear{justify-content:space-between !important;align-items:center;gap:8px}
+  .topclear button,.topClear button{min-height:38px}
+  .backlink{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:8px 14px;
+    font-size:12px;font-weight:700;color:#5B707E;background:#FFFFFF;border:1px solid #C9D3DA;border-radius:9px;
+    text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
+  .backlink:active{background:#EEF2F4}
+  @media print{.backlink{display:none}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
     <h1>またぎ歯厚<small>平歯車のW寸法(標準・転位対応)</small></h1>
-    <a href="../index.html">≡ ツール一覧</a>
   </header>
 
-  <div class="topclear"><button type="button" aria-label="入力をすべて消去して最初から始める" onclick="armClear(this)">すべて消去</button></div>
+  <div class="topclear"><a class="backlink" href="../index.html">≡ ツール一覧</a><button type="button" aria-label="入力をすべて消去して最初から始める" onclick="armClear(this)">すべて消去</button></div>
 
 <details class="guide noprint">
   <summary>使い方と例を見る</summary>

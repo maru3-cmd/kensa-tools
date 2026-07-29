@@ -297,16 +297,23 @@
   .topclear button{font-size:12px;font-weight:700;color:#B23B2E;background:#FBECEA;border:1px solid #E7B7B0;border-radius:9px;padding:7px 14px}
   .topclear button:active{background:#F6DAD5}
   .topclear button.arm{background:#B23B2E;color:#fff;border-color:#B23B2E}
+  /* 一覧へ戻る導線：スマホで押しやすいよう、消去ボタンと同じ高さの左端に置く */
+  .topclear,.topClear{justify-content:space-between !important;align-items:center;gap:8px}
+  .topclear button,.topClear button{min-height:38px}
+  .backlink{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:8px 14px;
+    font-size:12px;font-weight:700;color:#5B707E;background:#FFFFFF;border:1px solid #C9D3DA;border-radius:9px;
+    text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
+  .backlink:active{background:#EEF2F4}
+  @media print{.backlink{display:none}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
     <h1>荷札 数え合わせ<small>確定個数に、数えた数を合わせる</small></h1>
-    <a href="../index.html">≡ ツール一覧</a>
   </header>
 
-  <div class="topclear"><button type="button" id="clearTop">すべて消去</button></div>
+  <div class="topclear"><a class="backlink" href="../index.html">≡ ツール一覧</a><button type="button" id="clearTop">すべて消去</button></div>
 
   <div class="tb-strip">
     <div><b>数え方</b> かんたん/仕切り/組</div>

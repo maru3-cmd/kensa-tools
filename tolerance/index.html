@@ -193,16 +193,23 @@
   .topclear button.arm{background:#B23B2E;color:#fff;border-color:#B23B2E}
   .clearBtn{width:100%;font-size:13px;font-weight:700;padding:12px 4px;border:1.5px solid #C9D3DA;border-radius:10px;background:var(--sheet);color:#5B707E;letter-spacing:.05em;margin-bottom:6px;cursor:pointer}
   .clearBtn.arm{border-color:var(--red);color:var(--red);background:#FCF0EF}
+  /* 一覧へ戻る導線：スマホで押しやすいよう、消去ボタンと同じ高さの左端に置く */
+  .topclear,.topClear{justify-content:space-between !important;align-items:center;gap:8px}
+  .topclear button,.topClear button{min-height:38px}
+  .backlink{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:8px 14px;
+    font-size:12px;font-weight:700;color:#5B707E;background:#FFFFFF;border:1px solid #C9D3DA;border-radius:9px;
+    text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
+  .backlink:active{background:#EEF2F4}
+  @media print{.backlink{display:none}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
     <h1>公差判定・公差表<small>JISはめあい公差(JIS B 0401 / ISO 286)</small></h1>
-    <a href="../index.html">≡ ツール一覧</a>
   </header>
 
-  <div class="topclear"><button type="button" aria-label="入力をすべて消去して最初から始める" onclick="armClear(this)">すべて消去</button></div>
+  <div class="topclear"><a class="backlink" href="../index.html">≡ ツール一覧</a><button type="button" aria-label="入力をすべて消去して最初から始める" onclick="armClear(this)">すべて消去</button></div>
 
 <details class="guide noprint">
   <summary>使い方と例を見る</summary>

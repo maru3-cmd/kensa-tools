@@ -282,16 +282,23 @@
   .pitchsel{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
   .pitchsel button{font-size:12px;font-weight:700;padding:6px 11px;border-radius:7px;border:1.5px solid #C9D3DA;background:#fff;color:var(--ink)}
   .pitchsel button[aria-pressed="true"]{background:#EEF2F4;border-color:var(--ink)}
+  /* 一覧へ戻る導線：スマホで押しやすいよう、消去ボタンと同じ高さの左端に置く */
+  .topclear,.topClear{justify-content:space-between !important;align-items:center;gap:8px}
+  .topclear button,.topClear button{min-height:38px}
+  .backlink{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:8px 14px;
+    font-size:12px;font-weight:700;color:#5B707E;background:#FFFFFF;border:1px solid #C9D3DA;border-radius:9px;
+    text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
+  .backlink:active{background:#EEF2F4}
+  @media print{.backlink{display:none}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
     <h1>ベルト周長（図面から）<small>プーリー配置から周長を割り出す</small></h1>
-    <a href="../index.html">≡ ツール一覧</a>
   </header>
 
-  <div class="topclear"><button type="button" id="clearTop">すべて消去</button></div>
+  <div class="topclear"><a class="backlink" href="../index.html">≡ ツール一覧</a><button type="button" id="clearTop">すべて消去</button></div>
 
   <div class="tb-strip">
     <div><b>入力</b> 位置＋直径</div>
