@@ -217,6 +217,10 @@
     text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
   .backlink:active{background:#EEF2F4}
   @media print{.backlink{display:none}}
+  .src{margin:10px 0 0;padding:9px 11px;background:#F4F7F9;border:1px solid #D5DDE2;border-left:3px solid #5B707E;
+    border-radius:8px;font-size:11.5px;line-height:1.75;color:#3D515F}
+  .src b{color:#1F3341}
+  .src code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#fff;border:1px solid #E3E9EC;border-radius:4px;padding:0 3px}
 </style>
 </head>
 <body>
@@ -237,6 +241,17 @@
       <li>下の<b>「実測の判定」</b>に、タップ後の<b>めねじ内径</b>やボルトの<b>おねじ外径</b>の実測を入れると、<b>2級相当(6H/6g)</b>の許容限界(JIS B 0209-2)で合否が出ます。並目・細目どちらも対応。</li>
       <li>ひっかかり率の目標％や材質別の限度帯から、より詳しい推奨下穴も出せます。</li>
     </ol>
+    <div class="src">
+      <b>出典と計算のしかた</b>（「どうやって出しているの？」と聞かれたとき用）<br>
+      ねじの基準寸法は <b>JIS B 0205</b>（一般用メートルねじ・並目／細目）、公差は <b>JIS B 0209-1</b>（許容限界寸法の算式）と <b>JIS B 0209-2</b>（許容限界寸法の表）から出しています。<br>
+      ・下穴径 … <code>下穴 = D − P</code>（ひっかかり率100%の理論値。D=呼び径、P=ピッチ）<br>
+      ・ひっかかり率 H% を指定したとき … <code>下穴 = D − 1.0825 × P × H/100</code><br>
+      ・めねじ内径の許容限界 … <code>D1min = D − 1.0825P</code> に <b>6H</b> の公差 TD1 を足した範囲<br>
+      ・おねじ外径の許容限界 … 基準の外径に <b>6g</b> の基礎となる許容差 es と公差 Td を当てた範囲<br>
+      ・等級指定のないメートルねじは <b>6H（めねじ）／6g（おねじ）</b>＝旧2級相当・はめあい区分「中」が適用されます（JIS B 0209-1）。<br>
+      ・めっき指定のねじの公差は<b>めっき前</b>の寸法に適用します（JIS B 0209-2）。<br>
+      許容限界は JIS B 0209-2 の表（並目15行・細目13行）と全行一致することを確認済みです。
+    </div>
     <div class="gx">
       <h4>例 ── M8 並目・切削タップ</h4>
       <div class="gxin">

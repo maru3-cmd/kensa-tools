@@ -178,6 +178,10 @@
     text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
   .backlink:active{background:#EEF2F4}
   @media print{.backlink{display:none}}
+  .src{margin:10px 0 0;padding:9px 11px;background:#F4F7F9;border:1px solid #D5DDE2;border-left:3px solid #5B707E;
+    border-radius:8px;font-size:11.5px;line-height:1.75;color:#3D515F}
+  .src b{color:#1F3341}
+  .src code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#fff;border:1px solid #E3E9EC;border-radius:4px;padding:0 3px}
 </style>
 </head>
 <body>
@@ -198,6 +202,17 @@
       <li>下に<b>またぎ歯厚 W</b>（理論値）が出ます。実測 W を入れると差 Δ も表示します。</li>
       <li>図面の<b>上限・下限</b>を入れると、合否と範囲バーが出ます（入れなければ従来どおり理論値だけ）。</li>
     </ol>
+    <div class="src">
+      <b>出典と計算のしかた</b>（「どうやって出しているの？」と聞かれたとき用）<br>
+      またぎ歯厚（またぎ歯厚寸法）の理論値は、インボリュート歯形の幾何から出しています。<br>
+      ・<code>inv α = tan α − α</code>（α はラジアン）<br>
+      ・またぎ歯数 <code>k</code> … またぎ角がピッチに収まる本数を選びます（自動選択、手入力も可）<br>
+      ・<code>W = m·cos α · { π(k − 0.5) + z · inv α } + 2·x·m·sin α</code><br>
+      　（m=モジュール、z=歯数、α=基準圧力角、x=転位係数。はすば歯車は歯直角の値で計算し β を考慮）<br>
+      ・基準円 <code>d = m·z</code>、基礎円 <code>db = d·cos α</code>、歯先円 <code>da = d + 2m(1 + x)</code><br>
+      ・歯厚減少量との換算は <b>JIS B 1752</b> の <code>δsm = −cos β · cos αn · δs</code>（δs=ピッチ円上の円弧歯厚減少量、δsm=またぎ歯厚の変化量、β=ねじれ角）<br>
+      ・<b>精度等級（JIS B 1702 系）からは歯厚の許容差は決まりません。</b>等級はピッチ・歯形・歯すじなど「回り方の質」を規定するもので、歯厚は対象外です。<b>合否は図面に書かれた上下限</b>で判断してください。
+    </div>
 
     <div class="gx">
       <h4>まず知っておくこと ── 図面値は計算値より必ず小さい</h4>

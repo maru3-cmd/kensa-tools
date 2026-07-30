@@ -194,6 +194,10 @@
     text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
   .backlink:active{background:#EEF2F4}
   @media print{.backlink{display:none}}
+  .src{margin:10px 0 0;padding:9px 11px;background:#F4F7F9;border:1px solid #D5DDE2;border-left:3px solid #5B707E;
+    border-radius:8px;font-size:11.5px;line-height:1.75;color:#3D515F}
+  .src b{color:#1F3341}
+  .src code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#fff;border:1px solid #E3E9EC;border-radius:4px;padding:0 3px}
 </style>
 </head>
 <body>
@@ -215,6 +219,16 @@
       <li>角度は <b>60</b> でも <b>60 30</b>（度 分）でも入れられます（入力欄の下のボタンで10進／度分秒を切替）。下に穴間ピッチ L が出ます。</li>
       <li>角度に <b>±公差</b>（例 ±0.2°）が付いているときは、いちばん下の<b>「角度公差 → ピッチの許容範囲」</b>へ。実測ピッチを入れると合否も出ます。</li>
     </ol>
+    <div class="src">
+      <b>計算のしかた</b>（「どうやって出しているの？」と聞かれたとき用）<br>
+      中心から2つの穴までの距離と、その間の角度から、穴間の直線距離を出しています。<br>
+      ・半径が同じとき … <code>L = 2R × sin(θ/2)</code>（二等辺三角形の底辺）<br>
+      ・半径が違うとき … <code>L = √( r₁² + r₂² − 2·r₁·r₂·cos θ )</code>（<b>余弦定理</b>）<br>
+      ・直径で入れたときは <code>R = φ/2</code> に直してから同じ式を使っています（内部は常に半径）。<br>
+      ・PCD 表示 … <code>2R</code>　　・弧長 … <code>R × θ[rad]</code><br>
+      ・角度公差 ±Δ からピッチの許容範囲 … θ を ±Δ 振って上の式に入れ直しています。<br>
+      同半径の式は余弦定理の特別な場合（r₁=r₂）で、<code>√(2R²−2R²cos θ) = 2R·sin(θ/2)</code> と同じものです。<b>ピッチは弦であって弧ではありません。</b>
+    </div>
     <div class="gx">
       <h4>例 ── 半径50・角度60°</h4>
       <div class="gxin">
@@ -292,8 +306,8 @@
           <line x1="263.1" y1="93" x2="263.1" y2="131" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="8 3 2 3"/>
 
           <!-- ①r ラベル -->
-          <circle cx="106" cy="176" r="8.5" fill="#1F3341" stroke="#fff" stroke-width="2"/>
-          <text x="106" y="180" font-size="10.5" font-weight="700" fill="#fff" text-anchor="middle">1</text>
+          <circle cx="146" cy="178" r="8.5" fill="#1F3341" stroke="#fff" stroke-width="2"/>
+          <text x="146" y="182" font-size="10.5" font-weight="700" fill="#fff" text-anchor="middle">1</text>
           <text x="120" y="181" font-size="13" fill="#1F3341" stroke="#fff" stroke-width="3.5" paint-order="stroke">r</text>
           <text x="232" y="181" font-size="13" fill="#1F3341" stroke="#fff" stroke-width="3.5" paint-order="stroke">r</text>
 
@@ -337,13 +351,13 @@
               stroke="#fff" stroke-width="4" paint-order="stroke">L = ―</text>
 
         <!-- ラベル ①r1 -->
-        <circle cx="56" cy="126" r="8.5" fill="#1F3341" stroke="#fff" stroke-width="2"/>
-        <text x="56" y="130" font-size="10.5" font-weight="700" fill="#fff" text-anchor="middle">1</text>
+        <circle cx="98" cy="128" r="8.5" fill="#1F3341" stroke="#fff" stroke-width="2"/>
+        <text x="98" y="132" font-size="10.5" font-weight="700" fill="#fff" text-anchor="middle">1</text>
         <text x="70" y="131" font-size="13" fill="#1F3341" stroke="#fff" stroke-width="3.5" paint-order="stroke">r<tspan dy="3" font-size="9">1</tspan></text>
 
         <!-- ラベル ②r2 -->
-        <circle cx="152" cy="201" r="8.5" fill="#1F3341" stroke="#fff" stroke-width="2"/>
-        <text x="152" y="205" font-size="10.5" font-weight="700" fill="#fff" text-anchor="middle">2</text>
+        <circle cx="194" cy="203" r="8.5" fill="#1F3341" stroke="#fff" stroke-width="2"/>
+        <text x="194" y="207" font-size="10.5" font-weight="700" fill="#fff" text-anchor="middle">2</text>
         <text x="166" y="206" font-size="13" fill="#1F3341" stroke="#fff" stroke-width="3.5" paint-order="stroke">r<tspan dy="3" font-size="9">2</tspan></text>
 
         <!-- ラベル ③θ -->

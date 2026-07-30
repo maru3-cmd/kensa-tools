@@ -195,6 +195,10 @@
     text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
   .backlink:active{background:#EEF2F4}
   @media print{.backlink{display:none}}
+  .src{margin:10px 0 0;padding:9px 11px;background:#F4F7F9;border:1px solid #D5DDE2;border-left:3px solid #5B707E;
+    border-radius:8px;font-size:11.5px;line-height:1.75;color:#3D515F}
+  .src b{color:#1F3341}
+  .src code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#fff;border:1px solid #E3E9EC;border-radius:4px;padding:0 3px}
 </style>
 </head>
 <body>
@@ -214,6 +218,14 @@
       <li>基準寸法と、めねじなら<b>下穴の目安</b>が出ます。</li>
       <li>「実測からサイズ推定」に切り替えると、ノギスの実測からサイズを当てられます（NPT判別つき）。</li>
     </ol>
+    <div class="src">
+      <b>出典</b>（「どうやって出しているの？」と聞かれたとき用）<br>
+      基準寸法は <b>JIS B 0203</b>（管用テーパねじ＝R・Rc）と <b>JIS B 0202</b>（管用平行ねじ＝G・Rp）の表から引いています。<br>
+      ・テーパは <code>1/16</code>（軸線に対し片側 1°47′24″）。基準径の位置は管端から<b>基準の長さ</b>だけ入った断面です。<br>
+      ・めねじ下穴は、その寸法での<b>谷の径</b>を目安にしています（実際はタップの推奨下穴・材質で前後します）。<br>
+      ・実測からのサイズ推定は、上の表の外径・谷の径にいちばん近いサイズを選んでいます。NPT は<b>ねじ山の角度が60°</b>（管用ねじは55°）で山数も違うため、外径が近くても別物として注意表示します。<br>
+      受渡しの合否は図面指定の規格とゲージ（JIS B 0253 など）で判断してください。
+    </div>
     <div class="gx">
       <h4>例 ── Rc 1/2 のめねじ下穴</h4>
       <div class="gxin">

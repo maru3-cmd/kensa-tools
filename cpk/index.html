@@ -181,6 +181,10 @@
     text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
   .backlink:active{background:#EEF2F4}
   @media print{.backlink{display:none}}
+  .src{margin:10px 0 0;padding:9px 11px;background:#F4F7F9;border:1px solid #D5DDE2;border-left:3px solid #5B707E;
+    border-radius:8px;font-size:11.5px;line-height:1.75;color:#3D515F}
+  .src b{color:#1F3341}
+  .src code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#fff;border:1px solid #E3E9EC;border-radius:4px;padding:0 3px}
 </style>
 </head>
 <body>
@@ -200,6 +204,17 @@
       <li>実測値を<b>スペースや改行で貼り付け</b>ると、平均・σ（n−1）・Cp・Cpk・予測不良率・分布図が出ます。</li>
       <li><b>Cp</b>はばらつきだけの実力、<b>Cpk</b>は平均の寄りも含めた実力。≧1.33 が目安です。</li>
     </ol>
+    <div class="src">
+      <b>計算のしかた</b>（「どうやって出しているの？」と聞かれたとき用）<br>
+      ・平均 … <code>x̄ = Σx / n</code><br>
+      ・標準偏差 … <code>s = √( Σ(x − x̄)² / (n − 1) )</code>　<b>n−1</b> で割る<b>標本標準偏差</b>を使っています（母集団の n で割る式ではありません）<br>
+      ・<code>Cp = (USL − LSL) / (6s)</code>　… ばらつきの大きさだけを見る（中心のずれは見ない）<br>
+      ・<code>Cpu = (USL − x̄) / (3s)</code>、<code>Cpl = (x̄ − LSL) / (3s)</code><br>
+      ・<code>Cpk = min(Cpu, Cpl)</code>　… 近い側の余裕で決まる。片側公差のときはその側だけで判定します（Cp は両側そろわないと出せないので「―(片側公差)」と表示）<br>
+      ・予測不良率 … 正規分布とみなして <code>1 − Φ((USL − x̄)/s) + Φ((LSL − x̄)/s)</code>。Φ は標準正規分布の累積で、数値計算は Abramowitz &amp; Stegun 26.2.17 の近似式（<code>t = 1/(1 + 0.2316419|z|)</code>）を使っています<br>
+      <b>Cp と Cpk の差は「中心のずれ」</b>です。Cp は足りているのに Cpk が低いときは、ばらつきではなく狙い位置を直す話になります。<br>
+      予測不良率は<b>「分布が正規で、いまの状態が続いたら」の目安</b>です。工程が安定していない（トレンドや段差がある）ときは実態と合いません。
+    </div>
     <div class="gx">
       <h4>例 ── ばらつきは良いが中心がずれた工程</h4>
       <div class="gxin">

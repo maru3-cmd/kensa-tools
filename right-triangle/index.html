@@ -98,6 +98,10 @@
     text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
   .backlink:active{background:#EEF2F4}
   @media print{.backlink{display:none}}
+  .src{margin:10px 0 0;padding:9px 11px;background:#F4F7F9;border:1px solid #D5DDE2;border-left:3px solid #5B707E;
+    border-radius:8px;font-size:11.5px;line-height:1.75;color:#3D515F}
+  .src b{color:#1F3341}
+  .src code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#fff;border:1px solid #E3E9EC;border-radius:4px;padding:0 3px}
 </style>
 </head>
 <body>
@@ -118,6 +122,16 @@
       <li>角度は <b>30.5</b> でも <b>30 30</b>（度 分）でも入れられます。</li>
       <li>斜辺からの高さ（垂線）も下に出ます。</li>
     </ol>
+    <div class="src">
+      <b>計算のしかた</b>（「どうやって出しているの？」と聞かれたとき用）<br>
+      直角三角形の基本関係だけです。2つ入れれば残りが決まります。<br>
+      ・<code>c² = a² + b²</code>（三平方の定理。斜辺 c）<br>
+      ・<code>a = c·sin A</code>、<code>b = c·cos A</code>、<code>tan A = a / b</code><br>
+      ・角度から出すとき … <code>A = atan(a / b)</code>、<code>B = 90° − A</code><br>
+      ・面積 … <code>a × b / 2</code><br>
+      ・角度は<b>度・分・秒</b>でも入れられます（<code>1°47′24″</code> の形式）。<br>
+      斜辺と1辺から残りを出すときは <code>√(c² − a²)</code> を使うので、<b>c と a が近いと桁落ち</b>して精度が落ちます。その場合は角度から出したほうが安定します。
+    </div>
     <div class="gx">
       <h4>例 ── 3:4:5 の直角三角形</h4>
       <div class="gxin">

@@ -229,6 +229,10 @@
     text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
   .backlink:active{background:#EEF2F4}
   @media print{.backlink{display:none}}
+  .src{margin:10px 0 0;padding:9px 11px;background:#F4F7F9;border:1px solid #D5DDE2;border-left:3px solid #5B707E;
+    border-radius:8px;font-size:11.5px;line-height:1.75;color:#3D515F}
+  .src b{color:#1F3341}
+  .src code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#fff;border:1px solid #E3E9EC;border-radius:4px;padding:0 3px}
 </style>
 </head>
 <body>
@@ -247,6 +251,17 @@
       <li>小分けの<b>表示値（総重量）</b>を入れて「追加」を押すと、個数と累計が出ます。</li>
       <li>小分けごとに追加でき、合計個数・合計重量が記録されます（この端末内に保存）。</li>
     </ol>
+    <div class="src">
+      <b>計算のしかた</b>（「どうやって出しているの？」と聞かれたとき用）<br>
+      はかりの重さから個数を割り出す<b>単重換算</b>です。<br>
+      ・正味重量 … <code>正味 = 総重量 − 風袋（容器）</code><br>
+      ・個数（生の値）… <code>個数 = 正味 / 単重</code><br>
+      ・表示する個数 … 上の値を<b>四捨五入</b>した整数<br>
+      ・ずれ … <code>生の値 − 整数</code>。これが 0 から離れているほど、単重が実物と合っていない／欠品や異物が混ざっている疑いになります<br>
+      ・単重を実測から出すとき … <code>単重 = サンプルの正味 / サンプル個数</code>（<b>個数を多くとるほど精度が上がります</b>）<br>
+      ・のせられる上限の目安 … <code>(はかりの秤量×0.9 − 風袋) / 単重</code>（秤量いっぱいは使わない前提で0.9掛け）<br>
+      <b>単重のばらつきがそのまま個数の誤差になります。</b>ずれが大きいときは、個数を疑う前に単重を測り直すのが早いです。
+    </div>
     <div class="gx">
       <h4>例 ── 10個=25g、250g を計量</h4>
       <div class="gxin">

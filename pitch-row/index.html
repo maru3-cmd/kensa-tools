@@ -138,6 +138,10 @@
     text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
   .backlink:active{background:#EEF2F4}
   @media print{.backlink{display:none}}
+  .src{margin:10px 0 0;padding:9px 11px;background:#F4F7F9;border:1px solid #D5DDE2;border-left:3px solid #5B707E;
+    border-radius:8px;font-size:11.5px;line-height:1.75;color:#3D515F}
+  .src b{color:#1F3341}
+  .src code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#fff;border:1px solid #E3E9EC;border-radius:4px;padding:0 3px}
 </style>
 </head>
 <body>
@@ -157,6 +161,18 @@
       <li><b>隣接ピッチ</b>・最小/最大・平均が出ます。基準穴を切り替えると「穴3から穴7まで」も読めます。</li>
       <li>等間隔のはずの穴なら「等ピッチ判定」で、各穴のズレ（累積）と合否が出ます。</li>
     </ol>
+    <div class="src">
+      <b>計算のしかた</b>（「どうやって出しているの？」と聞かれたとき用）<br>
+      一列に並んだ穴の<b>位置（累積）</b>と<b>隣どうしのピッチ</b>を行き来させ、等ピッチからのずれを出しています。<br>
+      ・位置 → ピッチ … <code>pᵏ = 位置ᵏ₊₁ − 位置ᵏ</code><br>
+      ・ピッチ → 位置 … <code>位置ᵏ = 位置₁ + Σ p</code>（累積和）<br>
+      ・等ピッチの理想値 … <code>理想ᵏ = 位置₁ + (k−1) × p₀</code><br>
+      　p₀ は図面ピッチを入れればその値、空欄なら実測から <code>p₀ = (最終位置 − 最初の位置) / (穴数 − 1)</code> を自動で使います<br>
+      ・位置のずれ … <code>ずれᵏ = 実測位置ᵏ − 理想ᵏ</code>　最大値を <code>±</code> で表示<br>
+      ・ピッチのばらつき … <code>|pᵏ − p₀|</code> の最大値<br>
+      ・合否 … ずれが <code>±公差</code> に入っているか<br>
+      <b>「ピッチは全部合っているのに位置がずれる」</b>ことがあります。ピッチの誤差が同じ向きに積み上がると累積するためで、この表は<b>その積み上がりを見るためのもの</b>です。図面がピッチ指示か累積寸法指示かで、どちらを見るべきかが変わります。
+    </div>
     <div class="gx">
       <h4>例 ── 端面から 10・40・70・100</h4>
       <div class="gxin">
@@ -205,7 +221,11 @@
     </div>
   </div>
   <label class="f">まとめ入力（任意・貼り付け用／スペースや改行で区切り）</label>
-  <textarea id="bulk" placeholder="5, 108.5, 212, 324.5"></textarea>
+  <textarea id="bulk" inputmode="decimal" enterkeyhint="done" placeholder="5, 108.5, 212, 324.5"></textarea>
+    <div style="display:flex;gap:6px;margin-top:6px">
+      <button type="button" id="bulkSep" style="flex:1;min-height:38px;font:inherit;font-size:12px;font-weight:700;color:#5B707E;background:#fff;border:1px solid #C9D3DA;border-radius:9px;cursor:pointer">、区切りを入れる</button>
+    </div>
+    <div class="hint" style="margin-top:5px">数字キーパッドが出ます。かな・英字は入れても自動で取り除かれます。区切りは上のボタン、または貼り付けでどうぞ。</div>
   <div class="btnrow" style="margin:8px 0 12px">
     <button class="btn primary sm" onclick="applyBulk()">まとめ入力を反映</button>
     <button class="btn sm" onclick="addRow()">＋ 1行追加</button>
@@ -750,5 +770,32 @@ renderRows(); calc();
 })();
 </script>
 <div class="toast" id="toast"></div>
+<script>
+/* まとめ入力は数字だけを受け付ける（かな・英字は自動で除去。全角は半角へ）*/
+(function(){
+  "use strict";
+  var b=document.getElementById("bulk"); if(!b) return;
+  function clean(v){
+    v=String(v).replace(/[\uFF10-\uFF19]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0)});
+    v=v.replace(/[\u3002\uFF0E]/g,".").replace(/[\uFF0D\u30FC\uFF70\u2212]/g,"-").replace(/[\u3001\uFF0C]/g,",");
+    return v.replace(/[^0-9.\-,\s]/g,"");
+  }
+  b.addEventListener("input",function(){
+    var v=b.value, c=clean(v);
+    if(c!==v){
+      var p=(b.selectionStart||0)-(v.length-c.length);
+      b.value=c;
+      try{ b.setSelectionRange(p,p); }catch(e){}
+    }
+  });
+  var sep=document.getElementById("bulkSep");
+  if(sep) sep.addEventListener("click",function(){
+    var p=(b.selectionStart==null)? b.value.length : b.selectionStart;
+    b.value=b.value.slice(0,p)+", "+b.value.slice(p);
+    b.focus();
+    try{ b.setSelectionRange(p+2,p+2); }catch(e){}
+  });
+})();
+</script>
 </body>
 </html>

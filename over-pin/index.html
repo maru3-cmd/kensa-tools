@@ -150,6 +150,10 @@
     text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
   .backlink:active{background:#EEF2F4}
   @media print{.backlink{display:none}}
+  .src{margin:10px 0 0;padding:9px 11px;background:#F4F7F9;border:1px solid #D5DDE2;border-left:3px solid #5B707E;
+    border-radius:8px;font-size:11.5px;line-height:1.75;color:#3D515F}
+  .src b{color:#1F3341}
+  .src code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#fff;border:1px solid #E3E9EC;border-radius:4px;padding:0 3px}
 </style>
 </head>
 <body>
@@ -169,6 +173,19 @@
       <li>歯数が偶数なら向かい合う2本、奇数なら食い違いのピンを挟む式を自動で選びます。</li>
       <li>下に<b>オーバーピン径 M</b>（理論値）が出ます。実測 M を入れると差 Δ も出ます。</li>
     </ol>
+    <div class="src">
+      <b>計算のしかた</b>（「どうやって出しているの？」と聞かれたとき用）<br>
+      インボリュート歯形の幾何から、ピン（玉）が歯面に接する位置を求めて外側までの距離を出しています。<br>
+      ・<code>inv α = tan α − α</code>（α はラジアン）、基礎円 <code>db = m·z·cos α</code><br>
+      ・ピン中心の圧力角 φ … <code>inv φ = inv α + dp/db − π/(2z) + 2x·tan α / z</code><br>
+      　（dp=ピン径、z=歯数、m=モジュール、x=転位係数）<br>
+      ・この <code>inv φ</code> から φ を<b>逆算</b>（inv は解析的に解けないのでニュートン法で収束させています）<br>
+      ・ピン中心の直径 … <code>dc = db / cos φ</code><br>
+      ・オーバーピン寸法 … 偶数歯 <code>M = dc + dp</code>／奇数歯 <code>M = dc·cos(π/2z) + dp</code><br>
+      　奇数歯は向かい合う歯が半ピッチずれるため、cos の分だけ縮みます。<br>
+      ・接触点の確認 … <code>tan φk = tan φ − dp/(2·rb)</code> から接触半径を出し、歯先・歯元から外れていないかを見ています（外れると測定値が意味を持ちません）。<br>
+      <b>歯厚の許容差は精度等級（JIS B 1702 系）からは決まりません。合否は図面の上下限で判断してください。</b>
+    </div>
     <div class="gx">
       <h4>例 ── m2・z20・ピン径3.5</h4>
       <div class="gxin">

@@ -143,6 +143,10 @@
     text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
   .backlink:active{background:#EEF2F4}
   @media print{.backlink{display:none}}
+  .src{margin:10px 0 0;padding:9px 11px;background:#F4F7F9;border:1px solid #D5DDE2;border-left:3px solid #5B707E;
+    border-radius:8px;font-size:11.5px;line-height:1.75;color:#3D515F}
+  .src b{color:#1F3341}
+  .src code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#fff;border:1px solid #E3E9EC;border-radius:4px;padding:0 3px}
 </style>
 </head>
 <body>
@@ -162,6 +166,16 @@
       <li>「＋ 基準からXY」「＋ 基準から r・θ」「＋ 穴から連鎖」で穴を足すと、各穴の<b>左・下・右・上の端面からの読み</b>に換算します。</li>
       <li>行をタップすると図と表示器に反映。板の外に出る値は赤で警告します。</li>
     </ol>
+    <div class="src">
+      <b>計算のしかた</b>（「どうやって出しているの？」と聞かれたとき用）<br>
+      いったん<b>共通の座標</b>に置き直してから、指定されたデータム（端面・角）を基準に読み替えています。<br>
+      ・距離と角度で指定した穴 … <code>(x, y) = (r·cos θ, r·sin θ)</code><br>
+      ・前の穴から指定した穴 … <code>(x, y) = 基準の穴 + d × (cos(向き), sin(向き))</code>。向きは前の線分の方向 <code>atan2(Δy, Δx)</code> に相対角を足して求めます<br>
+      ・部材（外形）を回して置くとき … <code>回転行列 (cos φ, −sin φ; sin φ, cos φ)</code> で座標を回してから端面との関係を出します<br>
+      ・端面からの寸法 … 上で出した座標を、選んだ端面・角からの距離に引き直すだけです<br>
+      ・2穴間の距離 … <code>√((x₂−x₁)² + (y₂−y₁)²)</code><br>
+      規格ではなく<b>幾何計算</b>です。図面のデータムをどこに取るかで数字が変わるので、<b>基準の選択が図面と合っているか</b>を先に確かめてください。
+    </div>
     <div class="gx">
       <h4>例 ── 板1000×600、基準点から+50/+30 の穴</h4>
       <div class="gxin">

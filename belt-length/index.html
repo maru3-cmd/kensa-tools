@@ -290,6 +290,10 @@
     text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
   .backlink:active{background:#EEF2F4}
   @media print{.backlink{display:none}}
+  .src{margin:10px 0 0;padding:9px 11px;background:#F4F7F9;border:1px solid #D5DDE2;border-left:3px solid #5B707E;
+    border-radius:8px;font-size:11.5px;line-height:1.75;color:#3D515F}
+  .src b{color:#1F3341}
+  .src code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#fff;border:1px solid #E3E9EC;border-radius:4px;padding:0 3px}
 </style>
 </head>
 <body>
@@ -378,6 +382,16 @@
         <li>上に<b>図面上の周長</b>が出ます。接線と巻き付き弧を厳密に合算した値です。図でベルト経路も確認できます。</li>
         <li>歯付きなら歯ピッチを選ぶと歯数の目安、仕様書の全長を入れると差（参考）が出ます。</li>
       </ol>
+    <div class="src">
+      <b>計算のしかた</b>（「どうやって出しているの？」と聞かれたとき用）<br>
+      ベルトを「プーリーに巻き付いた弧」と「プーリー間をまっすぐ渡る接線」に分けて、<b>厳密に合算</b>しています。近似式は使っていません。<br>
+      ・接線の長さ … <code>√( D² − (Rj − Ri)² )</code>　（D=中心間距離、Ri・Rj=両プーリーの半径。同じ側に巻くときは差、逆向きなら和になるよう符号を持たせています）<br>
+      ・接線の向き … <code>φ = atan2(Δy, Δx) + acos( (Rj − Ri) / D )</code>　これで共通接線の角度が決まります<br>
+      ・巻き付き弧 … <code>r × ω</code>　（ω=巻き付き角[rad]。出ていく接線と入ってくる接線の角度差から求め、内掛け／外掛けで回る向きを分けています）<br>
+      ・周長 … <code>Σ(接線) + Σ(巻き付き弧)</code><br>
+      「プーリーが近すぎて経路が作れません」と出るのは <code>|(Rj − Ri) / D| > 1</code> のとき、つまり一方が他方を内側に飲み込んでいて共通接線が引けない配置です。<br>
+      出るのは<b>図面の配置どおりの理論周長</b>です。実際に使うベルトは規格の呼び長さから選び、テンションで調整するので、<b>正解は図面と部品表</b>です。
+    </div>
       <div class="gx">
         <h4>例 ── 2プーリー＋内掛けテンション</h4>
         <div class="gxin">

@@ -185,6 +185,10 @@
     text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
   .backlink:active{background:#EEF2F4}
   @media print{.backlink{display:none}}
+  .src{margin:10px 0 0;padding:9px 11px;background:#F4F7F9;border:1px solid #D5DDE2;border-left:3px solid #5B707E;
+    border-radius:8px;font-size:11.5px;line-height:1.75;color:#3D515F}
+  .src b{color:#1F3341}
+  .src code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#fff;border:1px solid #E3E9EC;border-radius:4px;padding:0 3px}
 </style>
 </head>
 <body>
@@ -204,6 +208,18 @@
       <li>ひねりは「前の曲げ面から何度ねじって次を曲げるか」。これで立体的な取り回しを表せます。</li>
       <li><b>展開長・端点間距離・外形 X/Y/Z</b>と、三面図（平面・正面・側面）が出ます。</li>
     </ol>
+    <div class="src">
+      <b>計算のしかた</b>（「どうやって出しているの？」と聞かれたとき用）<br>
+      2Dの曲げガイドを立体に広げたもので、<b>「進む向き u」と「曲げ軸 w」の2本のベクトルを持ち回りながら</b>順に回転させています。<br>
+      ・ひねり（回転）… 曲げ軸まわりに角度 ρ だけ回す<br>
+      　<code>u' = u·cos ρ + w·sin ρ</code>、<code>w' = −u·sin ρ + w·cos ρ</code><br>
+      ・曲げ … 回した後の軸まわりに曲げ角だけ u を回して、次に進む向きを決めます<br>
+      ・次の頂点 … <code>次 = 前 + L × u</code>（3次元のベクトル和）<br>
+      ・ベクトルの長さ … <code>|a| = √(ax² + ay² + az²)</code><br>
+      ・三面図は、出した3次元の頂点をそれぞれ XY／XZ／YZ 平面に落として描いています（投影なので、面によっては長さが短く見えます）<br>
+      ・角度は<b>度・分・秒</b>でも入れられます<br>
+      2Dと同じく<b>中心線の寸法</b>です。展開長は伸び代の取り方で変わるので、<b>現場の実績表に従ってください。</b>
+    </div>
     <div class="gx">
       <h4>例 ── 2段曲げ（2段目を90°ひねり）</h4>
       <div class="gxin">

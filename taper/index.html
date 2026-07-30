@@ -181,6 +181,10 @@
     text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
   .backlink:active{background:#EEF2F4}
   @media print{.backlink{display:none}}
+  .src{margin:10px 0 0;padding:9px 11px;background:#F4F7F9;border:1px solid #D5DDE2;border-left:3px solid #5B707E;
+    border-radius:8px;font-size:11.5px;line-height:1.75;color:#3D515F}
+  .src b{color:#1F3341}
+  .src code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#fff;border:1px solid #E3E9EC;border-radius:4px;padding:0 3px}
 </style>
 </head>
 <body>
@@ -200,6 +204,16 @@
       <li>比は<b>テーパ(径)</b>か<b>勾配(片側)</b>、角度は<b>全角</b>か<b>半角</b>を選べます（度分秒可）。</li>
       <li>寸法 D・d・L を入れると残りやサインバー高さも出ます。「実測からテーパ」で逆算もできます。</li>
     </ol>
+    <div class="src">
+      <b>計算のしかた</b>（「どうやって出しているの？」と聞かれたとき用）<br>
+      テーパは<b>「1周期あたりの直径の変化」</b>で表します。基準は次の3つの関係だけです。<br>
+      ・テーパ比 … <code>(D − d) / L</code>（1/20 なら「長さ20進むと直径が1変わる」）<br>
+      ・半角 … <code>tan(θ/2) = (D − d) / (2L)</code>　全角 <code>θ</code> はその2倍<br>
+      ・勾配（片側）… <code>(D − d) / (2L)</code>　テーパ比の半分です<br>
+      ・D・d・L のうち2つを入れると、残りを上の式から逆算します。<br>
+      規格テーパの比は表から引いています … <b>1/5・1/10・1/20・1/50</b>（一般テーパ）、<b>7/24</b>（NT／BT・工作機械の主軸テーパ）、<b>MT0〜MT6</b>（モールステーパ。番手ごとに比が微妙に違うのが規格どおりで、MT2 は 1/20.020 です）。<br>
+      角度は度・分・秒でも入れられます（<code>1°47′24″</code> の形式）。
+    </div>
     <div class="gx">
       <h4>例 ── テーパ 1:10 の角度</h4>
       <div class="gxin">

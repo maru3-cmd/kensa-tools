@@ -165,6 +165,10 @@
     text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
   .backlink:active{background:#EEF2F4}
   @media print{.backlink{display:none}}
+  .src{margin:10px 0 0;padding:9px 11px;background:#F4F7F9;border:1px solid #D5DDE2;border-left:3px solid #5B707E;
+    border-radius:8px;font-size:11.5px;line-height:1.75;color:#3D515F}
+  .src b{color:#1F3341}
+  .src code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#fff;border:1px solid #E3E9EC;border-radius:4px;padding:0 3px}
 </style>
 <style>
   .sec{margin:14px 0 6px;font-size:11px;font-weight:700;letter-spacing:.09em;color:#5B707E;padding:0 2px}
@@ -211,6 +215,17 @@
       <li>答えはすべて<b>部材の角と端面からの寸法</b>で出ます。部材が傾いていても、出てくる数字は「この角から何mm・この端から何mm」です。</li>
       <li>角度は<b>真上0°・時計回り＋</b>。回転角は<b>部材の高さ方向（Hの向き）が真上から時計回りに何度傾いているか</b>です。</li>
     </ol>
+    <div class="src">
+      <b>計算のしかた</b>（「どうやって出しているの？」と聞かれたとき用）<br>
+      図面座標（原点＝円弧の中心）で交点を求め、<b>部材座標（角と端面が基準）に直して</b>表示しています。角度は<b>真上0°・時計回りが＋</b>。<br>
+      ・部材の置き方 … 幅方向 <code>ex = (cos φ, −sin φ)</code>、高さ方向 <code>ey = (sin φ, cos φ)</code>（φ=回転角）。選んだ基準点を原点から <code>L × (sin θ, cos θ)</code> の位置に置き、そこから左下の角を逆算します<br>
+      ・円と端面の交点 … 端面上の点を <code>B + t·e</code> と置き、<code>|B + t·e|² = R²</code> を t の2次方程式として解きます（B=端面の始点、e=端面の方向、|…|は原点＝円弧中心からの距離）。解が端面の長さの中に入っていて、かつ角度が開始角〜終了角の範囲にあるものだけを採用<br>
+      ・端からの深さ … 端面上の点 Q から内向き法線 n の方向に <code>|Q + d·n|² = R²</code> を解き、正の最小解を深さとします<br>
+      ・いちばん深いところ … 原点から端面への垂線の足 F を求めて <code>深さ = R − |F|</code>。位置は F の端面上パラメータ<br>
+      ・円弧上の穴 … <code>配置半径 × (sin θk, cos θk)</code> を部材座標に直し、<code>0 ≤ x ≤ W かつ 0 ≤ y ≤ H</code> で部材内かを判定<br>
+      ・部材座標への変換 … <code>x = (P − 左下の角)·ex</code>、<code>y = (P − 左下の角)·ey</code>（内積）<br>
+      規格ではなく<b>純粋な幾何計算</b>です。部材が傾いていても、出る数字は部材の角と端面が基準のままになります。
+    </div>
     <div class="gx">
       <h4>例 ── 端から150mm外側の中心に R180（ご相談の部品）</h4>
       <div class="gxin">

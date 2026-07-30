@@ -169,6 +169,10 @@
     text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
   .backlink:active{background:#EEF2F4}
   @media print{.backlink{display:none}}
+  .src{margin:10px 0 0;padding:9px 11px;background:#F4F7F9;border:1px solid #D5DDE2;border-left:3px solid #5B707E;
+    border-radius:8px;font-size:11.5px;line-height:1.75;color:#3D515F}
+  .src b{color:#1F3341}
+  .src code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#fff;border:1px solid #E3E9EC;border-radius:4px;padding:0 3px}
 </style>
 </head>
 <body>
@@ -188,6 +192,13 @@
       <li>値を入れると、残り2つの硬さと<b>引張強さの目安</b>が出ます。</li>
       <li>目盛の中間値は補間します。鋼の換算表（HRC20〜68）に基づきます。</li>
     </ol>
+    <div class="src">
+      <b>出典</b>（「どうやって出しているの？」と聞かれたとき用）<br>
+      換算値は <b>ASTM E140</b>（金属材料の硬さ換算表）と <b>SAE J417</b> の、<b>鋼（非オーステナイト系）</b>向け代表値から引いています。表の行の間は<b>直線補間</b>しています。<br>
+      ・引張強さも同じ系統の対応値で、あくまで<b>目安</b>です（材質・熱処理で変わります）。<br>
+      ・硬さ換算はそもそも<b>近似</b>で、規格上も「換算値は試験値の代わりにはならない」とされています。<br>
+      測定そのものの規格は <b>JIS Z 2245</b>（ロックウェル）・<b>JIS Z 2244</b>（ビッカース）・<b>JIS Z 2243</b>（ブリネル）です。<b>受渡し・合否は図面が指定した試験方法の実測で判断</b>してください。
+    </div>
     <div class="gx">
       <h4>例 ── HRC 50 を換算</h4>
       <div class="gxin">

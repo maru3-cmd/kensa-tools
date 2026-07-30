@@ -166,6 +166,10 @@
     text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
   .backlink:active{background:#EEF2F4}
   @media print{.backlink{display:none}}
+  .src{margin:10px 0 0;padding:9px 11px;background:#F4F7F9;border:1px solid #D5DDE2;border-left:3px solid #5B707E;
+    border-radius:8px;font-size:11.5px;line-height:1.75;color:#3D515F}
+  .src b{color:#1F3341}
+  .src code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#fff;border:1px solid #E3E9EC;border-radius:4px;padding:0 3px}
 </style>
 </head>
 <body>
@@ -185,6 +189,16 @@
       <li>「ねじ三針」では<b>ピッチ P・針径 dw・実測 M</b>（三針を掛けた測定値）を入れると<b>有効径 d₂</b>が出ます。</li>
       <li>最適な線径や、図面の有効径との差も表示されます。</li>
     </ol>
+    <div class="src">
+      <b>計算のしかた</b>（「どうやって出しているの？」と聞かれたとき用）<br>
+      <b>ねじの三針法</b>（有効径の測定）<br>
+      ・<code>d₂ = M − dw × (1 + 1/sin β) + P × (cos β / sin β) / 2</code><br>
+      　（M=マイクロメータの読み、dw=線径、P=ピッチ、β=ねじ山の角度の半分。後半は <code>P·cot β / 2</code> です）<br>
+      ・最適線径 … <code>dw = P / (2 cos β)</code>　この径だと山の角度の誤差が結果に効きにくくなります<br>
+      ・メートルねじは山の角度60°（β=30°）なので係数は <code>1 + 1/sin30° = 3</code>、<code>cot30°/2 ≒ 0.86603</code> となり、よく見る <code>d₂ = M − 3dw + 0.86603P</code> の形になります。ウィットワース（55°）・管用ねじなどは角度が違うので係数もその都度計算しています。<br>
+      ・テーパ・溝の測定 … ピンやボールが斜面に接する幾何から <code>C = D × (1 + cos(α/2)/sin(α/2))</code> などを使い、接点の位置を出してから寸法に直しています。<br>
+      ・単一の針で測る簡易法は<b>ピッチ誤差や山の角度の誤差を拾いません</b>。受渡しの合否は図面指定の方法で判断してください。
+    </div>
     <div class="gx">
       <h4>例 ── ピッチ1.5、針径0.866、実測9.5</h4>
       <div class="gxin">

@@ -120,6 +120,18 @@
   .diagOut{margin-top:6px;font-size:11px;line-height:1.6;word-break:break-all}
   .diagOut.ng{color:#D63426}
   .diagOut.ok{color:#2E7D4F}
+  .h1row{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+  .verBtn{min-height:32px;padding:5px 12px;font:inherit;font-size:12px;font-weight:800;
+    color:#1F3341;background:#EDF2F5;border:1px solid #C9D3DA;border-radius:999px;cursor:pointer}
+  .verBtn:active{background:#DDE5EA}
+  .chglog{margin:10px 0 0;background:#fff;border:1px solid #D5DDE2;border-radius:12px;overflow:hidden}
+  .chglog[hidden]{display:none}
+  .chglog h3{margin:0;padding:11px 13px;font-size:12px;font-weight:800;color:#1F3341;background:#F4F7F9;border-bottom:1px solid #E3E9EC}
+  .chglog ul{margin:0;padding:10px 13px 12px 28px;max-height:44vh;overflow:auto}
+  .chglog li{font-size:12px;line-height:1.75;color:#3D515F;margin-bottom:7px}
+  .chglog li b{color:#1F3341}
+  .chglog .vtag{display:inline-block;font-size:10.5px;font-weight:800;color:#5B707E;background:#EDF2F5;
+    border:1px solid #D5DDE2;border-radius:6px;padding:0 5px;margin-right:5px}
 </style>
 </head>
 <body>
@@ -127,15 +139,35 @@
 
   <div class="cover">
     <div class="cover-inner">
-      <h1>検査ミニポータル</h1>
+      <div class="h1row"><h1>検査ミニポータル</h1><button type="button" class="verBtn" id="verBtn" aria-expanded="false" aria-controls="chglog">v48 ｜ 更新内容</button></div>
       <div class="sub">INSPECTION MINI TOOLS</div>
       <div class="desc">
         現場のための計算・記録ツール集。すべての計算はこの端末の中で行われ、入力値がネットに送信されることはありません。
       </div>
+      <div class="chglog" id="chglog" hidden>
+        <h3>更新内容（新しい順）</h3>
+        <ul>
+          <li><span class="vtag">v48</span><b>全30ツールに「計算のしかた・出典」が揃いました。</b>残りの曲げガイド・曲げガイド(3D)・カム変位線図・樹脂ガイドを追加し、すでに式があった7ツールも同じ囲みに揃えました。「どうやって計算してるの？」と聞かれたら、そのツールの<b>使い方と例を見る</b>を開いて一番下を見せてください。</li>
+          <li><span class="vtag">v47</span><b>計算説明を7ツールに追加（バッチ③）。</b>図面まるごと穴ピッチ(30)・円弧を端からの寸法に(34)・端面基準の穴位置・軸の傾き・並び寸法ピッチ(28)・はかり数取器・荷札 数え合わせ。一行の式にならないものは<b>手順</b>で書いています。これで19ツールに出典・計算説明が入りました。</li>
+          <li><span class="vtag">v46</span><b>公式表示を6ツールに追加（バッチ②）。</b>テーパ・ベルト周長・Cpk・オーバーピン・ピン／ワイヤ・位相ずれ。使っている式をそのまま載せたので、聞かれたら画面を見せられます。これで12ツールに出典・公式が入りました。</li>
+          <li><span class="vtag">v45</span><b>規格表を引いているツールに「出典」を追加。</b>公差判定(05)・またぎ歯厚(06)・管用ねじ(19)・タップ下穴(20)・温度補正(23)・硬さ換算 の使い方の中に、どのJIS／規格の表から出しているか、どんな式かを書きました。「どうやって計算してるの？」と聞かれたときにそのまま見せられます。</li>
+          <li><span class="vtag">v44</span><b>公差判定・公差表(05) で「実測が何等級相当か」を表示。</b>h8の図面で実測が外れていれば「h11相当になります」と、その等級の許容差つきで出ます（IT16まで）。規格より良い側なら「h6相当」と出ます。</li>
+          <li><span class="vtag">v42</span><b>半径でも直径でも入れられるように。</b>角度から穴ピッチ(01)・PCD穴ピッチ(02)・弦・矢高とR(04)・図面まるごと穴ピッチ(30) に切替を追加。図面がφやPCDで書かれていても、半分にする計算は要りません。</li>
+          <li><span class="vtag">v42</span>並び寸法ピッチ(28) のまとめ入力を<b>数字キーパッド</b>に。かな・英字は自動で取り除きます。</li>
+          <li><span class="vtag">v43</span><b>弦・矢高とR(04) の図で①を右へ。</b>①（弦c）と③（半径R）が近く、①をRだと思って弦の欄に入れてしまう配置でした。角度から穴ピッチ(01) の①も同じ理由で r から離しています。</li>
+          <li><span class="vtag">v42</span>このバージョン表示と更新内容を追加しました。</li>
+          <li><span class="vtag">v41</span><b>「≡ ツール一覧」を押しやすい位置へ。</b>全ツールで「すべて消去」と同じ行の左端に移し、指で押せる大きさにしました。</li>
+          <li><span class="vtag">v40</span><b>新ツール「円弧を端からの寸法に」(34) を追加。</b>部材から離れた中心に描かれた円弧・ざぐりを、部材の角と端面からの寸法に翻訳します。傾いた部材にも対応。</li>
+          <li><span class="vtag">v39</span><b>点つなぎピッチ(22)を図面まるごと穴ピッチ(30)に統合。</b>穴ごとに「既存の穴から」を基準に選べます。TOOL-22 は退役しました。</li>
+          <li><span class="vtag">v38</span>またぎ歯厚(06) に合否判定と、歯厚許容差からまたぎ歯厚許容差への換算を追加。</li>
+          <li><span class="vtag">v37</span>全ツールの下部にも「すべて消去」を配置。確認ダイアログをやめ、2回押しに統一しました。</li>
+        </ul>
+      </div>
+
       <div class="strip">
         <div><b>構成</b> 30ツール</div>
         <div><b>通信</b> なし(端末内計算)</div>
-        <div>REV 2026-07</div>
+        <div>REV 2026-07 (v48)</div>
       </div>
     </div>
   </div>
@@ -969,6 +1001,19 @@
       }).catch(function(){ /* 登録不可時は通常動作 */ });
     });
   }
+})();
+</script>
+<script>
+/* バージョンボタンで更新内容を開閉する */
+(function(){
+  "use strict";
+  var b=document.getElementById("verBtn"), c=document.getElementById("chglog");
+  if(!b||!c) return;
+  b.addEventListener("click",function(){
+    var open=c.hasAttribute("hidden");
+    if(open){ c.removeAttribute("hidden"); } else { c.setAttribute("hidden",""); }
+    b.setAttribute("aria-expanded", open?"true":"false");
+  });
 })();
 </script>
 </body>

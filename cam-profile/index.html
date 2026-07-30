@@ -118,6 +118,10 @@
     text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
   .backlink:active{background:#EEF2F4}
   @media print{.backlink{display:none}}
+  .src{margin:10px 0 0;padding:9px 11px;background:#F4F7F9;border:1px solid #D5DDE2;border-left:3px solid #5B707E;
+    border-radius:8px;font-size:11.5px;line-height:1.75;color:#3D515F}
+  .src b{color:#1F3341}
+  .src code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#fff;border:1px solid #E3E9EC;border-radius:4px;padding:0 3px}
 </style>
 </head>
 <body>
@@ -137,6 +141,17 @@
       <li><b>確認したい角度</b>を入れると、その角度の<b>リフト・速度・加速度</b>が出ます。回転数を入れれば実単位に。</li>
       <li>基礎円半径を入れると輪郭半径（カム外形）も計算できます。</li>
     </ol>
+    <div class="src">
+      <b>計算のしかた</b>（「どうやって出しているの？」と聞かれたとき用）<br>
+      区間ごとに<b>運動曲線の式</b>を当てはめ、変位 s・速度 v・加速度 a・躍度 j を出しています。区間内の進み具合を <code>u = 0〜1</code>（0が区間の начало、1が終わり）として、<br>
+      ・等速 … <code>s = u</code>（速度は一定だが、始まりと終わりで加速度が飛ぶ）<br>
+      ・単弦（コサイン）… <code>s = (1 − cos πu) / 2</code>、<code>v = (π/2)·sin πu</code>、<code>a = (π²/2)·cos πu</code><br>
+      ・サイクロイド … <code>s = u − sin(2πu)/(2π)</code>、<code>v = 1 − cos 2πu</code>、<code>a = 2π·sin 2πu</code><br>
+      ・修正正弦・修正等速などは、区間をさらに分けて上の式をつなぎ、<b>加速度が飛ばないよう</b>係数をそろえています<br>
+      ・実寸への換算 … <code>変位 = s × 全リフト</code>、角速度 <code>ω = rpm × 2π / 60</code> [rad/s] を掛けて<b>時間あたりの速度・加速度</b>にします<br>
+      ・躍度 j は加速度の変化率で、<b>これが飛ぶと打音・振動の原因</b>になります。曲線を選ぶときの判断材料です。<br>
+      グラフは<b>変位線図（カムの回転角に対する従動節の動き）</b>で、カムの外形そのものではありません。外形にするには基礎円半径とローラ径から輪郭を起こす別の計算が要ります。
+    </div>
     <div class="gx">
       <h4>例 ── 90°でサイクロイド上昇、45°のリフト</h4>
       <div class="gxin">

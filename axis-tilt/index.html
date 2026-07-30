@@ -152,6 +152,10 @@
     text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
   .backlink:active{background:#EEF2F4}
   @media print{.backlink{display:none}}
+  .src{margin:10px 0 0;padding:9px 11px;background:#F4F7F9;border:1px solid #D5DDE2;border-left:3px solid #5B707E;
+    border-radius:8px;font-size:11.5px;line-height:1.75;color:#3D515F}
+  .src b{color:#1F3341}
+  .src code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#fff;border:1px solid #E3E9EC;border-radius:4px;padding:0 3px}
 </style>
 </head>
 <body>
@@ -171,6 +175,18 @@
       <li>差 Δ=r₂−r₁ から、角度・度分秒・mm/m・mm/100mm・こう配 1:N が一度に出ます。</li>
       <li>「ガタの影響」タブでは、穴とのすき間で許されるロッキング量を出し、その読みが本当に傾きか（測定が有効か）を判定できます。</li>
     </ol>
+    <div class="src">
+      <b>計算のしかた</b>（「どうやって出しているの？」と聞かれたとき用）<br>
+      傾きは<b>すべて「勾配 t（縦／横）」に直してから</b>、各単位へ変換しています。<br>
+      ・勾配 … <code>t = 高低差 / 距離</code>（無次元）<br>
+      ・角度 … <code>θ = atan(t)</code>（度は <code>×180/π</code>、度分秒にも変換）<br>
+      ・mm/m … <code>t × 1000</code>　　・mm/100mm … <code>t × 100</code><br>
+      ・「1/○」表記 … <code>1 / |t|</code>（t=0 のときは ∞）<br>
+      ・rad … <code>atan(t)</code> をそのまま（指数表記で表示）<br>
+      ・指定長さでのずれ量 … <code>|t| × 対象の長さ</code><br>
+      角度が小さいうちは <code>atan(t) ≒ t</code> なので勾配と角度[rad]はほぼ同じ値ですが、<b>大きい角度では一致しません</b>。このツールは近似せず atan で計算しています。<br>
+      水準器やダイヤルゲージの読みは<b>器具の目盛の単位（mm/m か 秒か）</b>を確かめてから入れてください。
+    </div>
     <div class="gx">
       <h4>例 ── スパン200・読み差0.20</h4>
       <div class="gxin">

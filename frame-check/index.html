@@ -255,6 +255,10 @@
     text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
   .backlink:active{background:#EEF2F4}
   @media print{.backlink{display:none}}
+  .src{margin:10px 0 0;padding:9px 11px;background:#F4F7F9;border:1px solid #D5DDE2;border-left:3px solid #5B707E;
+    border-radius:8px;font-size:11.5px;line-height:1.75;color:#3D515F}
+  .src b{color:#1F3341}
+  .src code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#fff;border:1px solid #E3E9EC;border-radius:4px;padding:0 3px}
 </style>
 </head>
 <body>
@@ -273,6 +277,15 @@
       <li>加工面ごとに<b>上面/下面</b>と<b>仕上がり高さ</b>を決め、各点の<b>実測高さ</b>を「点を追加」で足します。</li>
       <li>上面は 代＝実測−仕上がり、下面は 代＝仕上がり−実測。<b>全点でいちばん少ない削り代</b>が合否を決めます。対角差やねじれも判定でき、記録はPDFで残せます。</li>
     </ol>
+    <div class="src">
+      <b>計算のしかた</b>（「どうやって出しているの？」と聞かれたとき用）<br>
+      枠（長方形）の直角の狂いを、<b>2本の対角線の差</b>で見ています。<br>
+      ・理論の対角線 … <code>√(W² + H²)</code>（W=幅、H=高さ）<br>
+      ・対角差 … <code>|対角1 − 対角2|</code>　これが0なら直角、離れるほど平行四辺形に歪んでいます<br>
+      ・直角からのずれ角 … 対角差 Δ に対しておよそ <code>Δ / (2·√(W²+H²)) × (W²+H²)/(W·H)</code> の関係で効きます（枠の縦横比によって、同じ対角差でも角度への効き方が変わります）<br>
+      ・辺の長さも一緒に測っておくと、<b>「歪み」か「そもそも寸法違い」か</b>を切り分けられます<br>
+      対角差は<b>感度が高く測りやすい</b>のが利点です。角度を直接測るより、巻尺で対角を2回測るほうが早く正確に判断できます。
+    </div>
     <div class="gx">
       <h4>例 ── 上面、仕上がり100・実測102</h4>
       <div class="gxin">

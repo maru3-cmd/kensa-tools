@@ -165,6 +165,14 @@
     text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
   .backlink:active{background:#EEF2F4}
   @media print{.backlink{display:none}}
+  .dimsw{display:flex;gap:6px;padding:0 2px;margin:0 0 8px}
+  .dimsw button{flex:1;min-height:38px;padding:8px 6px;font:inherit;font-size:12px;font-weight:700;
+    border:1px solid #C9D3DA;background:#fff;color:#5B707E;border-radius:9px;cursor:pointer}
+  .dimsw button.on{background:#1F3341;color:#fff;border-color:#1F3341}
+  .src{margin:10px 0 0;padding:9px 11px;background:#F4F7F9;border:1px solid #D5DDE2;border-left:3px solid #5B707E;
+    border-radius:8px;font-size:11.5px;line-height:1.75;color:#3D515F}
+  .src b{color:#1F3341}
+  .src code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#fff;border:1px solid #E3E9EC;border-radius:4px;padding:0 3px}
 </style>
 </head>
 <body>
@@ -186,6 +194,16 @@
       <li>下に <b>ピッチ p</b> と <b>中心角 θ</b> が出ます。実測ピッチから PCD を出すときは「ピッチ → PCD」に切り替えます。</li>
       <li>座標・偏心・不等配が要るときは <b>図面まるごと穴ピッチ（TOOL-30）</b>へ。</li>
     </ol>
+    <div class="src">
+      <b>計算のしかた</b>（「どうやって出しているの？」と聞かれたとき用）<br>
+      円周上に等配された穴の、<b>弦（直線距離）</b>を出しています。<br>
+      ・穴間ピッチ … <code>p = PCD × sin( k × 180° / n )</code>　（n=穴数、k=穴とび。k=1 が隣どうし）<br>
+      ・中心角 … <code>2k × 180° / n</code>　　・弧長 … <code>(PCD/2) × 中心角[rad]</code><br>
+      ・逆算（ピッチ→PCD）… <code>PCD = p / sin( k × 180° / n )</code><br>
+      ・半径で入れたときは <code>PCD = 2R</code> に直してから同じ式を使っています（内部は常にPCD）。<br>
+      ・角度公差 ±Δ からピッチの許容範囲 … 中心角を ±Δ だけ振って上の式に入れ直しています。<br>
+      <b>ピッチは弦であって弧ではありません。</b>穴数が少ないほど（中心角が大きいほど）弦と弧の差が開くので、図面がどちらの指示か確かめてください。
+    </div>
     <div class="gx">
       <h4>例 ── PCD100 に 6穴</h4>
       <div class="gxin">
@@ -277,6 +295,10 @@
 
   <!-- 入力 -->
   <div class="inputs">
+    <div class="dimsw" id="dimsw" role="group" aria-label="PCD(直径)で入れるか半径で入れるか">
+      <button type="button" id="pdD" class="on">PCD（直径）で</button>
+      <button type="button" id="pdR">半径で</button>
+    </div>
     <div class="row">
       <span class="badge">1</span>
       <label for="in1" id="lbl1">PCD<small id="lbl1s">ピッチ円直径</small></label>
@@ -364,6 +386,7 @@
   var NS='http://www.w3.org/2000/svg';
   var CX=170, CY=125, R=88;
   var mode='fwd';          // fwd: PCD→ピッチ / rev: ピッチ→PCD
+  var pdim='d';            // d:PCD(直径)で入力 / r:半径で入力（内部は常にPCDで計算）
   var lastResult=null;
 
   function num(v){
@@ -469,7 +492,7 @@
       pl.setAttribute('marker-start','url(#arRed)');
       pl.setAttribute('marker-end','url(#arRed)');
       $('pcdBadge').style.display='none';
-      $('pcdLabel').textContent='PCD = '+resultText;
+      $('pcdLabel').textContent=(pdim==='r'?'R = ':'PCD = ')+resultText;
       $('pcdLabel').setAttribute('fill','#D63426');
       $('pcdLabel').setAttribute('font-weight','700');
     }
@@ -481,6 +504,7 @@
 
   function recalc(){
     var v1=num($('in1').value);
+    if(mode==='fwd'&&pdim==='r') v1=v1*2;      /* 半径で入れたら直径に直す */
     var n=intVal($('inN').value);
     var k=intVal($('inK').value);
     if(isNaN(k))k=1;
@@ -494,6 +518,7 @@
       th=k*360/n;
       var s=Math.sin(k*Math.PI/n);
       result = (mode==='fwd') ? v1*s : v1/s;
+      if(mode==='rev'&&pdim==='r') result=result/2;   /* 答えも半径で返す */
     }
 
     lastResult = ok ? result.toFixed(3) : null;
@@ -508,13 +533,19 @@
     var fwd=(m==='fwd');
     $('mFwd').classList.toggle('on',fwd);
     $('mRev').classList.toggle('on',!fwd);
-    $('lbl1').childNodes[0].textContent = fwd?'PCD':'実測ピッチ p';
-    $('lbl1s').textContent = fwd?'ピッチ円直径':'穴の中心間距離';
-    $('droLbl').textContent = fwd?'p':'PCD';
+    var rad=(pdim==='r');
+    $('lbl1').childNodes[0].textContent = fwd?(rad?'半径 R':'PCD'):'実測ピッチ p';
+    $('lbl1s').textContent = fwd?(rad?'ピッチ円の半径':'ピッチ円直径'):'穴の中心間距離';
+    $('droLbl').textContent = fwd?'p':(rad?'R':'PCD');
+    $('dimsw').style.display = fwd?'':'';
+    $('pdD').classList.toggle('on',!rad);
+    $('pdR').classList.toggle('on',rad);
     $('formulaTxt').textContent = fwd?'p = PCD × sin(k × 180° ÷ n)':'PCD = p ÷ sin(k × 180° ÷ n)';
     recalc();
   }
 
+  $('pdD').addEventListener('click',function(){ pdim='d'; setMode(mode); });
+  $('pdR').addEventListener('click',function(){ pdim='r'; setMode(mode); });
   $('mFwd').addEventListener('click',function(){setMode('fwd')});
   $('mRev').addEventListener('click',function(){setMode('rev')});
 
@@ -613,6 +644,10 @@
   }
   .kt-aid button:active{background:#D63426}
   @media print{.kt-aid{display:none !important}}
+  .dimsw{display:flex;gap:6px;padding:0 2px;margin:0 0 8px}
+  .dimsw button{flex:1;min-height:38px;padding:8px 6px;font:inherit;font-size:12px;font-weight:700;
+    border:1px solid #C9D3DA;background:#fff;color:#5B707E;border-radius:9px;cursor:pointer}
+  .dimsw button.on{background:#1F3341;color:#fff;border-color:#1F3341}
 </style>
 <script>
 (function(){

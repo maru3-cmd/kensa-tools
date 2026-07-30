@@ -201,6 +201,10 @@
     text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
   .backlink:active{background:#EEF2F4}
   @media print{.backlink{display:none}}
+  .src{margin:10px 0 0;padding:9px 11px;background:#F4F7F9;border:1px solid #D5DDE2;border-left:3px solid #5B707E;
+    border-radius:8px;font-size:11.5px;line-height:1.75;color:#3D515F}
+  .src b{color:#1F3341}
+  .src code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#fff;border:1px solid #E3E9EC;border-radius:4px;padding:0 3px}
 </style>
 </head>
 <body>
@@ -219,9 +223,23 @@
       <li>「軸(小文字)」か「穴(大文字)」を選び、下のチップで<b>公差域クラス</b>（h7 など）を選びます。</li>
       <li><b>呼び寸法</b>（図面の基準寸法φ）を入れると、上下の許容差と最大・最小許容寸法が出ます。</li>
       <li><b>実測値</b>を入れると、公差域内かどうかを合否判定します（空欄なら許容差だけ表示）。</li>
+      <li>実測値を入れると、<b>その寸法が同じ記号の何等級に相当するか</b>も出ます。h8 の図面で「h11相当になります」と出れば、等級を3つ外していることがひと目で分かります（IT16 まで探します）。</li>
       <li>めっき品は<b>「めっき厚(片面)」</b>を入れると、めっき前の狙い寸法が出ます（実測がめっき前なら切替で判定。図面公差はめっき後に適用）。</li>
       <li>下の<b>「はめあいのすきま」</b>で、穴×軸の組合せの<b>最大・最小すきま</b>（負ならしめしろ）が出ます。</li>
     </ol>
+    <div class="src">
+      <b>出典と計算のしかた</b>（「どうやって出しているの？」と聞かれたとき用）<br>
+      数値は <b>JIS B 0401-1／-2</b>（対応国際規格 <b>ISO 286-1／-2</b>）の<b>基本公差 IT</b> と<b>基礎となる許容差</b>の表から引いています。式は次のとおりです。<br>
+      ・軸 h … <code>es = 0</code>／<code>ei = −IT</code>　　穴 H … <code>EI = 0</code>／<code>ES = +IT</code><br>
+      ・軸 d, e, f, g … <code>es =</code> 表の値（負）／<code>ei = es − IT</code><br>
+      ・軸 k, m, p, s … <code>ei =</code> 表の値／<code>es = ei + IT</code><br>
+      ・js／JS … <code>±IT/2</code> の対称公差<br>
+      ・穴 K, M, P, S … <code>ES = −(軸の表の値) + Δ</code>／<code>EI = ES − IT</code>、<code>Δ = ITn − IT(n−1)</code>（呼び寸法3mm以下は Δ=0）<br>
+      ・上・下の限界寸法 … <code>呼び寸法 + es(ES)/1000</code>、<code>呼び寸法 + ei(EI)/1000</code>（µm→mm）<br>
+      ・はめあい … <code>最大すきま = 穴ES − 軸ei</code>、<code>最小すきま = 穴EI − 軸es</code>（負ならしめしろ）<br>
+      ・めっき … 図面公差はめっき後に適用。片面 t µm なら径は軸 −2t／穴 +2t 動くので、<b>めっき前の狙い＝図面値 − その分</b>。<br>
+      ・相当等級 … 同じ記号で等級を細かい側から順に当て、実測偏差が最初に収まった等級を表示します。IT11〜IT16 は ISO 286 の「IT6以上は5等級ごとに10倍」（IT11=10×IT6 …）の関係から出しており、<b>相当等級の判定にだけ</b>使っています。
+    </div>
     <div class="gx">
       <h4>例 ── φ20 h7 の軸</h4>
       <div class="gxin">
@@ -380,6 +398,15 @@
     9:[25,30,36,43,52,62,74,87,100,115,130,140,155],
     10:[40,48,58,70,84,100,120,140,160,185,210,230,250]
   };
+  /* IT11〜IT16 を生成する。ISO 286 では IT6 以上は5等級ごとに10倍になる
+     （IT11=10×IT6, IT12=10×IT7 … IT16=10×IT11）。「実測が何等級相当か」の
+     判定にだけ使う。図面で選べるクラスは CLASSES のまま変えていない。 */
+  (function(){
+    var g;
+    for(g=11;g<=16;g++){
+      IT[g]=IT[g-5].map(function(v){ return v*10; });
+    }
+  })();
   // 基礎となる許容差(µm)。d,e,f,g は軸の上の許容差es(負)、k,m,p,s は軸の下の許容差ei(正)
   var FUND={
     d:[-20,-30,-40,-50,-65,-80,-100,-120,-145,-170],
@@ -436,6 +463,21 @@
       }
     }
     return {es:es,ei:ei};
+  }
+
+  /* 実測偏差 dev(µm) が、同じ記号（h, e, k…）の何等級に収まるかを返す。
+     一番きつい（数字の小さい）等級から順に見て、最初に収まったものを採用する。 */
+  function equivGrade(letter,hole,ri,nominal,dev){
+    var g, d, fu=FUND[letter];
+    if(fu && ri>=fu.length) return null;         /* その記号は この寸法区分の表を持たない */
+    for(g=5;g<=16;g++){
+      if(!IT[g]) continue;
+      if(hole && 'defgh'.indexOf(letter)<0 && letter!=='js' && !IT[g-1]) continue;  /* Δ に IT(g−1) が必要 */
+      d=deviations(letter,g,hole,ri,nominal);
+      if(!isFinite(d.es)||!isFinite(d.ei)) continue;
+      if(dev>=d.ei-1e-9 && dev<=d.es+1e-9) return {grade:g, es:d.es, ei:d.ei};
+    }
+    return null;
   }
 
   function fmtUm(v){
@@ -606,14 +648,28 @@
       devEff=plPre? devUm+grow : devUm;   // めっき前実測 → めっき後予測に換算して図面公差で判定
       var ok=(devEff>=d.ei-1e-9&&devEff<=d.es+1e-9);
       var pref=plPre?('めっき前実測 '+fmtUm(devUm)+' µm → めっき後予測 '):('実測偏差 ');
+      /* 実測が同じ記号の何等級に相当するか */
+      var eq=equivGrade(p.letter,isHole,ri,n,devEff), eqTxt='';
+      if(eq){
+        var eqCls=dispClass(p.letter+eq.grade);
+        if(eq.grade>p.grade){
+          eqTxt='<br><b>'+eqCls+'相当になります</b>（'+eqCls+' は '+fmtUm(eq.es)+' / '+fmtUm(eq.ei)+' µm）';
+        }else if(eq.grade<p.grade){
+          eqTxt='<br>'+eqCls+'相当（図面より'+(p.grade-eq.grade)+'等級きつい側に入っています）';
+        }else{
+          eqTxt='<br>'+eqCls+' の範囲に収まっています';
+        }
+      }else{
+        eqTxt='<br>この記号の表（IT16まで）では相当する等級が見つかりません';
+      }
       if(ok){
         res.textContent='合格';res.className='res ok';
-        $('judgeSub').textContent=pref+fmtUm(devEff)+' µm(公差域内)';
+        $('judgeSub').innerHTML=pref+fmtUm(devEff)+' µm(公差域内)'+eqTxt;
       }else{
         res.textContent='不合格';res.className='res ng';
         var over=(devEff>d.es)?('上の許容差を +'+(devEff-d.es).toFixed(1)+' µm 超過')
                              :('下の許容差を '+(d.ei-devEff).toFixed(1)+' µm 不足');
-        $('judgeSub').innerHTML=pref+fmtUm(devEff)+' µm(<b>'+over+'</b>)';
+        $('judgeSub').innerHTML=pref+fmtUm(devEff)+' µm(<b>'+over+'</b>)'+eqTxt;
       }
     }else{
       res.textContent='実測値の入力で合否判定';res.className='res none';

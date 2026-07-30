@@ -188,6 +188,10 @@
     text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
   .backlink:active{background:#EEF2F4}
   @media print{.backlink{display:none}}
+  .src{margin:10px 0 0;padding:9px 11px;background:#F4F7F9;border:1px solid #D5DDE2;border-left:3px solid #5B707E;
+    border-radius:8px;font-size:11.5px;line-height:1.75;color:#3D515F}
+  .src b{color:#1F3341}
+  .src code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#fff;border:1px solid #E3E9EC;border-radius:4px;padding:0 3px}
 </style>
 </head>
 <body>
@@ -208,6 +212,14 @@
       <li>寸法の正式な基準は 20℃（JIS B 0680）。下に<b>20℃換算値</b>と補正量が出ます。</li>
       <li>必要なら測定器側の伸び（器差）も加味できます。</li>
     </ol>
+    <div class="src">
+      <b>出典と計算のしかた</b>（「どうやって出しているの？」と聞かれたとき用）<br>
+      基準温度 20℃ は <b>JIS B 0680</b>（製品の幾何特性仕様＝GPS・標準温度）によります。<br>
+      ・20℃換算 … <code>L20 = Lt × { 1 + α × (20 − t) × 10⁻⁶ }</code>　（Lt=実測値、t=測定時の温度℃、α=線膨張係数 ×10⁻⁶/K）<br>
+      ・補正量 … <code>ΔL = L20 − Lt</code>　温度が20℃より高ければ部品は伸びているので、20℃換算値は<b>小さく</b>なります。<br>
+      ・測定器側も同じ温度で伸びているため、器差を入れる場合は<b>部品と測定器の α の差</b>で効きます … <code>ΔL = Lt × (α部品 − α測定器) × (20 − t) × 10⁻⁶</code><br>
+      ・線膨張係数の代表値（鋼 11.5、ステンレス系 16〜17、アルミ 23、黄銅 19 など ×10⁻⁶/K）は材料の一般値です。<b>正確を期すなら材料メーカーの値</b>を α に直接入れてください。
+    </div>
     <div class="gx">
       <h4>例 ── 鋼を30℃で100mm測定</h4>
       <div class="gxin">

@@ -305,6 +305,10 @@
     text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
   .backlink:active{background:#EEF2F4}
   @media print{.backlink{display:none}}
+  .src{margin:10px 0 0;padding:9px 11px;background:#F4F7F9;border:1px solid #D5DDE2;border-left:3px solid #5B707E;
+    border-radius:8px;font-size:11.5px;line-height:1.75;color:#3D515F}
+  .src b{color:#1F3341}
+  .src code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#fff;border:1px solid #E3E9EC;border-radius:4px;padding:0 3px}
 </style>
 </head>
 <body>
@@ -361,6 +365,16 @@
         <li><b>かんたん</b>＝数えた分を次々足す（5・14・8…）。<b>仕切り</b>＝行×列×満載段＋端数段。<b>組</b>＝1組の数×組数＋端数。</li>
         <li><b>数えた計</b>と<b>残り</b>が自動で出ます。合致で緑✓、入れすぎは赤。全荷札が合致すると上が「全て合致 ✓」。</li>
       </ol>
+    <div class="src">
+      <b>数え方</b>（「どうやって出しているの？」と聞かれたとき用）<br>
+      3つの数え方を用意していて、それぞれ足し算だけです。<br>
+      ・<b>かんたん</b> … 数えた分を次々足す … <code>合計 = Σ(入れた数)</code><br>
+      ・<b>仕切り</b> … 箱の仕切りで数える … <code>合計 = 行 × 列 × 満載の段数 + 端数の段の数</code><br>
+      ・<b>組</b> … まとまりで数える … <code>合計 = 1組の数 × 組数 + 端数</code><br>
+      ・確定個数との差 … <code>差 = 合計 − 確定個数</code>（＋なら数え過ぎ、−なら足りない）<br>
+      端数の段・端数の組は<b>そのまま足す</b>だけで、掛けません。仕切りで「3段満載＋4段目に12個」なら <code>6×5×3 + 12 = 102</code> です。<br>
+      計算そのものは単純なので、<b>合わないときは数え方の取り違え</b>（満載段数に端数の段を含めてしまった等）を先に確かめてください。
+    </div>
       <div class="gx">
         <h4>例</h4>
         <div class="gxin">

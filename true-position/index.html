@@ -198,6 +198,10 @@
     text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
   .backlink:active{background:#EEF2F4}
   @media print{.backlink{display:none}}
+  .src{margin:10px 0 0;padding:9px 11px;background:#F4F7F9;border:1px solid #D5DDE2;border-left:3px solid #5B707E;
+    border-radius:8px;font-size:11.5px;line-height:1.75;color:#3D515F}
+  .src b{color:#1F3341}
+  .src code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#fff;border:1px solid #E3E9EC;border-radius:4px;padding:0 3px}
 </style>
 </head>
 <body>
@@ -218,6 +222,15 @@
       <li>差（ΔX・ΔY）だけ分かっているときは、図面値を 0・0 にして実測値に差を入れてもOKです。</li>
       <li>位置度＝2×√(ΔX²+ΔY²)。これが φ 以下なら<b>合格</b>。Ⓜ（最大実体）ならボーナス公差も加味します。</li>
     </ol>
+    <div class="src">
+      <b>計算のしかた</b>（「どうやって出しているの？」と聞かれたとき用）<br>
+      位置度は<b>「ずれの半径」ではなく「ずれを直径で表した値」</b>です。ここが一番よく誤解されます。<br>
+      ・ずれ … <code>Δx = 実測X − 図面X</code>、<code>Δy = 実測Y − 図面Y</code><br>
+      ・<b>位置度 = 2 × √(Δx² + Δy²)</b>　… 直径表記なので<b>2倍</b>します<br>
+      ・合否 … <code>位置度 ≤ 公差値</code>（図面の φ0.2 などと直接くらべます）<br>
+      ・最大実体公差（Ⓜ）が指定されているとき … 実測の穴径が最大実体寸法から離れた分だけ<code>ボーナス公差</code>が加算されます … <code>使える公差 = 図面の公差 + (実測径 − 最大実体寸法)</code><br>
+      ・<b>√(Δx²+Δy²) のまま図面値とくらべると、実際の2倍きびしく判定してしまいます。</b>位置度がNGと言われたときは、まずこの2倍を掛けているかを確かめてください。
+    </div>
     <div class="gx">
       <h4>例 ── ずれ ΔX0.03・ΔY0.04</h4>
       <div class="gxin">

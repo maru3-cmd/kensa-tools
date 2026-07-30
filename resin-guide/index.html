@@ -165,6 +165,10 @@
     text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
   .backlink:active{background:#EEF2F4}
   @media print{.backlink{display:none}}
+  .src{margin:10px 0 0;padding:9px 11px;background:#F4F7F9;border:1px solid #D5DDE2;border-left:3px solid #5B707E;
+    border-radius:8px;font-size:11.5px;line-height:1.75;color:#3D515F}
+  .src b{color:#1F3341}
+  .src code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#fff;border:1px solid #E3E9EC;border-radius:4px;padding:0 3px}
 </style>
 </head>
 <body>
@@ -186,6 +190,14 @@
         <li>各樹脂のカードを開くと、<b>線膨張係数・吸水・使用温度・削り粉・搬送での用途</b>が出ます。</li>
         <li>「温度補正の目安」に長さと温度差を入れると、各カードに<b>その条件での伸び</b>が出ます(厳密は温度補正ツールへ)。</li>
       </ol>
+    <div class="src">
+      <b>出典と使い方</b>（「どうやって出しているの？」と聞かれたとき用）<br>
+      このツールは<b>計算ではなく、樹脂材料の一般的な物性値を並べた早見表</b>です。<br>
+      ・比重・吸水率・耐熱・成形収縮率などは、各樹脂の<b>代表的な一般値</b>を載せています。材料メーカー・グレード・充填材（GF入りなど）で<b>大きく変わります</b>。<br>
+      ・見分けの目安（燃え方・におい・浮き沈みなど）も一般に知られた特徴で、<b>確定的な判別ではありません</b>。<br>
+      ・成形収縮率は「金型寸法に対して成形品がどれだけ縮むか」で、<code>成形品寸法 ≒ 金型寸法 × (1 − 収縮率)</code> の関係ですが、実際は肉厚・流動方向・成形条件で変わります。<br>
+      <b>受入検査や図面の判断には、材料メーカーの物性表（データシート）とロットの検査成績書を使ってください。</b>この画面は現場での当たりをつけるための早見表です。
+    </div>
       <div class="gx">
         <h4>例：水に浮いて、燃やすとろうそくの匂い</h4>
         <div class="gxin">

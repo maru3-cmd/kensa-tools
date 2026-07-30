@@ -207,6 +207,10 @@
     text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
   .backlink:active{background:#EEF2F4}
   @media print{.backlink{display:none}}
+  .src{margin:10px 0 0;padding:9px 11px;background:#F4F7F9;border:1px solid #D5DDE2;border-left:3px solid #5B707E;
+    border-radius:8px;font-size:11.5px;line-height:1.75;color:#3D515F}
+  .src b{color:#1F3341}
+  .src code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#fff;border:1px solid #E3E9EC;border-radius:4px;padding:0 3px}
 </style>
 </head>
 <body>
@@ -274,6 +278,15 @@
         <li>その2穴に<b>同じピン</b>を入れ、ピン頂点の高さを読む。差がゼロになるまで追い込む。</li>
         <li><b>部品を動かさずに</b>、B側の対応する2穴も同じピンで読む。その差が Δh。</li>
       </ol>
+    <div class="src">
+      <b>計算のしかた</b>（「どうやって出しているの？」と聞かれたとき用）<br>
+      ・弧長で読むとき … <code>弧長 = r × θ</code>（θ はラジアン。度で入れた値を <code>θ×π/180</code> に直しています）<br>
+      ・弦（直線距離）で読むとき … <code>Δh = PCD × sin θ</code>　向かい合う位置のずれを直線で測る場合の関係です<br>
+      ・角度は<b>度・分・秒</b>でも入れられます（<code>1°47′24″</code> の形式）。内部では度の小数に直してから計算します<br>
+      ・角度規約は他のツールとそろえて<b>真上0°・時計回りが＋</b>です<br>
+      ・図の表示は絶対値60°までに丸めています（それ以上は図が読めなくなるため）。<b>数値は丸めずに計算しています</b>。<br>
+      弧長と弦は θ が小さいうちはほぼ同じ値になりますが、角度が大きくなると離れます。<b>図面がどちらで指示しているか</b>を確かめて使ってください。
+    </div>
       <p>同じピンなら径が打ち消し合うので、頂点同士の差＝穴中心同士の差になります。</p>
       <p class="gset">実測mm → 角度 ／ mmの測り方: 2穴の高さ差 ／ PCD 100 ／ Δh 0.5</p>
       <p class="gread">読み方：位相角 ≈ <b>0.287°</b>。Δh = PCD×sin(位相角) で、穴1つぶんの円周ズレはこの半分（0.250mm）です。</p>

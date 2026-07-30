@@ -181,6 +181,14 @@
     text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
   .backlink:active{background:#EEF2F4}
   @media print{.backlink{display:none}}
+  .dimsw{display:flex;gap:6px;padding:0 2px;margin:0 0 8px}
+  .dimsw button{flex:1;min-height:38px;padding:8px 6px;font:inherit;font-size:12px;font-weight:700;
+    border:1px solid #C9D3DA;background:#fff;color:#5B707E;border-radius:9px;cursor:pointer}
+  .dimsw button.on{background:#1F3341;color:#fff;border-color:#1F3341}
+  .src{margin:10px 0 0;padding:9px 11px;background:#F4F7F9;border:1px solid #D5DDE2;border-left:3px solid #5B707E;
+    border-radius:8px;font-size:11.5px;line-height:1.75;color:#3D515F}
+  .src b{color:#1F3341}
+  .src code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#fff;border:1px solid #E3E9EC;border-radius:4px;padding:0 3px}
 </style>
 </head>
 <body>
@@ -204,6 +212,19 @@
       <li><b>図面が「前の穴から」で寸法を書いているとき</b>は、「1つの穴」の基準で<b>「既存の穴から」</b>を選びます。<b>距離と角度で</b>／<b>直角に振り出す</b>／<b>X・Yで</b>（基準の穴からの差）の3通りで、点をつないでいけます。同じように「PCDの穴」も<b>「既存の穴を中心に」</b>で、置いた穴を中心にした円周配置ができます。</li>
       <li>単一PCDの穴間ピッチや単純な弦長だけなら PCD穴ピッチ（TOOL-02）が手軽です。複数PCD・任意穴・点つなぎの混在はこの画面でまとめられます。</li>
     </ol>
+    <div class="src">
+      <b>計算のしかた</b>（「どうやって出しているの？」と聞かれたとき用）<br>
+      式はひとつではなく、<b>入れた部品を順に座標へ直してから、穴どうしの距離を総当たりで出す</b>手順です。角度は<b>真上0°・時計回りが＋</b>で統一しています。<br>
+      ・部品を座標にする … 単位ベクトルは <code>(x, y) = (sin θ, cos θ)</code>（真上0°の規約のため sin と cos が入れ替わります）<br>
+      　PCDの穴 … <code>中心 + (PCD/2) × (sin θk, cos θk)</code>、等配なら <code>θk = 起点角 + k×360/n</code>、不等配は入れた角度の並びをそのまま使用<br>
+      　距離と角度 … <code>原点 + L × (sin θ, cos θ)</code>　　X・Y … 入れた値そのまま<br>
+      　端面から … 外形と原点の位置から <code>左端面+X</code>／<code>下端面+Y</code> を座標に変換<br>
+      　既存の穴から … 基準の穴の座標に、上と同じ式で足す（直角に振り出すときは <code>基準の向き ± 90°</code>）<br>
+      ・穴間ピッチ … 2点の距離 <code>√((x₂−x₁)² + (y₂−y₁)²)</code> を<b>すべての組合せ</b>で計算<br>
+      ・公差判定 … 図面ピッチとの差が <code>±公差</code> に入っているかを見るだけです<br>
+      ・座標は<b>途中計算</b>で、丸めずに保持しています（表示だけ小数3桁）。検査では通常見る必要はありません。<br>
+      規格ではなく<b>純粋な幾何計算</b>なので、電卓でも同じ値になります。合わないときは角度の向き（時計回り＋）と起点（真上0°）を確かめてください。
+    </div>
     <div class="gx">
       <h4>例 ── PCD100 に 6穴（等配）</h4>
       <div class="gxin">
@@ -326,8 +347,12 @@
       <div><label class="f">中心X（原点から右＋）</label><input type="text" inputmode="decimal" autocomplete="off" id="fCx" placeholder="0"></div>
       <div><label class="f">中心Y（上＋）</label><input type="text" inputmode="decimal" autocomplete="off" id="fCy" placeholder="0"></div>
     </div>
-    <div class="row" style="margin-top:8px">
-      <div><label class="f">PCD</label><input type="text" inputmode="decimal" autocomplete="off" id="fPcd" placeholder="100" data-fk="dist"></div>
+    <div class="chips2" id="pcdSw" style="margin-top:8px">
+      <button type="button" class="chip2 on" data-pd="d">PCD（直径）で</button>
+      <button type="button" class="chip2" data-pd="r">半径で</button>
+    </div>
+    <div class="row" style="margin-top:6px">
+      <div><label class="f" id="lbPcd">PCD</label><input type="text" inputmode="decimal" autocomplete="off" id="fPcd" placeholder="100" data-fk="dist"></div>
       <div><label class="f">回り方向</label>
         <div class="chips2" id="cDirChips" style="margin-top:3px">
           <button type="button" class="chip2 on" data-cd="1">時計回り</button>
@@ -701,7 +726,7 @@ function syncWorkFields(){
 
 /* ── フォーム状態 ── */
 var FS={type:"circle", cBase:"org", cMode:"eq", cDir:1, angMode:"rel",
-        hBase:"org", hPlace:"xy", hRef:"", hSide:1, cRef:"",
+        hBase:"org", hPlace:"xy", hRef:"", hSide:1, cRef:"", pd:"d",
         aBase:"xy", repPi:0, repAng:"radial", repWhich:"all"};
 var editIdx=-1, focusKey="", dirAuto=true;
 
@@ -756,7 +781,7 @@ function readFormToPart(strict){
     p={t:"circle",
        cx:(FS.cBase==="xy")? fnum("fCx") : 0,
        cy:(FS.cBase==="xy")? fnum("fCy") : 0,
-       pcd:fnum("fPcd"), mode:FS.cMode, n:NaN,
+       pcd:pcdIn(), mode:FS.cMode, n:NaN,
        th0:(FS.cMode==="eq")? th0v("fTh0") : th0v("fTh0u"),
        dir:FS.cDir, angMode:FS.angMode, angs:""};
     if(p.mode==="eq") p.n=fnum("fN"); else p.angs=g("fAngs").value;
@@ -901,7 +926,7 @@ function startEdit(i){
     FS.angMode=(p.angMode==="abs")?"abs":"rel";
     FS.cBase=p.cref? "ref" : (((numOK(p.cx)&&p.cx!==0)||(numOK(p.cy)&&p.cy!==0))?"xy":"org");
     if(p.cref) FS.cRef=p.cpi+":"+p.chi;
-    setv("fPcd",p.pcd); setv("fCx",p.cx); setv("fCy",p.cy);
+    setv("fPcd", (FS.pd==="r"&&numOK(p.pcd))? p.pcd/2 : p.pcd); setv("fCx",p.cx); setv("fCy",p.cy);
     if(FS.cMode==="eq"){ setv("fN",p.n); setv("fTh0",p.th0); }
     else { g("fAngs").value=String(p.angs||""); setv("fTh0u",p.th0); }
   } else if(p.t==="hole"){
@@ -1012,6 +1037,8 @@ function renderFormFields(){
   g("fg_axis").style.display=(FS.type==="axis")?"":"none";
   var si2=selfIdx();
   if(FS.type==="circle"){
+    chipsOn("pcdSw","data-pd",FS.pd);
+    g("lbPcd").textContent=(FS.pd==="r")?"半径 R":"PCD";
     chipsOn("cModeChips","data-cm",FS.cMode);
     chipsOn("cDirChips","data-cd",FS.cDir);
     chipsOn("angModeChips","data-am",FS.angMode);
@@ -1081,7 +1108,7 @@ function buildPreview(){
     cx=(FS.cBase==="xy")? fnum("fCx"):0; cy=(FS.cBase==="xy")? fnum("fCy"):0;
     if(!numOK(cx)) cx=0; if(!numOK(cy)) cy=0;
     pv.base={x:cx,y:cy}; pv.zero=true; pv.any=true;
-    pcd=fnum("fPcd");
+    pcd=pcdIn();
     if(numOK(pcd)&&pcd>0) pv.circle={cx:cx,cy:cy,r:pcd/2};
   } else if(t==="hole"){
     if(FS.hBase==="edge"){
@@ -1155,6 +1182,7 @@ function initForm(){
     else if(b.hasAttribute("data-cm")) FS.cMode=b.getAttribute("data-cm");
     else if(b.hasAttribute("data-cd")) FS.cDir=parseInt(b.getAttribute("data-cd"),10);
     else if(b.hasAttribute("data-am")) FS.angMode=b.getAttribute("data-am");
+    else if(b.hasAttribute("data-pd")) FS.pd=b.getAttribute("data-pd");
     else if(b.hasAttribute("data-hp")){ FS.hPlace=b.getAttribute("data-hp"); if(FS.hPlace==="perp"){ dirAuto=true; } }
     else if(b.hasAttribute("data-hs")) FS.hSide=parseInt(b.getAttribute("data-hs"),10);
     else if(b.hasAttribute("data-ra")) FS.repAng=b.getAttribute("data-ra");
@@ -1202,6 +1230,8 @@ function parseNums(s){
   return out;
 }
 function uvec(th){ return {x:Math.sin(th*RAD), y:Math.cos(th*RAD)}; }  /* 0°=真上・時計回りが＋ */
+/* PCD欄の読み取り。「半径で」のときは直径に直す（内部は常に PCD で持つ） */
+function pcdIn(){ var v=fnum("fPcd"); return (FS.pd==="r"&&numOK(v))? v*2 : v; }
 function angOf(dx,dy){ return Math.atan2(dx,dy)/RAD; }                 /* 座標差 → 0°=真上・時計回り＋ */
 function pos(c,th){ var R=c.pcd/2; return {x:c.cx + c.dir*R*Math.sin(th*RAD), y:c.cy + R*Math.cos(th*RAD)}; }
 
@@ -1839,6 +1869,10 @@ renderParts(); calc(); initForm(); calc();
   }
   .kt-aid button:active{background:#D63426}
   @media print{.kt-aid{display:none !important}}
+  .dimsw{display:flex;gap:6px;padding:0 2px;margin:0 0 8px}
+  .dimsw button{flex:1;min-height:38px;padding:8px 6px;font:inherit;font-size:12px;font-weight:700;
+    border:1px solid #C9D3DA;background:#fff;color:#5B707E;border-radius:9px;cursor:pointer}
+  .dimsw button.on{background:#1F3341;color:#fff;border-color:#1F3341}
 </style>
 <script>
 (function(){
