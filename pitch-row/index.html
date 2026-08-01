@@ -162,7 +162,7 @@
       <li>等間隔のはずの穴なら「等ピッチ判定」で、各穴のズレ（累積）と合否が出ます。</li>
     </ol>
     <div class="src">
-      <b>計算のしかた</b>（「どうやって出しているの？」と聞かれたとき用）<br>
+      <b>計算のしかた</b><br>
       一列に並んだ穴の<b>位置（累積）</b>と<b>隣どうしのピッチ</b>を行き来させ、等ピッチからのずれを出しています。<br>
       ・位置 → ピッチ … <code>pᵏ = 位置ᵏ₊₁ − 位置ᵏ</code><br>
       ・ピッチ → 位置 … <code>位置ᵏ = 位置₁ + Σ p</code>（累積和）<br>
@@ -171,6 +171,7 @@
       ・位置のずれ … <code>ずれᵏ = 実測位置ᵏ − 理想ᵏ</code>　最大値を <code>±</code> で表示<br>
       ・ピッチのばらつき … <code>|pᵏ − p₀|</code> の最大値<br>
       ・合否 … ずれが <code>±公差</code> に入っているか<br>
+      <b>逆パターン（図面がピッチで書かれているとき）</b>は「穴間ピッチを入れる」に切り替え、ピッチを順に入れると<b>端（または穴1）からの累積位置</b>が出ます。その数字をコンベックスで追えます。「端から1穴目まで」を入れれば端面基準、空欄なら穴1が0になります。<br>
       <b>「ピッチは全部合っているのに位置がずれる」</b>ことがあります。ピッチの誤差が同じ向きに積み上がると累積するためで、この表は<b>その積み上がりを見るためのもの</b>です。図面がピッチ指示か累積寸法指示かで、どちらを見るべきかが変わります。
     </div>
     <div class="gx">
@@ -211,6 +212,14 @@
 <div class="card">
   <h2>並び寸法の入力<span class="tag" id="cnt">0 穴</span></h2>
   <div class="banner">図面の数字を上から順に。1つ入れて<b>キーボードの「次へ／Enter」</b>を押すと、確定して次の欄が自動で増えます。数字パッドから指を離さず打てます。まとめて貼り付けたいときは下の「まとめ入力」も使えます。</div>
+  <div class="chips2" id="modeChips" style="display:flex;gap:6px;margin-bottom:8px">
+    <button type="button" id="mPos" style="flex:1;min-height:38px;font:inherit;font-size:12px;font-weight:700;border:1px solid #1F3341;background:#1F3341;color:#fff;border-radius:9px;cursor:pointer" onclick="setMode('pos')">端からの位置を入れる</button>
+    <button type="button" id="mPit" style="flex:1;min-height:38px;font:inherit;font-size:12px;font-weight:700;border:1px solid #C9D3DA;background:#fff;color:#5B707E;border-radius:9px;cursor:pointer" onclick="setMode('pit')">穴間ピッチを入れる</button>
+  </div>
+  <div class="row" id="edge0Row" style="display:none;margin-bottom:6px">
+    <div><label class="f">端から1穴目まで（空欄なら穴1を0に）</label><input type="text" inputmode="decimal" autocomplete="off" id="edge0" placeholder="―" oninput="calc();persist()"></div>
+    <div></div>
+  </div>
   <div class="row" style="margin-bottom:6px">
     <div><label class="f">方向のラベル（任意）</label><input type="text" id="axis" placeholder="X方向 / 上端から など" oninput="persist()"></div>
     <div style="flex:none;width:130px"><label class="f">数え方</label>
@@ -236,7 +245,7 @@
 
 <div class="card">
   <h2>並び図<span class="tag">端面が原点</span></h2>
-  <figure><svg id="fig" viewBox="0 0 300 120" role="img" aria-label="端面からの穴位置とピッチの並び図"></svg><figcaption>◤ ＝端面（原点）</figcaption></figure>
+  <figure><svg id="fig" viewBox="0 0 300 120" role="img" aria-label="端面からの穴位置とピッチの並び図"></svg><figcaption id="figCap">◤ ＝端面（原点）</figcaption></figure>
 </div>
 
 <div class="card">
@@ -258,7 +267,7 @@
   <h2>基準穴からの距離<span class="tag">どの穴からでも</span></h2>
   <div class="row" style="margin-bottom:6px">
     <div><label class="f">基準にする穴</label>
-      <select id="baseHole" onchange="calc();persist()"></select>
+      <select id="baseHole"></select>
     </div>
   </div>
   <div class="tblwrap">
@@ -268,6 +277,7 @@
     </table>
   </div>
   <div class="hint">基準の穴を切り替えれば「穴3から穴7まで」のような任意の2穴間もすぐ読めます。</div>
+  <button class="btn sm" type="button" style="margin-top:8px" onclick="copyPositions()">位置の一覧をコピー（コンベックス読み用）</button>
   <details>
     <summary>全穴間マトリクス（総当たり）</summary>
     <div class="tblwrap" style="margin-top:8px"><table class="mat" id="matTbl"></table></div>
@@ -341,7 +351,34 @@ function toast(msg){
 function numOK(v){ return typeof v==="number" && isFinite(v); }  /* isFinite(null)===true なので型も見る */
 function nf(v,d){ return numOK(v)? v.toFixed(d==null?1:d) : "-"; }
 
-var S={ pos:[], base:0 };            // pos: 入力された位置(生の順) / base: 基準穴index(表示順)
+var S={ pos:[], base:0, mode:"pos" };  // pos: 位置またはピッチ(モード依存) / base: 基準穴index / mode: pos=位置入力, pit=ピッチ入力
+
+/* ピッチ入力モード：入れたピッチを端からの位置(累積)に直す。
+   端から1穴目までが空欄なら穴1を0として累積する。 */
+function derivedPositions(){
+  if(S.mode!=="pit"){ return S.pos.slice(); }
+  var e0=parseFloat(g("edge0").value);
+  var cur=numOK(e0)? e0 : 0;
+  var out=[cur];
+  S.pos.forEach(function(p){ if(numOK(p)){ cur+=p; out.push(cur); } });
+  return out;
+}
+function setMode(m){
+  if(S.mode===m) return;
+  S.mode=(m==="pit")?"pit":"pos";
+  S.pos=[NaN]; S.base=0; g("bulk").value="";
+  syncMode(); renderRows(); calc(); persist(); focusRow(0);
+}
+function syncMode(){
+  var pit=(S.mode==="pit");
+  var on ="flex:1;min-height:38px;font:inherit;font-size:12px;font-weight:700;border:1px solid #1F3341;background:#1F3341;color:#fff;border-radius:9px;cursor:pointer";
+  var off="flex:1;min-height:38px;font:inherit;font-size:12px;font-weight:700;border:1px solid #C9D3DA;background:#fff;color:#5B707E;border-radius:9px;cursor:pointer";
+  g("mPos").style.cssText=pit?off:on;
+  g("mPit").style.cssText=pit?on:off;
+  g("edge0Row").style.display=pit?"":"none";
+  g("bulk").placeholder=pit? "25, 25, 25, 40" : "5, 108.5, 212, 324.5";
+  g("figCap").textContent=pit? (numOK(parseFloat(g("edge0").value))? "◤ ＝端面（原点）" : "◤ ＝穴1（原点）") : "◤ ＝端面（原点）";
+}
 
 /* ─ まとめ入力の解釈 ─ */
 function applyBulk(){
@@ -360,11 +397,12 @@ function clearAll(){ S.pos=[NaN]; S.base=0; g("bulk").value=""; renderRows(); ca
 
 function renderRows(){
   var tb=g("vtBody"), h="";
+  var pit=(S.mode==="pit");
   var cntFinite=0; S.pos.forEach(function(v){ if(numOK(v)) cntFinite++; });
-  g("cnt").textContent=cntFinite+" 穴";
+  g("cnt").textContent=(pit? (cntFinite? cntFinite+1:0) : cntFinite)+" 穴";
   S.pos.forEach(function(v,i){
-    h+='<tr><td>'+(i+1)+'</td>'
-      +'<td><input type="text" inputmode="decimal" autocomplete="off" enterkeyhint="next" placeholder="端面からの寸法" value="'+(numOK(v)?v:"")+'" oninput="editRow('+i+',this)" onkeydown="rowKey('+i+',this,event)"></td>'
+    h+='<tr><td>'+(pit? (i+1)+'→'+(i+2) : (i+1))+'</td>'
+      +'<td><input type="text" inputmode="decimal" autocomplete="off" enterkeyhint="next" placeholder="'+(pit?'前の穴からのピッチ':'端面からの寸法')+'" value="'+(numOK(v)?v:"")+'" oninput="editRow('+i+',this)" onkeydown="rowKey('+i+',this,event)"></td>'
       +'<td><button class="xbtn" onclick="delRow('+i+')" aria-label="削除">×</button></td></tr>';
   });
   if(!S.pos.length) h='<tr><td colspan="3" style="text-align:center;color:#8FA2AF;padding:12px">「＋1行追加」かまとめ入力で始めてください</td></tr>';
@@ -388,12 +426,14 @@ function rowKey(i, el, ev){
 
 /* ─ 表示用に並べた配列 { pos, orig(元の穴番号) } ─ */
 function ordered(){
-  var a=[]; S.pos.forEach(function(v,i){ if(numOK(v)) a.push({pos:v,orig:i+1}); });
-  if(g("order").value==="asc") a.sort(function(x,y){return x.pos-y.pos;});
+  var src=derivedPositions();
+  var a=[]; src.forEach(function(v,i){ if(numOK(v)) a.push({pos:v,orig:i+1}); });
+  if(S.mode!=="pit" && g("order").value==="asc") a.sort(function(x,y){return x.pos-y.pos;});
   return a;
 }
 
 function calc(){
+  syncMode();
   var A=ordered(), nA=A.length;
 
   /* 基準穴セレクタ */
@@ -522,10 +562,27 @@ function prep(){
 
 /* ─ 保存 ─ */
 var KEY="pitchrow_v1";
-var IDS=["axis","order","nomP","tol","recName","recDate"];
+var IDS=["axis","order","nomP","tol","recName","recDate","edge0"];
+function copyPositions(){
+  var A=ordered();
+  if(!A.length){ toast("コピーする一覧がありません"); return; }
+  var origin=(S.mode==="pit" && !numOK(parseFloat(g("edge0").value)))? "穴1" : "端";
+  var lines=["穴\t"+origin+"から\t基準穴から"];
+  A.forEach(function(o,i){
+    var rel=o.pos-A[S.base].pos;
+    lines.push("穴"+(i+1)+"\t"+nf(o.pos)+"\t"+((i===S.base)?"0.0":((rel>0?"+":"")+nf(rel))));
+  });
+  var txt=lines.join("\n");
+  try{ if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt); toast("コピーしました"); return; } }catch(e){}
+  try{
+    var ta=document.createElement("textarea"); ta.value=txt; ta.style.position="fixed"; ta.style.opacity="0";
+    document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta);
+    toast("コピーしました");
+  }catch(e2){ toast("コピーできませんでした"); }
+}
 function persist(){
   try{
-    var o={pos:S.pos, base:S.base, v:{}};
+    var o={pos:S.pos, base:S.base, mode:S.mode, v:{}};
     IDS.forEach(function(i){ o.v[i]=g(i).value; });
     localStorage.setItem(KEY, JSON.stringify(o));
   }catch(e){}
@@ -536,6 +593,8 @@ function restore(){
     /* JSON保存では NaN が null に化けるため、数値以外は NaN に戻す */
     S.pos=(o.pos||[]).map(function(v){ return numOK(v)? v : NaN; });
     S.base=o.base||0;
+    S.mode=(o.mode==="pit")?"pit":"pos";
+    syncMode();
     if(o.v) IDS.forEach(function(i){ if(o.v[i]!=null&&o.v[i]!=="") g(i).value=o.v[i]; });
   }catch(e){}
 }

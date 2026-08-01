@@ -195,7 +195,7 @@
       <li>座標・偏心・不等配が要るときは <b>図面まるごと穴ピッチ（TOOL-30）</b>へ。</li>
     </ol>
     <div class="src">
-      <b>計算のしかた</b>（「どうやって出しているの？」と聞かれたとき用）<br>
+      <b>計算のしかた</b><br>
       円周上に等配された穴の、<b>弦（直線距離）</b>を出しています。<br>
       ・穴間ピッチ … <code>p = PCD × sin( k × 180° / n )</code>　（n=穴数、k=穴とび。k=1 が隣どうし）<br>
       ・中心角 … <code>2k × 180° / n</code>　　・弧長 … <code>(PCD/2) × 中心角[rad]</code><br>
@@ -540,6 +540,8 @@
     $('dimsw').style.display = fwd?'':'';
     $('pdD').classList.toggle('on',!rad);
     $('pdR').classList.toggle('on',rad);
+    $('pdD').textContent = fwd? 'PCD（直径）で' : '答えをPCDで';
+    $('pdR').textContent = fwd? '半径で' : '答えを半径で';
     $('formulaTxt').textContent = fwd?'p = PCD × sin(k × 180° ÷ n)':'PCD = p ÷ sin(k × 180° ÷ n)';
     recalc();
   }
