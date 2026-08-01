@@ -194,6 +194,38 @@
     text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
   .backlink:active{background:#EEF2F4}
   @media print{.backlink{display:none}}
+  /* 早見ボタン：キリ径 / ボルト呼び径（v54） */
+  .hide{display:none !important}
+  .picks{display:flex;gap:6px;margin:2px 0 7px 34px;flex-wrap:wrap}
+  .picks button{flex:0 0 auto;padding:7px 13px;font:inherit;font-size:11.5px;font-weight:700;
+    border:1px solid #C9D3DA;background:#fff;color:#5B707E;border-radius:8px;cursor:pointer;min-height:34px}
+  .picks button.on{background:#1F3341;color:#fff;border-color:#1F3341}
+  .pnl{margin:0 0 9px 34px;padding:9px 10px;background:#F4F7F9;border:1px solid #D5DDE2;border-radius:9px}
+  .pnl .grd{display:flex;gap:5px;margin-bottom:8px}
+  .pnl .grd button{flex:1;padding:6px 2px;font:inherit;font-size:10.5px;font-weight:700;
+    border:1px solid #C9D3DA;background:#fff;color:#5B707E;border-radius:7px;cursor:pointer;min-height:32px}
+  .pnl .grd button.on{background:#1F3341;color:#fff;border-color:#1F3341}
+  .pgrid{display:flex;flex-wrap:wrap;gap:5px}
+  .pgrid button{width:52px;padding:5px 0;font:inherit;font-size:12.5px;font-weight:700;
+    border:1px solid #C9D3DA;background:#fff;color:#1F3341;border-radius:7px;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;gap:1px;min-height:36px}
+  .pgrid button em{font-style:normal;font-size:9.5px;font-weight:600;color:#5B707E}
+  .pgrid button.on{background:#1F3341;color:#fff;border-color:#1F3341}
+  .pgrid button.on em{color:#B9C6CD}
+  .pnote{font-size:10.5px;line-height:1.65;color:#5B707E;margin-top:8px}
+  .pnote b{color:#B23B2E}
+  .npick{width:34px;height:34px;flex:none;border-radius:8px;border:1.5px solid var(--ink);
+    background:var(--sheet);color:var(--ink);font-size:13px;font-weight:700;line-height:1;cursor:pointer}
+  .npick.on{background:var(--ink);color:#fff}
+  /* 穴径を加味したノギスの読み（v53） */
+  .rd{margin-top:11px;border-top:1px solid #2a3034;padding-top:10px;
+      display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;text-align:center}
+  .rd.off{display:none}
+  .rd div{display:flex;flex-direction:column;gap:3px;min-width:0}
+  .rd span{color:#7d8a91;font-size:10.5px;font-weight:700;letter-spacing:.06em}
+  .rd b{font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;font-variant-numeric:tabular-nums;
+        font-size:19px;font-weight:600;color:#C9D2D7;letter-spacing:-.01em}
+  .rd b.hi{color:var(--dro-red)}
   .src{margin:10px 0 0;padding:9px 11px;background:#F4F7F9;border:1px solid #D5DDE2;border-left:3px solid #5B707E;
     border-radius:8px;font-size:11.5px;line-height:1.75;color:#3D515F}
   .src b{color:#1F3341}
@@ -217,6 +249,8 @@
       <li>半径が違うときは「異半径」に切り替え、<b>r₁・r₂・θ</b>を入れます（余弦定理）。</li>
       <li>図面が<b>直径（φ・PCD）で書かれている</b>ときは、上の<b>「直径で入れる」</b>を押してからその数字をそのまま入れてください。半分にする計算は要りません。</li>
       <li>角度は <b>60</b> でも <b>60 30</b>（度 分）でも入れられます（入力欄の下のボタンで10進／度分秒を切替）。下に穴間ピッチ L が出ます。</li>
+      <li><b>穴径</b>（キリ径）を入れると、下に<b>ノギスを当てたときの読み</b>（外−外・内−内）が中心間と並んで出ます。電卓で足し引きする必要はありません。穴の大きさが違うときは<b>「穴ごとに指定」</b>へ。</li>
+      <li>穴径は<b>「キリ（バカ穴）」「M（ねじ下穴）」のボタン</b>からも選べます。<b>キリ</b>はボルトを通す穴（M8なら9キリ）、<b>M</b>はめねじの下穴（M8なら6.8）です。押したときだけ一覧が開くので画面は伸びません。</li>
       <li>角度に <b>±公差</b>（例 ±0.2°）が付いているときは、いちばん下の<b>「角度公差 → ピッチの許容範囲」</b>へ。実測ピッチを入れると合否も出ます。</li>
     </ol>
     <div class="src">
@@ -227,8 +261,17 @@
       ・直径で入れたときは <code>R = φ/2</code> に直してから同じ式を使っています（内部は常に半径）。<br>
       ・PCD 表示 … <code>2R</code>　　・弧長 … <code>R × θ[rad]</code><br>
       ・角度公差 ±Δ からピッチの許容範囲 … θ を ±Δ 振って上の式に入れ直しています。<br>
-      同半径の式は余弦定理の特別な場合（r₁=r₂）で、<code>√(2R²−2R²cos θ) = 2R·sin(θ/2)</code> と同じものです。<b>ピッチは弦であって弧ではありません。</b>
-    </div>
+      同半径の式は余弦定理の特別な場合（r₁=r₂）で、<code>√(2R²−2R²cos θ) = 2R·sin(θ/2)</code> と同じものです。<b>ピッチは弦であって弧ではありません。</b><br>
+      ・<b>「キリ（バカ穴）」の出典</b> … JIS B 1001:1985 付表「ボルト穴径 dh」。1級(密)・2級(中)・3級(粗)を選べます（既定は2級）。
+        <b>M12・M14・M16 は旧JIS(1968)では 14・16・18</b> で、1985年版で 13.5・15.5・17.5 に変わりました。旧い値の図面もあるので確かめてください。<br>
+      ・<b>「M（ねじ下穴）」の出し方</b> … 並目の下穴。切削タップは <code>D − P</code>（ひっかかり率およそ92%）の一般的な下穴表の値、
+        転造タップは <code>下穴 = D − η×P/147</code>（η=65%、ねじ下穴・ひっかかり率(TOOL-20) と同じ式）を 0.1 に丸めた値です。
+        <b>下穴は材質やひっかかり率で変わります。</b>実際に開いている穴を測って入れるのが確実です。<br>
+      ・ノギスの読み … <code>外−外 = 中心間 + (d₁+d₂)/2</code>、<code>内−内 = 中心間 − (d₁+d₂)/2</code>。
+        穴径が同じなら、その径をそのまま足し引きすることになります。<br>
+      ・実測の欄は、穴径を入れてあれば<b>外−外・内−内・中心間のどれで測ったかを自動で見分けます</b>。
+        読みの差は穴径ぶん（φ9なら9mm）あるのに公差は0.1mm台なので、取り違えようがありません。<br>
+</div>
     <div class="gx">
       <h4>例 ── 半径50・角度60°</h4>
       <div class="gxin">
@@ -424,6 +467,29 @@
         </div>
       </div>
     </div>
+
+    <div class="dimsw" id="hdSw" role="group" aria-label="穴径の入れ方" style="margin-top:10px">
+      <button type="button" id="hdU" class="on">穴径は一律</button>
+      <button type="button" id="hdP">穴ごとに指定</button>
+    </div>
+    <div class="row" id="rowHdS">
+      <span class="badge">⌀</span>
+      <label for="hdS">穴径<small>キリ径。入れるとノギスの読みが出ます</small></label>
+      <input id="hdS" type="text" inputmode="decimal" autocomplete="off" placeholder="9">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row" id="rowHdA" style="display:none">
+      <span class="badge">⌀</span>
+      <label for="hdA">穴Aの径<small>異半径のときは r₁ 側の穴</small></label>
+      <input id="hdA" type="text" inputmode="decimal" autocomplete="off" placeholder="9">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row" id="rowHdB" style="display:none">
+      <span class="badge">⌀</span>
+      <label for="hdB">穴Bの径<small>異半径のときは r₂ 側の穴</small></label>
+      <input id="hdB" type="text" inputmode="decimal" autocomplete="off" placeholder="11">
+      <span class="unit">mm</span>
+    </div>
   </div>
 
   <!-- 結果 -->
@@ -437,6 +503,12 @@
       <span>弧長 s = r×θ: <b id="vArc">―</b> mm</span>
       <span>PCD: <b id="vPcd">―</b> mm</span>
     </div>
+    <div class="rd off" id="rdBox">
+      <div><span>中心間</span><b id="rdC">―</b></div>
+      <div><span>外−外</span><b id="rdO" class="hi">―</b></div>
+      <div><span>内−内</span><b id="rdI">―</b></div>
+    </div>
+    <div class="dro-sub" id="rdNote"></div>
     <div class="dro-foot">
       <span class="formula" id="formulaTxt">L = 2·r·sin(θ/2)</span>
       <button class="copy" id="copyBtn" type="button">コピー</button>
@@ -466,6 +538,7 @@
       <span class="dro-unit">mm</span>
     </div>
     <div class="dro-sub" id="tolSub"><span>θ の振れ幅 = ―</span></div>
+    <div class="dro-sub" id="tolRd"></div>
     <div class="dro-sub" id="tolJdg" style="display:none"></div>
     <div class="dro-foot">
       <span class="formula" id="tolStat">±公差(°)を入れると許容範囲が出ます</span>
@@ -535,6 +608,7 @@
         $('out').textContent='―.―――';
         $('svgLs').textContent='L = ―';
         $('vArc').textContent='―';$('vPcd').textContent='―';
+        readCalc(NaN);
         return;
       }
       var rad=th*Math.PI/180;
@@ -544,12 +618,14 @@
       $('svgLs').textContent='L = '+lastResult;
       $('vArc').textContent=(r*rad).toFixed(3);
       $('vPcd').textContent=(2*r).toFixed(3);
+      readCalc(L);
     }else{
       var r1=rv('r1'), r2=rv('r2');
       var ok2=r1>0&&r2>0&&angOk;
       if(!ok2){
         $('out').textContent='―.―――';
         $('svgL').textContent='L = ―';
+        readCalc(NaN);
         return;
       }
       var rad2=th*Math.PI/180;
@@ -557,8 +633,63 @@
       lastResult=L2.toFixed(3);
       $('out').textContent=lastResult;
       $('svgL').textContent='L = '+lastResult;
+      readCalc(L2);
     }
   }
+
+  /* ---- 穴径を加味したノギスの読み（v53） ----
+     外−外 = 中心間 + (dA+dB)/2、内−内 = 中心間 − (dA+dB)/2。
+     一律なら dA=dB なので、そのまま穴径ぶんを足し引きすることになる。      */
+  var hdMode='u';   /* u=一律 / p=穴ごと */
+  var lastReading=null;
+  function halfDia(){
+    if(hdMode==='u'){ var d=rvRaw('hdS'); return (d>0)? d/1 : NaN; }
+    var a=rvRaw('hdA'), b=rvRaw('hdB');
+    if(!(a>0)||!(b>0)) return NaN;
+    return (a+b)/2;
+  }
+  function rvRaw(id){ var v=parseFloat(($(id).value||'').replace(/\s/g,'')); return isFinite(v)? v : NaN; }
+  function diaLabel(){
+    if(hdMode==='u'){ var d=rvRaw('hdS'); return 'φ'+d.toFixed(3); }
+    return 'φ'+rvRaw('hdA').toFixed(3)+' と φ'+rvRaw('hdB').toFixed(3)+' の平均';
+  }
+  function readCalc(L){
+    var h=halfDia(), box=$('rdBox'), note=$('rdNote');
+    lastReading=null;
+    box.className='rd off';
+    if(!(h>0)){ note.textContent=(L>0)?'穴径を入れると、ノギスを当てたときの読みも出ます。':''; return; }
+    if(!(L>0)){ note.textContent=''; return; }
+    box.className='rd';
+    $('rdC').textContent=L.toFixed(3);
+    $('rdO').textContent=(L+h).toFixed(3);
+    if(L-h>0){
+      $('rdI').textContent=(L-h).toFixed(3);
+      note.textContent=diaLabel()+'。外−外＝中心間＋'+h.toFixed(3)+'、内−内＝中心間−'+h.toFixed(3);
+      lastReading='中心間 '+L.toFixed(3)+' / 外−外 '+(L+h).toFixed(3)+' / 内−内 '+(L-h).toFixed(3);
+    }else{
+      $('rdI').textContent='―';
+      note.textContent='穴どうしが重なります（中心間 '+L.toFixed(3)+' ≦ '+h.toFixed(3)+'）。内−内は測れません。';
+      lastReading='中心間 '+L.toFixed(3)+' / 外−外 '+(L+h).toFixed(3);
+    }
+  }
+  function setHdMode(m){
+    hdMode=m;
+    var u=(m==='u');
+    $('hdU').classList.toggle('on',u);
+    $('hdP').classList.toggle('on',!u);
+    $('rowHdS').style.display=u?'':'none';
+    $('rowHdA').style.display=u?'none':'';
+    $('rowHdB').style.display=u?'none':'';
+    if(window.setPickerVisible){
+      window.setPickerVisible('hdS',u);
+      window.setPickerVisible('hdA',!u);
+      window.setPickerVisible('hdB',!u);
+    }
+    recalc();
+  }
+  $('hdU').addEventListener('click',function(){ setHdMode('u'); });
+  $('hdP').addEventListener('click',function(){ setHdMode('p'); });
+  ['hdS','hdA','hdB'].forEach(function(id){ $(id).addEventListener('input',recalc); });
 
   function setTab(t){
     tab=t;
@@ -630,6 +761,7 @@
     function clr(msg){
       $('tolOut').textContent='―';
       $('tolSub').innerHTML='<span>θ の振れ幅 = ―</span>';
+      $('tolRd').textContent='';
       $('tolJdg').style.display='none';$('tolJdg').textContent='';
       $('tolStat').textContent=msg;
     }
@@ -646,12 +778,27 @@
     $('tolSub').innerHTML='<span>θ = '+th.toFixed(3)+'° ± '+fmtTol(t)+'</span>'
       +'<span>幅 '+(hi-lo).toFixed(3)+' mm</span>'
       +'<span>円周方向 ±'+arc.toFixed(3)+' mm'+(tab==='same'?'':'(穴B)')+'</span>';
+    var hh=halfDia();
+    $('tolRd').textContent = (hh>0)
+      ? ('ノギスの読み：外−外 '+(lo+hh).toFixed(3)+' 〜 '+(hi+hh).toFixed(3)
+         +((lo-hh>0)? (' ／ 内−内 '+(lo-hh).toFixed(3)+' 〜 '+(hi-hh).toFixed(3)) : ''))
+      : '';
     var m=num($('inMeasL').value), jd=$('tolJdg');
     if(m>0){
       jd.style.display='';
-      if(m<lo-1e-9) jd.innerHTML='<span>実測 '+m.toFixed(3)+' → × 小さい（下限まで +'+(lo-m).toFixed(3)+' mm）</span>';
-      else if(m>hi+1e-9) jd.innerHTML='<span>実測 '+m.toFixed(3)+' → × 大きい（上限を '+(m-hi).toFixed(3)+' mm 超過）</span>';
-      else jd.innerHTML='<span>実測 '+m.toFixed(3)+' → ○ 合格（余裕 −'+(m-lo).toFixed(3)+' / +'+(hi-m).toFixed(3)+' mm）</span>';
+      /* 穴径が分かっていれば、入れた数字が外−外か内−内か中心間かを自動で見分ける */
+      var lc=(lo+hi)/2, lbl='実測 ', mc=m;
+      if(hh>0){
+        var cd=[[Math.abs(m-lc),'ctr',m],[Math.abs(m-(lc+hh)),'out',m-hh],[Math.abs(m-(lc-hh)),'in',m+hh]];
+        var bi=0,ci;
+        for(ci=1;ci<3;ci++) if(cd[ci][0]<cd[bi][0]) bi=ci;
+        mc=cd[bi][2];
+        if(cd[bi][1]==='out') lbl='外−外 '+m.toFixed(3)+' → 中心間 ';
+        else if(cd[bi][1]==='in') lbl='内−内 '+m.toFixed(3)+' → 中心間 ';
+      }
+      if(mc<lo-1e-9) jd.innerHTML='<span>'+lbl+mc.toFixed(3)+' → × 小さい（下限まで +'+(lo-mc).toFixed(3)+' mm）</span>';
+      else if(mc>hi+1e-9) jd.innerHTML='<span>'+lbl+mc.toFixed(3)+' → × 大きい（上限を '+(mc-hi).toFixed(3)+' mm 超過）</span>';
+      else jd.innerHTML='<span>'+lbl+mc.toFixed(3)+' → ○ 合格（余裕 −'+(mc-lo).toFixed(3)+' / +'+(hi-mc).toFixed(3)+' mm）</span>';
     }else{ jd.style.display='none'; jd.textContent=''; }
     $('tolStat').textContent=(tab==='same')?'許容 L = 2·r·sin((θ±公差)/2)':'許容 L = √(r₁²+r₂²−2·r₁·r₂·cos(θ±公差))';
   }
@@ -667,10 +814,10 @@
   $('copyBtn').addEventListener('click',function(){
     if(lastResult==null){toast('先に半径（直径）と角度を入力してください');return}
     if(navigator.clipboard&&navigator.clipboard.writeText){
-      navigator.clipboard.writeText(lastResult).then(function(){toast('コピーしました')},function(){toast('コピーできませんでした')});
+      navigator.clipboard.writeText(lastReading||lastResult).then(function(){toast('コピーしました')},function(){toast('コピーできませんでした')});
     }else{
       var ta=document.createElement('textarea');
-      ta.value=lastResult;document.body.appendChild(ta);ta.select();
+      ta.value=lastReading||lastResult;document.body.appendChild(ta);ta.select();
       try{document.execCommand('copy');toast('コピーしました')}catch(e){toast('コピーできませんでした')}
       document.body.removeChild(ta);
     }
@@ -858,6 +1005,164 @@
 })();
 </script>
 
+<script>
+/* ═══ 早見ボタン：バカ穴（キリ）/ ねじ下穴（M）（v55 / TOOL-01・TOOL-02 共通）═══
+     ・キリ … ボルトを通す穴（バカ穴）。M3なら3.4キリ、M8なら9キリ。JIS B 1001:1985。
+     ・M   … めねじの下穴。M3なら2.5、M8なら6.8（切削タップ・並目）。
+     画面が縦に伸びないよう、押したときだけ一覧が開く。                        */
+(function(){
+  "use strict";
+  /* JIS B 1001:1985 付表「ボルト穴径 dh」 [呼び径, 1級(密), 2級(中), 3級(粗)] */
+  var CLR=[[3,3.2,3.4,3.6],[4,4.3,4.5,4.8],[5,5.3,5.5,5.8],[6,6.4,6.6,7],
+           [7,7.4,7.6,8],[8,8.4,9,10],[10,10.5,11,12],[12,13,13.5,14.5],
+           [14,15,15.5,16.5],[16,17,17.5,18.5],[18,19,20,21],[20,21,22,24]];
+  /* めねじ下穴（並目）[呼び径, ピッチP, 切削タップの標準下穴, 転造タップの下穴]
+     切削は D−P（＝ひっかかり率 約92%）の一般的な下穴表の値。
+     転造は TOOL-20 と同じ式 下穴 = D − η×P/147（η=65%）で求め 0.1 に丸めた値。 */
+  var TAP=[[3,0.5,2.5,2.8],[4,0.7,3.3,3.7],[5,0.8,4.2,4.6],[6,1.0,5.0,5.6],
+           [7,1.0,6.0,6.6],[8,1.25,6.8,7.4],[10,1.5,8.5,9.3],[12,1.75,10.3,11.2],
+           [14,2.0,12.0,13.1],[16,2.0,14.0,15.1],[18,2.5,15.5,16.9],[20,2.5,17.5,18.9]];
+  var CLBL=["1級 密","2級 中","3級 粗"];
+  var TLBL=["切削タップ","転造タップ"];
+  var reg={};
+
+  function fire(el){
+    var ev;
+    try{ ev=new Event("input",{bubbles:true}); }
+    catch(e){ ev=document.createEvent("Event"); ev.initEvent("input",true,true); }
+    el.dispatchEvent(ev);
+  }
+  function fmt(v){ return (Math.round(v*100)/100).toString(); }
+  function nearly(a,b){ return Math.abs(a-b)<1e-9; }
+  function rowOf(el){
+    var n=el.parentNode;
+    while(n && !(n.className && String(n.className).split(" ").indexOf("row")>=0)) n=n.parentNode;
+    return n;
+  }
+
+  function attach(inputId){
+    var inp=document.getElementById(inputId); if(!inp) return;
+    var row=rowOf(inp); if(!row || !row.parentNode) return;
+    var cGrade=1;    /* 0=1級 1=2級 2=3級 */
+    var tKind=0;     /* 0=切削 1=転造 */
+    var openTab="";
+
+    var bar=document.createElement("div");
+    bar.className="picks";
+    bar.innerHTML='<button type="button" data-t="c">キリ（バカ穴）▾</button>'+
+                  '<button type="button" data-t="t">M（ねじ下穴）▾</button>';
+
+    /* バカ穴パネル */
+    var pc=document.createElement("div"); pc.className="pnl hide";
+    var cg=document.createElement("div"); cg.className="grd";
+    var i;
+    for(i=0;i<3;i++) cg.appendChild(mkSw(CLBL,i,function(k){ cGrade=k; buildC(); sync(); },cg,1));
+    pc.appendChild(cg);
+    var cgrid=document.createElement("div"); cgrid.className="pgrid"; pc.appendChild(cgrid);
+    var cn=document.createElement("div"); cn.className="pnote";
+    cn.innerHTML="ボルトを通す穴（バカ穴）の径です。図面の「9キリ」がこれにあたります。"+
+      "出典：JIS B 1001:1985 ボルト穴径 dh。<br>"+
+      "<b>M12・M14・M16 は旧JIS(1968)では 14・16・18 でした。</b>図面や社内標準が旧い値のときは手で入れてください。";
+    pc.appendChild(cn);
+
+    /* 下穴パネル */
+    var pt=document.createElement("div"); pt.className="pnl hide";
+    var tg=document.createElement("div"); tg.className="grd";
+    for(i=0;i<2;i++) tg.appendChild(mkSw(TLBL,i,function(k){ tKind=k; buildT(); sync(); },tg,0));
+    pt.appendChild(tg);
+    var tgrid=document.createElement("div"); tgrid.className="pgrid"; pt.appendChild(tgrid);
+    var tn=document.createElement("div"); tn.className="pnote";
+    tn.innerHTML="めねじを立てる前の下穴の径です（並目）。切削は D−P、転造は ひっかかり率65% で計算した値。<br>"+
+      "<b>下穴はひっかかり率や材質で変わります。</b>実際に開いている穴を測って入れるのが確実です。"+
+      "細かく決めるときは <a href=\"../tap-drill/\" style=\"color:#5B707E\">ねじ下穴・ひっかかり率(TOOL-20)</a> へ。";
+    pt.appendChild(tn);
+
+    function mkSw(labels,k,onPick,host,def){
+      var b=document.createElement("button");
+      b.type="button"; b.textContent=labels[k];
+      if(k===def) b.className="on";
+      b.onclick=function(){
+        var bs=host.getElementsByTagName("button"),j;
+        for(j=0;j<bs.length;j++) bs[j].className=(bs[j]===b)?"on":"";
+        onPick(k);
+      };
+      return b;
+    }
+    function mkBtn(host,label,sub,val){
+      var b=document.createElement("button");
+      b.type="button";
+      b.setAttribute("data-v",String(val));
+      b.appendChild(document.createTextNode(label));
+      if(sub!=null){ var e=document.createElement("em"); e.textContent=sub; b.appendChild(e); }
+      b.onclick=function(){ inp.value=fmt(val); fire(inp); sync(); };
+      host.appendChild(b);
+    }
+    function buildC(){
+      cgrid.innerHTML="";
+      var j,v;
+      for(j=0;j<CLR.length;j++){ v=CLR[j][cGrade+1]; mkBtn(cgrid,fmt(v),"M"+CLR[j][0],v); }
+    }
+    function buildT(){
+      tgrid.innerHTML="";
+      var j,v;
+      for(j=0;j<TAP.length;j++){ v=TAP[j][tKind+2]; mkBtn(tgrid,"M"+TAP[j][0],fmt(v),v); }
+    }
+    function sync(){
+      var v=parseFloat((inp.value||"").replace(/\s/g,""));
+      var hosts=[cgrid,tgrid],h,j,bs;
+      for(h=0;h<2;h++){
+        bs=hosts[h].getElementsByTagName("button");
+        for(j=0;j<bs.length;j++){
+          bs[j].className=(isFinite(v)&&nearly(v,parseFloat(bs[j].getAttribute("data-v"))))?"on":"";
+        }
+      }
+    }
+    function open(t){
+      openTab=(openTab===t)?"":t;
+      pc.className="pnl"+((openTab==="c")?"":" hide");
+      pt.className="pnl"+((openTab==="t")?"":" hide");
+      var bs=bar.getElementsByTagName("button"),j;
+      for(j=0;j<bs.length;j++) bs[j].className=(bs[j].getAttribute("data-t")===openTab)?"on":"";
+    }
+    bar.onclick=function(e){
+      var b=e.target;
+      while(b&&b!==bar&&b.tagName!=="BUTTON") b=b.parentNode;
+      if(!b||b===bar) return;
+      open(b.getAttribute("data-t"));
+    };
+
+    row.parentNode.insertBefore(bar,row.nextSibling);
+    bar.parentNode.insertBefore(pc,bar.nextSibling);
+    pc.parentNode.insertBefore(pt,pc.nextSibling);
+    buildC(); buildT(); sync();
+    inp.addEventListener("input",sync);
+    reg[inputId]={row:row,bar:bar,pc:pc,pt:pt};
+    if(row.style.display==="none") setVisible(inputId,false);
+  }
+
+  function setVisible(id,on){
+    var r=reg[id]; if(!r) return;
+    r.bar.style.display = on? "" : "none";
+    r.pc.style.display  = on? "" : "none";
+    r.pt.style.display  = on? "" : "none";
+  }
+  window.setPickerVisible=setVisible;
+
+  var ids=["inHole","hdS","hdA","hdB"],j2;
+  for(j2=0;j2<ids.length;j2++) if(document.getElementById(ids[j2])) attach(ids[j2]);
+
+  /* 穴数 n の早見ボタン（TOOL-02 のみ）。既定は閉じておく。 */
+  var np=document.getElementById("nPick"), nc=document.getElementById("nChipsP");
+  if(np&&nc){
+    nc.className="chips nchips hide";
+    np.onclick=function(){
+      var closed=(String(nc.className).indexOf("hide")>=0);
+      nc.className=closed? "chips nchips" : "chips nchips hide";
+      np.className=closed? "step npick on" : "step npick";
+    };
+  }
+})();
+</script>
 <script>
 /* ═══ 一括消去の共通処理（全ツール共通 / 確認ダイアログは使いません）═══
      1回目 … ボタンが「もう一度押すと消去」に変わります（3秒で自動解除）
