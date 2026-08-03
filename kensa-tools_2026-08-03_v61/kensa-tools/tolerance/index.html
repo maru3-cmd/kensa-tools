@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1F3341">
+<meta name="description" content="JISはめあい公差(軸・穴)の許容差表示と実測値の合否判定。計算は端末内で完結し、入力値はどこにも送信されません。">
+<title>公差判定・公差表 | 検査計算ツール</title>
+<style>
+  :root{
+    --paper:#F2F4F5;
+    --sheet:#FFFFFF;
+    --ink:#1F3341;
+    --line:#8FA2AF;
+    --red:#D63426;
+    --dro-bg:#15181A;
+    --dro-red:#FF5A48;
+    --dro-green:#42D77D;
+    --dro-dim:#9FB0B8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI",sans-serif;
+    background:var(--paper);color:var(--ink);
+    min-height:100dvh;display:flex;flex-direction:column;align-items:center;
+    padding:0 12px calc(16px + env(safe-area-inset-bottom));
+  }
+  .wrap{width:100%;max-width:480px}
+
+  header{display:flex;align-items:baseline;justify-content:space-between;padding:14px 2px 10px}
+  header h1{font-size:16px;font-weight:700;letter-spacing:.04em}
+  header h1 small{display:block;font-size:11px;font-weight:400;color:#5B707E;letter-spacing:.08em;margin-top:2px}
+  header a{font-size:12px;color:#5B707E;text-decoration:none}
+
+  .mode-lg{
+    display:grid;grid-template-columns:1fr 1fr;
+    border:1.5px solid var(--ink);border-radius:9px;overflow:hidden;
+    margin-bottom:10px;
+  }
+  .mode-lg button{
+    font-size:13px;font-weight:700;padding:10px 4px;border:none;
+    background:var(--sheet);color:var(--ink);letter-spacing:.03em;
+  }
+  .mode-lg button.on{background:var(--ink);color:#fff}
+
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+  .chip{
+    font-size:14px;font-weight:700;padding:7px 12px;
+    border:1.5px solid var(--ink);border-radius:8px;
+    background:var(--sheet);color:var(--ink);
+    font-variant-numeric:tabular-nums;
+  }
+  .chip.on{background:var(--ink);color:#fff}
+
+  .sheet{background:var(--sheet);border:2px solid var(--ink);padding:5px}
+  .sheet-inner{border:1px solid var(--ink)}
+  .sheet svg{display:block;width:100%;height:auto}
+  .titleblock{display:flex;border-top:1px solid var(--ink);font-size:9px;letter-spacing:.06em}
+  .titleblock div{padding:3px 8px;border-right:1px solid var(--ink)}
+  .titleblock div:last-child{border-right:none;margin-left:auto}
+  .titleblock b{font-weight:700}
+
+  .inputs{margin-top:14px;display:flex;flex-direction:column;gap:10px}
+  .row{
+    display:grid;grid-template-columns:26px 1fr 130px 34px;
+    align-items:center;gap:8px;
+    background:var(--sheet);border:1px solid #D5DDE2;border-radius:10px;
+    padding:10px 12px;
+  }
+  .badge{
+    width:22px;height:22px;border-radius:50%;
+    background:var(--ink);color:#fff;font-size:12px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .row label{font-size:13px;font-weight:600}
+  .row label small{display:block;font-size:10px;font-weight:400;color:#5B707E}
+  .row input{
+    width:100%;font-size:20px;font-weight:600;text-align:right;
+    font-variant-numeric:tabular-nums;
+    border:none;border-bottom:2px solid var(--ink);
+    background:transparent;color:var(--ink);
+    padding:2px 4px;border-radius:0;outline:none;
+  }
+  .row input:focus{border-bottom-color:var(--red)}
+  .unit{font-size:12px;color:#5B707E}
+
+  .dro{
+    margin-top:16px;background:var(--dro-bg);border-radius:12px;
+    padding:14px 16px 12px;box-shadow:inset 0 2px 8px rgba(0,0,0,.5);
+  }
+  .judge{
+    display:flex;align-items:baseline;justify-content:space-between;gap:10px;
+    min-height:44px;
+  }
+  .judge .cls{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    color:#7d8a91;font-size:18px;font-weight:700;
+  }
+  .judge .res{font-size:30px;font-weight:800;letter-spacing:.15em}
+  .judge .res.ok{color:var(--dro-green);text-shadow:0 0 12px rgba(66,215,125,.4)}
+  .judge .res.ng{color:var(--dro-red);text-shadow:0 0 12px rgba(255,90,72,.45)}
+  .judge .res.none{color:#4a555b;font-size:16px;font-weight:600;letter-spacing:.05em}
+  .judge-sub{
+    text-align:right;color:#7d8a91;font-size:12px;min-height:16px;
+    font-variant-numeric:tabular-nums;margin-top:2px;
+  }
+  .judge-sub b{color:var(--dro-red);font-weight:700}
+
+  .dro-grid{
+    display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;
+    border-top:1px solid #2a3034;margin-top:10px;padding-top:10px;
+  }
+  .cellv{display:flex;flex-direction:column;align-items:flex-end;padding:4px 8px;border-radius:8px}
+  .cellv:active{background:#1e2327}
+  .cellv .k{color:#7d8a91;font-size:11px;font-weight:700;letter-spacing:.06em;align-self:flex-start}
+  .cellv .v{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:20px;font-weight:600;color:var(--dro-dim);letter-spacing:.01em;
+  }
+  .cellv .s{color:#5d6a71;font-size:10px}
+  .dro-foot{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-top:10px;border-top:1px solid #2a3034;padding-top:9px;gap:8px;
+  }
+  .statusTxt{color:#5d6a71;font-size:11px;letter-spacing:.02em}
+  .statusTxt.err{color:#FF8A7E}
+  .taphint{color:#5d6a71;font-size:11px;flex:none}
+
+  .tbl-btn{
+    margin-top:14px;width:100%;
+    font-size:13px;font-weight:700;padding:11px 4px;
+    border:1.5px solid var(--ink);border-radius:9px;
+    background:var(--sheet);color:var(--ink);letter-spacing:.05em;
+  }
+  .tbl-btn:active{background:var(--ink);color:#fff}
+  .tblWrap{margin-top:10px;display:none}
+  .tblWrap.show{display:block}
+  table.tol{
+    width:100%;border-collapse:collapse;background:var(--sheet);
+    border:2px solid var(--ink);font-size:13px;
+    font-variant-numeric:tabular-nums;
+  }
+  table.tol caption{
+    text-align:left;font-size:12px;font-weight:700;
+    padding:6px 2px;color:var(--ink);letter-spacing:.04em;
+  }
+  table.tol th,table.tol td{
+    border:1px solid var(--ink);padding:6px 8px;text-align:right;
+  }
+  table.tol th{background:#E8EDF0;font-size:11px;font-weight:700;text-align:center}
+  table.tol td:first-child{text-align:center;font-size:12px}
+  table.tol tr.hit td{background:#FCE9E7;font-weight:700}
+  .tbl-note{font-size:10px;color:#5B707E;margin-top:5px;line-height:1.6}
+
+  footer{margin-top:18px;font-size:11px;color:#5B707E;line-height:1.7;text-align:center;letter-spacing:.03em}
+
+  .toast{
+    position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);
+    background:var(--ink);color:#fff;font-size:13px;
+    padding:9px 20px;border-radius:20px;opacity:0;pointer-events:none;
+    transition:opacity .25s,transform .25s;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+  /* ── 使い方ガイド（全ツール共通） ── */
+  .guide{background:#FFFFFF;border:1px solid #D5DDE2;border-radius:12px;margin:0 0 12px;overflow:hidden}
+  .guide>summary{list-style:none;cursor:pointer;padding:12px 14px;font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.04em;display:flex;align-items:center;gap:7px}
+  .guide>summary::-webkit-details-marker{display:none}
+  .guide>summary::before{content:"?";display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#1F3341;color:#fff;font-size:11px;font-weight:700;flex:none}
+  .guide[open]>summary{border-bottom:1px solid #E3E9EC}
+  .guide .gb{padding:2px 14px 14px}
+  .guide .gb h4{font-size:11px;letter-spacing:.07em;color:#5B707E;font-weight:700;margin:13px 0 6px}
+  .guide .gb ol{margin:0;padding-left:1.2em;font-size:11.5px;line-height:1.75;color:#1F3341}
+  .guide .gb ol b{color:#1F3341}
+  .guide .gx{border-top:1px dashed #E3E9EC;margin-top:11px;padding-top:8px}
+  .guide .gx h4{margin-top:6px}
+  .guide .gxin{display:flex;gap:12px;align-items:flex-start;margin-top:4px}
+  .guide .gfig{flex:none}
+  .guide .gfig svg{width:112px;height:112px;display:block;background:#FBFCFC;border:1px solid #EDF1F3;border-radius:8px}
+  .guide .gtxt{flex:1;font-size:11.5px;line-height:1.6;color:#1F3341}
+  .guide .gtxt p{margin:0 0 7px}
+  .guide .gset{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;background:#F2F6F8;border:1px solid #E3E9EC;border-radius:6px;padding:6px 8px;color:#3A5060;line-height:1.5}
+  .guide .gread b{color:#D63426}
+  .guide .gbtn{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;font:inherit;font-size:11.5px;font-weight:600;border:1px solid #1F3341;border-radius:6px;background:#fff;color:#1F3341;cursor:pointer;margin-top:2px}
+  .guide .gbtn:active{transform:translateY(1px)}
+  @media(max-width:360px){.guide .gxin{flex-direction:column}.guide .gfig svg{width:128px;height:128px}}
+  /* 一括消去ボタン（v37 / 全ツール共通の見た目） */
+  .topclear{display:flex;justify-content:flex-end;margin:2px 2px 10px}
+  .topclear button{font-size:12px;font-weight:700;color:#B23B2E;background:#FBECEA;border:1px solid #E7B7B0;border-radius:9px;padding:7px 14px;cursor:pointer}
+  .topclear button:active{background:#F6DAD5}
+  .topclear button.arm{background:#B23B2E;color:#fff;border-color:#B23B2E}
+  .clearBtn{width:100%;font-size:13px;font-weight:700;padding:12px 4px;border:1.5px solid #C9D3DA;border-radius:10px;background:var(--sheet);color:#5B707E;letter-spacing:.05em;margin-bottom:6px;cursor:pointer}
+  .clearBtn.arm{border-color:var(--red);color:var(--red);background:#FCF0EF}
+  /* 一覧へ戻る導線：スマホで押しやすいよう、消去ボタンと同じ高さの左端に置く */
+  .topclear,.topClear{justify-content:space-between !important;align-items:center;gap:8px}
+  .topclear button,.topClear button{min-height:38px}
+  .backlink{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:8px 14px;
+    font-size:12px;font-weight:700;color:#5B707E;background:#FFFFFF;border:1px solid #C9D3DA;border-radius:9px;
+    text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
+  .backlink:active{background:#EEF2F4}
+  @media print{.backlink{display:none}}
+  .src{margin:10px 0 0;padding:9px 11px;background:#F4F7F9;border:1px solid #D5DDE2;border-left:3px solid #5B707E;
+    border-radius:8px;font-size:11.5px;line-height:1.75;color:#3D515F}
+  .src b{color:#1F3341}
+  .src code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#fff;border:1px solid #E3E9EC;border-radius:4px;padding:0 3px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>公差判定・公差表<small>JISはめあい公差(JIS B 0401 / ISO 286)</small></h1>
+  </header>
+
+  <div class="topclear"><a class="backlink" href="../index.html">≡ ツール一覧</a><button type="button" aria-label="入力をすべて消去して最初から始める" onclick="armClear(this)">すべて消去</button></div>
+
+<details class="guide noprint">
+  <summary>使い方と例を見る</summary>
+  <div class="gb">
+    <h4>使い方</h4>
+    <ol>
+      <li>「軸(小文字)」か「穴(大文字)」を選び、下のチップで<b>公差域クラス</b>（h7 など）を選びます。</li>
+      <li><b>呼び寸法</b>（図面の基準寸法φ）を入れると、上下の許容差と最大・最小許容寸法が出ます。</li>
+      <li><b>実測値</b>を入れると、公差域内かどうかを合否判定します（空欄なら許容差だけ表示）。</li>
+      <li>実測値を入れると、<b>その寸法が同じ記号の何等級に相当するか</b>も出ます。h8 の図面で「h11相当になります」と出れば、等級を3つ外していることがひと目で分かります（IT16 まで探します）。</li>
+      <li>めっき品は<b>「めっき厚(片面)」</b>を入れると、めっき前の狙い寸法が出ます（実測がめっき前なら切替で判定。図面公差はめっき後に適用）。</li>
+      <li>下の<b>「はめあいのすきま」</b>で、穴×軸の組合せの<b>最大・最小すきま</b>（負ならしめしろ）が出ます。</li>
+    </ol>
+    <div class="src">
+      <b>出典と計算のしかた</b><br>
+      数値は <b>JIS B 0401-1／-2</b>（対応国際規格 <b>ISO 286-1／-2</b>）の<b>基本公差 IT</b> と<b>基礎となる許容差</b>の表から引いています。式は次のとおりです。<br>
+      ・軸 h … <code>es = 0</code>／<code>ei = −IT</code>　　穴 H … <code>EI = 0</code>／<code>ES = +IT</code><br>
+      ・軸 d, e, f, g … <code>es =</code> 表の値（負）／<code>ei = es − IT</code><br>
+      ・軸 k, m, p, s … <code>ei =</code> 表の値／<code>es = ei + IT</code><br>
+      ・js／JS … <code>±IT/2</code> の対称公差<br>
+      ・穴 K, M, P, S … <code>ES = −(軸の表の値) + Δ</code>／<code>EI = ES − IT</code>、<code>Δ = ITn − IT(n−1)</code>（呼び寸法3mm以下は Δ=0）<br>
+      ・上・下の限界寸法 … <code>呼び寸法 + es(ES)/1000</code>、<code>呼び寸法 + ei(EI)/1000</code>（µm→mm）<br>
+      ・はめあい … <code>最大すきま = 穴ES − 軸ei</code>、<code>最小すきま = 穴EI − 軸es</code>（負ならしめしろ）<br>
+      ・めっき … 図面公差はめっき後に適用。片面 t µm なら径は軸 −2t／穴 +2t 動くので、<b>めっき前の狙い＝図面値 − その分</b>。<br>
+      ・相当等級 … 同じ記号で等級を細かい側から順に当て、実測偏差が最初に収まった等級を表示します。IT11〜IT16 は ISO 286 の「IT6以上は5等級ごとに10倍」（IT11=10×IT6 …）の関係から出しており、<b>相当等級の判定にだけ</b>使っています。
+    </div>
+    <div class="gx">
+      <h4>例 ── φ20 h7 の軸</h4>
+      <div class="gxin">
+        <div class="gfig"><svg viewBox="0 0 120 120" role="img" aria-label="軸h7の公差域が基準0から下側−21µmにある図">
+          <line x1="15" y1="45" x2="105" y2="45" stroke="#1F3341" stroke-width="1.2"/>
+          <text x="15" y="40" font-size="7.5" fill="#5B707E">0（基準寸法）</text>
+          <rect x="30" y="45" width="60" height="26" fill="#F2F6F8" stroke="#D63426" stroke-width="1.2"/>
+          <text x="60" y="62" font-size="9" fill="#D63426" text-anchor="middle">h7</text>
+          <line x1="15" y1="71" x2="105" y2="71" stroke="#8FA2AF" stroke-width="0.8" stroke-dasharray="3 2"/>
+          <text x="15" y="83" font-size="7.5" fill="#5B707E">−21µm</text>
+        </svg></div>
+        <div class="gtxt">
+          <p>φ20 の軸に h7 が指示されているときの許容差は？</p>
+          <p class="gset">軸(小文字) ／ h7 ／ 呼び寸法 20</p>
+          <p class="gread">読み方：上の許容差 <b>0</b>／下の許容差 <b>−21µm</b>、許容寸法 <b>19.979〜20.000mm</b>。</p>
+          <button class="gbtn" type="button" data-ex='{"set":[{"click":"#mShaft"},{"clickText":"h7","within":"#chips"},{"id":"fN","v":20}]}' onclick="tryExample(this)">この例を試す</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</details>
+
+
+
+  <div class="mode-lg" role="group" aria-label="軸か穴か">
+    <button type="button" id="mShaft" class="on">軸(小文字)</button>
+    <button type="button" id="mHole">穴(大文字)</button>
+  </div>
+
+  <div class="chips" id="chips"></div>
+
+  <!-- 公差域図 -->
+  <div class="sheet">
+    <div class="sheet-inner">
+      <svg id="dwg" viewBox="0 0 340 250" role="img" aria-label="基準寸法線に対する公差域と実測値の位置を示す図">
+        <defs>
+          <marker id="arRed" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L8,3 L0,6 z" fill="#D63426"/>
+          </marker>
+        </defs>
+        <!-- 基準寸法線(ゼロ線) -->
+        <line x1="24" y1="125" x2="316" y2="125" stroke="#1F3341" stroke-width="1.4" stroke-dasharray="12 3 2 3"/>
+        <text x="26" y="118" font-size="10" fill="#5B707E">0(基準寸法)</text>
+        <text x="26" y="243" font-size="10" fill="#5B707E">単位: µm(1µm = 0.001mm)</text>
+        <text x="316" y="20" font-size="10" fill="#5B707E" text-anchor="end">↑ プラス側(大きい)</text>
+        <g id="dyn"></g>
+      </svg>
+      <div class="titleblock">
+        <div><b>品名</b> 公差判定</div>
+        <div><b>方式</b> JIS B 0401</div>
+        <div>TOOL-05</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 入力 -->
+  <div class="inputs">
+    <div class="row">
+      <span class="badge">1</span>
+      <label for="fN">呼び寸法<small>図面の基準寸法(φ)</small></label>
+      <input id="fN" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row">
+      <span class="badge">2</span>
+      <label for="fM">実測値<small>測定した寸法(空欄なら許容差のみ表示)</small></label>
+      <input id="fM" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row">
+      <span class="badge">3</span>
+      <label for="fPl">めっき厚(片面)<small>空欄=なし。径では2倍で効きます</small></label>
+      <input id="fPl" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">µm</span>
+    </div>
+  </div>
+  <div class="mode-lg noprint" id="plState" style="display:none" role="group" aria-label="実測の状態">
+    <button type="button" id="plAfter" class="on">実測は めっき後</button>
+    <button type="button" id="plBefore">実測は めっき前</button>
+  </div>
+
+  <!-- 結果 -->
+  <div class="dro">
+    <div class="judge">
+      <span class="cls" id="clsTxt">h7</span>
+      <span class="res none" id="resTxt">呼び寸法を入力してください</span>
+    </div>
+    <div class="judge-sub" id="judgeSub"></div>
+    <div class="judge-sub" id="plSub"></div>
+    <div class="dro-grid">
+      <div class="cellv" id="cES"><span class="k">上の許容差</span><span class="v" id="vES">―</span><span class="s">µm</span></div>
+      <div class="cellv" id="cEI"><span class="k">下の許容差</span><span class="v" id="vEI">―</span><span class="s">µm</span></div>
+      <div class="cellv" id="cMax"><span class="k">最大許容寸法</span><span class="v" id="vMax">―</span><span class="s">mm</span></div>
+      <div class="cellv" id="cMin"><span class="k">最小許容寸法</span><span class="v" id="vMin">―</span><span class="s">mm</span></div>
+    </div>
+    <div class="dro-foot">
+      <span class="statusTxt" id="statusTxt">公差域クラスを選び、呼び寸法を入力</span>
+      <span class="taphint">値をタップでコピー</span>
+    </div>
+  </div>
+
+  <button class="tbl-btn" type="button" id="tblBtn">▼ この公差域の表を見る</button>
+  <div class="tblWrap" id="tblWrap"></div>
+
+  <button class="tbl-btn" type="button" id="fitBtn">▼ はめあいのすきま（穴×軸）を見る</button>
+  <div class="tblWrap" id="fitWrap">
+    <div class="inputs" style="margin-top:10px">
+      <div class="row" style="grid-template-columns:26px 1fr 130px 40px">
+        <span class="badge">穴</span>
+        <label for="fitHole">穴の公差域クラス</label>
+        <select id="fitHole"></select>
+        <span class="unit"></span>
+      </div>
+      <div class="row" style="grid-template-columns:26px 1fr 130px 40px">
+        <span class="badge">軸</span>
+        <label for="fitShaft">軸の公差域クラス</label>
+        <select id="fitShaft"></select>
+        <span class="unit"></span>
+      </div>
+    </div>
+    <div class="dro" style="margin-top:10px">
+      <div class="dro-grid" style="grid-template-columns:1fr 1fr">
+        <div class="cellv"><span class="k">最大すきま</span><span class="v" id="vFitMax">―</span><span class="s">µm</span></div>
+        <div class="cellv"><span class="k">最小すきま</span><span class="v" id="vFitMin">―</span><span class="s">µm</span></div>
+      </div>
+      <div class="dro-sub" id="fitKind">呼び寸法(上の欄)と組合せを選ぶと、すきまが出ます</div>
+      <div class="dro-foot"><span class="statusTxt" id="fitSub"></span></div>
+    </div>
+    <div class="tbl-note">最大すきま＝穴の最大−軸の最小 ／ 最小すきま＝穴の最小−軸の最大。<b>負の値は「しめしろ」</b>（軸の方が太い＝圧入代）。呼び寸法は上の入力と共通です。</div>
+  </div>
+
+  <button class="clearBtn" type="button" onclick="armClear(this)">すべて消去</button>
+
+  <footer>
+    このページは計算のみを行います。入力値の送信・保存は一切ありません(端末内で完結)。<br>
+    規格値はJIS B 0401(ISO 286)に基づき内蔵しています(e は φ500 まで、その他は表記の範囲)。<br>
+    運用前に、お手元の公差表と数点照合することをおすすめします。
+  </footer>
+</div>
+
+<div class="toast" id="toast">コピーしました</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+
+  /* ============ 規格データ(JIS B 0401 / ISO 286) ============ */
+  // 呼び寸法区分 [超, 以下]
+  var RANGES=[[0,3],[3,6],[6,10],[10,18],[18,30],[30,50],[50,80],[80,120],[120,180],[180,250],[250,315],[315,400],[400,500]];
+  // 基本公差 IT(µm)
+  var IT={
+    5:[4,5,6,8,9,11,13,15,18,20,23,25,27],
+    6:[6,8,9,11,13,16,19,22,25,29,32,36,40],
+    7:[10,12,15,18,21,25,30,35,40,46,52,57,63],
+    8:[14,18,22,27,33,39,46,54,63,72,81,89,97],
+    9:[25,30,36,43,52,62,74,87,100,115,130,140,155],
+    10:[40,48,58,70,84,100,120,140,160,185,210,230,250]
+  };
+  /* IT11〜IT16 を生成する。ISO 286 では IT6 以上は5等級ごとに10倍になる
+     （IT11=10×IT6, IT12=10×IT7 … IT16=10×IT11）。「実測が何等級相当か」の
+     判定にだけ使う。図面で選べるクラスは CLASSES のまま変えていない。 */
+  (function(){
+    var g;
+    for(g=11;g<=16;g++){
+      IT[g]=IT[g-5].map(function(v){ return v*10; });
+    }
+  })();
+  // 基礎となる許容差(µm)。d,e,f,g は軸の上の許容差es(負)、k,m,p,s は軸の下の許容差ei(正)
+  var FUND={
+    d:[-20,-30,-40,-50,-65,-80,-100,-120,-145,-170],
+    e:[-14,-20,-25,-32,-40,-50,-60,-72,-85,-100,-110,-125,-135],
+    f:[-6,-10,-13,-16,-20,-25],
+    g:[-2,-4,-5,-6,-7,-9],
+    k:[0,1,1,1,2,2],
+    m:[2,4,6,7,8,9],
+    p:[6,12,15,18,22,26],
+    s:[14,19,23,28,35,43]
+  };
+  // 対応する公差域クラスと呼び寸法の上限(mm)
+  var CLASSES=['d9','e7','e8','e9','f7','f8','g6','g7','h6','h7','h8','h9','h10','js7','js8','k7','k8','m6','p6','s6','s7'];
+  var LIMITS={d:200,e:500,f:50,g:50,h:500,js:50,k:50,m:50,p:50,s:50};
+
+  /* ============ 状態 ============ */
+  var isHole=false;
+  var plBefore=false;
+  var curClass='h7';
+  var lastVals={es:null,ei:null,max:null,min:null};
+
+  function parseClass(c){
+    var m=c.match(/^([a-z]+)(\d+)$/);
+    return {letter:m[1], grade:Number(m[2])};
+  }
+  function dispClass(c){return isHole?c.toUpperCase():c}
+
+  function rangeIndex(n){
+    for(var i=0;i<RANGES.length;i++){
+      if(n>RANGES[i][0]&&n<=RANGES[i][1])return i;
+    }
+    return -1;
+  }
+
+  // 許容差を計算(µm)。戻り値 {es,ei} 上/下の許容差
+  function deviations(letter,grade,hole,ri,nominal){
+    var it=IT[grade][ri];
+    var es,ei;
+    if(!hole){
+      if('defg'.indexOf(letter)>=0){es=FUND[letter][ri];ei=es-it}
+      else if(letter==='h'){es=0;ei=-it}
+      else if(letter==='js'){es=it/2;ei=-it/2}
+      else if(letter==='k'){ei=(grade>=4&&grade<=7)?FUND.k[ri]:0;es=ei+it}
+      else{ei=FUND[letter][ri];es=ei+it}          // m,p,s
+    }else{
+      if('defg'.indexOf(letter)>=0){ei=-FUND[letter][ri];es=ei+it}
+      else if(letter==='h'){ei=0;es=it}
+      else if(letter==='js'){es=it/2;ei=-it/2}
+      else{
+        // K,M,N は8級以下・P〜ZC は7級以下で Δ=ITn−IT(n−1) を加算(3mm以下は Δ=0)
+        var delta=(nominal<=3)?0:(IT[grade][ri]-IT[grade-1][ri]);
+        es=-FUND[letter][ri]+delta;
+        ei=es-it;
+      }
+    }
+    return {es:es,ei:ei};
+  }
+
+  /* 実測偏差 dev(µm) が、同じ記号（h, e, k…）の何等級に収まるかを返す。
+     一番きつい（数字の小さい）等級から順に見て、最初に収まったものを採用する。 */
+  function equivGrade(letter,hole,ri,nominal,dev){
+    var g, d, fu=FUND[letter];
+    if(fu && ri>=fu.length) return null;         /* その記号は この寸法区分の表を持たない */
+    for(g=5;g<=16;g++){
+      if(!IT[g]) continue;
+      if(hole && 'defgh'.indexOf(letter)<0 && letter!=='js' && !IT[g-1]) continue;  /* Δ に IT(g−1) が必要 */
+      d=deviations(letter,g,hole,ri,nominal);
+      if(!isFinite(d.es)||!isFinite(d.ei)) continue;
+      if(dev>=d.ei-1e-9 && dev<=d.es+1e-9) return {grade:g, es:d.es, ei:d.ei};
+    }
+    return null;
+  }
+
+  function fmtUm(v){
+    var s=(Math.abs(v)%1===0)?String(Math.abs(v)):Math.abs(v).toFixed(1);
+    return (v>0?'+':v<0?'−':'')+s;
+  }
+  function fmtMm(v,halfUm){
+    return v.toFixed(halfUm?4:3);
+  }
+
+  /* ============ チップ生成 ============ */
+  function buildChips(){
+    var box=$('chips');
+    box.innerHTML='';
+    CLASSES.forEach(function(c){
+      var b=document.createElement('button');
+      b.type='button';
+      b.className='chip'+(c===curClass?' on':'');
+      b.textContent=dispClass(c);
+      b.addEventListener('click',function(){
+        curClass=c;
+        buildChips();
+        recalc();
+      });
+      box.appendChild(b);
+    });
+  }
+
+  /* ============ 公差域図 ============ */
+  var NS='http://www.w3.org/2000/svg';
+  function el(name,attrs){
+    var e=document.createElementNS(NS,name);
+    for(var k in attrs)e.setAttribute(k,attrs[k]);
+    return e;
+  }
+  function drawZone(es,ei,devUm){
+    var dyn=$('dyn');
+    while(dyn.firstChild)dyn.removeChild(dyn.firstChild);
+    if(es==null)return;
+
+    var zeroY=125, x1=150, x2=245;
+    var span=Math.max(Math.abs(es),Math.abs(ei),5);
+    if(devUm!=null)span=Math.max(span,Math.min(Math.abs(devUm),span*1.7+15));
+    var px=88/span;
+    var yOf=function(v){return zeroY-v*px};
+
+    // 公差域
+    var yTop=yOf(es), yBot=yOf(ei);
+    dyn.appendChild(el('rect',{x:x1,y:yTop,width:x2-x1,height:Math.max(yBot-yTop,1.5),fill:'#D9E2E8',stroke:'#1F3341','stroke-width':1.4}));
+    var ct=el('text',{x:(x1+x2)/2,y:Math.min(Math.max((yTop+yBot)/2+5,yTop+12),yBot+16),'font-size':15,'font-weight':700,fill:'#5B707E','text-anchor':'middle',stroke:'#fff','stroke-width':3,'paint-order':'stroke','font-family':'ui-monospace,Consolas,monospace'});
+    ct.textContent=dispClass(curClass);
+    dyn.appendChild(ct);
+
+    // 上下の許容差ラベル(左側)
+    [[es,yTop,'上'],[ei,yBot,'下']].forEach(function(a){
+      dyn.appendChild(el('line',{x1:66,y1:a[1],x2:x1,y2:a[1],stroke:'#8FA2AF','stroke-width':1}));
+      var t=el('text',{x:62,y:a[1]+4,'font-size':12,fill:'#1F3341','text-anchor':'end',stroke:'#fff','stroke-width':3.5,'paint-order':'stroke'});
+      t.textContent=fmtUm(a[0]);
+      dyn.appendChild(t);
+      var t2=el('text',{x:62,y:a[1]+16,'font-size':9,fill:'#5B707E','text-anchor':'end'});
+      t2.textContent=a[2]+'の許容差';
+      dyn.appendChild(t2);
+    });
+
+    // 実測値マーカー
+    if(devUm!=null){
+      var clamped=false, dv=devUm;
+      var lim=(zeroY-14)/px, limB=(236-zeroY)/px;
+      if(yOf(dv)<14){dv=lim;clamped=true}
+      if(yOf(dv)>236){dv=-limB;clamped=true}
+      var y=yOf(dv);
+      var ok=(devUm>=ei-1e-9&&devUm<=es+1e-9);
+      var col=ok?'#2E9E5B':'#D63426';
+      dyn.appendChild(el('line',{x1:x1-8,y1:y,x2:x2+10,y2:y,stroke:col,'stroke-width':1.8}));
+      dyn.appendChild(el('circle',{cx:x2+10,cy:y,r:3.4,fill:col}));
+      var lt=el('text',{x:x2+18,y:y+4,'font-size':12,'font-weight':700,fill:col,stroke:'#fff','stroke-width':3.5,'paint-order':'stroke'});
+      lt.textContent='実測 '+fmtUm(devUm)+(clamped?' (図外)':'');
+      dyn.appendChild(lt);
+    }
+  }
+
+  /* ============ 公差表 ============ */
+  function buildTable(){
+    var p=parseClass(curClass);
+    var lim=LIMITS[p.letter];
+    var wrap=$('tblWrap');
+    var html='<table class="tol"><caption>公差域クラス '+dispClass(curClass)+' の許容差(対応範囲: 〜φ'+lim+')</caption>';
+    html+='<tr><th>呼び寸法(mm)<br>を超え〜以下</th><th>上の許容差<br>(µm)</th><th>下の許容差<br>(µm)</th></tr>';
+    var nomNow=num($('fN').value);
+    var hitRi=(nomNow>0&&nomNow<=lim)?rangeIndex(nomNow):-1;
+    for(var i=0;i<RANGES.length;i++){
+      if(RANGES[i][0]>=lim)break;
+      var hi=Math.min(RANGES[i][1],lim);
+      var d=deviations(p.letter,p.grade,isHole,i,RANGES[i][0]+0.001);
+      html+='<tr'+(i===hitRi?' class="hit"':'')+'><td>'+RANGES[i][0]+' 〜 '+hi+'</td><td>'+fmtUm(d.es)+'</td><td>'+fmtUm(d.ei)+'</td></tr>';
+    }
+    html+='</table><div class="tbl-note">µm表記(1µm=0.001mm)。js/JSは±IT/2の対称公差。表の行をまたぐ呼び寸法は上の区分が適用されます。</div>';
+    wrap.innerHTML=html;
+  }
+
+  /* ============ 計算・表示 ============ */
+  function num(v){
+    if(v==null)return NaN;
+    v=String(v).replace(/[０-９．]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0)}).replace(/。/g,'.').trim();
+    if(v==='')return NaN;
+    return Number(v);
+  }
+  function setStatus(msg,isErr){
+    var s=$('statusTxt');s.textContent=msg;
+    s.className='statusTxt'+(isErr?' err':'');
+  }
+
+  function recalc(){
+    var p=parseClass(curClass);
+    $('clsTxt').textContent=dispClass(curClass)+(isHole?'(穴)':'(軸)');
+    var n=num($('fN').value);
+    var m=num($('fM').value);
+    var lim=LIMITS[p.letter];
+    lastVals={es:null,ei:null,max:null,min:null};
+
+    var res=$('resTxt');
+
+    if(isNaN(n)){
+      res.textContent='呼び寸法を入力してください';res.className='res none';
+      $('judgeSub').textContent='';$('plSub').textContent='';
+      ['vES','vEI','vMax','vMin'].forEach(function(id){$(id).textContent='―'});
+      drawZone(null);
+      setStatus('公差域クラスを選び、呼び寸法を入力',false);
+      if($('tblWrap').classList.contains('show'))buildTable();
+      return;
+    }
+    if(n<=0||n>lim){
+      res.textContent='範囲外';res.className='res none';
+      $('judgeSub').textContent='';$('plSub').textContent='';
+      ['vES','vEI','vMax','vMin'].forEach(function(id){$(id).textContent='―'});
+      drawZone(null);
+      setStatus(dispClass(curClass)+' は呼び寸法 0 を超え φ'+lim+' までの対応です',true);
+      if($('tblWrap').classList.contains('show'))buildTable();
+      return;
+    }
+
+    var ri=rangeIndex(n);
+    var d=deviations(p.letter,p.grade,isHole,ri,n);
+    var half=(Math.abs(d.es)%1!==0)||(Math.abs(d.ei)%1!==0);
+    var maxD=n+d.es/1000, minD=n+d.ei/1000;
+    lastVals={es:d.es,ei:d.ei,max:maxD,min:minD};
+
+    $('vES').textContent=fmtUm(d.es);
+    $('vEI').textContent=fmtUm(d.ei);
+    $('vMax').textContent=fmtMm(maxD,half);
+    $('vMin').textContent=fmtMm(minD,half);
+
+    /* めっき厚(片面) : 図面公差はめっき後に適用。めっき前の狙い＝軸は −2t、穴は ＋2t */
+    var pl=num($('fPl').value);
+    var plOn=(pl>0);
+    $('plState').style.display=plOn?'':'none';
+    var grow=isHole?-2*pl:2*pl;          // めっき後に径がどれだけ変わるか(µm)
+    if(plOn){
+      var bMax=maxD-grow/1000, bMin=minD-grow/1000;
+      $('plSub').textContent='めっき前の狙い: '+fmtMm(bMin,half)+' 〜 '+fmtMm(bMax,half)+' mm（片面 '+pl+' µm → 径で '+(grow>0?'+':'')+grow.toFixed(0)+' µm）';
+    }else{
+      $('plSub').textContent='';
+    }
+
+    var devUm=null, devEff=null, plPre=(plOn&&plBefore);
+    if(!isNaN(m)){
+      devUm=(m-n)*1000;
+      devEff=plPre? devUm+grow : devUm;   // めっき前実測 → めっき後予測に換算して図面公差で判定
+      var ok=(devEff>=d.ei-1e-9&&devEff<=d.es+1e-9);
+      var pref=plPre?('めっき前実測 '+fmtUm(devUm)+' µm → めっき後予測 '):('実測偏差 ');
+      /* 実測が同じ記号の何等級に相当するか */
+      var eq=equivGrade(p.letter,isHole,ri,n,devEff), eqTxt='';
+      if(eq){
+        var eqCls=dispClass(p.letter+eq.grade);
+        if(eq.grade>p.grade){
+          eqTxt='<br><b>'+eqCls+'相当になります</b>（'+eqCls+' は '+fmtUm(eq.es)+' / '+fmtUm(eq.ei)+' µm）';
+        }else if(eq.grade<p.grade){
+          eqTxt='<br>'+eqCls+'相当（図面より'+(p.grade-eq.grade)+'等級きつい側に入っています）';
+        }else{
+          eqTxt='<br>'+eqCls+' の範囲に収まっています';
+        }
+      }else{
+        eqTxt='<br>この記号の表（IT16まで）では相当する等級が見つかりません';
+      }
+      if(ok){
+        res.textContent='合格';res.className='res ok';
+        $('judgeSub').innerHTML=pref+fmtUm(devEff)+' µm(公差域内)'+eqTxt;
+      }else{
+        res.textContent='不合格';res.className='res ng';
+        var over=(devEff>d.es)?('上の許容差を +'+(devEff-d.es).toFixed(1)+' µm 超過')
+                             :('下の許容差を '+(d.ei-devEff).toFixed(1)+' µm 不足');
+        $('judgeSub').innerHTML=pref+fmtUm(devEff)+' µm(<b>'+over+'</b>)'+eqTxt;
+      }
+    }else{
+      res.textContent='実測値の入力で合否判定';res.className='res none';
+      $('judgeSub').textContent='';
+    }
+
+    drawZone(d.es,d.ei,devEff);
+    setStatus('区分: '+RANGES[ri][0]+'を超え'+RANGES[ri][1]+'以下 | IT'+p.grade+' = '+IT[p.grade][ri]+' µm',false);
+    if($('tblWrap').classList.contains('show'))buildTable();
+  }
+
+  /* ============ はめあいのすきま(穴×軸) ============ */
+  function buildFitSel(){
+    var hs=$('fitHole'), ss=$('fitShaft'), i, o;
+    for(i=0;i<CLASSES.length;i++){
+      o=document.createElement('option'); o.value=CLASSES[i]; o.textContent=CLASSES[i].toUpperCase();
+      if(CLASSES[i]==='h7') o.selected=true;
+      hs.appendChild(o);
+    }
+    var d=hs.querySelector('option[value="h7"]'); if(d){d.selected=true;}
+    for(i=0;i<CLASSES.length;i++){
+      o=document.createElement('option'); o.value=CLASSES[i]; o.textContent=CLASSES[i];
+      if(CLASSES[i]==='g6') o.selected=true;
+      ss.appendChild(o);
+    }
+  }
+  function calcFit(){
+    var n=num($('fN').value);
+    var hc=$('fitHole').value, sc=$('fitShaft').value;
+    var K=$('fitKind'), S=$('fitSub');
+    if(isNaN(n)||n<=0){
+      $('vFitMax').textContent='―';$('vFitMin').textContent='―';
+      K.textContent='呼び寸法(上の欄)と組合せを選ぶと、すきまが出ます';S.textContent='';return;
+    }
+    var ph=parseClass(hc), ps=parseClass(sc);
+    if(n>LIMITS[ph.letter]||n>LIMITS[ps.letter]){
+      $('vFitMax').textContent='―';$('vFitMin').textContent='―';
+      K.textContent='φ'+n+' は '+(n>LIMITS[ph.letter]?hc.toUpperCase():sc)+' の対応範囲外です(〜φ'+Math.min(LIMITS[ph.letter],LIMITS[ps.letter])+')';S.textContent='';return;
+    }
+    var ri=rangeIndex(n);
+    var H=deviations(ph.letter,ph.grade,true,ri,n);
+    var A=deviations(ps.letter,ps.grade,false,ri,n);
+    var cmax=H.es-A.ei, cmin=H.ei-A.es;
+    $('vFitMax').textContent=fmtUm(cmax);
+    $('vFitMin').textContent=fmtUm(cmin);
+    var kind;
+    if(cmin>=0) kind='すきまばめ（常にすきま '+fmtUm(cmin)+'〜'+fmtUm(cmax)+' µm）';
+    else if(cmax<=0) kind='しまりばめ（常にしめしろ '+fmtUm(-cmax)+'〜'+fmtUm(-cmin)+' µm）';
+    else kind='中間ばめ（すきま最大 '+fmtUm(cmax)+' µm ／ しめしろ最大 '+fmtUm(-cmin)+' µm）';
+    K.textContent=hc.toUpperCase()+'/'+sc+'：'+kind;
+    S.textContent='穴 '+hc.toUpperCase()+' '+fmtUm(H.es)+'/'+fmtUm(H.ei)+' µm ／ 軸 '+sc+' '+fmtUm(A.es)+'/'+fmtUm(A.ei)+' µm';
+  }
+
+  /* ============ イベント ============ */
+  function setHole(h){
+    isHole=h;
+    $('mShaft').classList.toggle('on',!h);
+    $('mHole').classList.toggle('on',h);
+    buildChips();
+    recalc();
+  }
+  $('mShaft').addEventListener('click',function(){setHole(false)});
+  $('mHole').addEventListener('click',function(){setHole(true)});
+  $('fN').addEventListener('input',recalc);
+  $('fM').addEventListener('input',recalc);
+  $('fPl').addEventListener('input',recalc);
+  $('plAfter').addEventListener('click',function(){plBefore=false;$('plAfter').classList.add('on');$('plBefore').classList.remove('on');recalc()});
+  $('plBefore').addEventListener('click',function(){plBefore=true;$('plBefore').classList.add('on');$('plAfter').classList.remove('on');recalc()});
+  $('fN').addEventListener('input',calcFit);
+
+  buildFitSel();
+  $('fitHole').addEventListener('change',calcFit);
+  $('fitShaft').addEventListener('change',calcFit);
+  $('fitBtn').addEventListener('click',function(){
+    var w=$('fitWrap');
+    var show=!w.classList.contains('show');
+    w.classList.toggle('show',show);
+    $('fitBtn').textContent=show?'▲ はめあいのすきまを閉じる':'▼ はめあいのすきま（穴×軸）を見る';
+    if(show)calcFit();
+  });
+
+  $('tblBtn').addEventListener('click',function(){
+    var w=$('tblWrap');
+    var show=!w.classList.contains('show');
+    w.classList.toggle('show',show);
+    $('tblBtn').textContent=show?'▲ 公差表を閉じる':'▼ この公差域の表を見る';
+    if(show)buildTable();
+  });
+
+  var toastTimer=null;
+  function toast(msg){
+    var t=$('toast');t.textContent=msg;t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer=setTimeout(function(){t.classList.remove('show')},1600);
+  }
+  [['cES','es','µm'],['cEI','ei','µm'],['cMax','max','mm'],['cMin','min','mm']].forEach(function(a){
+    $(a[0]).addEventListener('click',function(){
+      var v=lastVals[a[1]];
+      if(v==null){toast('まだ値がありません');return}
+      var s=(a[2]==='mm')?v.toFixed(4).replace(/0$/,''):String(v);
+      if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(s).then(function(){toast('コピーしました')},function(){toast('コピーできませんでした')});
+      }else{
+        var ta=document.createElement('textarea');
+        ta.value=s;document.body.appendChild(ta);ta.select();
+        try{document.execCommand('copy');toast('コピーしました')}catch(e){toast('コピーできませんでした')}
+        document.body.removeChild(ta);
+      }
+    });
+  });
+
+  buildChips();
+  recalc();
+})();
+</script>
+
+<!-- ═══ 数字入力の補助（共通スニペット / 全ツール同一） ═══
+     ・数字キーパッド固定（inputmode）／全角数字・句点の自動半角化
+     ・数字以外（かな・英字・記号）の混入を自動で除去
+     ・± ボタン … 数字キーパッドに無いマイナスを入力
+     ・✕ ボタン … 欄をまとめて消去
+     ・「5 43」のような度分秒のスペース区切りはそのまま通します
+     ・DOM構造は変更しません（再描画するツールでも壊れません）        -->
+<style>
+  .kt-aid{
+    position:absolute;z-index:9998;display:none;gap:4px;
+    background:#1F3341;border-radius:8px;padding:3px;
+    box-shadow:0 3px 10px rgba(0,0,0,.28);
+  }
+  .kt-aid.on{display:flex}
+  .kt-aid button{
+    -webkit-appearance:none;appearance:none;border:none;
+    background:#2C4353;color:#fff;font:inherit;font-size:14px;font-weight:700;
+    line-height:1;padding:8px 12px;border-radius:5px;cursor:pointer;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  .kt-aid button:active{background:#D63426}
+  @media print{.kt-aid{display:none !important}}
+</style>
+<script>
+(function(){
+  "use strict";
+
+  /* ── 対象の判定 ── */
+  function mode(el){
+    return (el && el.tagName==="INPUT" && !el.readOnly && !el.disabled)
+      ? (el.getAttribute("inputmode")||"") : "";
+  }
+  function isNum(el){ var m=mode(el); return m==="decimal"||m==="numeric"; }
+  function isDec(el){ return mode(el)==="decimal"; }
+
+  /* ── 全角→半角（かなキーボードで打たれた場合の救済） ── */
+  function toHalf(v){
+    return v
+      .replace(/[０-９]/g, function(c){ return String.fromCharCode(c.charCodeAt(0)-65248); })
+      .replace(/[．。･・]/g, ".")
+      .replace(/[－−―ーｰ‐–—]/g, "-")
+      .replace(/[\u3000]/g, " ");
+  }
+
+  /* ── 数字だけに整える（空白区切りは温存＝度分秒入力を壊さない） ── */
+  function clean(v, dec){
+    var toks = toHalf(v).split(" "), out = [], i, t, neg, k;
+    for(i=0;i<toks.length;i++){
+      t = toks[i];
+      neg = (i===0) && t.charAt(0)==="-";
+      t = t.replace(/[^0-9.]/g, "");
+      if(!dec) t = t.replace(/\./g, "");
+      else {
+        k = t.indexOf(".");
+        if(k>=0) t = t.slice(0,k+1) + t.slice(k+1).replace(/\./g,"");
+      }
+      out.push((neg?"-":"") + t);
+    }
+    return out.join(" ");
+  }
+
+  /* ── 入力の監視（捕捉フェーズ＝各ツールの計算処理より先に整える） ── */
+  document.addEventListener("input", function(e){
+    var el = e.target;
+    if(!isNum(el)) return;
+    var v = el.value, c = clean(v, isDec(el));
+    if(c === v) return;
+    var p = el.selectionStart, d = v.length - c.length;
+    el.value = c;
+    try{ el.setSelectionRange(Math.max(0,p-d), Math.max(0,p-d)); }catch(err){}
+  }, true);
+
+  /* ── ± / ✕ の浮動ボタン（DOMを包まないので再描画に強い） ── */
+  var bar=null, cur=null, sign=null;
+
+  function notify(el){
+    var ev;
+    try{ ev = new Event("input", {bubbles:true}); }
+    catch(err){ ev = document.createEvent("Event"); ev.initEvent("input", true, false); }
+    el.dispatchEvent(ev);
+    try{ ev = new Event("change", {bubbles:true}); }
+    catch(err){ ev = document.createEvent("Event"); ev.initEvent("change", true, false); }
+    el.dispatchEvent(ev);
+  }
+  /* 押した瞬間に実行する。既定動作を止めることで入力欄のフォーカス（＝
+     数字キーパッド）を保ったまま操作でき、ゴーストクリックも防げる。   */
+  function act(e){
+    e.preventDefault();
+    var b = e.target, a, v;
+    while(b && b !== bar && b.tagName !== "BUTTON") b = b.parentNode;
+    if(!b || b === bar || !cur) return;
+    a = b.getAttribute("data-a");
+    if(a === "clr") cur.value = "";
+    else {
+      v = cur.value;
+      cur.value = (v.charAt(0) === "-") ? v.slice(1) : ("-" + v);
+    }
+    notify(cur);
+    try{ cur.focus(); }catch(err){}
+    place();
+  }
+
+  function build(){
+    bar = document.createElement("div");
+    bar.className = "kt-aid";
+    bar.innerHTML =
+      '<button type="button" data-a="sign" aria-label="符号を反転">±</button>'+
+      '<button type="button" data-a="clr" aria-label="この欄を消去">✕</button>';
+    document.body.appendChild(bar);
+    sign = bar.querySelector('[data-a="sign"]');
+    if(window.PointerEvent){
+      bar.addEventListener("pointerdown", act);
+    } else {
+      bar.addEventListener("mousedown", act);
+      bar.addEventListener("touchstart", act, {passive:false});
+    }
+  }
+
+  function hide(){ if(bar) bar.className = "kt-aid"; cur = null; }
+
+  function place(){
+    if(!cur || !bar) return;
+    if(!document.contains(cur)){ hide(); return; }   /* 再描画で消えた場合 */
+    bar.className = "kt-aid on";
+    var r = cur.getBoundingClientRect();
+    var bw = bar.offsetWidth, bh = bar.offsetHeight;
+    var top = r.top - bh - 6;
+    if(top < 4) top = r.bottom + 6;
+    var left = r.right - bw;
+    if(left < 4) left = 4;
+    bar.style.left = (left + (window.pageXOffset||0)) + "px";
+    bar.style.top  = (top  + (window.pageYOffset||0)) + "px";
+  }
+
+  document.addEventListener("focusin", function(e){
+    if(!isNum(e.target)){ hide(); return; }
+    cur = e.target;
+    if(!bar) build();
+    sign.style.display = isDec(cur) ? "" : "none";   /* 整数欄には ± を出さない */
+    place();
+  });
+  document.addEventListener("focusout", function(){
+    setTimeout(function(){ if(document.activeElement !== cur) hide(); }, 0);
+  });
+  window.addEventListener("scroll", function(){ if(cur) place(); }, true);
+  window.addEventListener("resize", function(){ if(cur) place(); });
+})();
+</script>
+<script>
+(function(){
+  function fire(el,t){
+    try{ el.dispatchEvent(new Event(t,{bubbles:true})); }
+    catch(e){ var ev=document.createEvent('Event'); ev.initEvent(t,true,true); el.dispatchEvent(ev); }
+  }
+  function clickText(within,text){
+    var cont = within ? document.querySelector(within) : document;
+    if(!cont) return;
+    var all=cont.querySelectorAll('button,[class*="chip"],span,a,div,li'), target=String(text), j,e;
+    for(j=0;j<all.length;j++){
+      e=all[j];
+      if(e.textContent.trim()===target && (e.children.length===0 || e.tagName==='BUTTON')){ e.click(); return; }
+    }
+  }
+  window.tryExample=function(btn){
+    var raw=btn.getAttribute('data-ex'); if(!raw) return;
+    var cfg; try{ cfg=JSON.parse(raw); }catch(e){ return; }
+    var steps=cfg.set||[], i, it, el;
+    for(i=0;i<steps.length;i++){
+      it=steps[i];
+      if(it.click){ var c=document.querySelector(it.click); if(c) c.click(); continue; }
+      if(it.clickText){ clickText(it.within, it.clickText); continue; }
+      el = it.sel ? document.querySelector(it.sel) : document.getElementById(it.id);
+      if(!el) continue;
+      el.value=String(it.v);
+      fire(el, el.tagName==='SELECT' ? 'change' : 'input');
+    }
+    var gd=btn; while(gd && !(gd.classList && gd.classList.contains('guide'))) gd=gd.parentNode;
+    if(gd) gd.open=false;
+    var fig=document.querySelector('svg#fig, svg#dwg, figure svg, #fig, #dwg');
+    if(fig && fig.scrollIntoView) fig.scrollIntoView({behavior:'smooth',block:'center'});
+  };
+})();
+</script>
+
+<script>
+/* ═══ 一括消去の共通処理（全ツール共通 / 確認ダイアログは使いません）═══
+     1回目 … ボタンが「もう一度押すと消去」に変わります（3秒で自動解除）
+     2回目 … 最初の状態に戻します
+     ※ 確認ポップアップ（ダイアログ）はPWA等で無効化されるため使いません      */
+(function(){
+  "use strict";
+  var KEY = "";   /* このツールは保存を持たないため、再読み込みだけで初期状態に戻ります */
+  window.armClear = function(btn){
+    if(!btn || !btn.getAttribute) return;
+    if(!btn.getAttribute("data-armed")){
+      btn.setAttribute("data-armed","1");
+      if(!btn.getAttribute("data-lbl")) btn.setAttribute("data-lbl", btn.textContent);
+      btn.textContent = "もう一度押すと消去";
+      if(btn.classList) btn.classList.add("arm");
+      setTimeout(function(){
+        if(btn.getAttribute("data-armed")){
+          btn.removeAttribute("data-armed");
+          btn.textContent = btn.getAttribute("data-lbl");
+          if(btn.classList) btn.classList.remove("arm");
+        }
+      }, 3000);
+      return;
+    }
+    btn.removeAttribute("data-armed");
+    if(btn.classList) btn.classList.remove("arm");
+    if(btn.getAttribute("data-lbl")) btn.textContent = btn.getAttribute("data-lbl");
+    if(KEY){ try{ localStorage.removeItem(KEY); }catch(e){} }
+    try{ location.reload(); }catch(e){}
+  };
+})();
+</script>
+<style>
+/* ═══ 記入例（薄字）を入力値と見分ける（v57 / 全ツール共通）═══
+     薄字が入力値と同じ書体（太字・大きめ・右寄せ）で出ていたため、
+     入力済みに見えていた。色の濃さだけだと現場の照明や斜めからの視認で差が消えるので、
+     太さ・大きさ・傾きも変えて別物にする。                                    */
+::placeholder{color:#AEBBC4;font-weight:400;font-size:.82em;font-style:italic;opacity:1}
+::-webkit-input-placeholder{color:#AEBBC4;font-weight:400;font-size:.82em;font-style:italic;opacity:1}
+::-moz-placeholder{color:#AEBBC4;font-weight:400;font-size:.82em;font-style:italic;opacity:1}
+/* 未入力の欄は下線を破線に（入っている欄＝実線）。入力中は元の色を邪魔しない。 */
+input.kt-empty:not(:focus){border-bottom-style:dashed !important;border-bottom-color:#C2CED6 !important}
+td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3DA !important}
+</style>
+<script>
+/* ═══ 未入力の欄に印をつける（v57 / 全ツール共通）═══
+     数字を入れる欄（inputmode 付き）だけを対象にする。
+     行を作り直すツールがあるので、DOMの変化も見張って付け直す。            */
+(function(){
+  "use strict";
+  function hasCls(el){ return (" "+(el.className||"")+" ").indexOf(" kt-empty ")>=0; }
+  function mark(el){
+    if(!el||el.tagName!=="INPUT") return;
+    if(!el.getAttribute("inputmode")) return;
+    if(el.readOnly||el.disabled) return;
+    var empty=((el.value||"").replace(/\s/g,"")==="");
+    var has=hasCls(el);
+    if(empty&&!has) el.className=((el.className||"")+" kt-empty").replace(/^\s+/,"");
+    else if(!empty&&has) el.className=(" "+el.className+" ").replace(" kt-empty "," ").replace(/^\s+|\s+$/g,"");
+  }
+  function scan(){
+    var ns=document.getElementsByTagName("input"),i;
+    for(i=0;i<ns.length;i++) mark(ns[i]);
+  }
+  /* 捕捉フェーズ＝打った欄をすぐ反映。浮上フェーズ＝ツールが行を作り直した後に拾う。 */
+  document.addEventListener("input",function(e){ mark(e.target); },true);
+  document.addEventListener("input",scan,false);
+  document.addEventListener("change",scan,false);
+  document.addEventListener("click",scan,false);
+  if(window.MutationObserver){
+    try{
+      new MutationObserver(scan).observe(document.body,{childList:true,subtree:true});
+    }catch(e){}
+  }
+  scan();
+  setTimeout(scan,0);
+})();
+</script>
+</body>
+</html>

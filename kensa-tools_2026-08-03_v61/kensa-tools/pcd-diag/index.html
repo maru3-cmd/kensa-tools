@@ -1,0 +1,1659 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1F3341">
+<meta name="description" content="実測したピッチから、PCDそのものの誤差か個々の穴のずれかを切り分け、ボルトが通るかを判定します。計算は端末内で完結し、入力値はどこにも送信されません。">
+<title>PCDずれ診断 | 検査計算ツール</title>
+<style>
+  :root{
+    --paper:#F2F4F5;
+    --sheet:#FFFFFF;
+    --ink:#1F3341;
+    --line:#8FA2AF;
+    --red:#D63426;
+    --dro-bg:#15181A;
+    --dro-red:#FF5A48;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI",sans-serif;
+    background:var(--paper);color:var(--ink);
+    min-height:100dvh;display:flex;flex-direction:column;align-items:center;
+    padding:0 12px calc(16px + env(safe-area-inset-bottom));
+  }
+  .wrap{width:100%;max-width:480px}
+
+  header{display:flex;align-items:baseline;justify-content:space-between;padding:14px 2px 10px}
+  header h1{font-size:16px;font-weight:700;letter-spacing:.04em}
+  header h1 small{display:block;font-size:11px;font-weight:400;color:#5B707E;letter-spacing:.08em;margin-top:2px}
+
+  .mode-lg{
+    display:grid;grid-template-columns:1fr 1fr 1fr;
+    border:1.5px solid var(--ink);border-radius:9px;overflow:hidden;
+    margin-bottom:12px;
+  }
+  .mode-lg button{
+    font-size:12px;font-weight:700;padding:10px 3px;border:none;
+    background:var(--sheet);color:var(--ink);letter-spacing:.02em;
+    border-right:1px solid var(--ink);
+  }
+  .mode-lg button:last-child{border-right:none}
+  .mode-lg button.on{background:var(--ink);color:#fff}
+
+  .card{background:var(--sheet);border:1px solid #D5DDE2;border-radius:12px;padding:11px 12px;margin-bottom:10px}
+  .card h3{font-size:11px;letter-spacing:.08em;color:#5B707E;font-weight:700;margin:0 0 8px}
+  .card h3 span{font-weight:400;letter-spacing:0}
+
+  .row{
+    display:grid;grid-template-columns:1fr 118px 30px;
+    align-items:center;gap:8px;padding:5px 0;
+  }
+  .row label{font-size:13px;font-weight:600}
+  .row label small{display:block;font-size:10px;font-weight:400;color:#5B707E}
+  .row input,.row select{
+    width:100%;font-size:19px;font-weight:600;text-align:right;
+    font-variant-numeric:tabular-nums;
+    border:none;border-bottom:2px solid var(--ink);
+    background:transparent;color:var(--ink);
+    padding:2px 4px;border-radius:0;outline:none;
+  }
+  .row select{font-size:14px;text-align:left}
+  .row input:focus{border-bottom-color:var(--red)}
+  .unit{font-size:12px;color:#5B707E}
+
+  .dimsw{display:flex;gap:6px;padding:0 2px;margin:0 0 8px}
+  .dimsw button{flex:1;min-height:38px;padding:8px 6px;font:inherit;font-size:12px;font-weight:700;
+    border:1px solid #C9D3DA;background:#fff;color:#5B707E;border-radius:9px;cursor:pointer}
+  .dimsw button.on{background:#1F3341;color:#fff;border-color:#1F3341}
+
+  .minibtn{font:inherit;font-size:11.5px;font-weight:700;padding:7px 10px;border:1px solid #C9D3DA;
+    background:#fff;color:#5B707E;border-radius:8px;cursor:pointer;min-height:34px}
+  .minibtn:active{background:#EEF2F4}
+  .btnbar{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+
+  /* 距離の行 */
+  .prow{display:grid;grid-template-columns:22px 62px 62px 1fr 56px 28px;align-items:center;gap:5px;
+    padding:5px 0;border-top:1px solid #EDF1F3}
+  .prow:first-of-type{border-top:none}
+  .prow .idx{font-size:10px;color:#8FA2AF;text-align:center}
+  .prow select{font-size:13px;font-weight:600;border:none;border-bottom:1.5px solid #C9D3DA;
+    background:transparent;color:var(--ink);padding:2px;outline:none;width:100%}
+  .prow input{font-size:17px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums;
+    border:none;border-bottom:2px solid var(--ink);background:transparent;color:var(--ink);
+    padding:2px 3px;outline:none;width:100%}
+  .prow input:focus{border-bottom-color:var(--red)}
+  .prow .kind{font-size:10.5px;font-weight:700;text-align:center;border:1px solid #C9D3DA;
+    border-radius:6px;padding:5px 2px;background:#F4F7F9;color:#5B707E;cursor:pointer;line-height:1.15}
+  .prow .kind.warn{border-color:var(--red);color:var(--red);background:#FCF0EF}
+  .prow .del{font:inherit;font-size:13px;border:none;background:transparent;color:#B23B2E;cursor:pointer;padding:4px}
+
+  /* 穴径の行 */
+  .drow{display:inline-grid;grid-template-columns:34px 66px;align-items:center;gap:4px;margin:3px 6px 3px 0}
+  .drow span{font-size:11px;color:#5B707E;text-align:right}
+  .drow input{font-size:16px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums;
+    border:none;border-bottom:1.5px solid #C9D3DA;background:transparent;color:var(--ink);padding:2px;outline:none;width:100%}
+  .drow input:focus{border-bottom-color:var(--red)}
+
+  /* 図 */
+  .sheet{background:var(--sheet);border:2px solid var(--ink);padding:5px;margin-bottom:10px}
+  .sheet-inner{border:1px solid var(--ink)}
+  .sheet svg{display:block;width:100%;height:auto}
+  .titleblock{display:flex;border-top:1px solid var(--ink);font-size:9px;letter-spacing:.06em}
+  .titleblock div{padding:3px 8px;border-right:1px solid var(--ink)}
+  .titleblock div:last-child{border-right:none;margin-left:auto}
+  .titleblock b{font-weight:700}
+
+  /* 結果表示器 */
+  .dro{
+    margin-top:6px;background:var(--dro-bg);border-radius:12px;
+    padding:16px 18px 14px;box-shadow:inset 0 2px 8px rgba(0,0,0,.5);
+  }
+  .dro-line{display:flex;align-items:baseline;gap:10px;justify-content:flex-end}
+  .dro-label{color:#7d8a91;font-size:14px;font-weight:700;letter-spacing:.1em}
+  .dro-val{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:36px;font-weight:600;color:var(--dro-red);
+    text-shadow:0 0 10px rgba(255,90,72,.35);letter-spacing:.02em;
+  }
+  .dro-unit{color:#7d8a91;font-size:14px;font-weight:600}
+  .dro-sub{text-align:right;color:#7d8a91;font-size:12px;margin-top:4px;font-variant-numeric:tabular-nums}
+  .dro-foot{display:flex;align-items:center;justify-content:space-between;
+    margin-top:10px;border-top:1px solid #2a3034;padding-top:9px;gap:8px}
+  .formula{color:#5d6a71;font-size:11px;letter-spacing:.02em;text-align:left}
+
+  /* 判定の帯 */
+  .verd{margin-top:10px;border-radius:10px;padding:11px 13px;font-size:13px;line-height:1.7;font-weight:600}
+  .verd.ng{background:#FCF0EF;border:1px solid #E7B7B0;color:#B23B2E}
+  .verd.ok{background:#F1F6F2;border:1px solid #BBD3C0;color:#2F6B45}
+  .verd.na{background:#F4F7F9;border:1px solid #D5DDE2;color:#5B707E;font-weight:400}
+  .verd b{font-weight:700}
+
+  table.res{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums;margin-top:8px}
+  table.res th,table.res td{border:1px solid #E3E9EC;padding:5px 4px;text-align:right}
+  table.res th{background:#F4F7F9;color:#5B707E;font-size:10.5px;font-weight:700;letter-spacing:.03em}
+  table.res td.h{text-align:left;font-weight:700}
+  table.res tr.bad td{background:#FCF0EF;color:#B23B2E}
+
+  .note{font-size:11px;color:#5B707E;line-height:1.7;margin-top:8px}
+  .note b{color:#1F3341}
+
+  footer{margin-top:18px;font-size:11px;color:#5B707E;line-height:1.7;text-align:center;letter-spacing:.03em}
+
+  .toast{
+    position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);
+    background:var(--ink);color:#fff;font-size:13px;
+    padding:9px 20px;border-radius:20px;opacity:0;pointer-events:none;
+    transition:opacity .25s,transform .25s;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+
+  /* ── 使い方ガイド（全ツール共通） ── */
+  .guide{background:#FFFFFF;border:1px solid #D5DDE2;border-radius:12px;margin:0 0 12px;overflow:hidden}
+  .guide>summary{list-style:none;cursor:pointer;padding:12px 14px;font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.04em;display:flex;align-items:center;gap:7px}
+  .guide>summary::-webkit-details-marker{display:none}
+  .guide>summary::before{content:"?";display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#1F3341;color:#fff;font-size:11px;font-weight:700;flex:none}
+  .guide[open]>summary{border-bottom:1px solid #E3E9EC}
+  .guide .gb{padding:2px 14px 14px}
+  .guide .gb h4{font-size:11px;letter-spacing:.07em;color:#5B707E;font-weight:700;margin:13px 0 6px}
+  .guide .gb ol{margin:0;padding-left:1.2em;font-size:11.5px;line-height:1.75;color:#1F3341}
+  .guide .gb ol b{color:#1F3341}
+  .guide .gx{border-top:1px dashed #E3E9EC;margin-top:11px;padding-top:8px}
+  .guide .gx h4{margin-top:6px}
+  .guide .gxin{display:flex;gap:12px;align-items:flex-start;margin-top:4px}
+  .guide .gfig{flex:none}
+  .guide .gfig svg{width:112px;height:112px;display:block;background:#FBFCFC;border:1px solid #EDF1F3;border-radius:8px}
+  .guide .gtxt{flex:1;font-size:11.5px;line-height:1.6;color:#1F3341}
+  .guide .gtxt p{margin:0 0 7px}
+  .guide .gset{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;background:#F2F6F8;border:1px solid #E3E9EC;border-radius:6px;padding:6px 8px;color:#3A5060;line-height:1.5}
+  .guide .gread b{color:#D63426}
+  .guide .gbtn{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;font:inherit;font-size:11.5px;font-weight:600;border:1px solid #1F3341;border-radius:6px;background:#fff;color:#1F3341;cursor:pointer;margin-top:2px}
+  .guide .gbtn:active{transform:translateY(1px)}
+  @media(max-width:360px){.guide .gxin{flex-direction:column}.guide .gfig svg{width:128px;height:128px}}
+
+  /* 準備（測る前）— 折りたたみ */
+  .prep{background:#FFFFFF;border:1px solid #D5DDE2;border-radius:12px;margin:0 0 10px;overflow:hidden}
+  .prep>summary{list-style:none;cursor:pointer;padding:11px 13px;font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.03em}
+  .prep>summary::-webkit-details-marker{display:none}
+  .prep[open]>summary{border-bottom:1px solid #E3E9EC}
+  .prep .pb{padding:4px 13px 13px}
+
+  /* 一括消去ボタン（v37 / 全ツール共通の見た目） */
+  .topclear{display:flex;justify-content:flex-end;margin:2px 2px 10px}
+  .topclear button{font-size:12px;font-weight:700;color:#B23B2E;background:#FBECEA;border:1px solid #E7B7B0;border-radius:9px;padding:7px 14px;cursor:pointer}
+  .topclear button:active{background:#F6DAD5}
+  .topclear button.arm{background:#B23B2E;color:#fff;border-color:#B23B2E}
+  .clearBtn{width:100%;font-size:13px;font-weight:700;padding:12px 4px;border:1.5px solid #C9D3DA;border-radius:10px;background:var(--sheet);color:#5B707E;letter-spacing:.05em;margin-bottom:6px;cursor:pointer}
+  .clearBtn.arm{border-color:var(--red);color:var(--red);background:#FCF0EF}
+  .topclear,.topClear{justify-content:space-between !important;align-items:center;gap:8px}
+  .topclear button,.topClear button{min-height:38px}
+  .backlink{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:8px 14px;
+    font-size:12px;font-weight:700;color:#5B707E;background:#FFFFFF;border:1px solid #C9D3DA;border-radius:9px;
+    text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
+  .backlink:active{background:#EEF2F4}
+  @media print{.backlink{display:none}}
+  .src{margin:10px 0 0;padding:9px 11px;background:#F4F7F9;border:1px solid #D5DDE2;border-left:3px solid #5B707E;
+    border-radius:8px;font-size:11.5px;line-height:1.75;color:#3D515F}
+  .src b{color:#1F3341}
+  .src code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#fff;border:1px solid #E3E9EC;border-radius:4px;padding:0 3px}
+  .hide{display:none !important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>PCDずれ診断<small>原因の切り分けとボルトの通り</small></h1>
+  </header>
+
+  <div class="topclear"><a class="backlink" href="../index.html">≡ ツール一覧</a><button type="button" aria-label="入力をすべて消去して最初から始める" onclick="armClear(this)">すべて消去</button></div>
+
+<details class="guide noprint">
+  <summary>使い方と例を見る</summary>
+  <div class="gb">
+    <h4>使い方</h4>
+    <ol>
+      <li><b>図面の指示</b>に PCD・穴数・ボルト（相手）の径を入れます。等配でないときは「不等配」にして各穴の角度を入れます。</li>
+      <li>キー溝や位置決めピンがあって<b>部品を回せない</b>ときは「回転できない」を選びます。回せるかどうかで結論が変わることがあります。</li>
+      <li><b>測る前の準備</b>を開くと、ノギスが届くかどうかが分かります。<b>測っている最中は閉じてください</b>（答えを見ながら読むと、人によって値が変わってしまいます）。</li>
+      <li>穴径を入れます。ばらつきが小さければ「共通」だけで構いません。<b>ボール盤で径がばらつく</b>ときは穴ごとに入れてください。</li>
+      <li>実測した距離を入れます。<b>外−外／内−内／中心間のどれで測っても構いません。</b>入れた数字から自動で見分けます（札を押せば手で直せます）。</li>
+      <li>下に<b>実効PCD</b>と各穴のずれ、そして<b>ボルトが通るか</b>が出ます。</li>
+    </ol>
+    <h4>3つの入れ方</h4>
+    <ol>
+      <li><b>かんたん</b>… 隣どうしのピッチを一周ぶん。速いですが、穴が円の内外にずれている分は見えません。</li>
+      <li><b>しっかり</b>… 2つ跨ぎ・対辺も測って位置を確定させます。<b>こちらが本来の使い方です。</b></li>
+      <li><b>座標</b>… 三次元測定機や「図面まるごと穴ピッチ(30)」の X・Y をそのまま。</li>
+    </ol>
+    <div class="src">
+      <b>計算のしかた</b><br>
+      ・<b>読みを中心間に直す</b> … 外−外 <code>C = L −(dᵢ+dⱼ)/2</code>、内−内 <code>C = L +(dᵢ+dⱼ)/2</code>。
+        同じ組を外−外と内−内の両方で測ったときは <code>C =(L外+L内)/2</code> となり、<b>穴径が式から消えます</b>。<br>
+      ・<b>かんたん（隣接ピッチのみ）</b> … 全穴が同じ円上にあるとみなし、
+        <code>Σ 2·asin(pᵢ ÷ 2R) = 360°</code> を満たす R を二分法で求めます。R は一つに決まります。<br>
+      ・<b>しっかり（総当たり）</b> … 図面の穴位置を出発点に、
+        各測定について <code>|Pᵢ−Pⱼ| − C</code> が最も小さくなる座標をレーベンバーグ・マルカート法で求めます。<br>
+      ・<b>実効PCD</b> … 求めた穴位置に図面の穴配置を倍率つきで重ね、その倍率 s から <code>実効PCD = s × 図面PCD</code>。<br>
+      ・<b>重ね方</b> … ふつうの最小二乗だと、<b>大きく外れた穴に基準が引っ張られて</b>ずれが全穴に薄く散り、
+        どの穴が原因か分からなくなります。そこで外れている穴の重みを下げながら重ね直しています
+        （重み <code>(1−(e/3M)²)²</code>、M は各穴のずれの中央値）。外した穴は表に ＊ を付けています。<br>
+      ・<b>各穴のずれ</b> … 重ねた残りを、円の中心から見て<b>径方向</b>（内外。外向きが＋）と
+        <b>周方向</b>（回り方向。真上0°・時計回りが＋）に分けたものです。<br>
+      ・<b>組付き判定</b> … 部品はのび縮みしないので<b>倍率なし</b>で、ずらし・回しだけを動かします。
+        穴ごとのすきま半径 <code>cᵢ =(穴径ᵢ − ボルト径)÷2</code> に対し
+        <code>max( ずれᵢ − cᵢ )</code> を最小にする位置を探し、<b>0以下なら通ります</b>。<br>
+      <b>穴が大きく開いていれば、その穴の逃げは増えます。</b>これは幾何公差の最大実体（Ⓜ）のボーナス公差と同じ考え方です。<br>
+      <b>出典</b>：JIS B 0021（幾何公差の図示方法）の最大実体公差方式の考え方。円に内接する多角形の辺長から外接円半径が一つに決まることは初等幾何の性質によります。
+    </div>
+    <div class="gx">
+      <h4>例 ── PCD100 に 6穴、隣が 0.8mm ずれている</h4>
+      <div class="gxin">
+        <div class="gfig"><svg viewBox="0 0 120 120" role="img" aria-label="PCD100の6穴のうち1つが回り方向にずれている図">
+          <circle cx="60" cy="60" r="40" fill="none" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="5 2 1.2 2"/>
+          <circle cx="60" cy="20" r="3.4" fill="#fff" stroke="#1F3341" stroke-width="1.3"/>
+          <circle cx="94.64" cy="40" r="3.4" fill="#fff" stroke="#1F3341" stroke-width="1.3"/>
+          <circle cx="94.64" cy="80" r="3.4" fill="#fff" stroke="#1F3341" stroke-width="1.3"/>
+          <circle cx="60" cy="100" r="3.4" fill="#fff" stroke="#1F3341" stroke-width="1.3"/>
+          <circle cx="25.36" cy="80" r="3.4" fill="#fff" stroke="#1F3341" stroke-width="1.3"/>
+          <circle cx="21.4" cy="43.5" r="3.6" fill="none" stroke="#D63426" stroke-width="1.7"/>
+          <circle cx="25.36" cy="40" r="3.4" fill="none" stroke="#C9D3DA" stroke-width="1.1" stroke-dasharray="2 1.6"/>
+          <text x="60" y="63" font-size="7" fill="#5B707E" text-anchor="middle">PCD100</text>
+        </svg></div>
+        <div class="gtxt">
+          <p>一周のピッチが 50 / 50.8 / 49.2 / 50 / 50 / 50。φ9キリ、M8ボルト。</p>
+          <p class="gset">PCD 100 ／ 6穴 ／ ボルト 8 ／ 穴径 9 ／ かんたん</p>
+          <p class="gread">読み方：実効PCD は <b>100.00</b>（＝PCD自体は正常）。<b>穴3 が回り方向へ +0.77mm</b>。
+            図面判定は規格外ですが、組付きは回せるなら通ります。</p>
+          <button class="gbtn" type="button" data-ex='{"set":[{"click":"#mEasy"},{"id":"inPCD","v":100},{"id":"inN","v":6},{"id":"inBolt","v":8},{"id":"inDiaC","v":9},{"id":"ez0","v":50},{"id":"ez1","v":50.8},{"id":"ez2","v":49.2},{"id":"ez3","v":50},{"id":"ez4","v":50},{"id":"ez5","v":50}]}' onclick="tryExample(this)">この例を試す</button>
+        </div>
+      </div>
+    </div>
+    <div class="gx">
+      <h4>例 ── PCD が 99 になっている</h4>
+      <div class="gxin">
+        <div class="gtxt">
+          <p>一周のピッチが全部 49.5。割り出しは完璧なのに、ピッチが図面（50.0）より小さい。</p>
+          <p class="gread">読み方：実効PCD は <b>99.00</b>、各穴の回り方向のずれは <b>ゼロ</b>。
+            つまり<b>PCDそのものが1mm小さい</b>。この場合はずらしても回しても直らず、φ9穴・M8では通りません。</p>
+          <button class="gbtn" type="button" data-ex='{"set":[{"click":"#mEasy"},{"id":"inPCD","v":100},{"id":"inN","v":6},{"id":"inBolt","v":8},{"id":"inDiaC","v":9},{"id":"ez0","v":49.5},{"id":"ez1","v":49.5},{"id":"ez2","v":49.5},{"id":"ez3","v":49.5},{"id":"ez4","v":49.5},{"id":"ez5","v":49.5}]}' onclick="tryExample(this)">この例を試す</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</details>
+
+  <!-- ══ 図面の指示 ══ -->
+  <div class="card">
+    <h3>図面の指示</h3>
+    <div class="dimsw" role="group" aria-label="PCDの入れ方">
+      <button type="button" id="swDia" class="on">PCD（直径）で</button>
+      <button type="button" id="swRad">半径で</button>
+    </div>
+    <div class="row">
+      <label id="lbPCD">PCD<small>ピッチ円直径</small></label>
+      <input id="inPCD" type="text" inputmode="decimal" placeholder="例 100">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row">
+      <label>穴数 n</label>
+      <input id="inN" type="text" inputmode="numeric" placeholder="例 6">
+      <span class="unit">穴</span>
+    </div>
+    <div class="row">
+      <label>ボルト（相手）の径<small>ピンなら実測、ねじならおねじの外径</small></label>
+      <input id="inBolt" type="text" inputmode="decimal" placeholder="例 8">
+      <span class="unit">mm</span>
+    </div>
+    <div class="dimsw" role="group" aria-label="穴の割り付け" style="margin-top:8px">
+      <button type="button" id="swEqual" class="on">等配</button>
+      <button type="button" id="swUneq">不等配</button>
+    </div>
+    <div id="angBox" class="hide">
+      <div class="note" style="margin-top:0">真上を 0°、時計回りを ＋ として、各穴の角度を入れます。</div>
+      <div id="angRows"></div>
+    </div>
+    <div class="dimsw" role="group" aria-label="部品を回せるか" style="margin-top:8px">
+      <button type="button" id="swRotFree" class="on">回してよい</button>
+      <button type="button" id="swRotFix">回転できない</button>
+    </div>
+    <div class="note" id="rotNote">穴だけで留めるフランジなら「回してよい」。キー溝・位置決めピン・合いマークで向きが決まっているなら「回転できない」。</div>
+  </div>
+
+  <!-- ══ 測る前の準備 ══ -->
+  <details class="prep noprint" id="prepBox">
+    <summary>測る前の準備 ── ノギスが届くか確かめる</summary>
+    <div class="pb">
+      <div class="note" style="margin-top:2px">
+        <b>測っている最中は閉じてください。</b>図面の値を見ながら読むと、人によって数字が変わってしまいます。
+        ここは「どのノギスを持って行くか」を決めるためだけの画面です。
+      </div>
+      <table class="res" id="prepTbl"></table>
+      <div class="note" id="prepMsg"></div>
+    </div>
+  </details>
+
+  <!-- ══ 入れ方の切替 ══ -->
+  <div class="mode-lg" role="group" aria-label="測定値の入れ方">
+    <button type="button" id="mEasy" class="on">かんたん</button>
+    <button type="button" id="mFull">しっかり</button>
+    <button type="button" id="mXY">座標</button>
+  </div>
+
+  <!-- ══ 穴径 ══ -->
+  <div class="card" id="diaCard">
+    <h3>穴の径（実測）<span>　組付き判定にも使います</span></h3>
+    <div class="row">
+      <label>共通の穴径<small>ばらつきが小さければこれだけで可</small></label>
+      <input id="inDiaC" type="text" inputmode="decimal" placeholder="例 9">
+      <span class="unit">mm</span>
+    </div>
+    <details style="margin-top:6px">
+      <summary style="font-size:11.5px;font-weight:700;color:#5B707E;cursor:pointer;padding:4px 0">穴ごとに入れる（径がばらつくとき）</summary>
+      <div id="diaRows" style="margin-top:4px"></div>
+      <div class="note">入れた穴だけ個別の値を使い、空欄の穴は共通の値を使います。<br>
+        ドリルの振れで穴が丸くないときは、<b>いちばん大きい方向と小さい方向を測った平均</b>を入れてください。</div>
+    </details>
+    <div class="note" id="diaWarn"></div>
+  </div>
+
+  <!-- ══ かんたん：隣接ピッチ ══ -->
+  <div class="card" id="easyCard">
+    <h3>隣どうしのピッチ（一周ぶん）</h3>
+    <div id="easyRows"></div>
+    <div class="note">穴1→2、穴2→3 …と一周して、最後は穴n→1 まで入れます。<br>
+      <b>この測り方では、穴が円の内外にずれている分は出ません。</b>ピッチにほとんど現れないためです。
+      内外も見たいときは「しっかり」へ。</div>
+  </div>
+
+  <!-- ══ しっかり：総当たり ══ -->
+  <div class="card hide" id="fullCard">
+    <h3>測った距離</h3>
+    <div id="fullRows"></div>
+    <div class="btnbar">
+      <button type="button" class="minibtn" id="addAdj">隣接をまとめて追加</button>
+      <button type="button" class="minibtn" id="addSkip">2つ跨ぎをまとめて追加</button>
+      <button type="button" class="minibtn" id="addOpp">対辺をまとめて追加</button>
+      <button type="button" class="minibtn" id="addOne">1組ふやす</button>
+    </div>
+    <div class="note" id="rankMsg"></div>
+  </div>
+
+  <!-- ══ 座標 ══ -->
+  <div class="card hide" id="xyCard">
+    <h3>穴の座標（実測）</h3>
+    <div id="xyRows"></div>
+    <div class="note">中心はどこでも構いません（ずらし・回しは自動で合わせます）。真上が ＋Y、右が ＋X です。</div>
+  </div>
+
+  <!-- ══ 図 ══ -->
+  <div class="sheet">
+    <div class="sheet-inner">
+      <svg id="dwg" viewBox="0 0 340 260" role="img" aria-label="図面の穴位置と実測の穴位置を重ねた図"></svg>
+      <div class="titleblock">
+        <div><b>PCDずれ診断</b></div>
+        <div id="tbScale">ずれの拡大 ―</div>
+        <div>TOOL-35</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 結果 ══ -->
+  <div class="dro">
+    <div class="dro-line">
+      <span class="dro-label">実効PCD</span>
+      <span class="dro-val" id="outPCD">—</span>
+      <span class="dro-unit">mm</span>
+    </div>
+    <div class="dro-sub" id="outPCDsub">図面の値を入れてください</div>
+    <div class="dro-foot">
+      <span class="formula" id="outFormula">Σ 2·asin(p ÷ 2R) = 360° を満たす R を求めています</span>
+    </div>
+  </div>
+
+  <div class="verd na" id="verdDiag">測定値を入れると診断が出ます。</div>
+
+  <table class="res" id="devTbl"></table>
+
+  <div class="card" style="margin-top:12px">
+    <h3>図面判定</h3>
+    <div class="row">
+      <label>位置度の公差<small>図面の指示（φ）。空欄可</small></label>
+      <input id="inTP" type="text" inputmode="decimal" placeholder="例 0.3">
+      <span class="unit">mm</span>
+    </div>
+    <div class="verd na" id="verdTP" style="margin-top:4px">位置度の公差を入れると合否が出ます。</div>
+    <div class="note">ここはパターン全体を最良の位置に合わせたときの値です。<b>図面にデータム（基準）の指示があるときは、この値では判定できません。</b>
+      基準からの実測で <a href="../true-position/" style="color:#5B707E">真位置度判定(TOOL-13)</a> をお使いください。</div>
+  </div>
+
+  <div class="card">
+    <h3>組付き参考<span>　合否ではありません</span></h3>
+    <div class="verd na" id="verdFit">測定値を入れると出ます。</div>
+    <div class="note"><b>ここは不具合報告のための参考値です。</b>「通る」と出ても、図面判定が規格外なら部品は規格外です。
+      通らないと出たときは、その根拠（あと何mm足りないか）としてお使いください。</div>
+  </div>
+
+  <button class="clearBtn" type="button" onclick="armClear(this)">すべて消去</button>
+
+  <footer>
+    穴の座標そのものを組み立てたいときは
+    <a href="../hole-map/" style="color:#5B707E">図面まるごと穴ピッチ(TOOL-30)</a>、
+    ピッチの一発計算は <a href="../pcd-pitch/" style="color:#5B707E">PCD穴ピッチ(TOOL-02)</a> をどうぞ。<br>
+    このページは計算のみを行います。<br>
+    入力値の送信・保存は一切ありません(端末内で完結)。
+  </footer>
+</div>
+
+<div class="toast" id="toast">コピーしました</div>
+
+<script>
+(function(){
+"use strict";
+
+function numOK(v){ return typeof v==="number" && isFinite(v); }  /* isFinite(null)===true なので型も見る */
+function g(id){ return document.getElementById(id); }
+function num(id){ var e=g(id); if(!e) return NaN; var v=parseFloat(e.value); return numOK(v)?v:NaN; }
+function nf(v,d){ if(!numOK(v)) return "—"; return v.toFixed(d==null?3:d); }
+function sf(v,d){ if(!numOK(v)) return "—"; return (v>0?"+":"")+v.toFixed(d==null?3:d); }
+
+var toastTimer=null;
+function toast(msg){
+  var t=g("toast"); if(!t) return;
+  t.textContent=msg; t.className="toast show";
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(function(){ t.className="toast"; },1600);
+}
+
+/* ═══ 状態 ═══ */
+var S={
+  mode:"easy",      /* easy | full | xy */
+  dia:true,         /* PCDを直径で入れる */
+  equal:true,       /* 等配 */
+  rotFree:true,
+  n:6,
+  angs:[],          /* 不等配のときの各穴の角度（度） */
+  holeDia:[],       /* 穴ごとの径 */
+  easy:[],          /* 隣接ピッチ */
+  rows:[],          /* しっかり: {a:0基点, b:0基点, L:値, k:"auto"|"out"|"in"|"ctr"} */
+  xy:[]             /* 座標: {x:,y:} */
+};
+var KEY="pcddiag_v1";
+
+/* ═══ 数学 ═══ */
+
+/* 円上仮定：Σ2·asin(p/2R)=360° を満たす R（二分法。単調なので一意） */
+function solveCircleR(P){
+  var i,mx=0;
+  for(i=0;i<P.length;i++){ if(!numOK(P[i])||P[i]<=0) return NaN; if(P[i]>mx) mx=P[i]; }
+  if(P.length<3) return NaN;
+  function f(R){
+    var s=0,k,x;
+    for(k=0;k<P.length;k++){ x=P[k]/(2*R); if(x>1) x=1; s+=2*Math.asin(x); }
+    return s-2*Math.PI;
+  }
+  var lo=mx/2*(1+1e-12), hi=mx*80;
+  if(f(lo)<0) return NaN;   /* 中心を囲めない＝入力が閉じない */
+  if(f(hi)>0) return NaN;
+  for(i=0;i<220;i++){ var m=(lo+hi)/2; if(f(m)>0) lo=m; else hi=m; }
+  return (lo+hi)/2;
+}
+
+/* 角度規約：真上0°・時計回り＋ → (x,y)=(R sinθ, R cosθ) */
+function polar(R,degv){ var a=degv*Math.PI/180; return {x:R*Math.sin(a), y:R*Math.cos(a)}; }
+
+function nominalPts(){
+  var R=nomR(), i, out=[];
+  if(!numOK(R)) return null;
+  for(i=0;i<S.n;i++) out.push(polar(R, nomAngle(i)));
+  return out;
+}
+function nomR(){ var v=num("inPCD"); if(!numOK(v)||v<=0) return NaN; return S.dia? v/2 : v; }
+function nomPCD(){ var R=nomR(); return numOK(R)? 2*R : NaN; }
+function nomAngle(i){
+  if(S.equal) return 360*i/S.n;
+  var v=S.angs[i]; return numOK(v)? v : 360*i/S.n;
+}
+/* 図面上の中心間距離 */
+function nomDist(a,b){
+  var P=nominalPts(); if(!P) return NaN;
+  return Math.sqrt((P[a].x-P[b].x)*(P[a].x-P[b].x)+(P[a].y-P[b].y)*(P[a].y-P[b].y));
+}
+
+/* 穴径（個別 → 共通 の順） */
+function holeD(i){
+  var v=S.holeDia[i];
+  if(numOK(v)&&v>0) return v;
+  var c=num("inDiaC");
+  return (numOK(c)&&c>0)? c : NaN;
+}
+
+/* 読み → 中心間距離。kind は "out"(外-外) "in"(内-内) "ctr"(中心間) */
+function toCenter(L,a,b,kind){
+  if(kind==="ctr") return L;
+  var da=holeD(a), db=holeD(b);
+  if(!numOK(da)||!numOK(db)) return NaN;
+  var h=(da+db)/2;
+  return (kind==="out")? L-h : L+h;
+}
+/* 自動判定：図面の中心間からの離れ方で見分ける */
+function guessKind(L,a,b){
+  var C0=nomDist(a,b), da=holeD(a), db=holeD(b);
+  if(!numOK(C0)||!numOK(da)||!numOK(db)) return {k:"ctr",sure:false};
+  var h=(da+db)/2;
+  if(h<=0) return {k:"ctr",sure:false};
+  var cand=[{k:"ctr",d:Math.abs(L-C0)},{k:"out",d:Math.abs(L-(C0+h))},{k:"in",d:Math.abs(L-(C0-h))}];
+  var best=cand[0],i;
+  for(i=1;i<cand.length;i++) if(cand[i].d<best.d) best=cand[i];
+  return {k:best.k, sure:(best.d < h/2)};
+}
+
+/* 連立一次方程式（部分ピボット付きガウス消去） */
+function solveLin(A,b,m){
+  var i,j,k,p,t,f;
+  for(i=0;i<m;i++){
+    p=i;
+    for(j=i+1;j<m;j++) if(Math.abs(A[j][i])>Math.abs(A[p][i])) p=j;
+    if(Math.abs(A[p][i])<1e-14) return null;
+    if(p!==i){ t=A[p];A[p]=A[i];A[i]=t; t=b[p];b[p]=b[i];b[i]=t; }
+    for(j=i+1;j<m;j++){
+      f=A[j][i]/A[i][i]; if(f===0) continue;
+      for(k=i;k<m;k++) A[j][k]-=f*A[i][k];
+      b[j]-=f*b[i];
+    }
+  }
+  var x=new Array(m);
+  for(i=m-1;i>=0;i--){
+    t=b[i];
+    for(j=i+1;j<m;j++) t-=A[i][j]*x[j];
+    x[i]=t/A[i][i];
+  }
+  return x;
+}
+
+/* 測定の並びから位置が確定するか（ヤコビアンの階数）。必要階数 = 2n-3 */
+function jacoRank(P,meas){
+  var n=P.length, cols=2*n, rows=[], i,k,dx,dy,L,r;
+  for(k=0;k<meas.length;k++){
+    i=meas[k].a; var j=meas[k].b;
+    dx=P[i].x-P[j].x; dy=P[i].y-P[j].y; L=Math.sqrt(dx*dx+dy*dy);
+    if(!(L>0)) continue;
+    r=[]; for(var c=0;c<cols;c++) r.push(0);
+    r[2*i]=dx/L; r[2*i+1]=dy/L; r[2*j]=-dx/L; r[2*j+1]=-dy/L;
+    rows.push(r);
+  }
+  var rk=0, m=rows, piv, c2;
+  for(c2=0;c2<cols;c2++){
+    piv=-1;
+    for(i=rk;i<m.length;i++) if(Math.abs(m[i][c2])>1e-7){ piv=i; break; }
+    if(piv<0) continue;
+    var tmp=m[rk]; m[rk]=m[piv]; m[piv]=tmp;
+    var pv=m[rk][c2];
+    for(i=0;i<m.length;i++){
+      if(i===rk) continue;
+      if(Math.abs(m[i][c2])<1e-12) continue;
+      var f2=m[i][c2]/pv;
+      for(var c3=0;c3<cols;c3++) m[i][c3]-=f2*m[rk][c3];
+    }
+    rk++;
+    if(rk>=m.length) break;
+  }
+  return rk;
+}
+
+/* しっかりモード：座標を最小二乗で求める（レーベンバーグ・マルカート） */
+function solveCoords(P0,meas){
+  var n=P0.length, i,k,it;
+  var P=[]; for(i=0;i<n;i++) P.push({x:P0[i].x,y:P0[i].y});
+  var lam=1e-3;
+  function cost(Q){
+    var s=0,dx,dy,L;
+    for(k=0;k<meas.length;k++){
+      dx=Q[meas[k].a].x-Q[meas[k].b].x; dy=Q[meas[k].a].y-Q[meas[k].b].y;
+      L=Math.sqrt(dx*dx+dy*dy);
+      s+=(L-meas[k].C)*(L-meas[k].C);
+    }
+    return s;
+  }
+  var cur=cost(P);
+  for(it=0;it<60;it++){
+    var m=2*n, A=[], b=[];
+    for(i=0;i<m;i++){ var rr=[]; for(k=0;k<m;k++) rr.push(0); A.push(rr); b.push(0); }
+    for(k=0;k<meas.length;k++){
+      var a=meas[k].a, bb=meas[k].b;
+      var dx=P[a].x-P[bb].x, dy=P[a].y-P[bb].y, L=Math.sqrt(dx*dx+dy*dy);
+      if(!(L>1e-9)) continue;
+      var J={}; var idx=[2*a,2*a+1,2*bb,2*bb+1];
+      var val=[dx/L,dy/L,-dx/L,-dy/L];
+      var res=L-meas[k].C;
+      for(i=0;i<4;i++){
+        b[idx[i]]-=val[i]*res;
+        for(var j2=0;j2<4;j2++) A[idx[i]][idx[j2]]+=val[i]*val[j2];
+      }
+    }
+    for(i=0;i<m;i++) A[i][i]+=lam+1e-9;
+    var d=solveLin(A,b,m);
+    if(!d) break;
+    var Q=[]; for(i=0;i<n;i++) Q.push({x:P[i].x+d[2*i], y:P[i].y+d[2*i+1]});
+    var c2=cost(Q);
+    if(c2<cur){ P=Q; if(cur-c2<1e-14) { cur=c2; break; } cur=c2; lam=Math.max(lam*0.4,1e-9); }
+    else { lam*=6; if(lam>1e8) break; }
+  }
+  return {pts:P, rms:Math.sqrt(cur/Math.max(1,meas.length))};
+}
+
+/* 相似（ずらし・回し・倍率）の最小二乗当てはめ： q → p。w は重み（省略可） */
+function fitSimilarity(q,p,w){
+  var n=q.length,i,W=0,cq={x:0,y:0},cp={x:0,y:0},wi;
+  for(i=0;i<n;i++){
+    wi=w? w[i]:1;
+    W+=wi; cq.x+=wi*q[i].x; cq.y+=wi*q[i].y; cp.x+=wi*p[i].x; cp.y+=wi*p[i].y;
+  }
+  if(!(W>0)) return null;
+  cq.x/=W; cq.y/=W; cp.x/=W; cp.y/=W;
+  var c=0,d=0,sa=0;
+  for(i=0;i<n;i++){
+    wi=w? w[i]:1;
+    var ax=q[i].x-cq.x, ay=q[i].y-cq.y, bx=p[i].x-cp.x, by=p[i].y-cp.y;
+    c+=wi*(ax*bx+ay*by); d+=wi*(ax*by-ay*bx); sa+=wi*(ax*ax+ay*ay);
+  }
+  if(sa<=0) return null;
+  var ph=Math.atan2(d,c), s=Math.sqrt(c*c+d*d)/sa;
+  if(!(s>0)) s=1;
+  var co=Math.cos(ph), si=Math.sin(ph);
+  var t={x:cp.x-s*(cq.x*co-cq.y*si), y:cp.y-s*(cq.x*si+cq.y*co)};
+  return {s:s, ph:ph, t:t};
+}
+
+/* 外れ値に強い当てはめ。
+   ひとつの穴が大きく外れていると、ふつうの最小二乗では基準がその穴に引っ張られ、
+   ずれが全穴に薄く塗り広げられて「どの穴が犯人か」が分からなくなる。
+   そこで外れている穴の重みを下げながら当てはめ直す（重み付き反復）。 */
+function fitRobust(q,p){
+  var n=q.length, w=[], i, it, tr=null;
+  for(i=0;i<n;i++) w.push(1);
+  for(it=0;it<15;it++){
+    tr=fitSimilarity(q,p,w);
+    if(!tr) return null;
+    var e=[],srt=[];
+    for(i=0;i<n;i++){
+      var a2=applyTr(q[i],tr);
+      var v=Math.sqrt((p[i].x-a2.x)*(p[i].x-a2.x)+(p[i].y-a2.y)*(p[i].y-a2.y));
+      e.push(v); srt.push(v);
+    }
+    srt.sort(function(x,y){ return x-y; });
+    var med=(n%2)? srt[(n-1)/2] : (srt[n/2-1]+srt[n/2])/2;
+    var sc=med*3.0;
+    if(!(sc>0.005)) sc=0.005;      /* 測定のばらつき程度は外れ値としない */
+    var nw=[],sum=0;
+    for(i=0;i<n;i++){
+      var r=e[i]/sc, ww=(r<1)? (1-r*r)*(1-r*r) : 0;
+      nw.push(ww); sum+=ww;
+    }
+    if(sum<3){ for(i=0;i<n;i++) if(nw[i]<0.2) nw[i]=0.2; }   /* 当てはめに要る数は残す */
+    var diff=0;
+    for(i=0;i<n;i++) diff=Math.max(diff,Math.abs(nw[i]-w[i]));
+    w=nw;
+    if(diff<1e-10) break;
+  }
+  tr=fitSimilarity(q,p,w);
+  if(!tr) return null;
+  tr.w=w;
+  return tr;
+}
+function applyTr(q,tr){
+  var co=Math.cos(tr.ph), si=Math.sin(tr.ph), s=(tr.s==null?1:tr.s);
+  return {x:s*(q.x*co-q.y*si)+tr.t.x, y:s*(q.x*si+q.y*co)+tr.t.y};
+}
+
+/* 組付き：max( |ずれ| − すきま ) を最小にする ずらし・回し（倍率なし） */
+var DIRS=null;
+function dirs(){
+  if(DIRS) return DIRS;
+  DIRS=[]; var a,b,c;
+  for(a=-1;a<=1;a++) for(b=-1;b<=1;b++) for(c=-1;c<=1;c++){
+    if(a===0&&b===0&&c===0) continue;
+    DIRS.push([a,b,c]);
+  }
+  return DIRS;
+}
+function fitAssemble(q,p,cl,rotFree){
+  var n=q.length,i;
+  function gval(v){
+    var co=Math.cos(v[2]), si=Math.sin(v[2]), mx=-1e18,k;
+    for(k=0;k<n;k++){
+      var ex=(q[k].x*co-q[k].y*si)+v[0]-p[k].x;
+      var ey=(q[k].x*si+q[k].y*co)+v[1]-p[k].y;
+      var e=Math.sqrt(ex*ex+ey*ey)-cl[k];
+      if(e>mx) mx=e;
+    }
+    return mx;
+  }
+  /* 初期値：最小二乗の当てはめ（倍率は使わない） */
+  var tr=fitSimilarity(q,p);
+  var cur;
+  if(tr) cur=[tr.t.x + 0, tr.t.y + 0, rotFree? tr.ph : 0];
+  else cur=[0,0,0];
+  if(!rotFree){
+    /* 回転なしなら、ずらしだけで重心を合わせ直す */
+    var cq={x:0,y:0}, cp={x:0,y:0};
+    for(i=0;i<n;i++){ cq.x+=q[i].x; cq.y+=q[i].y; cp.x+=p[i].x; cp.y+=p[i].y; }
+    cur=[(cp.x-cq.x)/n,(cp.y-cq.y)/n,0];
+  }
+  var best=gval(cur), D=dirs(), st=[0.5,0.5,0.01], it, moved;
+  for(it=0;it<4000;it++){
+    moved=false;
+    for(i=0;i<D.length;i++){
+      if(!rotFree && D[i][2]!==0) continue;
+      var t2=[cur[0]+D[i][0]*st[0], cur[1]+D[i][1]*st[1], cur[2]+D[i][2]*st[2]];
+      var v2=gval(t2);
+      if(v2<best-1e-14){ best=v2; cur=t2; moved=true; }
+    }
+    if(!moved){
+      st=[st[0]*0.5,st[1]*0.5,st[2]*0.5];
+      if(st[0]<1e-9) break;
+    }
+  }
+  /* 各穴のずれ量 */
+  var co=Math.cos(cur[2]), si=Math.sin(cur[2]), devs=[];
+  for(i=0;i<n;i++){
+    var ex=(q[i].x*co-q[i].y*si)+cur[0]-p[i].x;
+    var ey=(q[i].x*si+q[i].y*co)+cur[1]-p[i].y;
+    devs.push(Math.sqrt(ex*ex+ey*ey));
+  }
+  return {worst:best, tx:cur[0], ty:cur[1], ph:cur[2], devs:devs};
+}
+
+/* ═══ 入力欄の組み立て ═══ */
+function nOf(){
+  var v=parseInt(g("inN").value,10);
+  if(!numOK(v)||v<3) v=3;
+  if(v>16) v=16;
+  return v;
+}
+function buildRows(){
+  S.n=nOf();
+  var i,h;
+
+  /* 不等配の角度 */
+  h="";
+  for(i=0;i<S.n;i++){
+    h+='<span class="drow"><span>穴'+(i+1)+'</span><input type="text" inputmode="decimal" id="ang'+i+'" '+
+       'placeholder="'+(360*i/S.n).toFixed(1)+'" value="'+(numOK(S.angs[i])?S.angs[i]:"")+'"></span>';
+  }
+  g("angRows").innerHTML=h;
+
+  /* 穴径 */
+  h="";
+  for(i=0;i<S.n;i++){
+    h+='<span class="drow"><span>穴'+(i+1)+'</span><input type="text" inputmode="decimal" id="hd'+i+'" '+
+       'value="'+(numOK(S.holeDia[i])?S.holeDia[i]:"")+'"></span>';
+  }
+  g("diaRows").innerHTML=h;
+
+  /* かんたん：隣接ピッチ */
+  h="";
+  for(i=0;i<S.n;i++){
+    var to=(i+1)%S.n;
+    h+='<div class="prow"><span class="idx">'+(i+1)+'</span>'+
+       '<span style="font-size:12px;font-weight:600;grid-column:span 2">穴'+(i+1)+' → 穴'+(to+1)+'</span>'+
+       '<input type="text" inputmode="decimal" id="ez'+i+'" value="'+(numOK(S.easy[i])?S.easy[i]:"")+'">'+
+       '<span class="kind" id="ek'+i+'">—</span><span></span></div>';
+  }
+  g("easyRows").innerHTML=h;
+
+  /* 座標 */
+  h="";
+  for(i=0;i<S.n;i++){
+    h+='<div class="prow"><span class="idx">'+(i+1)+'</span>'+
+       '<span style="font-size:12px;font-weight:600">穴'+(i+1)+'</span>'+
+       '<input type="text" inputmode="decimal" id="xx'+i+'" placeholder="X" value="'+(S.xy[i]&&numOK(S.xy[i].x)?S.xy[i].x:"")+'">'+
+       '<input type="text" inputmode="decimal" id="xy'+i+'" placeholder="Y" value="'+(S.xy[i]&&numOK(S.xy[i].y)?S.xy[i].y:"")+'">'+
+       '<span></span><span></span></div>';
+  }
+  g("xyRows").innerHTML=h;
+
+  buildFullRows();
+  bindDynamic();
+}
+
+function opt(sel,cur){
+  var i,h="";
+  for(i=0;i<S.n;i++) h+='<option value="'+i+'"'+(i===cur?' selected':'')+'>穴'+(i+1)+'</option>';
+  return h;
+}
+function buildFullRows(){
+  var i,h="";
+  for(i=0;i<S.rows.length;i++){
+    var r=S.rows[i];
+    if(r.a>=S.n) r.a=0;
+    if(r.b>=S.n) r.b=Math.min(1,S.n-1);
+    h+='<div class="prow" data-k="'+i+'"><span class="idx">'+(i+1)+'</span>'+
+       '<select class="pa">'+opt(0,r.a)+'</select>'+
+       '<select class="pb">'+opt(0,r.b)+'</select>'+
+       '<input type="text" inputmode="decimal" class="pl" value="'+(numOK(r.L)?r.L:"")+'">'+
+       '<span class="kind">—</span>'+
+       '<button type="button" class="del" aria-label="この行を消す">✕</button></div>';
+  }
+  if(!S.rows.length) h='<div class="note" style="margin-top:0">下のボタンで測った組を足してください。</div>';
+  g("fullRows").innerHTML=h;
+}
+
+/* ═══ 読み取り ═══ */
+function readInputs(){
+  var i,e;
+  for(i=0;i<S.n;i++){
+    e=g("ang"+i); if(e){ var a=parseFloat(e.value); S.angs[i]=numOK(a)?a:NaN; }
+    e=g("hd"+i);  if(e){ var d=parseFloat(e.value); S.holeDia[i]=numOK(d)&&d>0?d:NaN; }
+    e=g("ez"+i);  if(e){ var p=parseFloat(e.value); S.easy[i]=numOK(p)?p:NaN; }
+    var ex=g("xx"+i), ey=g("xy"+i);
+    if(ex&&ey){
+      var vx=parseFloat(ex.value), vy=parseFloat(ey.value);
+      S.xy[i]={x:numOK(vx)?vx:NaN, y:numOK(vy)?vy:NaN};
+    }
+  }
+  var box=g("fullRows"), rows=box.getElementsByClassName("prow");
+  for(i=0;i<rows.length;i++){
+    var k=parseInt(rows[i].getAttribute("data-k"),10);
+    if(!S.rows[k]) continue;
+    S.rows[k].a=parseInt(rows[i].getElementsByClassName("pa")[0].value,10);
+    S.rows[k].b=parseInt(rows[i].getElementsByClassName("pb")[0].value,10);
+    var lv=parseFloat(rows[i].getElementsByClassName("pl")[0].value);
+    S.rows[k].L=numOK(lv)?lv:NaN;
+  }
+}
+
+/* ═══ 測定 → 中心間距離の一覧 ═══ */
+function gatherMeas(){
+  var out=[],i;
+  if(S.mode==="easy"){
+    for(i=0;i<S.n;i++){
+      var L=S.easy[i]; if(!numOK(L)) continue;
+      var a=i, b=(i+1)%S.n;
+      var kind=kindOf("ek"+i, L, a, b);
+      var C=toCenter(L,a,b,kind.k);
+      if(numOK(C)) out.push({a:a,b:b,C:C,kind:kind.k,sure:kind.sure,L:L});
+    }
+  } else if(S.mode==="full"){
+    var rows=g("fullRows").getElementsByClassName("prow");
+    for(i=0;i<S.rows.length;i++){
+      var r=S.rows[i];
+      if(!numOK(r.L)||r.a===r.b) continue;
+      var kd=kindOf(null,r.L,r.a,r.b,r.k);
+      var C2=toCenter(r.L,r.a,r.b,kd.k);
+      if(numOK(C2)) out.push({a:r.a,b:r.b,C:C2,kind:kd.k,sure:kd.sure,L:r.L,row:i});
+    }
+  }
+  return out;
+}
+function kindOf(spanId,L,a,b,forced){
+  if(forced&&forced!=="auto") return {k:forced,sure:true};
+  return guessKind(L,a,b);
+}
+var KINDLBL={out:"外−外",in:"内−内",ctr:"中心間"};
+
+/* 同じ組を外−外と内−内の両方で測ったときは、穴径を使わず平均する */
+function mergePairs(meas){
+  var map={},i,key,out=[];
+  for(i=0;i<meas.length;i++){
+    var m=meas[i];
+    key=Math.min(m.a,m.b)+"_"+Math.max(m.a,m.b);
+    if(!map[key]) map[key]={a:m.a,b:m.b,list:[]};
+    map[key].list.push(m);
+  }
+  for(key in map){
+    if(!map.hasOwnProperty(key)) continue;
+    var grp=map[key], hasOut=null, hasIn=null, s=0, c=0;
+    for(i=0;i<grp.list.length;i++){
+      if(grp.list[i].kind==="out"&&hasOut===null) hasOut=grp.list[i];
+      if(grp.list[i].kind==="in"&&hasIn===null) hasIn=grp.list[i];
+      s+=grp.list[i].C; c++;
+    }
+    if(hasOut&&hasIn) out.push({a:grp.a,b:grp.b,C:(hasOut.L+hasIn.L)/2, both:true});
+    else out.push({a:grp.a,b:grp.b,C:s/c, both:false});
+  }
+  return out;
+}
+
+/* ═══ 本計算 ═══ */
+var LAST=null;
+
+function recalc(){
+  readInputs();
+  updateKindLabels();
+  updateDiaWarn();
+  updatePrep();
+
+  var res=null;
+  var R0=nomR();
+  var Q=nominalPts();
+
+  if(S.mode==="xy"){
+    var pts=[],ok=true,i;
+    for(i=0;i<S.n;i++){
+      if(!S.xy[i]||!numOK(S.xy[i].x)||!numOK(S.xy[i].y)){ ok=false; break; }
+      pts.push({x:S.xy[i].x,y:S.xy[i].y});
+    }
+    if(ok) res={pts:pts, method:"xy", radialOK:true};
+  } else {
+    var meas=gatherMeas();
+    if(S.mode==="easy"){
+      if(meas.length===S.n){
+        var P=[];
+        for(i=0;i<S.n;i++) P.push(meas[i].C);
+        var R=solveCircleR(P);
+        if(numOK(R)){
+          var pts2=[],ang=0;
+          for(i=0;i<S.n;i++){
+            pts2.push({x:R*Math.sin(ang), y:R*Math.cos(ang)});
+            ang+=2*Math.asin(Math.min(1,P[i]/(2*R)));
+          }
+          res={pts:pts2, method:"easy", R:R, radialOK:false};
+        } else {
+          res={err:"入れたピッチでは円が閉じません。桁の間違いか、測り方の取り違えがないか確かめてください。"};
+        }
+      }
+    } else {
+      var mg=mergePairs(meas);
+      if(Q && mg.length>0){
+        var need=2*S.n-3, rk=jacoRank(Q,mg);
+        if(rk>=need){
+          var sol=solveCoords(Q,mg);
+          res={pts:sol.pts, method:"full", rms:sol.rms, radialOK:true, nmeas:mg.length};
+        } else {
+          res={rank:rk, need:need, nmeas:mg.length};
+        }
+        showRank(rk,need,mg.length);
+      } else if(Q){
+        showRank(0,2*S.n-3,0);
+      }
+    }
+  }
+
+  LAST=null;
+  if(!res || res.err || !res.pts){
+    clearOut(res&&res.err? res.err : null, res);
+    draw(Q,null,null);
+    persist();
+    return;
+  }
+
+  /* 診断：倍率つき・外れ値に強い当てはめ */
+  var tr=fitRobust(Q,res.pts);
+  if(!tr){ clearOut(null,null); return; }
+  var pcdEff=nomPCD()*tr.s;
+  var center=tr.t;
+  var devs=[],i2;
+  for(i2=0;i2<S.n;i2++){
+    var qt=applyTr(Q[i2],tr);
+    var ex=res.pts[i2].x-qt.x, ey=res.pts[i2].y-qt.y;
+    /* 径方向＝中心から見た向き（外向きが＋）
+       周方向＝それに直交（真上0°・時計回りが＋ の向きに合わせる）        */
+    var rx=qt.x-center.x, ry=qt.y-center.y, rl=Math.sqrt(rx*rx+ry*ry);
+    var rad=0, cir=0;
+    if(rl>1e-9){ rad=(ex*rx+ey*ry)/rl; cir=(ex*ry-ey*rx)/rl; }
+    devs.push({rad:rad, cir:cir, tot:Math.sqrt(ex*ex+ey*ey), w:(tr.w? tr.w[i2]:1)});
+  }
+
+  /* 組付き：倍率なし */
+  var cl=[], allDia=true;
+  var bolt=num("inBolt");
+  for(i2=0;i2<S.n;i2++){
+    var d=holeD(i2);
+    if(!numOK(d)||!numOK(bolt)){ allDia=false; cl.push(0); }
+    else cl.push((d-bolt)/2);
+  }
+  var fit=fitAssemble(Q,res.pts,cl,S.rotFree);
+  var zero=[]; for(i2=0;i2<S.n;i2++) zero.push(0);
+  var pos=fitAssemble(Q,res.pts,zero,S.rotFree);   /* 相当位置度用（すきまなし） */
+
+  LAST={res:res, tr:tr, pcdEff:pcdEff, devs:devs, fit:fit, pos:pos, allDia:allDia, bolt:bolt, cl:cl};
+  render();
+  draw(Q,res.pts,tr);
+  persist();
+}
+
+function clearOut(msg,res){
+  g("outPCD").textContent="—";
+  g("outPCDsub").textContent = msg? "" : "測定値をすべて入れてください";
+  g("devTbl").innerHTML="";
+  var v=g("verdDiag");
+  if(msg){ v.className="verd ng"; v.textContent=msg; }
+  else if(res && res.rank!=null){
+    v.className="verd na";
+    v.innerHTML="測った組が足りません。<b>あと"+(res.need-res.rank)+"組</b>で位置が確定します（いまは"+res.nmeas+"組）。";
+  } else { v.className="verd na"; v.textContent="測定値を入れると診断が出ます。"; }
+  g("verdFit").className="verd na"; g("verdFit").textContent="測定値を入れると出ます。";
+  g("verdTP").className="verd na"; g("verdTP").textContent="位置度の公差を入れると合否が出ます。";
+  g("tbScale").textContent="ずれの拡大 ―";
+}
+
+function render(){
+  var L=LAST, i;
+  var dP=L.pcdEff-nomPCD();
+  g("outPCD").textContent=nf(L.pcdEff,3);
+  g("outPCDsub").textContent="図面 "+nf(nomPCD(),3)+" に対して "+sf(dP,3)+" mm";
+  g("outFormula").textContent = (S.mode==="easy")
+    ? "Σ 2·asin(p ÷ 2R) = 360° を満たす R を求めています"
+    : (S.mode==="full" ? "測った距離に最も合う穴位置を求めています" : "入れた座標をそのまま使っています");
+
+  /* 一番ずれている穴 */
+  var worst=0, wi=0, sum=0;
+  for(i=0;i<S.n;i++){ sum+=L.devs[i].tot; if(L.devs[i].tot>worst){ worst=L.devs[i].tot; wi=i; } }
+  var mean=sum/S.n;
+  var radialShift=Math.abs(dP)/2;
+
+  /* 診断の文 */
+  var v=g("verdDiag"), txt="", cls="verd ok";
+  var TH=0.02;
+  var pcdBig=(radialShift>=TH), holeBig=(worst>=TH);
+  if(!pcdBig && !holeBig){
+    txt="目立ったずれはありません。実効PCDは図面どおりで、各穴のずれも 0.02mm 未満です。";
+  } else if(pcdBig && worst < radialShift*0.5){
+    cls="verd ng";
+    txt="<b>PCDそのものがずれています。</b>実効PCD "+nf(L.pcdEff,3)+"（図面比 "+sf(dP,3)+"mm）。"+
+        "各穴の割り付けは揃っているので、割り出しではなく<b>径の取り方</b>を疑ってください。"+
+        "この種のずれは、部品をずらしても回しても消えません。";
+  } else if(holeBig && radialShift < worst*0.5){
+    cls="verd ng";
+    txt="<b>穴"+(wi+1)+" がずれています</b>（"+nf(worst,3)+"mm）。実効PCDは "+nf(L.pcdEff,3)+" で図面どおりなので、"+
+        "<b>PCDは正常、個々の穴の位置</b>の問題です。";
+  } else {
+    cls="verd ng";
+    txt="<b>PCDのずれと個々の穴のずれが重なっています。</b>実効PCD "+nf(L.pcdEff,3)+"（"+sf(dP,3)+"mm）、"+
+        "いちばん外れているのは穴"+(wi+1)+"（"+nf(worst,3)+"mm）。下の表で内訳を見てください。";
+  }
+  if(S.mode==="easy") txt+="<br><span style=\"font-weight:400;font-size:11.5px\">※ かんたんモードのため、穴が円の内外にずれている分は含まれていません。</span>";
+  if(L.res.method==="full"&&numOK(L.res.rms)&&L.res.rms>0.05){
+    txt+="<br><span style=\"font-weight:400;font-size:11.5px\">※ 測定どうしが "+nf(L.res.rms,3)+"mm 食い違っています。読み違いかバリを疑ってください。</span>";
+  }
+  v.className=cls; v.innerHTML=txt;
+
+  /* 表 */
+  var h='<tr><th style="text-align:left">穴</th><th>径方向<br>（内外）</th><th>周方向<br>（回り）</th><th>合計</th><th>穴径</th></tr>';
+  var outl=[];
+  for(i=0;i<S.n;i++){
+    var bad=(L.devs[i].w<0.5 && L.devs[i].tot>=0.02);
+    if(bad) outl.push(i+1);
+    h+='<tr'+(bad?' class="bad"':'')+'><td class="h">穴'+(i+1)+(bad?'*':'')+'</td>'+
+       '<td>'+(L.res.radialOK? sf(L.devs[i].rad,3):"—")+'</td>'+
+       '<td>'+sf(L.devs[i].cir,3)+'</td>'+
+       '<td>'+nf(L.devs[i].tot,3)+'</td>'+
+       '<td>'+(numOK(holeD(i))?nf(holeD(i),2):"—")+'</td></tr>';
+  }
+  if(outl.length){
+    var onm=[];
+    for(i=0;i<outl.length;i++) onm.push('穴'+outl[i]);
+    h+='<tr><td colspan="5" style="text-align:left;font-weight:400;color:#5B707E;font-size:10.5px">'+
+       '＊ '+onm.join('・')+' は外れているため、<b>基準を合わせるときの計算から外して</b>います。'+
+       'こうしないと、外れた穴に基準が引っ張られてずれが全穴に散ってしまいます。</td></tr>';
+  }
+  g("devTbl").innerHTML=h;
+
+  /* 図面判定（位置度） */
+  var tp=num("inTP"), posDia=2*L.pos.worst;
+  var vt=g("verdTP");
+  if(numOK(tp)&&tp>0){
+    if(posDia<=tp){ vt.className="verd ok"; vt.innerHTML="<b>合格</b>　相当位置度 φ"+nf(posDia,3)+" ≦ 公差 φ"+nf(tp,3); }
+    else { vt.className="verd ng"; vt.innerHTML="<b>規格外</b>　相当位置度 φ"+nf(posDia,3)+" ＞ 公差 φ"+nf(tp,3)+
+      "（"+nf(posDia-tp,3)+"mm 超過）"; }
+  } else {
+    vt.className="verd na";
+    vt.innerHTML="相当位置度は <b>φ"+nf(posDia,3)+"</b>。公差を入れると合否が出ます。";
+  }
+
+  /* 組付き参考 */
+  var vf=g("verdFit");
+  if(!L.allDia){
+    vf.className="verd na";
+    vf.textContent="穴径とボルト径を入れると、ボルトが通るかどうかが出ます。";
+  } else {
+    var w=L.fit.worst, bi=0, bd=-1e18;
+    for(i=0;i<S.n;i++){ var e=L.fit.devs[i]-L.cl[i]; if(e>bd){ bd=e; bi=i; } }
+    var rotTxt=S.rotFree? "ずらして回して":"ずらして（回転できないので回さずに）";
+    if(w<=0){
+      vf.className="verd ok";
+      vf.innerHTML="<b>通ります。</b>"+rotTxt+"いちばん良い位置にしたとき、余裕は <b>"+nf(-w,3)+"mm</b>（いちばん厳しいのは穴"+(bi+1)+"）。";
+    } else {
+      vf.className="verd ng";
+      vf.innerHTML="<b>通りません。</b>"+rotTxt+"いちばん良い位置にしても、穴"+(bi+1)+" で <b>"+nf(w,3)+"mm</b> 足りません。"+
+        "この穴を φ"+nf(holeD(bi)+2*w,2)+" 以上に広げれば通ります。";
+    }
+    if(S.rotFree){
+      var alt=fitAssemble(nominalPts(),L.res.pts,L.cl,false);
+      if((alt.worst>0)!==(w>0)){
+        vf.innerHTML+="<br><span style=\"font-weight:400;font-size:11.5px\">※ キー溝などで回せない場合は"+
+          (alt.worst>0? "通りません（"+nf(alt.worst,3)+"mm 不足）":"通ります")+"。向きが決まる部品かどうか確かめてください。</span>";
+      }
+    }
+  }
+}
+
+/* ═══ 札（外−外／内−内／中心間）の表示 ═══ */
+function updateKindLabels(){
+  var i;
+  if(S.mode==="easy"){
+    for(i=0;i<S.n;i++){
+      var el=g("ek"+i); if(!el) continue;
+      var L=S.easy[i];
+      if(!numOK(L)){ el.textContent="—"; el.className="kind"; continue; }
+      var k=guessKind(L,i,(i+1)%S.n);
+      el.textContent=KINDLBL[k.k];
+      el.className=k.sure? "kind":"kind warn";
+    }
+  } else if(S.mode==="full"){
+    var rows=g("fullRows").getElementsByClassName("prow");
+    for(i=0;i<rows.length;i++){
+      var idx=parseInt(rows[i].getAttribute("data-k"),10);
+      var r=S.rows[idx]; if(!r) continue;
+      var sp=rows[i].getElementsByClassName("kind")[0];
+      if(!numOK(r.L)||r.a===r.b){ sp.textContent="—"; sp.className="kind"; continue; }
+      if(r.k&&r.k!=="auto"){ sp.textContent=KINDLBL[r.k]; sp.className="kind"; continue; }
+      var kk=guessKind(r.L,r.a,r.b);
+      sp.textContent=KINDLBL[kk.k];
+      sp.className=kk.sure? "kind":"kind warn";
+    }
+  }
+}
+function cycleKind(cur){
+  if(!cur||cur==="auto") return "out";
+  if(cur==="out") return "in";
+  if(cur==="in") return "ctr";
+  return "auto";
+}
+
+function updateDiaWarn(){
+  var i,mn=1e18,mx=-1e18,cnt=0;
+  for(i=0;i<S.n;i++){ var d=holeD(i); if(numOK(d)){ cnt++; if(d<mn)mn=d; if(d>mx)mx=d; } }
+  var el=g("diaWarn");
+  if(cnt>=2 && mx-mn>=0.0999){
+    el.innerHTML="穴径が <b>"+nf(mx-mn,2)+"mm ばらついています</b>。ドリルの振れが疑われます。"+
+      "穴が丸くない場合は中心の位置そのものが定まらないので、外−外と内−内の両方を測る方が確実です。";
+  } else if(cnt===0 && !numOK(num("inDiaC"))){
+    el.innerHTML="穴径を入れないと、外−外・内−内の読みを中心間に直せません。";
+  } else el.innerHTML="";
+}
+
+function showRank(rk,need,nm){
+  var el=g("rankMsg");
+  if(nm===0){ el.textContent="測った組を足してください。"; return; }
+  if(rk>=need){
+    el.innerHTML="<b>位置が確定しました</b>（"+nm+"組／必要"+need+"）。"+
+      (nm>need? "余った"+(nm-need)+"組は検算に使われます。":"余りがないので、読み違いの検出はできません。1組足すと検算できます。");
+  } else {
+    el.innerHTML="<b>あと"+(need-rk)+"組</b>で位置が確定します（いまは"+nm+"組）。"+
+      "組の数だけでは足りないことがあります。<b>2つ跨ぎ</b>を足すのがいちばん効きます"+
+      "（隣接と対辺だけでは、穴が一つおきに内外へ動く形が測定に現れません）。";
+  }
+}
+
+/* ═══ 測る前の準備 ═══ */
+function updatePrep(){
+  var Q=nominalPts(), tb=g("prepTbl"), msg=g("prepMsg");
+  if(!Q){ tb.innerHTML=""; msg.textContent="PCDと穴数を入れてください。"; return; }
+  var kinds=[{lbl:"隣どうし",d:1},{lbl:"2つ跨ぎ",d:2},{lbl:"3つ跨ぎ",d:3},{lbl:"対辺",d:Math.floor(S.n/2)}];
+  var seen={}, h='<tr><th style="text-align:left">組</th><th>中心間</th><th>外−外の読み</th><th>内−内の読み</th></tr>';
+  var mxOut=0,i;
+  for(i=0;i<kinds.length;i++){
+    var d=kinds[i].d;
+    if(d<1||d>Math.floor(S.n/2)) continue;
+    if(seen[d]) continue; seen[d]=1;
+    var C=nomDist(0,d%S.n);
+    var da=holeD(0), db=holeD(d%S.n), hh=(numOK(da)&&numOK(db))?(da+db)/2:NaN;
+    var o=numOK(hh)?C+hh:NaN, n2=numOK(hh)?C-hh:NaN;
+    if(numOK(o)&&o>mxOut) mxOut=o;
+    h+='<tr><td class="h">'+kinds[i].lbl+'</td><td>'+nf(C,2)+'</td><td>'+nf(o,2)+'</td><td>'+nf(n2,2)+'</td></tr>';
+  }
+  tb.innerHTML=h;
+  if(mxOut>0){
+    var sizes=[150,200,300,450,600], pick=null;
+    for(i=0;i<sizes.length;i++){ if(sizes[i]>=mxOut){ pick=sizes[i]; break; } }
+    msg.innerHTML="いちばん長い読みは <b>"+nf(mxOut,1)+"mm</b>（外−外）。"+
+      (pick? "<b>"+pick+"mm のノギス</b>で届きます。":"600mm のノギスでも届きません。")+
+      "<br>ジョウの先が穴の奥まで入らないときや、本体の長さがぎりぎりのときは<b>内−内で測ってください</b>（読みが "+
+      nf(mxOut-(numOK(holeD(0))?holeD(0)*2:0),1)+"mm 前後まで縮みます）。どちらで測っても結果は同じです。";
+  } else msg.textContent="穴径を入れると、外−外・内−内の読みの目安が出ます。";
+}
+
+/* ═══ 図 ═══ */
+function draw(Q,P,tr){
+  var svg=g("dwg"); if(!svg) return;
+  var W=340,H=260,CX=170,CY=125;
+  if(!Q){ svg.innerHTML='<text x="170" y="130" font-size="11" fill="#8FA2AF" text-anchor="middle">PCDと穴数を入れてください</text>'; return; }
+  var R=nomR(), s=90/Math.max(R,1e-6), i;
+  var h='';
+  h+='<circle cx="'+CX+'" cy="'+CY+'" r="'+(R*s)+'" fill="none" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="5 2 1.2 2"/>';
+  h+='<line x1="'+(CX-105)+'" y1="'+CY+'" x2="'+(CX+105)+'" y2="'+CY+'" stroke="#DCE3E7" stroke-width="1"/>';
+  h+='<line x1="'+CX+'" y1="'+(CY-105)+'" x2="'+CX+'" y2="'+(CY+105)+'" stroke="#DCE3E7" stroke-width="1"/>';
+  /* 図面の穴 */
+  for(i=0;i<S.n;i++){
+    var q=Q[i];
+    h+='<circle cx="'+(CX+q.x*s)+'" cy="'+(CY-q.y*s)+'" r="5" fill="#fff" stroke="#1F3341" stroke-width="1.4"/>';
+    h+='<text x="'+(CX+q.x*s*1.22)+'" y="'+(CY-q.y*s*1.22+3)+'" font-size="8" fill="#5B707E" text-anchor="middle">'+(i+1)+'</text>';
+  }
+  var mag=0;
+  if(P&&tr){
+    /* ずれを拡大して重ねる */
+    var mxd=0, d=[];
+    for(i=0;i<S.n;i++){
+      var qt=applyTr(Q[i],tr);
+      var ex=P[i].x-qt.x, ey=P[i].y-qt.y;
+      d.push({x:ex,y:ey});
+      var m=Math.sqrt(ex*ex+ey*ey); if(m>mxd) mxd=m;
+    }
+    mag = (mxd>1e-9)? (14/(mxd*s)) : 0;
+    if(mag>0){
+      if(mag<1) mag=1;
+      for(i=0;i<S.n;i++){
+        var q2=Q[i];
+        var px=CX+(q2.x+d[i].x*mag)*s, py=CY-(q2.y+d[i].y*mag)*s;
+        h+='<line x1="'+(CX+q2.x*s)+'" y1="'+(CY-q2.y*s)+'" x2="'+px+'" y2="'+py+'" stroke="#D63426" stroke-width="1"/>';
+        h+='<circle cx="'+px+'" cy="'+py+'" r="5" fill="none" stroke="#D63426" stroke-width="1.6"/>';
+      }
+    }
+  }
+  h+='<text x="'+CX+'" y="'+(CY+4)+'" font-size="8" fill="#5B707E" text-anchor="middle">'+
+     (numOK(nomPCD())? "PCD"+nf(nomPCD(),1):"")+'</text>';
+  h+='<text x="8" y="'+(H-8)+'" font-size="8.5" fill="#5B707E">○ 図面　　<tspan fill="#D63426">○ 実測</tspan></text>';
+  svg.innerHTML=h;
+  g("tbScale").textContent = mag>0? ("ずれの拡大 ×"+mag.toFixed(0)) : "ずれの拡大 ―";
+}
+
+/* ═══ 保存 ═══ */
+var VIDS=["inPCD","inN","inBolt","inDiaC","inTP"];
+function persist(){
+  try{
+    var o={mode:S.mode,dia:S.dia,equal:S.equal,rotFree:S.rotFree,n:S.n,
+           angs:S.angs,holeDia:S.holeDia,easy:S.easy,rows:S.rows,xy:S.xy,v:{}};
+    VIDS.forEach(function(i){ var e=g(i); if(e) o.v[i]=e.value; });
+    localStorage.setItem(KEY, JSON.stringify(o));
+  }catch(e){}
+}
+function restore(){
+  try{
+    var o=JSON.parse(localStorage.getItem(KEY)||"null"); if(!o) return;
+    /* JSON保存では NaN が null に化けるため、数値以外は NaN に戻す */
+    function arr(a){ return (a||[]).map(function(v){ return numOK(v)? v : NaN; }); }
+    S.mode=(o.mode==="full"||o.mode==="xy")? o.mode : "easy";
+    S.dia=(o.dia!==false); S.equal=(o.equal!==false); S.rotFree=(o.rotFree!==false);
+    S.angs=arr(o.angs); S.holeDia=arr(o.holeDia); S.easy=arr(o.easy);
+    S.xy=(o.xy||[]).map(function(p){
+      if(!p) return {x:NaN,y:NaN};
+      return {x:numOK(p.x)?p.x:NaN, y:numOK(p.y)?p.y:NaN};
+    });
+    S.rows=(o.rows||[]).map(function(r){
+      return {a:(r&&numOK(r.a))?r.a:0, b:(r&&numOK(r.b))?r.b:1,
+              L:(r&&numOK(r.L))?r.L:NaN, k:(r&&r.k)?r.k:"auto"};
+    });
+    if(o.v) VIDS.forEach(function(i){ var e=g(i); if(e&&o.v[i]!=null&&o.v[i]!=="") e.value=o.v[i]; });
+  }catch(e){}
+}
+
+/* ═══ 画面の同期 ═══ */
+function syncMode(){
+  g("mEasy").className=(S.mode==="easy")?"on":"";
+  g("mFull").className=(S.mode==="full")?"on":"";
+  g("mXY").className=(S.mode==="xy")?"on":"";
+  g("easyCard").className=(S.mode==="easy")?"card":"card hide";
+  g("fullCard").className=(S.mode==="full")?"card":"card hide";
+  g("xyCard").className=(S.mode==="xy")?"card":"card hide";
+  g("diaCard").className=(S.mode==="xy")?"card hide":"card";
+  g("prepBox").className=(S.mode==="xy")?"prep noprint hide":"prep noprint";
+}
+function syncDim(){
+  g("swDia").className=S.dia?"on":"";
+  g("swRad").className=S.dia?"":"on";
+  g("lbPCD").innerHTML=S.dia?'PCD<small>ピッチ円直径</small>':'半径 R<small>中心から穴中心まで</small>';
+}
+function syncEq(){
+  g("swEqual").className=S.equal?"on":"";
+  g("swUneq").className=S.equal?"":"on";
+  g("angBox").className=S.equal?"hide":"";
+}
+function syncRot(){
+  g("swRotFree").className=S.rotFree?"on":"";
+  g("swRotFix").className=S.rotFree?"":"on";
+}
+
+/* ═══ 行の追加 ═══ */
+function hasPair(a,b){
+  var i;
+  for(i=0;i<S.rows.length;i++){
+    if((S.rows[i].a===a&&S.rows[i].b===b)||(S.rows[i].a===b&&S.rows[i].b===a)) return true;
+  }
+  return false;
+}
+function addGroup(step){
+  var i,added=0;
+  for(i=0;i<S.n;i++){
+    var a=i, b=(i+step)%S.n;
+    if(a===b) continue;
+    if(step===S.n/2 && i>=S.n/2) break;   /* 対辺は半分だけ */
+    if(hasPair(a,b)) continue;
+    S.rows.push({a:a,b:b,L:NaN,k:"auto"}); added++;
+  }
+  if(!added) toast("その組はもう入っています");
+  buildFullRows(); bindDynamic(); recalc();
+}
+
+/* ═══ イベント ═══ */
+function bindStatic(){
+  g("mEasy").addEventListener("click",function(){ S.mode="easy"; syncMode(); recalc(); });
+  g("mFull").addEventListener("click",function(){ S.mode="full"; syncMode(); recalc(); });
+  g("mXY").addEventListener("click",function(){ S.mode="xy"; syncMode(); recalc(); });
+  g("swDia").addEventListener("click",function(){ S.dia=true; syncDim(); recalc(); });
+  g("swRad").addEventListener("click",function(){ S.dia=false; syncDim(); recalc(); });
+  g("swEqual").addEventListener("click",function(){ S.equal=true; syncEq(); recalc(); });
+  g("swUneq").addEventListener("click",function(){ S.equal=false; syncEq(); recalc(); });
+  g("swRotFree").addEventListener("click",function(){ S.rotFree=true; syncRot(); recalc(); });
+  g("swRotFix").addEventListener("click",function(){ S.rotFree=false; syncRot(); recalc(); });
+  g("addAdj").addEventListener("click",function(){ addGroup(1); });
+  g("addSkip").addEventListener("click",function(){ addGroup(2); });
+  g("addOpp").addEventListener("click",function(){ addGroup(Math.floor(S.n/2)); });
+  g("addOne").addEventListener("click",function(){
+    S.rows.push({a:0,b:Math.min(1,S.n-1),L:NaN,k:"auto"});
+    buildFullRows(); bindDynamic(); recalc();
+  });
+  g("inN").addEventListener("input",function(){ buildRows(); recalc(); });
+  ["inPCD","inBolt","inDiaC","inTP"].forEach(function(id){
+    g(id).addEventListener("input",recalc);
+  });
+}
+function bindDynamic(){
+  var box=g("fullRows"), rows=box.getElementsByClassName("prow"), i;
+  for(i=0;i<rows.length;i++){
+    (function(rw){
+      var k=parseInt(rw.getAttribute("data-k"),10);
+      var sa=rw.getElementsByClassName("pa")[0], sb=rw.getElementsByClassName("pb")[0];
+      var inp=rw.getElementsByClassName("pl")[0], kd=rw.getElementsByClassName("kind")[0];
+      var del=rw.getElementsByClassName("del")[0];
+      if(sa) sa.addEventListener("change",function(){ S.rows[k].a=parseInt(this.value,10); recalc(); });
+      if(sb) sb.addEventListener("change",function(){ S.rows[k].b=parseInt(this.value,10); recalc(); });
+      if(inp) inp.addEventListener("input",recalc);
+      if(kd) kd.addEventListener("click",function(){ S.rows[k].k=cycleKind(S.rows[k].k); recalc(); });
+      if(del) del.addEventListener("click",function(){
+        S.rows.splice(k,1); buildFullRows(); bindDynamic(); recalc();
+      });
+    })(rows[i]);
+  }
+  var ids=["ang","hd","ez","xx","xy"],j;
+  for(i=0;i<S.n;i++){
+    for(j=0;j<ids.length;j++){
+      var e=g(ids[j]+i);
+      if(e) e.addEventListener("input",recalc);
+    }
+    (function(idx){
+      var ek=g("ek"+idx);
+      if(ek) ek.addEventListener("click",function(){ toast("かんたんモードでは自動で見分けます"); });
+    })(i);
+  }
+}
+
+/* ═══ 起動 ═══ */
+restore();
+if(!numOK(parseFloat(g("inN").value))) g("inN").value=String(S.n||6);
+syncMode(); syncDim(); syncEq(); syncRot();
+buildRows(); bindStatic(); recalc();
+
+window.__pcddiag={S:S, recalc:recalc, solveCircleR:solveCircleR, fitAssemble:fitAssemble,
+                 fitSimilarity:fitSimilarity, nominalPts:nominalPts, jacoRank:jacoRank,
+                 solveCoords:solveCoords, guessKind:guessKind, toCenter:toCenter,
+                 last:function(){return LAST;}, buildRows:buildRows, bindDynamic:bindDynamic};
+})();
+</script>
+
+<!-- ═══ 数字入力の補助（共通スニペット / 全ツール同一） ═══
+     ・数字キーパッド固定（inputmode）／全角数字・句点の自動半角化
+     ・数字以外（かな・英字・記号）の混入を自動で除去
+     ・± ボタン … 数字キーパッドに無いマイナスを入力
+     ・✕ ボタン … 欄をまとめて消去
+     ・「5 43」のような度分秒のスペース区切りはそのまま通します
+     ・DOM構造は変更しません（再描画するツールでも壊れません）        -->
+<style>
+  .kt-aid{
+    position:absolute;z-index:9998;display:none;gap:4px;
+    background:#1F3341;border-radius:8px;padding:3px;
+    box-shadow:0 3px 10px rgba(0,0,0,.28);
+  }
+  .kt-aid.on{display:flex}
+  .kt-aid button{
+    -webkit-appearance:none;appearance:none;border:none;
+    background:#2C4353;color:#fff;font:inherit;font-size:14px;font-weight:700;
+    line-height:1;padding:8px 12px;border-radius:5px;cursor:pointer;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  .kt-aid button:active{background:#D63426}
+  @media print{.kt-aid{display:none !important}}
+</style>
+<script>
+(function(){
+  "use strict";
+
+  /* ── 対象の判定 ── */
+  function mode(el){
+    return (el && el.tagName==="INPUT" && !el.readOnly && !el.disabled)
+      ? (el.getAttribute("inputmode")||"") : "";
+  }
+  function isNum(el){ var m=mode(el); return m==="decimal"||m==="numeric"; }
+  function isDec(el){ return mode(el)==="decimal"; }
+
+  /* ── 全角→半角（かなキーボードで打たれた場合の救済） ── */
+  function toHalf(v){
+    return v
+      .replace(/[０-９]/g, function(c){ return String.fromCharCode(c.charCodeAt(0)-65248); })
+      .replace(/[．。･・]/g, ".")
+      .replace(/[－−―ーｰ‐–—]/g, "-")
+      .replace(/[\u3000]/g, " ");
+  }
+
+  /* ── 数字だけに整える（空白区切りは温存＝度分秒入力を壊さない） ── */
+  function clean(v, dec){
+    var toks = toHalf(v).split(" "), out = [], i, t, neg, k;
+    for(i=0;i<toks.length;i++){
+      t = toks[i];
+      neg = (i===0) && t.charAt(0)==="-";
+      t = t.replace(/[^0-9.]/g, "");
+      if(!dec) t = t.replace(/\./g, "");
+      else {
+        k = t.indexOf(".");
+        if(k>=0) t = t.slice(0,k+1) + t.slice(k+1).replace(/\./g,"");
+      }
+      out.push((neg?"-":"") + t);
+    }
+    return out.join(" ");
+  }
+
+  /* ── 入力の監視（捕捉フェーズ＝各ツールの計算処理より先に整える） ── */
+  document.addEventListener("input", function(e){
+    var el = e.target;
+    if(!isNum(el)) return;
+    var v = el.value, c = clean(v, isDec(el));
+    if(c === v) return;
+    var p = el.selectionStart, d = v.length - c.length;
+    el.value = c;
+    try{ el.setSelectionRange(Math.max(0,p-d), Math.max(0,p-d)); }catch(err){}
+  }, true);
+
+  /* ── ± / ✕ の浮動ボタン（DOMを包まないので再描画に強い） ── */
+  var bar=null, cur=null, sign=null;
+
+  function notify(el){
+    var ev;
+    try{ ev = new Event("input", {bubbles:true}); }
+    catch(err){ ev = document.createEvent("Event"); ev.initEvent("input", true, false); }
+    el.dispatchEvent(ev);
+    try{ ev = new Event("change", {bubbles:true}); }
+    catch(err){ ev = document.createEvent("Event"); ev.initEvent("change", true, false); }
+    el.dispatchEvent(ev);
+  }
+  function act(e){
+    e.preventDefault();
+    var b = e.target, a, v;
+    while(b && b !== bar && b.tagName !== "BUTTON") b = b.parentNode;
+    if(!b || b === bar || !cur) return;
+    a = b.getAttribute("data-a");
+    if(a === "clr") cur.value = "";
+    else {
+      v = cur.value;
+      cur.value = (v.charAt(0) === "-") ? v.slice(1) : ("-" + v);
+    }
+    notify(cur);
+    try{ cur.focus(); }catch(err){}
+    place();
+  }
+
+  function build(){
+    bar = document.createElement("div");
+    bar.className = "kt-aid";
+    bar.innerHTML =
+      '<button type="button" data-a="sign" aria-label="符号を反転">±</button>'+
+      '<button type="button" data-a="clr" aria-label="この欄を消去">✕</button>';
+    document.body.appendChild(bar);
+    sign = bar.querySelector('[data-a="sign"]');
+    if(window.PointerEvent){
+      bar.addEventListener("pointerdown", act);
+    } else {
+      bar.addEventListener("mousedown", act);
+      bar.addEventListener("touchstart", act, {passive:false});
+    }
+  }
+
+  function hide(){ if(bar) bar.className = "kt-aid"; cur = null; }
+
+  function place(){
+    if(!cur || !bar) return;
+    if(!document.contains(cur)){ hide(); return; }   /* 再描画で消えた場合 */
+    bar.className = "kt-aid on";
+    var r = cur.getBoundingClientRect();
+    var bw = bar.offsetWidth, bh = bar.offsetHeight;
+    var top = r.top - bh - 6;
+    if(top < 4) top = r.bottom + 6;
+    var left = r.right - bw;
+    if(left < 4) left = 4;
+    bar.style.left = (left + (window.pageXOffset||0)) + "px";
+    bar.style.top  = (top  + (window.pageYOffset||0)) + "px";
+  }
+
+  document.addEventListener("focusin", function(e){
+    if(!isNum(e.target)){ hide(); return; }
+    cur = e.target;
+    if(!bar) build();
+    sign.style.display = isDec(cur) ? "" : "none";   /* 整数欄には ± を出さない */
+    place();
+  });
+  document.addEventListener("focusout", function(){
+    setTimeout(function(){ if(document.activeElement !== cur) hide(); }, 0);
+  });
+  window.addEventListener("scroll", function(){ if(cur) place(); }, true);
+  window.addEventListener("resize", function(){ if(cur) place(); });
+})();
+</script>
+<script>
+(function(){
+  function fire(el,t){
+    try{ el.dispatchEvent(new Event(t,{bubbles:true})); }
+    catch(e){ var ev=document.createEvent('Event'); ev.initEvent(t,true,true); el.dispatchEvent(ev); }
+  }
+  window.tryExample=function(btn){
+    var raw=btn.getAttribute('data-ex'); if(!raw) return;
+    var cfg; try{ cfg=JSON.parse(raw); }catch(e){ return; }
+    var steps=cfg.set||[], i, it, el;
+    for(i=0;i<steps.length;i++){
+      it=steps[i];
+      if(it.click){ var c=document.querySelector(it.click); if(c) c.click(); continue; }
+      el = it.sel ? document.querySelector(it.sel) : document.getElementById(it.id);
+      if(!el) continue;
+      el.value=String(it.v);
+      fire(el, el.tagName==='SELECT' ? 'change' : 'input');
+    }
+    var gd=btn; while(gd && !(gd.classList && gd.classList.contains('guide'))) gd=gd.parentNode;
+    if(gd) gd.open=false;
+    var fig=document.querySelector('svg#fig, svg#dwg, figure svg, #fig, #dwg');
+    if(fig && fig.scrollIntoView) fig.scrollIntoView({behavior:'smooth',block:'center'});
+  };
+})();
+</script>
+
+<script>
+/* ═══ 一括消去の共通処理（全ツール共通 / 確認ダイアログは使いません）═══
+     1回目 … ボタンが「もう一度押すと消去」に変わります（3秒で自動解除）
+     2回目 … 最初の状態に戻します
+     ※ 確認ポップアップ（ダイアログ）はPWA等で無効化されるため使いません      */
+(function(){
+  "use strict";
+  var KEY = "pcddiag_v1";
+  window.armClear = function(btn){
+    if(!btn || !btn.getAttribute) return;
+    if(!btn.getAttribute("data-armed")){
+      btn.setAttribute("data-armed","1");
+      if(!btn.getAttribute("data-lbl")) btn.setAttribute("data-lbl", btn.textContent);
+      btn.textContent = "もう一度押すと消去";
+      if(btn.classList) btn.classList.add("arm");
+      setTimeout(function(){
+        if(btn.getAttribute("data-armed")){
+          btn.removeAttribute("data-armed");
+          btn.textContent = btn.getAttribute("data-lbl");
+          if(btn.classList) btn.classList.remove("arm");
+        }
+      }, 3000);
+      return;
+    }
+    btn.removeAttribute("data-armed");
+    if(btn.classList) btn.classList.remove("arm");
+    if(btn.getAttribute("data-lbl")) btn.textContent = btn.getAttribute("data-lbl");
+    if(KEY){ try{ localStorage.removeItem(KEY); }catch(e){} }
+    try{ location.reload(); }catch(e){}
+  };
+})();
+</script>
+<style>
+/* ═══ 記入例（薄字）を入力値と見分ける（v57 / 全ツール共通）═══
+     薄字が入力値と同じ書体（太字・大きめ・右寄せ）で出ていたため、
+     入力済みに見えていた。色の濃さだけだと現場の照明や斜めからの視認で差が消えるので、
+     太さ・大きさ・傾きも変えて別物にする。                                    */
+::placeholder{color:#AEBBC4;font-weight:400;font-size:.82em;font-style:italic;opacity:1}
+::-webkit-input-placeholder{color:#AEBBC4;font-weight:400;font-size:.82em;font-style:italic;opacity:1}
+::-moz-placeholder{color:#AEBBC4;font-weight:400;font-size:.82em;font-style:italic;opacity:1}
+/* 未入力の欄は下線を破線に（入っている欄＝実線）。入力中は元の色を邪魔しない。 */
+input.kt-empty:not(:focus){border-bottom-style:dashed !important;border-bottom-color:#C2CED6 !important}
+td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3DA !important}
+</style>
+<script>
+/* ═══ 未入力の欄に印をつける（v57 / 全ツール共通）═══
+     数字を入れる欄（inputmode 付き）だけを対象にする。
+     行を作り直すツールがあるので、DOMの変化も見張って付け直す。            */
+(function(){
+  "use strict";
+  function hasCls(el){ return (" "+(el.className||"")+" ").indexOf(" kt-empty ")>=0; }
+  function mark(el){
+    if(!el||el.tagName!=="INPUT") return;
+    if(!el.getAttribute("inputmode")) return;
+    if(el.readOnly||el.disabled) return;
+    var empty=((el.value||"").replace(/\s/g,"")==="");
+    var has=hasCls(el);
+    if(empty&&!has) el.className=((el.className||"")+" kt-empty").replace(/^\s+/,"");
+    else if(!empty&&has) el.className=(" "+el.className+" ").replace(" kt-empty "," ").replace(/^\s+|\s+$/g,"");
+  }
+  function scan(){
+    var ns=document.getElementsByTagName("input"),i;
+    for(i=0;i<ns.length;i++) mark(ns[i]);
+  }
+  /* 捕捉フェーズ＝打った欄をすぐ反映。浮上フェーズ＝ツールが行を作り直した後に拾う。 */
+  document.addEventListener("input",function(e){ mark(e.target); },true);
+  document.addEventListener("input",scan,false);
+  document.addEventListener("change",scan,false);
+  document.addEventListener("click",scan,false);
+  if(window.MutationObserver){
+    try{
+      new MutationObserver(scan).observe(document.body,{childList:true,subtree:true});
+    }catch(e){}
+  }
+  scan();
+  setTimeout(scan,0);
+})();
+</script>
+</body>
+</html>

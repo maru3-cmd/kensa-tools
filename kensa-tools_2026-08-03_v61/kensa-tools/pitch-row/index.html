@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1F3341">
+<meta name="description" content="端面からの並び寸法（5, 108.5, 212, 324.5…）を入力すると、隣り合う穴のピッチ、任意の基準穴からの距離、全穴間の距離、等ピッチのズレを一度に計算します。計算は端末内で完結します。">
+<title>並び寸法ピッチ | 検査計算ツール</title>
+<style>
+  :root{
+    --paper:#F2F4F5; --sheet:#FFFFFF; --ink:#1F3341; --line:#8FA2AF; --red:#D63426;
+    --amber:#B97A1E; --green:#2E9E5B;
+    --dro-bg:#15181A; --dro-red:#FF5A48; --dro-green:#42D77D; --dro-dim:#9FB0B8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI",sans-serif;
+    background:var(--paper);color:var(--ink);
+    min-height:100dvh;display:flex;flex-direction:column;align-items:center;
+    padding:0 12px calc(20px + env(safe-area-inset-bottom));
+  }
+  .wrap{width:100%;max-width:480px}
+  header{display:flex;align-items:baseline;justify-content:space-between;padding:14px 2px 8px}
+  header h1{font-size:16px;font-weight:700;letter-spacing:.04em}
+  header h1 small{display:block;font-size:11px;font-weight:400;color:#5B707E;letter-spacing:.08em;margin-top:2px}
+  header a{font-size:12px;color:#5B707E;text-decoration:none}
+
+  .tb-strip{display:flex;background:var(--sheet);border:2px solid var(--ink);font-size:9px;letter-spacing:.06em;margin-bottom:12px}
+  .tb-strip div{padding:4px 8px;border-right:1px solid var(--ink)}
+  .tb-strip div:last-child{border-right:none;margin-left:auto}
+  .tb-strip b{font-weight:700}
+
+  .card{background:var(--sheet);border:1px solid #D5DDE2;border-radius:12px;padding:14px;margin-bottom:12px}
+  .card h2{font-size:11px;letter-spacing:.1em;color:#5B707E;font-weight:700;border-bottom:1px solid #E3E9EC;padding-bottom:6px;margin-bottom:10px}
+  .card h2 .tag{float:right;color:var(--red);letter-spacing:0}
+
+  label.f{display:block;font-size:11px;color:#5B707E;margin:0 0 3px 1px}
+  .row{display:flex;gap:8px;margin-bottom:9px}
+  .row>div{flex:1;min-width:0}
+  input[type=number],input[type=text],input[type=date],select,textarea{
+    width:100%;padding:9px 8px;font:inherit;font-size:15px;
+    border:1px solid var(--line);border-radius:6px;background:#FBFCFC;color:var(--ink)}
+  textarea{resize:vertical;min-height:44px;line-height:1.5}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--red);outline-offset:-1px;background:#fff}
+  .hint{font-size:10.5px;color:#7A8C97;line-height:1.65;margin-top:4px}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:9px 12px;font:inherit;font-size:12.5px;font-weight:600;border:1px solid var(--ink);border-radius:6px;background:var(--sheet);color:var(--ink);cursor:pointer}
+  .btn:active{transform:translateY(1px)}
+  .btn.primary{background:var(--ink);color:#fff}
+  .btn.warn{border-color:var(--red);color:var(--red)}
+  .btn.sm{padding:6px 8px;font-size:11.5px}
+  .btn:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+  .btnrow{display:flex;gap:8px;flex-wrap:wrap}
+
+  figure svg{width:100%;height:auto;display:block;background:#FBFCFC;border:1px solid #E3E9EC;border-radius:6px}
+  figcaption{font-size:9.5px;color:#7A8C97;text-align:center;margin-top:3px;letter-spacing:.06em}
+
+  .vt{width:100%;border-collapse:collapse;font-size:12px}
+  .vt td{padding:3px 3px;border-bottom:1px solid #EEF2F4}
+  .vt td:first-child{width:34px;text-align:center;font-family:ui-monospace,Menlo,monospace;color:#5B707E}
+  .vt td input{font-size:15px;padding:7px 6px;text-align:right}
+  .vt td:last-child{width:34px}
+  .xbtn{width:28px;height:28px;border:1px solid var(--line);background:#fff;border-radius:6px;color:var(--red);font-size:14px;line-height:1;cursor:pointer}
+
+  table{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}
+  th{background:#EDF1F3;color:#5B707E;font-size:10px;letter-spacing:.06em;font-weight:700;padding:6px 5px;text-align:right;border-bottom:1px solid var(--line)}
+  th:first-child,td:first-child{text-align:left}
+  td{padding:6px 5px;text-align:right;border-bottom:1px solid #EEF2F4;font-family:ui-monospace,Menlo,monospace}
+  .tblwrap{border:1px solid #E3E9EC;border-radius:6px;overflow:auto}
+  .ok{color:var(--green);font-weight:700}
+  .ngt{color:var(--red);font-weight:700}
+  .mat th{text-align:center;padding:5px 4px}
+  .mat td{text-align:center;padding:5px 4px}
+  .mat td.diag{background:#F2F4F5;color:#B7C2C9}
+  .mat td.hd{background:#EDF1F3;color:#5B707E;font-weight:700;text-align:left}
+
+  .res{border:1px solid #E3E9EC;border-radius:6px;overflow:hidden;margin-top:10px}
+  .res div{display:flex;justify-content:space-between;gap:8px;padding:7px 9px;font-size:12.5px;border-bottom:1px solid #EEF2F4}
+  .res div:last-child{border-bottom:none}
+  .res div:nth-child(odd){background:#FAFCFC}
+  .res .k{color:#5B707E}
+  .res .v{font-family:ui-monospace,Menlo,monospace;font-weight:600}
+  .res .v.hl{color:var(--red)}
+
+  .banner{font-size:11.5px;line-height:1.7;background:#FDF6E7;border:1px solid #E9D9AE;border-radius:6px;padding:8px 10px;color:#6B5518;margin-bottom:10px}
+
+  details{border-top:1px solid #E3E9EC;margin-top:10px;padding-top:8px}
+  details summary{font-size:11.5px;font-weight:700;color:#5B707E;cursor:pointer;letter-spacing:.04em}
+  details ul{margin:8px 0 0 16px;font-size:11.5px;line-height:1.85;color:#42565F}
+  footer{font-size:10px;color:#8FA2AF;text-align:center;line-height:1.7;padding:6px 0 4px}
+
+  .print-only{display:none}
+  @media print{
+    body{background:#fff;padding:0}
+    .noprint{display:none !important}
+    .print-only{display:block}
+    .card{border:1px solid #333;border-radius:0;break-inside:avoid}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
+  /* ── 使い方ガイド（全ツール共通） ── */
+  .guide{background:#FFFFFF;border:1px solid #D5DDE2;border-radius:12px;margin:0 0 12px;overflow:hidden}
+  .guide>summary{list-style:none;cursor:pointer;padding:12px 14px;font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.04em;display:flex;align-items:center;gap:7px}
+  .guide>summary::-webkit-details-marker{display:none}
+  .guide>summary::before{content:"?";display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#1F3341;color:#fff;font-size:11px;font-weight:700;flex:none}
+  .guide[open]>summary{border-bottom:1px solid #E3E9EC}
+  .guide .gb{padding:2px 14px 14px}
+  .guide .gb h4{font-size:11px;letter-spacing:.07em;color:#5B707E;font-weight:700;margin:13px 0 6px}
+  .guide .gb ol{margin:0;padding-left:1.2em;font-size:11.5px;line-height:1.75;color:#1F3341}
+  .guide .gb ol b{color:#1F3341}
+  .guide .gx{border-top:1px dashed #E3E9EC;margin-top:11px;padding-top:8px}
+  .guide .gx h4{margin-top:6px}
+  .guide .gxin{display:flex;gap:12px;align-items:flex-start;margin-top:4px}
+  .guide .gfig{flex:none}
+  .guide .gfig svg{width:112px;height:112px;display:block;background:#FBFCFC;border:1px solid #EDF1F3;border-radius:8px}
+  .guide .gtxt{flex:1;font-size:11.5px;line-height:1.6;color:#1F3341}
+  .guide .gtxt p{margin:0 0 7px}
+  .guide .gset{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;background:#F2F6F8;border:1px solid #E3E9EC;border-radius:6px;padding:6px 8px;color:#3A5060;line-height:1.5}
+  .guide .gread b{color:#D63426}
+  .guide .gbtn{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;font:inherit;font-size:11.5px;font-weight:600;border:1px solid #1F3341;border-radius:6px;background:#fff;color:#1F3341;cursor:pointer;margin-top:2px}
+  .guide .gbtn:active{transform:translateY(1px)}
+  @media(max-width:360px){.guide .gxin{flex-direction:column}.guide .gfig svg{width:128px;height:128px}}
+  .toast{
+    position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);
+    background:var(--ink);color:#fff;font-size:13px;
+    padding:9px 20px;border-radius:20px;opacity:0;pointer-events:none;
+    transition:opacity .25s,transform .25s;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+  /* 2度押し待ちの表示（v37）。上部ボタンはインライン指定のため !important で上書き */
+  .arm{background:#B23B2E !important;color:#fff !important;border-color:#B23B2E !important}
+  /* 一覧へ戻る導線：スマホで押しやすいよう、消去ボタンと同じ高さの左端に置く */
+  .topclear,.topClear{justify-content:space-between !important;align-items:center;gap:8px}
+  .topclear button,.topClear button{min-height:38px}
+  .backlink{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:8px 14px;
+    font-size:12px;font-weight:700;color:#5B707E;background:#FFFFFF;border:1px solid #C9D3DA;border-radius:9px;
+    text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
+  .backlink:active{background:#EEF2F4}
+  @media print{.backlink{display:none}}
+  .src{margin:10px 0 0;padding:9px 11px;background:#F4F7F9;border:1px solid #D5DDE2;border-left:3px solid #5B707E;
+    border-radius:8px;font-size:11.5px;line-height:1.75;color:#3D515F}
+  .src b{color:#1F3341}
+  .src code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#fff;border:1px solid #E3E9EC;border-radius:4px;padding:0 3px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="noprint">
+  <h1>並び寸法ピッチ<small>端面からの並び寸法 → 穴間ピッチ</small></h1>
+</header>
+  <div class="topClear noprint" style="display:flex;justify-content:flex-end;margin:6px 2px 0"><a class="backlink" href="../index.html">≡ ツール一覧</a><button type="button" aria-label="一括消去して新しく始める" style="font-weight:700;font-size:12px;color:#B23B2E;background:#FBECEA;border:1px solid #E7B7B0;border-radius:9px;padding:7px 13px;cursor:pointer" onclick="armClear(this)">すべて消去</button></div>
+
+<details class="guide noprint">
+  <summary>使い方と例を見る</summary>
+  <div class="gb">
+    <h4>使い方</h4>
+    <ol>
+      <li>端面からの<b>並び寸法</b>（各穴の位置）を、1行ずつ、または一括貼り付けで入れます。</li>
+      <li><b>隣接ピッチ</b>・最小/最大・平均が出ます。基準穴を切り替えると「穴3から穴7まで」も読めます。</li>
+      <li>等間隔のはずの穴なら「等ピッチ判定」で、各穴のズレ（累積）と合否が出ます。</li>
+    </ol>
+    <div class="src">
+      <b>計算のしかた</b><br>
+      一列に並んだ穴の<b>位置（累積）</b>と<b>隣どうしのピッチ</b>を行き来させ、等ピッチからのずれを出しています。<br>
+      ・位置 → ピッチ … <code>pᵏ = 位置ᵏ₊₁ − 位置ᵏ</code><br>
+      ・ピッチ → 位置 … <code>位置ᵏ = 位置₁ + Σ p</code>（累積和）<br>
+      ・等ピッチの理想値 … <code>理想ᵏ = 位置₁ + (k−1) × p₀</code><br>
+      　p₀ は図面ピッチを入れればその値、空欄なら実測から <code>p₀ = (最終位置 − 最初の位置) / (穴数 − 1)</code> を自動で使います<br>
+      ・位置のずれ … <code>ずれᵏ = 実測位置ᵏ − 理想ᵏ</code>　最大値を <code>±</code> で表示<br>
+      ・ピッチのばらつき … <code>|pᵏ − p₀|</code> の最大値<br>
+      ・合否 … ずれが <code>±公差</code> に入っているか<br>
+      <b>逆パターン（図面がピッチで書かれているとき）</b>は「穴間ピッチを入れる」に切り替え、ピッチを順に入れると<b>端（または穴1）からの累積位置</b>が出ます。その数字をコンベックスで追えます。「端から1穴目まで」を入れれば端面基準、空欄なら穴1が0になります。<br>
+      <b>「ピッチは全部合っているのに位置がずれる」</b>ことがあります。ピッチの誤差が同じ向きに積み上がると累積するためで、この表は<b>その積み上がりを見るためのもの</b>です。図面がピッチ指示か累積寸法指示かで、どちらを見るべきかが変わります。
+    </div>
+    <div class="gx">
+      <h4>例 ── 端面から 10・40・70・100</h4>
+      <div class="gxin">
+        <div class="gfig"><svg viewBox="0 0 120 120" role="img" aria-label="端面から並ぶ穴の隣接ピッチの図">
+          <line x1="16" y1="28" x2="16" y2="96" stroke="#1F3341" stroke-width="1.8"/>
+          <text x="12" y="104" font-size="7" fill="#5B707E">端面</text>
+          <line x1="16" y1="60" x2="106" y2="60" stroke="#C9D3DA" stroke-width="0.8"/>
+          <circle cx="34" cy="60" r="3.3" fill="#fff" stroke="#1F3341" stroke-width="1.3"/>
+          <circle cx="58" cy="60" r="3.3" fill="#fff" stroke="#1F3341" stroke-width="1.3"/>
+          <circle cx="82" cy="60" r="3.3" fill="#fff" stroke="#1F3341" stroke-width="1.3"/>
+          <circle cx="100" cy="60" r="3.3" fill="#fff" stroke="#1F3341" stroke-width="1.3"/>
+          <line x1="34" y1="74" x2="58" y2="74" stroke="#D63426" stroke-width="1.2"/>
+          <line x1="58" y1="74" x2="82" y2="74" stroke="#D63426" stroke-width="1.2"/>
+          <text x="46" y="84" font-size="7" fill="#D63426" text-anchor="middle">ピッチ</text>
+        </svg></div>
+        <div class="gtxt">
+          <p>端面から 10, 40, 70, 100 に穴が並ぶとき、ピッチは揃っている？</p>
+          <p class="gset">並び寸法 10 40 70 100</p>
+          <p class="gread">読み方：隣接ピッチはすべて <b>30.0mm</b>（最小/最大 30.0/30.0）、等ピッチ判定 <b>合格</b>（誤差±0.00）。</p>
+          <button class="gbtn" type="button" data-ex='{"set":[{"setState":{"pos":[10,40,70,100],"base":0},"apply":"renderRows;calc;persist"}]}' onclick="tryExample(this)">この例を試す</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</details>
+
+
+
+<div class="tb-strip">
+  <div><b>TOOL-28</b></div>
+  <div>逐次ピッチ</div>
+  <div>等ピッチ判定</div>
+  <div>端末内計算</div>
+</div>
+
+<div class="card">
+  <h2>並び寸法の入力<span class="tag" id="cnt">0 穴</span></h2>
+  <div class="banner">図面の数字を上から順に。1つ入れて<b>キーボードの「次へ／Enter」</b>を押すと、確定して次の欄が自動で増えます。数字パッドから指を離さず打てます。まとめて貼り付けたいときは下の「まとめ入力」も使えます。</div>
+  <div class="chips2" id="modeChips" style="display:flex;gap:6px;margin-bottom:8px">
+    <button type="button" id="mPos" style="flex:1;min-height:38px;font:inherit;font-size:12px;font-weight:700;border:1px solid #1F3341;background:#1F3341;color:#fff;border-radius:9px;cursor:pointer" onclick="setMode('pos')">端からの位置を入れる</button>
+    <button type="button" id="mPit" style="flex:1;min-height:38px;font:inherit;font-size:12px;font-weight:700;border:1px solid #C9D3DA;background:#fff;color:#5B707E;border-radius:9px;cursor:pointer" onclick="setMode('pit')">穴間ピッチを入れる</button>
+  </div>
+  <div class="row" id="edge0Row" style="display:none;margin-bottom:6px">
+    <div><label class="f">端から1穴目まで（空欄なら穴1を0に）</label><input type="text" inputmode="decimal" autocomplete="off" id="edge0" placeholder="―" oninput="calc();persist()"></div>
+    <div></div>
+  </div>
+  <div class="row" style="margin-bottom:6px">
+    <div><label class="f">方向のラベル（任意）</label><input type="text" id="axis" placeholder="X方向 / 上端から など" oninput="persist()"></div>
+    <div style="flex:none;width:130px"><label class="f">数え方</label>
+      <select id="order" onchange="calc()">
+        <option value="keep">入れた順</option>
+        <option value="asc">小さい順に並替</option>
+      </select>
+    </div>
+  </div>
+  <label class="f">まとめ入力（任意・貼り付け用／スペースや改行で区切り）</label>
+  <textarea id="bulk" inputmode="decimal" enterkeyhint="done" placeholder="5, 108.5, 212, 324.5"></textarea>
+    <div style="display:flex;gap:6px;margin-top:6px">
+      <button type="button" id="bulkSep" style="flex:1;min-height:38px;font:inherit;font-size:12px;font-weight:700;color:#5B707E;background:#fff;border:1px solid #C9D3DA;border-radius:9px;cursor:pointer">、区切りを入れる</button>
+    </div>
+    <div class="hint" style="margin-top:5px">数字キーパッドが出ます。かな・英字は入れても自動で取り除かれます。区切りは上のボタン、または貼り付けでどうぞ。</div>
+  <div class="btnrow" style="margin:8px 0 12px">
+    <button class="btn primary sm" onclick="applyBulk()">まとめ入力を反映</button>
+    <button class="btn sm" onclick="addRow()">＋ 1行追加</button>
+    <button class="btn warn sm" onclick="clearAll()">全消去</button>
+  </div>
+  <table class="vt"><tbody id="vtBody"></tbody></table>
+</div>
+
+<div class="card">
+  <h2>並び図<span class="tag">端面が原点</span></h2>
+  <figure><svg id="fig" viewBox="0 0 300 120" role="img" aria-label="端面からの穴位置とピッチの並び図"></svg><figcaption id="figCap">◤ ＝端面（原点）</figcaption></figure>
+</div>
+
+<div class="card">
+  <h2>隣り合うピッチ<span class="tag">これが欲しい値</span></h2>
+  <div class="tblwrap">
+    <table>
+      <thead><tr><th>区間</th><th>手前</th><th>先</th><th>ピッチ</th></tr></thead>
+      <tbody id="pitchBody"></tbody>
+    </table>
+  </div>
+  <div class="res">
+    <div><span class="k">全長（先頭 → 末尾）</span><span class="v hl" id="rSpan">-</span></div>
+    <div><span class="k">ピッチ 最小 / 最大</span><span class="v" id="rMinMax">-</span></div>
+    <div><span class="k">ピッチ 平均</span><span class="v" id="rAvg">-</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>基準穴からの距離<span class="tag">どの穴からでも</span></h2>
+  <div class="row" style="margin-bottom:6px">
+    <div><label class="f">基準にする穴</label>
+      <select id="baseHole"></select>
+    </div>
+  </div>
+  <div class="tblwrap">
+    <table>
+      <thead><tr><th>穴</th><th>端面から</th><th>基準穴から</th></tr></thead>
+      <tbody id="relBody"></tbody>
+    </table>
+  </div>
+  <div class="hint">基準の穴を切り替えれば「穴3から穴7まで」のような任意の2穴間もすぐ読めます。</div>
+  <button class="btn sm" type="button" style="margin-top:8px" onclick="copyPositions()">位置の一覧をコピー（コンベックス読み用）</button>
+  <details>
+    <summary>全穴間マトリクス（総当たり）</summary>
+    <div class="tblwrap" style="margin-top:8px"><table class="mat" id="matTbl"></table></div>
+  </details>
+</div>
+
+<div class="card">
+  <h2>等ピッチ判定<span class="tag">ズレの累積を見る</span></h2>
+  <div class="banner">等間隔で並ぶはずの穴のときに使います。理想の等ピッチ格子と比べて、各穴が何mmずれているかを出します。</div>
+  <div class="row">
+    <div><label class="f">基準ピッチ p（空欄=自動）</label><input type="text" inputmode="decimal" autocomplete="off" id="nomP" placeholder="自動: 全長÷区間数" oninput="calc();persist()"></div>
+    <div><label class="f">公差 ±</label><input type="text" inputmode="decimal" autocomplete="off" id="tol" value="0.5" oninput="calc();persist()"></div>
+  </div>
+  <div class="res" style="margin-bottom:10px">
+    <div><span class="k">採用した基準ピッチ</span><span class="v" id="ePitch">-</span></div>
+    <div><span class="k">位置ズレ 最大</span><span class="v hl" id="eMaxPos">-</span></div>
+    <div><span class="k">隣接ピッチ誤差 最大</span><span class="v" id="eMaxPit">-</span></div>
+    <div><span class="k">総合判定</span><span class="v" id="eJudge">-</span></div>
+  </div>
+  <div class="tblwrap">
+    <table>
+      <thead><tr><th>穴</th><th>実測位置</th><th>理想位置</th><th>位置ズレ</th><th>判定</th></tr></thead>
+      <tbody id="eqBody"></tbody>
+    </table>
+  </div>
+  <div class="hint">理想位置は「先頭穴 ＋ 区間番号 × 基準ピッチ」。先頭を合わせた状態でのズレを見ています。基準ピッチを空欄にすると、全長を区間数で割った実効ピッチを使います。</div>
+</div>
+
+<div class="card noprint">
+  <div class="print-only" id="recHead"></div>
+  <div class="row">
+    <div><label class="f">部品名</label><input type="text" id="recName" placeholder="—" oninput="persist()"></div>
+    <div><label class="f">検査日</label><input type="date" id="recDate" oninput="persist()"></div>
+  </div>
+  <div class="btnrow" style="margin-top:4px">
+    <button class="btn" onclick="prep();window.print()">印刷 / PDF</button>
+    <button class="btn warn sm" onclick="armClear(this)">すべて消去</button>
+  </div>
+</div>
+
+<div class="card noprint">
+  <details>
+    <summary>測定時の留意点</summary>
+    <ul>
+      <li>コンベックスは引っかけと突き当てで爪のガタ分だけ動きます。全ての穴を<b>同じ端面・同じ測り方</b>で測ると、ガタが共通誤差になり、隣接ピッチ（引き算）では相殺されます。</li>
+      <li>穴の中心はコンベックスでは狙えません。縁で読む場合は「両縁の中央」を位置としてください。全穴で同じ縁（例：手前縁）を読めば、これもピッチでは相殺されます。</li>
+      <li>「小さい順に並替」は、測った順がバラバラなときだけ使ってください。図面の並び順に意味がある場合は「入れた順」のままに。</li>
+      <li>等ピッチ判定は先頭穴を基準に合わせています。先頭穴自体が端面からずれている場合、その分は全体の平行移動になり、位置ズレには出ません（隣接ピッチ誤差には出ます）。</li>
+      <li>この画面は1列（1方向）の並びを見るものです。縦横2方向に広がる穴群は、基準点・基準線から見る TOOL-27 を使ってください。</li>
+    </ul>
+  </details>
+</div>
+
+<footer>
+  検査ミニポータル｜計算はすべてこの端末の中で行われます。入力値は端末のブラウザ内にのみ保存され、消去ボタンで完全に削除できます。
+</footer>
+</div>
+
+<script>
+"use strict";
+function g(id){ return document.getElementById(id); }
+
+/* ═══ 通知トースト（全ツール共通） ═══
+     alert は confirm と同じく PWA 等でダイアログが無効化されるため使いません */
+var toastTimer=null;
+function toast(msg){
+  var t=g("toast");t.textContent=msg;t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(function(){t.classList.remove("show")},1600);
+}
+function numOK(v){ return typeof v==="number" && isFinite(v); }  /* isFinite(null)===true なので型も見る */
+function nf(v,d){ return numOK(v)? v.toFixed(d==null?1:d) : "-"; }
+
+var S={ pos:[], base:0, mode:"pos" };  // pos: 位置またはピッチ(モード依存) / base: 基準穴index / mode: pos=位置入力, pit=ピッチ入力
+
+/* ピッチ入力モード：入れたピッチを端からの位置(累積)に直す。
+   端から1穴目までが空欄なら穴1を0として累積する。 */
+function derivedPositions(){
+  if(S.mode!=="pit"){ return S.pos.slice(); }
+  var e0=parseFloat(g("edge0").value);
+  var cur=numOK(e0)? e0 : 0;
+  var out=[cur];
+  S.pos.forEach(function(p){ if(numOK(p)){ cur+=p; out.push(cur); } });
+  return out;
+}
+function setMode(m){
+  if(S.mode===m) return;
+  S.mode=(m==="pit")?"pit":"pos";
+  S.pos=[NaN]; S.base=0; g("bulk").value="";
+  syncMode(); renderRows(); calc(); persist(); focusRow(0);
+}
+function syncMode(){
+  var pit=(S.mode==="pit");
+  var on ="flex:1;min-height:38px;font:inherit;font-size:12px;font-weight:700;border:1px solid #1F3341;background:#1F3341;color:#fff;border-radius:9px;cursor:pointer";
+  var off="flex:1;min-height:38px;font:inherit;font-size:12px;font-weight:700;border:1px solid #C9D3DA;background:#fff;color:#5B707E;border-radius:9px;cursor:pointer";
+  g("mPos").style.cssText=pit?off:on;
+  g("mPit").style.cssText=pit?on:off;
+  g("edge0Row").style.display=pit?"":"none";
+  g("bulk").placeholder=pit? "25, 25, 25, 40" : "5, 108.5, 212, 324.5";
+  g("figCap").textContent=pit? (numOK(parseFloat(g("edge0").value))? "◤ ＝端面（原点）" : "◤ ＝穴1（原点）") : "◤ ＝端面（原点）";
+}
+
+/* ─ まとめ入力の解釈 ─ */
+function applyBulk(){
+  var raw=g("bulk").value;
+  var parts=raw.split(/[\s,、，\n\r\t;；]+/).filter(function(x){return x!=="";});
+  var nums=[];
+  parts.forEach(function(p){ var v=parseFloat(p); if(isFinite(v)) nums.push(v); });
+  if(!nums.length){ toast("数値が読み取れませんでした。"); return; }
+  if(nums.length>40) nums=nums.slice(0,40);
+  S.pos=nums; S.base=0; renderRows(); calc(); persist();
+}
+function addRow(){ if(S.pos.length>=40){toast("40穴までです。");return;} S.pos.push(NaN); renderRows(); calc(); persist(); focusRow(S.pos.length-1); }
+function delRow(i){ S.pos.splice(i,1); if(S.base>=S.pos.length) S.base=0; renderRows(); calc(); persist(); }
+function editRow(i,el){ S.pos[i]=parseFloat(el.value); calc(); persist(); }
+function clearAll(){ S.pos=[NaN]; S.base=0; g("bulk").value=""; renderRows(); calc(); persist(); focusRow(0); }
+
+function renderRows(){
+  var tb=g("vtBody"), h="";
+  var pit=(S.mode==="pit");
+  var cntFinite=0; S.pos.forEach(function(v){ if(numOK(v)) cntFinite++; });
+  g("cnt").textContent=(pit? (cntFinite? cntFinite+1:0) : cntFinite)+" 穴";
+  S.pos.forEach(function(v,i){
+    h+='<tr><td>'+(pit? (i+1)+'→'+(i+2) : (i+1))+'</td>'
+      +'<td><input type="text" inputmode="decimal" autocomplete="off" enterkeyhint="next" placeholder="'+(pit?'前の穴からのピッチ':'端面からの寸法')+'" value="'+(numOK(v)?v:"")+'" oninput="editRow('+i+',this)" onkeydown="rowKey('+i+',this,event)"></td>'
+      +'<td><button class="xbtn" onclick="delRow('+i+')" aria-label="削除">×</button></td></tr>';
+  });
+  if(!S.pos.length) h='<tr><td colspan="3" style="text-align:center;color:#8FA2AF;padding:12px">「＋1行追加」かまとめ入力で始めてください</td></tr>';
+  tb.innerHTML=h;
+}
+function focusRow(i){
+  var ins=g("vtBody").querySelectorAll("input");
+  if(ins[i]){ ins[i].focus(); try{ ins[i].select(); }catch(e){} }
+}
+function rowKey(i, el, ev){
+  if(ev.key!=="Enter" && ev.keyCode!==13) return;
+  ev.preventDefault();
+  if(i < S.pos.length-1){ focusRow(i+1); return; }   // 途中なら次欄へ
+  var v=parseFloat(el.value);
+  if(isFinite(v)){                                    // 末尾で値あり → 新欄を足して移動
+    if(S.pos.length>=40){ el.blur(); return; }
+    S.pos.push(NaN); renderRows(); calc(); persist();
+    focusRow(S.pos.length-1);
+  } else { el.blur(); }                               // 末尾で空 → 閉じる
+}
+
+/* ─ 表示用に並べた配列 { pos, orig(元の穴番号) } ─ */
+function ordered(){
+  var src=derivedPositions();
+  var a=[]; src.forEach(function(v,i){ if(numOK(v)) a.push({pos:v,orig:i+1}); });
+  if(S.mode!=="pit" && g("order").value==="asc") a.sort(function(x,y){return x.pos-y.pos;});
+  return a;
+}
+
+function calc(){
+  syncMode();
+  var A=ordered(), nA=A.length;
+
+  /* 基準穴セレクタ */
+  var bh=g("baseHole"), cur=parseInt(bh.value,10);
+  var opt="";
+  A.forEach(function(o,i){ opt+='<option value="'+i+'">穴'+(i+1)+'（'+nf(o.pos)+'）</option>'; });
+  bh.innerHTML=opt;
+  if(!(S.base>=0 && S.base<nA)) S.base=0;
+  bh.value=String(S.base);
+
+  /* 隣接ピッチ */
+  var pit=[], tb=g("pitchBody"), h="";
+  for(var i=1;i<nA;i++){ pit.push(A[i].pos-A[i-1].pos); }
+  pit.forEach(function(p,i){
+    h+='<tr><td>'+(i+1)+'→'+(i+2)+'</td><td>'+nf(A[i].pos)+'</td><td>'+nf(A[i+1].pos)+'</td><td>'+nf(p)+'</td></tr>';
+  });
+  if(!pit.length) h='<tr><td colspan="4" style="text-align:center;color:#8FA2AF;font-family:inherit">2穴以上で計算します</td></tr>';
+  tb.innerHTML=h;
+
+  if(nA>=2){
+    var span=A[nA-1].pos-A[0].pos;
+    var mn=Math.min.apply(null,pit), mx=Math.max.apply(null,pit);
+    var av=pit.reduce(function(a,b){return a+b;},0)/pit.length;
+    g("rSpan").textContent=nf(span)+" mm";
+    g("rMinMax").textContent=nf(mn)+" / "+nf(mx)+" mm";
+    g("rAvg").textContent=nf(av,2)+" mm";
+  } else { g("rSpan").textContent="-"; g("rMinMax").textContent="-"; g("rAvg").textContent="-"; }
+
+  /* 基準穴からの距離 */
+  var rb=g("relBody"), rh="";
+  A.forEach(function(o,i){
+    var rel=(nA? o.pos-A[S.base].pos : NaN);
+    var self=(i===S.base);
+    rh+='<tr'+(self?' style="background:#FDECEA"':'')+'><td>穴'+(i+1)+(self?' ◀基準':'')+'</td><td>'+nf(o.pos)+'</td><td>'+(self?'0.0':(rel>0?"+":"")+nf(rel))+'</td></tr>';
+  });
+  if(!nA) rh='<tr><td colspan="3" style="text-align:center;color:#8FA2AF;font-family:inherit">—</td></tr>';
+  rb.innerHTML=rh;
+
+  /* 総当たりマトリクス */
+  var mt=g("matTbl");
+  if(nA>=2 && nA<=12){
+    var mh="<tr><th class='hd'></th>";
+    A.forEach(function(o,j){ mh+="<th>"+(j+1)+"</th>"; });
+    mh+="</tr>";
+    A.forEach(function(o,i){
+      mh+="<tr><td class='hd'>穴"+(i+1)+"</td>";
+      A.forEach(function(p,j){
+        if(i===j) mh+="<td class='diag'>—</td>";
+        else mh+="<td>"+nf(Math.abs(p.pos-o.pos))+"</td>";
+      });
+      mh+="</tr>";
+    });
+    mt.innerHTML=mh;
+  } else if(nA>12){ mt.innerHTML="<tr><td class='hd' style='padding:8px'>13穴以上は基準穴からの距離をお使いください</td></tr>"; }
+  else mt.innerHTML="<tr><td class='hd' style='padding:8px'>2穴以上で表示</td></tr>";
+
+  /* 等ピッチ判定 */
+  var tol=parseFloat(g("tol").value);
+  var nomIn=parseFloat(g("nomP").value);
+  var eb=g("eqBody"), eh="", maxPos=0, maxPit=0, allOK=true;
+  if(nA>=2){
+    var span2=A[nA-1].pos-A[0].pos;
+    var p0=isFinite(nomIn)&&nomIn>0? nomIn : span2/(nA-1);
+    g("ePitch").textContent=nf(p0,3)+" mm"+(isFinite(nomIn)&&nomIn>0?"（指定）":"（自動）");
+    A.forEach(function(o,i){
+      var ideal=A[0].pos + i*p0;
+      var dev=o.pos-ideal;
+      if(Math.abs(dev)>maxPos) maxPos=Math.abs(dev);
+      var ok=isFinite(tol)? Math.abs(dev)<=tol : true;
+      if(!ok) allOK=false;
+      eh+='<tr><td>穴'+(i+1)+'</td><td>'+nf(o.pos)+'</td><td>'+nf(ideal)+'</td><td>'+(dev>0?"+":"")+nf(dev,2)+'</td>'
+        +'<td class="'+(isFinite(tol)?(ok?"ok":"ngt"):"")+'">'+(isFinite(tol)?(ok?"合":"否"):"—")+'</td></tr>';
+    });
+    for(var k=0;k<pit.length;k++){ var e=Math.abs(pit[k]-p0); if(e>maxPit) maxPit=e; }
+    g("eMaxPos").textContent="±"+nf(maxPos,2)+" mm";
+    g("eMaxPit").textContent="±"+nf(maxPit,2)+" mm";
+    var j=g("eJudge");
+    if(isFinite(tol)){ j.textContent=allOK?"合格":"不合格"; j.className="v "+(allOK?"ok":"ngt"); }
+    else { j.textContent="公差未入力"; j.className="v"; }
+  } else {
+    g("ePitch").textContent="-"; g("eMaxPos").textContent="-"; g("eMaxPit").textContent="-";
+    g("eJudge").textContent="-"; g("eJudge").className="v";
+    eh='<tr><td colspan="5" style="text-align:center;color:#8FA2AF;font-family:inherit">2穴以上で判定します</td></tr>';
+  }
+  eb.innerHTML=eh;
+
+  drawFig(A);
+}
+
+function drawFig(A){
+  var svg=g("fig");
+  if(A.length<1){ svg.innerHTML=""; return; }
+  var Wv=300, y=64, x0=22, x1=284, pad=0;
+  var mn=Math.min(0, A[0].pos), mx=A[A.length-1].pos;
+  var rng=(mx-mn)||1;
+  var sc=function(p){ return x0 + (p-mn)/rng*(x1-x0); };
+  var h="";
+  /* 端面 */
+  h+='<path d="M'+x0+' 30 L'+x0+' 92 M'+x0+' 92 l-4 6 M'+x0+' 84 l-4 6 M'+x0+' 76 l-4 6" stroke="#1F3341" stroke-width="1.6" fill="none"/>';
+  /* 基準線 */
+  h+='<line x1="'+x0+'" y1="'+y+'" x2="'+x1+'" y2="'+y+'" stroke="#8FA2AF" stroke-width="1"/>';
+  /* ピッチの寸法（隣接） */
+  for(var i=1;i<A.length;i++){
+    var xa=sc(A[i-1].pos), xb=sc(A[i].pos), ym=y+22;
+    h+='<line x1="'+xa.toFixed(1)+'" y1="'+ym+'" x2="'+xb.toFixed(1)+'" y2="'+ym+'" stroke="#1F3341" stroke-width="0.9"/>';
+    h+='<path d="M'+xa.toFixed(1)+' '+ym+' l4 -2 v4 z" fill="#1F3341"/><path d="M'+xb.toFixed(1)+' '+ym+' l-4 -2 v4 z" fill="#1F3341"/>';
+    var mid=(xa+xb)/2;
+    h+='<text x="'+mid.toFixed(1)+'" y="'+(ym+11)+'" font-size="8.5" fill="#1F3341" text-anchor="middle" font-family="monospace">'+nf(A[i].pos-A[i-1].pos)+'</text>';
+  }
+  /* 穴 */
+  A.forEach(function(o,i){
+    var x=sc(o.pos), sel=(i===S.base);
+    h+='<line x1="'+x.toFixed(1)+'" y1="'+(y-14)+'" x2="'+x.toFixed(1)+'" y2="'+(y+6)+'" stroke="'+(sel?"#D63426":"#8FA2AF")+'" stroke-width="1" stroke-dasharray="2 2"/>';
+    h+='<circle cx="'+x.toFixed(1)+'" cy="'+y+'" r="'+(sel?4:3.2)+'" fill="'+(sel?"#D63426":"#fff")+'" stroke="'+(sel?"#D63426":"#1F3341")+'" stroke-width="1.4"/>';
+    h+='<text x="'+x.toFixed(1)+'" y="'+(y-18)+'" font-size="8.5" fill="'+(sel?"#D63426":"#5B707E")+'" text-anchor="middle" font-family="monospace">'+(i+1)+'</text>';
+    if(i===0||i===A.length-1)
+      h+='<text x="'+x.toFixed(1)+'" y="26" font-size="8" fill="#7A8C97" text-anchor="middle" font-family="monospace">'+nf(o.pos)+'</text>';
+  });
+  svg.innerHTML=h;
+}
+
+/* ─ 印刷ヘッダ ─ */
+function prep(){
+  g("recHead").textContent="部品名："+(g("recName").value||"—")+"　／　方向："+(g("axis").value||"—")+"　／　検査日："+(g("recDate").value||"—");
+}
+
+/* ─ 保存 ─ */
+var KEY="pitchrow_v1";
+var IDS=["axis","order","nomP","tol","recName","recDate","edge0"];
+function copyPositions(){
+  var A=ordered();
+  if(!A.length){ toast("コピーする一覧がありません"); return; }
+  var origin=(S.mode==="pit" && !numOK(parseFloat(g("edge0").value)))? "穴1" : "端";
+  var lines=["穴\t"+origin+"から\t基準穴から"];
+  A.forEach(function(o,i){
+    var rel=o.pos-A[S.base].pos;
+    lines.push("穴"+(i+1)+"\t"+nf(o.pos)+"\t"+((i===S.base)?"0.0":((rel>0?"+":"")+nf(rel))));
+  });
+  var txt=lines.join("\n");
+  try{ if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt); toast("コピーしました"); return; } }catch(e){}
+  try{
+    var ta=document.createElement("textarea"); ta.value=txt; ta.style.position="fixed"; ta.style.opacity="0";
+    document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta);
+    toast("コピーしました");
+  }catch(e2){ toast("コピーできませんでした"); }
+}
+function persist(){
+  try{
+    var o={pos:S.pos, base:S.base, mode:S.mode, v:{}};
+    IDS.forEach(function(i){ o.v[i]=g(i).value; });
+    localStorage.setItem(KEY, JSON.stringify(o));
+  }catch(e){}
+}
+function restore(){
+  try{
+    var o=JSON.parse(localStorage.getItem(KEY)||"null"); if(!o) return;
+    /* JSON保存では NaN が null に化けるため、数値以外は NaN に戻す */
+    S.pos=(o.pos||[]).map(function(v){ return numOK(v)? v : NaN; });
+    S.base=o.base||0;
+    S.mode=(o.mode==="pit")?"pit":"pos";
+    syncMode();
+    if(o.v) IDS.forEach(function(i){ if(o.v[i]!=null&&o.v[i]!=="") g(i).value=o.v[i]; });
+  }catch(e){}
+}
+g("baseHole").addEventListener("change",function(){ S.base=parseInt(this.value,10)||0; calc(); persist(); });
+
+/* ─ 起動 ─ */
+restore();
+if(!g("recDate").value){
+  var dt=new Date();
+  g("recDate").value=dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0")+"-"+String(dt.getDate()).padStart(2,"0");
+}
+if(!S.pos.length) S.pos=[NaN];
+renderRows(); calc();
+</script>
+
+<!-- ═══ 数字入力の補助（共通スニペット / 全ツール同一） ═══
+     ・数字キーパッド固定（inputmode）／全角数字・句点の自動半角化
+     ・数字以外（かな・英字・記号）の混入を自動で除去
+     ・± ボタン … 数字キーパッドに無いマイナスを入力
+     ・✕ ボタン … 欄をまとめて消去
+     ・「5 43」のような度分秒のスペース区切りはそのまま通します
+     ・DOM構造は変更しません（再描画するツールでも壊れません）        -->
+<style>
+  .kt-aid{
+    position:absolute;z-index:9998;display:none;gap:4px;
+    background:#1F3341;border-radius:8px;padding:3px;
+    box-shadow:0 3px 10px rgba(0,0,0,.28);
+  }
+  .kt-aid.on{display:flex}
+  .kt-aid button{
+    -webkit-appearance:none;appearance:none;border:none;
+    background:#2C4353;color:#fff;font:inherit;font-size:14px;font-weight:700;
+    line-height:1;padding:8px 12px;border-radius:5px;cursor:pointer;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  .kt-aid button:active{background:#D63426}
+  @media print{.kt-aid{display:none !important}}
+</style>
+<script>
+(function(){
+  "use strict";
+
+  /* ── 対象の判定 ── */
+  function mode(el){
+    return (el && el.tagName==="INPUT" && !el.readOnly && !el.disabled)
+      ? (el.getAttribute("inputmode")||"") : "";
+  }
+  function isNum(el){ var m=mode(el); return m==="decimal"||m==="numeric"; }
+  function isDec(el){ return mode(el)==="decimal"; }
+
+  /* ── 全角→半角（かなキーボードで打たれた場合の救済） ── */
+  function toHalf(v){
+    return v
+      .replace(/[０-９]/g, function(c){ return String.fromCharCode(c.charCodeAt(0)-65248); })
+      .replace(/[．。･・]/g, ".")
+      .replace(/[－−―ーｰ‐–—]/g, "-")
+      .replace(/[\u3000]/g, " ");
+  }
+
+  /* ── 数字だけに整える（空白区切りは温存＝度分秒入力を壊さない） ── */
+  function clean(v, dec){
+    var toks = toHalf(v).split(" "), out = [], i, t, neg, k;
+    for(i=0;i<toks.length;i++){
+      t = toks[i];
+      neg = (i===0) && t.charAt(0)==="-";
+      t = t.replace(/[^0-9.]/g, "");
+      if(!dec) t = t.replace(/\./g, "");
+      else {
+        k = t.indexOf(".");
+        if(k>=0) t = t.slice(0,k+1) + t.slice(k+1).replace(/\./g,"");
+      }
+      out.push((neg?"-":"") + t);
+    }
+    return out.join(" ");
+  }
+
+  /* ── 入力の監視（捕捉フェーズ＝各ツールの計算処理より先に整える） ── */
+  document.addEventListener("input", function(e){
+    var el = e.target;
+    if(!isNum(el)) return;
+    var v = el.value, c = clean(v, isDec(el));
+    if(c === v) return;
+    var p = el.selectionStart, d = v.length - c.length;
+    el.value = c;
+    try{ el.setSelectionRange(Math.max(0,p-d), Math.max(0,p-d)); }catch(err){}
+  }, true);
+
+  /* ── ± / ✕ の浮動ボタン（DOMを包まないので再描画に強い） ── */
+  var bar=null, cur=null, sign=null;
+
+  function notify(el){
+    var ev;
+    try{ ev = new Event("input", {bubbles:true}); }
+    catch(err){ ev = document.createEvent("Event"); ev.initEvent("input", true, false); }
+    el.dispatchEvent(ev);
+    try{ ev = new Event("change", {bubbles:true}); }
+    catch(err){ ev = document.createEvent("Event"); ev.initEvent("change", true, false); }
+    el.dispatchEvent(ev);
+  }
+  /* 押した瞬間に実行する。既定動作を止めることで入力欄のフォーカス（＝
+     数字キーパッド）を保ったまま操作でき、ゴーストクリックも防げる。   */
+  function act(e){
+    e.preventDefault();
+    var b = e.target, a, v;
+    while(b && b !== bar && b.tagName !== "BUTTON") b = b.parentNode;
+    if(!b || b === bar || !cur) return;
+    a = b.getAttribute("data-a");
+    if(a === "clr") cur.value = "";
+    else {
+      v = cur.value;
+      cur.value = (v.charAt(0) === "-") ? v.slice(1) : ("-" + v);
+    }
+    notify(cur);
+    try{ cur.focus(); }catch(err){}
+    place();
+  }
+
+  function build(){
+    bar = document.createElement("div");
+    bar.className = "kt-aid";
+    bar.innerHTML =
+      '<button type="button" data-a="sign" aria-label="符号を反転">±</button>'+
+      '<button type="button" data-a="clr" aria-label="この欄を消去">✕</button>';
+    document.body.appendChild(bar);
+    sign = bar.querySelector('[data-a="sign"]');
+    if(window.PointerEvent){
+      bar.addEventListener("pointerdown", act);
+    } else {
+      bar.addEventListener("mousedown", act);
+      bar.addEventListener("touchstart", act, {passive:false});
+    }
+  }
+
+  function hide(){ if(bar) bar.className = "kt-aid"; cur = null; }
+
+  function place(){
+    if(!cur || !bar) return;
+    if(!document.contains(cur)){ hide(); return; }   /* 再描画で消えた場合 */
+    bar.className = "kt-aid on";
+    var r = cur.getBoundingClientRect();
+    var bw = bar.offsetWidth, bh = bar.offsetHeight;
+    var top = r.top - bh - 6;
+    if(top < 4) top = r.bottom + 6;
+    var left = r.right - bw;
+    if(left < 4) left = 4;
+    bar.style.left = (left + (window.pageXOffset||0)) + "px";
+    bar.style.top  = (top  + (window.pageYOffset||0)) + "px";
+  }
+
+  document.addEventListener("focusin", function(e){
+    if(!isNum(e.target)){ hide(); return; }
+    cur = e.target;
+    if(!bar) build();
+    sign.style.display = isDec(cur) ? "" : "none";   /* 整数欄には ± を出さない */
+    place();
+  });
+  document.addEventListener("focusout", function(){
+    setTimeout(function(){ if(document.activeElement !== cur) hide(); }, 0);
+  });
+  window.addEventListener("scroll", function(){ if(cur) place(); }, true);
+  window.addEventListener("resize", function(){ if(cur) place(); });
+})();
+</script>
+<script>
+(function(){
+  function fire(el,t){
+    try{ el.dispatchEvent(new Event(t,{bubbles:true})); }
+    catch(e){ var ev=document.createEvent('Event'); ev.initEvent(t,true,true); el.dispatchEvent(ev); }
+  }
+  function clickText(within,text){
+    var cont = within ? document.querySelector(within) : document;
+    if(!cont) return;
+    var all=cont.querySelectorAll('button,[class*="chip"],span,a,div,li'), target=String(text), j,e;
+    for(j=0;j<all.length;j++){
+      e=all[j];
+      if(e.textContent.trim()===target && (e.children.length===0 || e.tagName==='BUTTON')){ e.click(); return; }
+    }
+  }
+  window.tryExample=function(btn){
+    var raw=btn.getAttribute('data-ex'); if(!raw) return;
+    var cfg; try{ cfg=JSON.parse(raw); }catch(e){ return; }
+    var steps=cfg.set||[], i, it, el, k, fns, f, fn;
+    for(i=0;i<steps.length;i++){
+      it=steps[i];
+      if(it.click){ var c=document.querySelector(it.click); if(c) c.click(); continue; }
+      if(it.clickText){ clickText(it.within, it.clickText); continue; }
+      if(it.setState){ if(window.S){ for(k in it.setState){ window.S[k]=it.setState[k]; } }
+        fns=(it.apply||'').split(';'); for(f=0;f<fns.length;f++){ fn=fns[f].replace(/^\s+|\s+$/g,''); if(fn && typeof window[fn]==='function'){ try{ window[fn](); }catch(e){} } }
+        continue; }
+      el = it.sel ? document.querySelector(it.sel) : document.getElementById(it.id);
+      if(!el) continue;
+      el.value=String(it.v);
+      fire(el, el.tagName==='SELECT' ? 'change' : 'input');
+    }
+    var gd=btn; while(gd && !(gd.classList && gd.classList.contains('guide'))) gd=gd.parentNode;
+    if(gd) gd.open=false;
+    var fig=document.querySelector('svg#fig, svg#dwg, figure svg, #fig, #dwg');
+    if(fig && fig.scrollIntoView) fig.scrollIntoView({behavior:'smooth',block:'center'});
+  };
+})();
+</script>
+<script>
+/* ═══ 一括消去の共通処理（全ツール共通 / 確認ダイアログは使いません） ═══
+     1回目 … ボタンが「もう一度押すと消去」に変わります（3秒で自動解除）
+     2回目 … 保存データを消して、最初の状態に戻します
+     ※ 確認ポップアップ（ダイアログ）はPWA等で無効化されるため使いません      */
+(function(){
+  "use strict";
+  var KEY = "pitchrow_v1";
+  window.armClear = function(btn){
+    if(!btn || !btn.getAttribute) return;
+    if(!btn.getAttribute("data-armed")){
+      btn.setAttribute("data-armed","1");
+      if(!btn.getAttribute("data-lbl")) btn.setAttribute("data-lbl", btn.textContent);
+      btn.textContent = "もう一度押すと消去";
+      if(btn.classList) btn.classList.add("arm");
+      setTimeout(function(){
+        if(btn.getAttribute("data-armed")){
+          btn.removeAttribute("data-armed");
+          btn.textContent = btn.getAttribute("data-lbl");
+          if(btn.classList) btn.classList.remove("arm");
+        }
+      }, 3000);
+      return;
+    }
+    btn.removeAttribute("data-armed");
+    if(btn.classList) btn.classList.remove("arm");
+    if(btn.getAttribute("data-lbl")) btn.textContent = btn.getAttribute("data-lbl");
+    try{ localStorage.removeItem(KEY); }catch(e){}
+    try{ location.reload(); }catch(e){}
+  };
+})();
+</script>
+<div class="toast" id="toast"></div>
+<script>
+/* まとめ入力は数字だけを受け付ける（かな・英字は自動で除去。全角は半角へ）*/
+(function(){
+  "use strict";
+  var b=document.getElementById("bulk"); if(!b) return;
+  function clean(v){
+    v=String(v).replace(/[\uFF10-\uFF19]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0)});
+    v=v.replace(/[\u3002\uFF0E]/g,".").replace(/[\uFF0D\u30FC\uFF70\u2212]/g,"-").replace(/[\u3001\uFF0C]/g,",");
+    return v.replace(/[^0-9.\-,\s]/g,"");
+  }
+  b.addEventListener("input",function(){
+    var v=b.value, c=clean(v);
+    if(c!==v){
+      var p=(b.selectionStart||0)-(v.length-c.length);
+      b.value=c;
+      try{ b.setSelectionRange(p,p); }catch(e){}
+    }
+  });
+  var sep=document.getElementById("bulkSep");
+  if(sep) sep.addEventListener("click",function(){
+    var p=(b.selectionStart==null)? b.value.length : b.selectionStart;
+    b.value=b.value.slice(0,p)+", "+b.value.slice(p);
+    b.focus();
+    try{ b.setSelectionRange(p+2,p+2); }catch(e){}
+  });
+})();
+</script>
+<style>
+/* ═══ 記入例（薄字）を入力値と見分ける（v57 / 全ツール共通）═══
+     薄字が入力値と同じ書体（太字・大きめ・右寄せ）で出ていたため、
+     入力済みに見えていた。色の濃さだけだと現場の照明や斜めからの視認で差が消えるので、
+     太さ・大きさ・傾きも変えて別物にする。                                    */
+::placeholder{color:#AEBBC4;font-weight:400;font-size:.82em;font-style:italic;opacity:1}
+::-webkit-input-placeholder{color:#AEBBC4;font-weight:400;font-size:.82em;font-style:italic;opacity:1}
+::-moz-placeholder{color:#AEBBC4;font-weight:400;font-size:.82em;font-style:italic;opacity:1}
+/* 未入力の欄は下線を破線に（入っている欄＝実線）。入力中は元の色を邪魔しない。 */
+input.kt-empty:not(:focus){border-bottom-style:dashed !important;border-bottom-color:#C2CED6 !important}
+td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3DA !important}
+</style>
+<script>
+/* ═══ 未入力の欄に印をつける（v57 / 全ツール共通）═══
+     数字を入れる欄（inputmode 付き）だけを対象にする。
+     行を作り直すツールがあるので、DOMの変化も見張って付け直す。            */
+(function(){
+  "use strict";
+  function hasCls(el){ return (" "+(el.className||"")+" ").indexOf(" kt-empty ")>=0; }
+  function mark(el){
+    if(!el||el.tagName!=="INPUT") return;
+    if(!el.getAttribute("inputmode")) return;
+    if(el.readOnly||el.disabled) return;
+    var empty=((el.value||"").replace(/\s/g,"")==="");
+    var has=hasCls(el);
+    if(empty&&!has) el.className=((el.className||"")+" kt-empty").replace(/^\s+/,"");
+    else if(!empty&&has) el.className=(" "+el.className+" ").replace(" kt-empty "," ").replace(/^\s+|\s+$/g,"");
+  }
+  function scan(){
+    var ns=document.getElementsByTagName("input"),i;
+    for(i=0;i<ns.length;i++) mark(ns[i]);
+  }
+  /* 捕捉フェーズ＝打った欄をすぐ反映。浮上フェーズ＝ツールが行を作り直した後に拾う。 */
+  document.addEventListener("input",function(e){ mark(e.target); },true);
+  document.addEventListener("input",scan,false);
+  document.addEventListener("change",scan,false);
+  document.addEventListener("click",scan,false);
+  if(window.MutationObserver){
+    try{
+      new MutationObserver(scan).observe(document.body,{childList:true,subtree:true});
+    }catch(e){}
+  }
+  scan();
+  setTimeout(scan,0);
+})();
+</script>
+</body>
+</html>
