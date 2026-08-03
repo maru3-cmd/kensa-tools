@@ -295,17 +295,17 @@
     </div>
     <div class="row">
       <label id="lbPCD">PCD<small>ピッチ円直径</small></label>
-      <input id="inPCD" type="text" inputmode="decimal" placeholder="100">
+      <input id="inPCD" type="text" inputmode="decimal" placeholder="例 100">
       <span class="unit">mm</span>
     </div>
     <div class="row">
       <label>穴数 n</label>
-      <input id="inN" type="text" inputmode="numeric" placeholder="6">
+      <input id="inN" type="text" inputmode="numeric" placeholder="例 6">
       <span class="unit">穴</span>
     </div>
     <div class="row">
       <label>ボルト（相手）の径<small>ピンなら実測、ねじならおねじの外径</small></label>
-      <input id="inBolt" type="text" inputmode="decimal" placeholder="8">
+      <input id="inBolt" type="text" inputmode="decimal" placeholder="例 8">
       <span class="unit">mm</span>
     </div>
     <div class="dimsw" role="group" aria-label="穴の割り付け" style="margin-top:8px">
@@ -348,7 +348,7 @@
     <h3>穴の径（実測）<span>　組付き判定にも使います</span></h3>
     <div class="row">
       <label>共通の穴径<small>ばらつきが小さければこれだけで可</small></label>
-      <input id="inDiaC" type="text" inputmode="decimal" placeholder="9">
+      <input id="inDiaC" type="text" inputmode="decimal" placeholder="例 9">
       <span class="unit">mm</span>
     </div>
     <details style="margin-top:6px">
@@ -422,7 +422,7 @@
     <h3>図面判定</h3>
     <div class="row">
       <label>位置度の公差<small>図面の指示（φ）。空欄可</small></label>
-      <input id="inTP" type="text" inputmode="decimal" placeholder="0.3">
+      <input id="inTP" type="text" inputmode="decimal" placeholder="例 0.3">
       <span class="unit">mm</span>
     </div>
     <div class="verd na" id="verdTP" style="margin-top:4px">位置度の公差を入れると合否が出ます。</div>
@@ -1607,6 +1607,52 @@ window.__pcddiag={S:S, recalc:recalc, solveCircleR:solveCircleR, fitAssemble:fit
     if(KEY){ try{ localStorage.removeItem(KEY); }catch(e){} }
     try{ location.reload(); }catch(e){}
   };
+})();
+</script>
+<style>
+/* ═══ 記入例（薄字）を入力値と見分ける（v57 / 全ツール共通）═══
+     薄字が入力値と同じ書体（太字・大きめ・右寄せ）で出ていたため、
+     入力済みに見えていた。色の濃さだけだと現場の照明や斜めからの視認で差が消えるので、
+     太さ・大きさ・傾きも変えて別物にする。                                    */
+::placeholder{color:#AEBBC4;font-weight:400;font-size:.82em;font-style:italic;opacity:1}
+::-webkit-input-placeholder{color:#AEBBC4;font-weight:400;font-size:.82em;font-style:italic;opacity:1}
+::-moz-placeholder{color:#AEBBC4;font-weight:400;font-size:.82em;font-style:italic;opacity:1}
+/* 未入力の欄は下線を破線に（入っている欄＝実線）。入力中は元の色を邪魔しない。 */
+input.kt-empty:not(:focus){border-bottom-style:dashed !important;border-bottom-color:#C2CED6 !important}
+td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3DA !important}
+</style>
+<script>
+/* ═══ 未入力の欄に印をつける（v57 / 全ツール共通）═══
+     数字を入れる欄（inputmode 付き）だけを対象にする。
+     行を作り直すツールがあるので、DOMの変化も見張って付け直す。            */
+(function(){
+  "use strict";
+  function hasCls(el){ return (" "+(el.className||"")+" ").indexOf(" kt-empty ")>=0; }
+  function mark(el){
+    if(!el||el.tagName!=="INPUT") return;
+    if(!el.getAttribute("inputmode")) return;
+    if(el.readOnly||el.disabled) return;
+    var empty=((el.value||"").replace(/\s/g,"")==="");
+    var has=hasCls(el);
+    if(empty&&!has) el.className=((el.className||"")+" kt-empty").replace(/^\s+/,"");
+    else if(!empty&&has) el.className=(" "+el.className+" ").replace(" kt-empty "," ").replace(/^\s+|\s+$/g,"");
+  }
+  function scan(){
+    var ns=document.getElementsByTagName("input"),i;
+    for(i=0;i<ns.length;i++) mark(ns[i]);
+  }
+  /* 捕捉フェーズ＝打った欄をすぐ反映。浮上フェーズ＝ツールが行を作り直した後に拾う。 */
+  document.addEventListener("input",function(e){ mark(e.target); },true);
+  document.addEventListener("input",scan,false);
+  document.addEventListener("change",scan,false);
+  document.addEventListener("click",scan,false);
+  if(window.MutationObserver){
+    try{
+      new MutationObserver(scan).observe(document.body,{childList:true,subtree:true});
+    }catch(e){}
+  }
+  scan();
+  setTimeout(scan,0);
 })();
 </script>
 </body>

@@ -185,7 +185,10 @@
       <li>c・h・R の<b>どれか2つ</b>を入れると、残りが赤字で出ます。</li>
       <li>図面のRと定規のスパン c から「合格時の矢高 h」を逆算することもできます。</li>
       <li>円弧カバーなど「<b>R と開き角</b>」の図面は、上の<b>「R・角度から割り出し」タブ</b>へ。周長・弦と、角度指示の穴の<b>左端からの周長・弦</b>が出ます（開き角は「117 30」＝117°30′のように度・分でも可）。</li>
-    </ol>
+          <li><b>割り部品</b>のタブは、割った片側だけを測るとき用です。<b>半径</b>と<b>割の隙間</b>を入れると、
+        割面での<b>弦</b>と<b>矢高</b>が出ます（隙間のぶんを電卓で引く必要はありません）。
+        <b>中心から端面まで</b>も入れると、実際に測れる<b>端面から円の底まで</b>が公差つきで出ます。</li>
+</ol>
     <div class="src">
       <b>計算のしかた</b><br>
       弦 c・矢高 h・半径 R の関係はひとつの式で結ばれていて、2つ入れれば残りが決まります。<br>
@@ -194,7 +197,16 @@
       ・直径で入れたときは <code>R = φ/2</code> に直してから同じ式を使っています（内部は常に半径）。<br>
       ・穴の割り出し（R・角度から）… 穴の位置は <code>配置半径 × (sin・cos)</code> で出し、弦・弧に直しています。<br>
       当て板（弦）を長くとるほど矢高の読み取り誤差が R に効きにくくなります。<b>c が小さいと R が跳ねる</b>のは式の形（分母が 2h）によるもので、測定の腕ではありません。
-    </div>
+      ・<b>割り部品</b> … 割った片側だけを測るとき、割面は円の中心を通っていません。
+        この部品の割面が中心からずれている量を a とすると<br>
+        　<code>弦 c = 2·√(R² − a²)</code>　<code>矢高 h = R − a</code>　<code>開き角 = 2·acos(a ÷ R)</code><br>
+        隙間を「合計」で入れたときは <code>a = 隙間 ÷ 2</code>、「この部品ぶん」で入れたときは <code>a = 隙間</code> です。
+        <b>片割れどうしで大きさが違う部品</b>があるため切り替えられるようにしています。
+        割面が中心を越えて反対側にある（半円より大きい）部品は、「この部品ぶん」に <b>マイナス</b>で入れてください。<br>
+      ・<b>端面から円の底まで</b> … <code>H − R</code>（H は割の中心から端面までの距離）。
+        中心そのものはノギスやハイトゲージで当てられないので、実際に測れる寸法に置きかえたものです。
+        公差は H に付いたものをそのまま移しています。<b>穴径にも公差がある場合は、その半分ぶんだけ別に振れます。</b><br>
+</div>
     <div class="gx">
       <h4>例 ── 弦100・矢高10 の大きなR</h4>
       <div class="gxin">
@@ -237,15 +249,28 @@
           <button class="gbtn" type="button" data-ex='{"set":[{"click":"#tArc"},{"id":"fAR","v":200},{"id":"fATh","v":90},{"id":"fAHr","v":""},{"id":"fAAngs","v":"15 45 75"}]}' onclick="tryExample(this)">この例を試す</button>
         </div>
       </div>
+        <div class="gx">
+      <h4>例 ── φ80 の穴を隙間0.4で割った下側、中心高さ50±0.1</h4>
+      <div class="gxin">
+        <div class="gtxt">
+          <p class="gset">割り部品 ／ 半径 40 ／ 隙間 0.4（合計） ／ 中心から端面まで 50 ／ ±0.1</p>
+          <p class="gread">読み方：割面での弦は <b>79.999</b>、矢高は <b>39.800</b>（半径40より 0.2 浅い）。
+            端面から円の底までは <b>10.000</b> で、許容は <b>9.900〜10.100</b>。
+            この 10.000 がハイトゲージで実際に当てる寸法です。</p>
+          <button class="gbtn" type="button" data-ex='{"set":[{"click":"#tSplit"},{"id":"fSR","v":40},{"id":"fSGap","v":0.4},{"id":"fSH","v":50},{"id":"fSTol","v":0.1}]}' onclick="tryExample(this)">この例を試す</button>
+        </div>
+      </div>
     </div>
+</div>
   </div>
 </details>
 
 
 
   <div class="tabbar noprint">
-    <button type="button" id="tCH" class="on">弦・矢高 ⇔ R</button>
-    <button type="button" id="tArc">R・角度から割り出し</button>
+    <button type="button" id="tCH" class="on">弦・矢高⇔R</button>
+    <button type="button" id="tArc">R・角度割り出し</button>
+    <button type="button" id="tSplit">割り部品</button>
   </div>
 
   <div class="dimsw" role="group" aria-label="半径で入れるか直径で入れるか">
@@ -355,6 +380,67 @@
     </div>
   </div>
 
+  </section>
+
+  <section id="paneSplit" hidden>
+  <div class="sheet">
+    <div class="sheet-inner">
+      <svg id="figSplit" viewBox="0 0 340 250" role="img" aria-label="割り部品の断面。割面は円の中心から隙間のぶんずれており、割面での弦と、端面から円の底までの寸法を示す図"></svg>
+      <div class="titleblock">
+        <div><b>品名</b> 弦・矢高とR</div>
+        <div><b>方式</b> 割り部品</div>
+        <div>TOOL-04</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hint">割った片側だけを測るときに使います。<b>割面は円の中心を通っていない</b>ので、弦も矢高も隙間のぶんだけ変わります。
+    中心そのものは測れないので、<b>端面から円の底まで</b>に置きかえた値も出します。</div>
+
+  <div class="inputs">
+    <div class="row">
+      <span class="badge">1</span>
+      <label for="fSR" id="lbSR">半径 R<small>穴（円弧）の半径</small></label>
+      <input id="fSR" type="text" inputmode="decimal" autocomplete="off" placeholder="例 40">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row">
+      <span class="badge">2</span>
+      <label for="fSGap">割の隙間<small>図面値。下の切替に注意</small></label>
+      <input id="fSGap" type="text" inputmode="decimal" autocomplete="off" placeholder="例 0.4">
+      <span class="unit">mm</span>
+    </div>
+    <div class="dimsw" role="group" aria-label="隙間の入れ方" style="margin:2px 0 8px 34px">
+      <button type="button" id="gpBoth" class="on">合計（半分ずつ）</button>
+      <button type="button" id="gpOne">この部品ぶん</button>
+    </div>
+    <div class="row">
+      <span class="badge">3</span>
+      <label for="fSH">中心から端面まで<small>円の底がある側の端面まで</small></label>
+      <input id="fSH" type="text" inputmode="decimal" autocomplete="off" placeholder="例 50">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row">
+      <span class="badge">±</span>
+      <label for="fSTol">その公差 ±<small>空欄可</small></label>
+      <input id="fSTol" type="text" inputmode="decimal" autocomplete="off" placeholder="例 0.1">
+      <span class="unit">mm</span>
+    </div>
+  </div>
+
+  <div class="dro">
+    <div class="dro-grid">
+      <div class="cellv"><span class="k">弦 c</span><span class="v dim" id="vSC">―</span><span class="s">mm</span></div>
+      <div class="cellv"><span class="k">矢高 h</span><span class="v dim" id="vSH">―</span><span class="s">mm</span></div>
+      <div class="cellv"><span class="k">端面→底</span><span class="v dim" id="vSE">―</span><span class="s">mm</span></div>
+    </div>
+    <div class="dro-sub" id="subSplit">割面のずれ = ― | 開き角 = ―</div>
+    <div class="dro-sub" id="tolSplit"></div>
+    <div class="dro-foot">
+      <span class="statusTxt" id="statusSplit">入力待ち(半径と隙間を入れてください)</span>
+      <span class="taphint">値をタップでコピー</span>
+    </div>
+  </div>
   </section>
 
   <section id="paneArc" hidden>
@@ -607,6 +693,8 @@ function CD_K(){ return CD_DIM==='d' ? 2 : 1; }
     $('cdD').classList.toggle('on',d);
     $('fR').previousElementSibling.innerHTML = d? '直径 \u03c6<small>円弧の直径</small>' : '半径 R<small>円弧の半径</small>';
     $('fAR').previousElementSibling.innerHTML = d? '直径 \u03c6<small>測る面の円弧の直径</small>' : '半径 R<small>測る面の円弧の半径</small>';
+    $('lbSR').innerHTML = d? '直径 \u03c6<small>穴（円弧）の直径</small>' : '半径 R<small>穴（円弧）の半径</small>';
+    if(window.__splitCalc) window.__splitCalc();   /* 割り部品は別スクリプトのため window 経由 */
     $('fAHr').previousElementSibling.innerHTML = d? '穴の並ぶ直径<small>空欄なら \u03c6 と同じ</small>' : '穴の並ぶ半径<small>空欄なら R と同じ</small>';
     var kk=$('cR').getElementsByClassName('k')[0]; if(kk) kk.textContent = d?'\u03c6':'R';
     recalc(); if(typeof calcArc==='function') calcArc();
@@ -652,14 +740,136 @@ function CD_K(){ return CD_DIM==='d' ? 2 : 1; }
   var lastRows=null, lastHead=null;
 
   /* ── タブ切替 ── */
+
+  /* ══════ 割り部品（v60） ══════
+     割った片側だけを測るとき、割面は円の中心を通っていない。
+     この部品の割面が中心からずれている量を a とすると
+        弦 c = 2·√(R² − a²)      割面での開き
+        矢高 h = R − a           割面から円の底まで
+        開き角 θ = 2·acos(a/R)
+     さらに、中心そのものは測れないので
+        端面から円の底 = H − R   （H は中心から端面までの距離）
+     片割れどうしで大きさが違う部品があるため、隙間は
+     「合計（半分ずつ）」と「この部品ぶん」を切り替えられるようにしている。   */
+  var GAP_BOTH = true;   /* true=入れた値は合計 / false=この部品ぶん */
+
+  function splitOffset(){
+    var g = numA($('fSGap').value);
+    if(!isFinite(g)) return NaN;
+    return GAP_BOTH ? g/2 : g;
+  }
+  function splitR(){
+    var v = numA($('fSR').value);
+    if(!isFinite(v) || v<=0) return NaN;
+    return (CD_DIM==='d') ? v/2 : v;
+  }
+  function syncGapMode(){
+    $('gpBoth').classList.toggle('on', GAP_BOTH);
+    $('gpOne').classList.toggle('on', !GAP_BOTH);
+    splitCalc();
+  }
+  $('gpBoth').addEventListener('click',function(){ GAP_BOTH=true;  syncGapMode(); });
+  $('gpOne').addEventListener('click',function(){ GAP_BOTH=false; syncGapMode(); });
+  ['fSR','fSGap','fSH','fSTol'].forEach(function(id){
+    $(id).addEventListener('input', splitCalc);
+  });
+
+  window.__splitCalc = splitCalc;
+  function splitCalc(){
+    var R = splitR();
+    var a = splitOffset();
+    var H = numA($('fSH').value);
+    var tol = numA($('fSTol').value);
+    var msg='', c=NaN, h=NaN, e=NaN, th=NaN;
+
+    if(isFinite(R) && isFinite(a)){
+      if(Math.abs(a) >= R){
+        msg = '隙間が大きすぎます(割面が円から外れています)';
+      }else{
+        c  = 2*Math.sqrt(R*R - a*a);
+        h  = R - a;
+        th = 2*Math.acos(a/R)*180/Math.PI;
+      }
+    }
+    if(isFinite(R) && isFinite(H)){
+      e = H - R;
+      if(e < 0) msg = '中心から端面までが半径より小さいため、端面が穴の中に入っています';
+    }
+
+    $('vSC').textContent = isFinite(c)? c.toFixed(3) : '―';
+    $('vSH').textContent = isFinite(h)? h.toFixed(3) : '―';
+    $('vSE').textContent = isFinite(e)? e.toFixed(3) : '―';
+
+    $('subSplit').textContent =
+      '割面のずれ a = ' + (isFinite(a)? a.toFixed(3):'―') +
+      ' | 開き角 = ' + (isFinite(th)? th.toFixed(2)+'\u00b0':'―') +
+      ' | 半円との差 = ' + (isFinite(h)&&isFinite(R)? (h-R>=0?'+':'')+(h-R).toFixed(3):'―');
+
+    if(isFinite(e) && isFinite(tol) && tol>0){
+      $('tolSplit').textContent =
+        '端面→底の許容 : ' + (e-tol).toFixed(3) + ' 〜 ' + (e+tol).toFixed(3) +
+        '  ( ' + e.toFixed(3) + ' \u00b1' + tol.toFixed(3) + ' )';
+    }else $('tolSplit').textContent = '';
+
+    if(msg) $('statusSplit').textContent = msg;
+    else if(!isFinite(R)) $('statusSplit').textContent = 'あと 半径 を入れてください';
+    else if(!isFinite(a)) $('statusSplit').textContent = 'あと 割の隙間 を入れてください';
+    else if(!isFinite(H)) $('statusSplit').textContent = '中心から端面までを入れると「端面→底」も出ます';
+    else $('statusSplit').textContent = '計算しました';
+
+    drawSplit(R,a,H,c,h,e);
+  }
+
+  function drawSplit(R,a,H,c,h,e){
+    var el=$('figSplit'); if(!el) return;
+    if(!isFinite(R)||!isFinite(a)||Math.abs(a)>=R){
+      el.innerHTML='<text x="170" y="128" font-size="11" fill="#8FA2AF" text-anchor="middle">半径と隙間を入れてください</text>';
+      return;
+    }
+    var CX=150, TOP=52, s=110/R;                 /* 割面を y=TOP に置く */
+    if(isFinite(H) && H>R) s=Math.min(s, 150/H);
+    var cy = TOP - a*s;                          /* 円の中心 */
+    var bot = cy + R*s;                          /* 円の底 */
+    var hx = Math.sqrt(R*R-a*a)*s;               /* 弦の半分 */
+    var end = isFinite(H)? (cy + H*s) : (bot+26);
+    var L=CX-128, Rt=CX+128;
+    var g='';
+    g+='<path d="M '+L+' '+TOP+' L '+(CX-hx)+' '+TOP+' A '+(R*s)+' '+(R*s)+' 0 '+(a<0?1:0)+' 0 '+(CX+hx)+' '+TOP+
+       ' L '+Rt+' '+TOP+' L '+Rt+' '+end+' L '+L+' '+end+' Z" fill="#EEF2F4" stroke="#1F3341" stroke-width="1.2"/>';
+    g+='<line x1="'+(CX-136)+'" y1="'+cy+'" x2="'+(CX+140)+'" y2="'+cy+'" stroke="#8FA2AF" stroke-width="0.8" stroke-dasharray="7 3 1.5 3"/>';
+    g+='<line x1="'+CX+'" y1="28" x2="'+CX+'" y2="'+(end+10)+'" stroke="#8FA2AF" stroke-width="0.8" stroke-dasharray="7 3 1.5 3"/>';
+    g+='<circle cx="'+CX+'" cy="'+cy+'" r="2" fill="#1F3341"/>';
+    /* 弦 */
+    g+='<line x1="'+(CX-hx)+'" y1="'+TOP+'" x2="'+(CX+hx)+'" y2="'+TOP+'" stroke="#D63426" stroke-width="1.6" marker-start="url(#ar)" marker-end="url(#ar)"/>';
+    g+='<text x="'+(CX-hx/2)+'" y="'+(TOP+15)+'" font-size="10" fill="#D63426" text-anchor="middle">c '+c.toFixed(2)+'</text>';
+    /* 矢高 */
+    g+='<line x1="'+CX+'" y1="'+TOP+'" x2="'+CX+'" y2="'+bot+'" stroke="#D63426" stroke-width="1.4" marker-start="url(#ar)" marker-end="url(#ar)"/>';
+    g+='<text x="'+(CX+6)+'" y="'+((TOP+bot)/2)+'" font-size="10" fill="#D63426">h '+h.toFixed(2)+'</text>';
+    /* 端面→底 */
+    if(isFinite(e)&&e>=0){
+      var dx=Rt+16;
+      g+='<line x1="'+dx+'" y1="'+bot+'" x2="'+dx+'" y2="'+end+'" stroke="#0F6E56" stroke-width="1.6" marker-start="url(#ar)" marker-end="url(#ar)"/>';
+      g+='<line x1="'+(CX+hx)+'" y1="'+bot+'" x2="'+(dx+6)+'" y2="'+bot+'" stroke="#8FA2AF" stroke-width="0.6" stroke-dasharray="3 2"/>';
+      g+='<line x1="'+Rt+'" y1="'+end+'" x2="'+(dx+6)+'" y2="'+end+'" stroke="#8FA2AF" stroke-width="0.6" stroke-dasharray="3 2"/>';
+      g+='<text x="'+(dx+9)+'" y="'+((bot+end)/2)+'" font-size="10" fill="#0F6E56">'+e.toFixed(2)+'</text>';
+    }
+    g+='<text x="'+(L+3)+'" y="'+(TOP-5)+'" font-size="9.5" fill="#5B707E">割面</text>';
+    g+='<text x="'+(L+3)+'" y="'+(end-5)+'" font-size="9.5" fill="#5B707E">端面</text>';
+    el.innerHTML=g;
+  }
+
   function setTab(w){
-    $('tCH').className  = (w==='ch')  ? 'on' : '';
-    $('tArc').className = (w==='arc') ? 'on' : '';
-    $('paneCH').hidden  = (w!=='ch');
-    $('paneArc').hidden = (w!=='arc');
+    $('tCH').className    = (w==='ch')  ? 'on' : '';
+    $('tArc').className   = (w==='arc') ? 'on' : '';
+    $('tSplit').className = (w==='spl') ? 'on' : '';
+    $('paneCH').hidden    = (w!=='ch');
+    $('paneArc').hidden   = (w!=='arc');
+    $('paneSplit').hidden = (w!=='spl');
+    if(w==='spl') splitCalc();
   }
   $('tCH').addEventListener('click',function(){ setTab('ch'); });
   $('tArc').addEventListener('click',function(){ setTab('arc'); });
+  $('tSplit').addEventListener('click',function(){ setTab('spl'); });
 
   /* ── 数値まわり ── */
   function numA(v){
@@ -1076,6 +1286,52 @@ function CD_K(){ return CD_DIM==='d' ? 2 : 1; }
     if(KEY){ try{ localStorage.removeItem(KEY); }catch(e){} }
     try{ location.reload(); }catch(e){}
   };
+})();
+</script>
+<style>
+/* ═══ 記入例（薄字）を入力値と見分ける（v57 / 全ツール共通）═══
+     薄字が入力値と同じ書体（太字・大きめ・右寄せ）で出ていたため、
+     入力済みに見えていた。色の濃さだけだと現場の照明や斜めからの視認で差が消えるので、
+     太さ・大きさ・傾きも変えて別物にする。                                    */
+::placeholder{color:#AEBBC4;font-weight:400;font-size:.82em;font-style:italic;opacity:1}
+::-webkit-input-placeholder{color:#AEBBC4;font-weight:400;font-size:.82em;font-style:italic;opacity:1}
+::-moz-placeholder{color:#AEBBC4;font-weight:400;font-size:.82em;font-style:italic;opacity:1}
+/* 未入力の欄は下線を破線に（入っている欄＝実線）。入力中は元の色を邪魔しない。 */
+input.kt-empty:not(:focus){border-bottom-style:dashed !important;border-bottom-color:#C2CED6 !important}
+td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3DA !important}
+</style>
+<script>
+/* ═══ 未入力の欄に印をつける（v57 / 全ツール共通）═══
+     数字を入れる欄（inputmode 付き）だけを対象にする。
+     行を作り直すツールがあるので、DOMの変化も見張って付け直す。            */
+(function(){
+  "use strict";
+  function hasCls(el){ return (" "+(el.className||"")+" ").indexOf(" kt-empty ")>=0; }
+  function mark(el){
+    if(!el||el.tagName!=="INPUT") return;
+    if(!el.getAttribute("inputmode")) return;
+    if(el.readOnly||el.disabled) return;
+    var empty=((el.value||"").replace(/\s/g,"")==="");
+    var has=hasCls(el);
+    if(empty&&!has) el.className=((el.className||"")+" kt-empty").replace(/^\s+/,"");
+    else if(!empty&&has) el.className=(" "+el.className+" ").replace(" kt-empty "," ").replace(/^\s+|\s+$/g,"");
+  }
+  function scan(){
+    var ns=document.getElementsByTagName("input"),i;
+    for(i=0;i<ns.length;i++) mark(ns[i]);
+  }
+  /* 捕捉フェーズ＝打った欄をすぐ反映。浮上フェーズ＝ツールが行を作り直した後に拾う。 */
+  document.addEventListener("input",function(e){ mark(e.target); },true);
+  document.addEventListener("input",scan,false);
+  document.addEventListener("change",scan,false);
+  document.addEventListener("click",scan,false);
+  if(window.MutationObserver){
+    try{
+      new MutationObserver(scan).observe(document.body,{childList:true,subtree:true});
+    }catch(e){}
+  }
+  scan();
+  setTimeout(scan,0);
 })();
 </script>
 </body>

@@ -206,10 +206,12 @@
     border:1px solid #C9D3DA;background:#fff;color:#5B707E;border-radius:7px;cursor:pointer;min-height:32px}
   .pnl .grd button.on{background:#1F3341;color:#fff;border-color:#1F3341}
   .pgrid{display:flex;flex-wrap:wrap;gap:5px}
-  .pgrid button{width:52px;padding:5px 0;font:inherit;font-size:12.5px;font-weight:700;
+  .pgrid button{width:54px;padding:5px 0;font:inherit;font-size:12.5px;font-weight:700;
     border:1px solid #C9D3DA;background:#fff;color:#1F3341;border-radius:7px;cursor:pointer;
     display:flex;flex-direction:column;align-items:center;gap:1px;min-height:36px}
   .pgrid button em{font-style:normal;font-size:9.5px;font-weight:600;color:#5B707E}
+  .pgrid button em.p{font-size:8.5px;font-weight:400;color:#8FA2AF;letter-spacing:-.02em}
+  .pgrid button.on em.p{color:#8C9AA3}
   .pgrid button.on{background:#1F3341;color:#fff;border-color:#1F3341}
   .pgrid button.on em{color:#B9C6CD}
   .pnote{font-size:10.5px;line-height:1.65;color:#5B707E;margin-top:8px}
@@ -249,7 +251,7 @@
       <li>半径が違うときは「異半径」に切り替え、<b>r₁・r₂・θ</b>を入れます（余弦定理）。</li>
       <li>図面が<b>直径（φ・PCD）で書かれている</b>ときは、上の<b>「直径で入れる」</b>を押してからその数字をそのまま入れてください。半分にする計算は要りません。</li>
       <li>角度は <b>60</b> でも <b>60 30</b>（度 分）でも入れられます（入力欄の下のボタンで10進／度分秒を切替）。下に穴間ピッチ L が出ます。</li>
-      <li><b>穴径</b>（キリ径）を入れると、下に<b>ノギスを当てたときの読み</b>（外−外・内−内）が中心間と並んで出ます。電卓で足し引きする必要はありません。穴の大きさが違うときは<b>「穴ごとに指定」</b>へ。</li>
+      <li><b>穴径</b>（キリ径）を入れると、下に<b>ノギスを当てたときの読み</b>（外−外・内−内）が中心間と並んで出ます。電卓で足し引きする必要はありません。穴の大きさが違うときは<b>「穴ごとに指定」</b>へ（片方だけ入れたときは、もう片方も同じ径として計算し、その旨を表示します）。</li>
       <li>穴径は<b>「キリ（バカ穴）」「M（ねじ下穴）」のボタン</b>からも選べます。<b>キリ</b>はボルトを通す穴（M8なら9キリ）、<b>M</b>はめねじの下穴（M8なら6.8）です。押したときだけ一覧が開くので画面は伸びません。</li>
       <li>角度に <b>±公差</b>（例 ±0.2°）が付いているときは、いちばん下の<b>「角度公差 → ピッチの許容範囲」</b>へ。実測ピッチを入れると合否も出ます。</li>
     </ol>
@@ -264,8 +266,10 @@
       同半径の式は余弦定理の特別な場合（r₁=r₂）で、<code>√(2R²−2R²cos θ) = 2R·sin(θ/2)</code> と同じものです。<b>ピッチは弦であって弧ではありません。</b><br>
       ・<b>「キリ（バカ穴）」の出典</b> … JIS B 1001:1985 付表「ボルト穴径 dh」。1級(密)・2級(中)・3級(粗)を選べます（既定は2級）。
         <b>M12・M14・M16 は旧JIS(1968)では 14・16・18</b> で、1985年版で 13.5・15.5・17.5 に変わりました。旧い値の図面もあるので確かめてください。<br>
-      ・<b>「M（ねじ下穴）」の出し方</b> … 並目の下穴。切削タップは <code>D − P</code>（ひっかかり率およそ92%）の一般的な下穴表の値、
-        転造タップは <code>下穴 = D − η×P/147</code>（η=65%、ねじ下穴・ひっかかり率(TOOL-20) と同じ式）を 0.1 に丸めた値です。
+      ・<b>「M（ねじ下穴）」の出し方</b> … <b>並目</b>と<b>細目</b>を切り替えられます。いずれも <code>D − P</code> を
+        市販のドリル径（0.1刻み）に丸めた、一般的な下穴表の値です。ボタンの <code>×○</code> が計算に使ったピッチです。
+        細目は呼び径8mm以上でピッチの組合せが数種類あるため（JIS B 0205「小ねじ類、ボルト及びナット用の細目ねじの選択基準」）、
+        ふつうに使われる組合せを採っています。
         <b>下穴は材質やひっかかり率で変わります。</b>実際に開いている穴を測って入れるのが確実です。<br>
       ・ノギスの読み … <code>外−外 = 中心間 + (d₁+d₂)/2</code>、<code>内−内 = 中心間 − (d₁+d₂)/2</code>。
         穴径が同じなら、その径をそのまま足し引きすることになります。<br>
@@ -426,19 +430,19 @@
     <div class="row" id="rowSame">
       <span class="badge">1</span>
       <label for="rS" id="lbRS">半径 r<small>中心Oから各穴まで(同じ)</small></label>
-      <input id="rS" type="text" inputmode="decimal" autocomplete="off" placeholder="0.000">
+      <input id="rS" type="text" inputmode="decimal" autocomplete="off" placeholder="―.―――">
       <span class="unit">mm</span>
     </div>
     <div class="row" id="rowR1" style="display:none">
       <span class="badge">1</span>
       <label for="r1" id="lbR1">半径 r₁<small>中心Oから穴Aまで</small></label>
-      <input id="r1" type="text" inputmode="decimal" autocomplete="off" placeholder="0.000">
+      <input id="r1" type="text" inputmode="decimal" autocomplete="off" placeholder="―.―――">
       <span class="unit">mm</span>
     </div>
     <div class="row" id="rowR2" style="display:none">
       <span class="badge">2</span>
       <label for="r2" id="lbR2">半径 r₂<small>中心Oから穴Bまで</small></label>
-      <input id="r2" type="text" inputmode="decimal" autocomplete="off" placeholder="0.000">
+      <input id="r2" type="text" inputmode="decimal" autocomplete="off" placeholder="―.―――">
       <span class="unit">mm</span>
     </div>
 
@@ -450,7 +454,7 @@
       </div>
       <span></span>
       <div id="decBox" style="display:flex;align-items:baseline;gap:6px">
-        <input id="deg" type="text" inputmode="decimal" autocomplete="off" placeholder="0.000" style="font-size:20px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums;border:none;border-bottom:2px solid var(--ink);background:transparent;color:var(--ink);padding:2px 4px;width:100%;outline:none">
+        <input id="deg" type="text" inputmode="decimal" autocomplete="off" placeholder="―.―――" style="font-size:20px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums;border:none;border-bottom:2px solid var(--ink);background:transparent;color:var(--ink);padding:2px 4px;width:100%;outline:none">
         <span class="unit">°</span>
       </div>
       <div id="dmsBox" class="dms-grid hidden">
@@ -475,19 +479,19 @@
     <div class="row" id="rowHdS">
       <span class="badge">⌀</span>
       <label for="hdS">穴径<small>キリ径。入れるとノギスの読みが出ます</small></label>
-      <input id="hdS" type="text" inputmode="decimal" autocomplete="off" placeholder="9">
+      <input id="hdS" type="text" inputmode="decimal" autocomplete="off" placeholder="例 9">
       <span class="unit">mm</span>
     </div>
     <div class="row" id="rowHdA" style="display:none">
       <span class="badge">⌀</span>
       <label for="hdA">穴Aの径<small>異半径のときは r₁ 側の穴</small></label>
-      <input id="hdA" type="text" inputmode="decimal" autocomplete="off" placeholder="9">
+      <input id="hdA" type="text" inputmode="decimal" autocomplete="off" placeholder="例 9">
       <span class="unit">mm</span>
     </div>
     <div class="row" id="rowHdB" style="display:none">
       <span class="badge">⌀</span>
       <label for="hdB">穴Bの径<small>異半径のときは r₂ 側の穴</small></label>
-      <input id="hdB" type="text" inputmode="decimal" autocomplete="off" placeholder="11">
+      <input id="hdB" type="text" inputmode="decimal" autocomplete="off" placeholder="例 11">
       <span class="unit">mm</span>
     </div>
   </div>
@@ -521,7 +525,7 @@
     <div class="row">
       <span class="badge">±</span>
       <label for="inTol">角度の公差 ±<small>「0.2」または「0 12」＝0°12′</small></label>
-      <input id="inTol" type="text" inputmode="decimal" autocomplete="off" placeholder="0.2">
+      <input id="inTol" type="text" inputmode="decimal" autocomplete="off" placeholder="例 0.2">
       <span class="unit">°</span>
     </div>
     <div class="row">
@@ -548,6 +552,9 @@
   <button class="clearBtn" type="button" onclick="armClear(this)">すべて消去</button>
 
   <footer>
+    公差の判定が要らず、値だけ早く知りたいときは
+    <a href="../pitch-calc/" style="color:#5B707E">穴ピッチ電卓(TOOL-36)</a> が速いです。<br>
+
     このページは計算のみを行います。<br>
     入力値の送信・保存は一切ありません(端末内で完結)。
   </footer>
@@ -643,32 +650,50 @@
   var hdMode='u';   /* u=一律 / p=穴ごと */
   var lastReading=null;
   function halfDia(){
-    if(hdMode==='u'){ var d=rvRaw('hdS'); return (d>0)? d/1 : NaN; }
+    if(hdMode==='u'){ var d=rvRaw('hdS'); return (d>0)? d : NaN; }
     var a=rvRaw('hdA'), b=rvRaw('hdB');
-    if(!(a>0)||!(b>0)) return NaN;
-    return (a+b)/2;
+    if(a>0&&b>0) return (a+b)/2;
+    if(a>0) return a;      /* 片方だけ入っているときは、もう片方も同じ径とみなす */
+    if(b>0) return b;
+    return NaN;
+  }
+  /* 穴径の入り具合： both＝両方 / a＝穴Aだけ / b＝穴Bだけ / none＝なし */
+  function hdState(){
+    if(hdMode==='u') return (rvRaw('hdS')>0)?'both':'none';
+    var a=(rvRaw('hdA')>0), b=(rvRaw('hdB')>0);
+    return (a&&b)?'both':(a?'a':(b?'b':'none'));
   }
   function rvRaw(id){ var v=parseFloat(($(id).value||'').replace(/\s/g,'')); return isFinite(v)? v : NaN; }
   function diaLabel(){
-    if(hdMode==='u'){ var d=rvRaw('hdS'); return 'φ'+d.toFixed(3); }
-    return 'φ'+rvRaw('hdA').toFixed(3)+' と φ'+rvRaw('hdB').toFixed(3)+' の平均';
+    if(hdMode==='u') return 'φ'+rvRaw('hdS').toFixed(3);
+    var st=hdState();
+    if(st==='both') return 'φ'+rvRaw('hdA').toFixed(3)+' と φ'+rvRaw('hdB').toFixed(3)+' の平均';
+    if(st==='a') return 'φ'+rvRaw('hdA').toFixed(3);
+    return 'φ'+rvRaw('hdB').toFixed(3);
+  }
+  /* 片方しか入っていないときの断り書き（見落とさないよう赤で出す） */
+  function hdWarn(){
+    var st=hdState();
+    if(st==='a') return '<span style="color:#FF5A48">　穴Bが空欄なので、穴Aと同じ径とみなしています。違うときは穴Bにも入れてください。</span>';
+    if(st==='b') return '<span style="color:#FF5A48">　穴Aが空欄なので、穴Bと同じ径とみなしています。違うときは穴Aにも入れてください。</span>';
+    return '';
   }
   function readCalc(L){
     var h=halfDia(), box=$('rdBox'), note=$('rdNote');
     lastReading=null;
     box.className='rd off';
-    if(!(h>0)){ note.textContent=(L>0)?'穴径を入れると、ノギスを当てたときの読みも出ます。':''; return; }
-    if(!(L>0)){ note.textContent=''; return; }
+    if(!(h>0)){ note.innerHTML=(L>0)?'穴径を入れると、ノギスを当てたときの読みも出ます。':''; return; }
+    if(!(L>0)){ note.innerHTML=''; return; }
     box.className='rd';
     $('rdC').textContent=L.toFixed(3);
     $('rdO').textContent=(L+h).toFixed(3);
     if(L-h>0){
       $('rdI').textContent=(L-h).toFixed(3);
-      note.textContent=diaLabel()+'。外−外＝中心間＋'+h.toFixed(3)+'、内−内＝中心間−'+h.toFixed(3);
+      note.innerHTML=diaLabel()+'。外−外＝中心間＋'+h.toFixed(3)+'、内−内＝中心間−'+h.toFixed(3)+hdWarn();
       lastReading='中心間 '+L.toFixed(3)+' / 外−外 '+(L+h).toFixed(3)+' / 内−内 '+(L-h).toFixed(3);
     }else{
       $('rdI').textContent='―';
-      note.textContent='穴どうしが重なります（中心間 '+L.toFixed(3)+' ≦ '+h.toFixed(3)+'）。内−内は測れません。';
+      note.innerHTML='穴どうしが重なります（中心間 '+L.toFixed(3)+' ≦ '+h.toFixed(3)+'）。内−内は測れません。'+hdWarn();
       lastReading='中心間 '+L.toFixed(3)+' / 外−外 '+(L+h).toFixed(3);
     }
   }
@@ -1016,14 +1041,16 @@
   var CLR=[[3,3.2,3.4,3.6],[4,4.3,4.5,4.8],[5,5.3,5.5,5.8],[6,6.4,6.6,7],
            [7,7.4,7.6,8],[8,8.4,9,10],[10,10.5,11,12],[12,13,13.5,14.5],
            [14,15,15.5,16.5],[16,17,17.5,18.5],[18,19,20,21],[20,21,22,24]];
-  /* めねじ下穴（並目）[呼び径, ピッチP, 切削タップの標準下穴, 転造タップの下穴]
-     切削は D−P（＝ひっかかり率 約92%）の一般的な下穴表の値。
-     転造は TOOL-20 と同じ式 下穴 = D − η×P/147（η=65%）で求め 0.1 に丸めた値。 */
-  var TAP=[[3,0.5,2.5,2.8],[4,0.7,3.3,3.7],[5,0.8,4.2,4.6],[6,1.0,5.0,5.6],
-           [7,1.0,6.0,6.6],[8,1.25,6.8,7.4],[10,1.5,8.5,9.3],[12,1.75,10.3,11.2],
-           [14,2.0,12.0,13.1],[16,2.0,14.0,15.1],[18,2.5,15.5,16.9],[20,2.5,17.5,18.9]];
+  /* めねじ下穴 [呼び径, 並目P, 並目の下穴, 細目P, 細目の下穴]
+     いずれも D−P を市販のドリル径（0.1刻み）に丸めた、一般的な下穴表の値。
+     細目は呼び径8mm以上でピッチの組合せが複数あるため、
+     JIS B 0205「小ねじ類、ボルト及びナット用の細目ねじの選択基準」で
+     ふつうに使われる組合せを採っている。ピッチはボタンに出しているので確かめられる。 */
+  var TAP=[[3,0.5,2.5,0.35,2.65],[4,0.7,3.3,0.5,3.5],[5,0.8,4.2,0.5,4.5],[6,1,5,0.75,5.3],
+           [7,1,6,0.75,6.3],[8,1.25,6.8,1,7],[10,1.5,8.5,1.25,8.8],[12,1.75,10.3,1.25,10.8],
+           [14,2,12,1.5,12.5],[16,2,14,1.5,14.5],[18,2.5,15.5,1.5,16.5],[20,2.5,17.5,1.5,18.5]];
   var CLBL=["1級 密","2級 中","3級 粗"];
-  var TLBL=["切削タップ","転造タップ"];
+  var TLBL=["並目","細目"];
   var reg={};
 
   function fire(el){
@@ -1044,7 +1071,7 @@
     var inp=document.getElementById(inputId); if(!inp) return;
     var row=rowOf(inp); if(!row || !row.parentNode) return;
     var cGrade=1;    /* 0=1級 1=2級 2=3級 */
-    var tKind=0;     /* 0=切削 1=転造 */
+    var tKind=0;     /* 0=並目 1=細目 */
     var openTab="";
 
     var bar=document.createElement("div");
@@ -1072,9 +1099,6 @@
     pt.appendChild(tg);
     var tgrid=document.createElement("div"); tgrid.className="pgrid"; pt.appendChild(tgrid);
     var tn=document.createElement("div"); tn.className="pnote";
-    tn.innerHTML="めねじを立てる前の下穴の径です（並目）。切削は D−P、転造は ひっかかり率65% で計算した値。<br>"+
-      "<b>下穴はひっかかり率や材質で変わります。</b>実際に開いている穴を測って入れるのが確実です。"+
-      "細かく決めるときは <a href=\"../tap-drill/\" style=\"color:#5B707E\">ねじ下穴・ひっかかり率(TOOL-20)</a> へ。";
     pt.appendChild(tn);
 
     function mkSw(labels,k,onPick,host,def){
@@ -1088,11 +1112,12 @@
       };
       return b;
     }
-    function mkBtn(host,label,sub,val){
+    function mkBtn(host,label,sub,val,pit){
       var b=document.createElement("button");
       b.type="button";
       b.setAttribute("data-v",String(val));
       b.appendChild(document.createTextNode(label));
+      if(pit!=null){ var q=document.createElement("em"); q.className="p"; q.textContent="×"+fmt(pit); b.appendChild(q); }
       if(sub!=null){ var e=document.createElement("em"); e.textContent=sub; b.appendChild(e); }
       b.onclick=function(){ inp.value=fmt(val); fire(inp); sync(); };
       host.appendChild(b);
@@ -1100,12 +1125,23 @@
     function buildC(){
       cgrid.innerHTML="";
       var j,v;
-      for(j=0;j<CLR.length;j++){ v=CLR[j][cGrade+1]; mkBtn(cgrid,fmt(v),"M"+CLR[j][0],v); }
+      for(j=0;j<CLR.length;j++){ v=CLR[j][cGrade+1]; mkBtn(cgrid,fmt(v),"M"+CLR[j][0],v,null); }
     }
     function buildT(){
       tgrid.innerHTML="";
-      var j,v;
-      for(j=0;j<TAP.length;j++){ v=TAP[j][tKind+2]; mkBtn(tgrid,"M"+TAP[j][0],fmt(v),v); }
+      var j,v,pp;
+      for(j=0;j<TAP.length;j++){
+        pp=TAP[j][tKind?3:1]; v=TAP[j][tKind?4:2];
+        mkBtn(tgrid,"M"+TAP[j][0],fmt(v),v,pp);
+      }
+      tn.innerHTML=(tKind
+        ? "<b>細目</b>のピッチで計算しています。呼び径8mm以上は細目のピッチが数種類あるため、"+
+          "ふつうに使われる組合せを採っています。<b>ボタンの ×○ が使ったピッチ</b>なので、"+
+          "違うときは手で入れてください。"
+        : "<b>並目</b>のピッチで計算しています。")+
+        "<br>めねじを立てる前の下穴の径です（D−P を市販のドリル径に丸めた一般的な下穴表の値）。<br>"+
+        "<b>下穴は材質やひっかかり率で変わります。</b>実際に開いている穴を測って入れるのが確実です。"+
+        "細かく決めるときは <a href=\"../tap-drill/\" style=\"color:#5B707E\">ねじ下穴・ひっかかり率(TOOL-20)</a> へ。";
     }
     function sync(){
       var v=parseFloat((inp.value||"").replace(/\s/g,""));
@@ -1193,6 +1229,52 @@
     if(KEY){ try{ localStorage.removeItem(KEY); }catch(e){} }
     try{ location.reload(); }catch(e){}
   };
+})();
+</script>
+<style>
+/* ═══ 記入例（薄字）を入力値と見分ける（v57 / 全ツール共通）═══
+     薄字が入力値と同じ書体（太字・大きめ・右寄せ）で出ていたため、
+     入力済みに見えていた。色の濃さだけだと現場の照明や斜めからの視認で差が消えるので、
+     太さ・大きさ・傾きも変えて別物にする。                                    */
+::placeholder{color:#AEBBC4;font-weight:400;font-size:.82em;font-style:italic;opacity:1}
+::-webkit-input-placeholder{color:#AEBBC4;font-weight:400;font-size:.82em;font-style:italic;opacity:1}
+::-moz-placeholder{color:#AEBBC4;font-weight:400;font-size:.82em;font-style:italic;opacity:1}
+/* 未入力の欄は下線を破線に（入っている欄＝実線）。入力中は元の色を邪魔しない。 */
+input.kt-empty:not(:focus){border-bottom-style:dashed !important;border-bottom-color:#C2CED6 !important}
+td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3DA !important}
+</style>
+<script>
+/* ═══ 未入力の欄に印をつける（v57 / 全ツール共通）═══
+     数字を入れる欄（inputmode 付き）だけを対象にする。
+     行を作り直すツールがあるので、DOMの変化も見張って付け直す。            */
+(function(){
+  "use strict";
+  function hasCls(el){ return (" "+(el.className||"")+" ").indexOf(" kt-empty ")>=0; }
+  function mark(el){
+    if(!el||el.tagName!=="INPUT") return;
+    if(!el.getAttribute("inputmode")) return;
+    if(el.readOnly||el.disabled) return;
+    var empty=((el.value||"").replace(/\s/g,"")==="");
+    var has=hasCls(el);
+    if(empty&&!has) el.className=((el.className||"")+" kt-empty").replace(/^\s+/,"");
+    else if(!empty&&has) el.className=(" "+el.className+" ").replace(" kt-empty "," ").replace(/^\s+|\s+$/g,"");
+  }
+  function scan(){
+    var ns=document.getElementsByTagName("input"),i;
+    for(i=0;i<ns.length;i++) mark(ns[i]);
+  }
+  /* 捕捉フェーズ＝打った欄をすぐ反映。浮上フェーズ＝ツールが行を作り直した後に拾う。 */
+  document.addEventListener("input",function(e){ mark(e.target); },true);
+  document.addEventListener("input",scan,false);
+  document.addEventListener("change",scan,false);
+  document.addEventListener("click",scan,false);
+  if(window.MutationObserver){
+    try{
+      new MutationObserver(scan).observe(document.body,{childList:true,subtree:true});
+    }catch(e){}
+  }
+  scan();
+  setTimeout(scan,0);
 })();
 </script>
 </body>
