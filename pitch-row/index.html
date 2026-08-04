@@ -62,6 +62,9 @@
   .vt td input{font-size:15px;padding:7px 6px;text-align:right}
   .vt td:last-child{width:34px}
   .xbtn{width:28px;height:28px;border:1px solid var(--line);background:#fff;border-radius:6px;color:var(--red);font-size:14px;line-height:1;cursor:pointer}
+  .xbtn.ibtn{color:#1F3341}
+  .xbtn.nbtn{color:#1F3341}
+  .vt td.ic{width:34px;padding-left:0;padding-right:2px}
 
   table{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}
   th{background:#EDF1F3;color:#5B707E;font-size:10px;letter-spacing:.06em;font-weight:700;padding:6px 5px;text-align:right;border-bottom:1px solid var(--line)}
@@ -211,7 +214,7 @@
 
 <div class="card">
   <h2>並び寸法の入力<span class="tag" id="cnt">0 穴</span></h2>
-  <div class="banner">図面の数字を上から順に。1つ入れて<b>キーボードの「次へ／Enter」</b>を押すと、確定して次の欄が自動で増えます。数字パッドから指を離さず打てます。まとめて貼り付けたいときは下の「まとめ入力」も使えます。</div>
+  <div class="banner">図面の数字を上から順に。1つ入れて<b>キーボードの「次へ／Enter」</b>を押すと、確定して次の欄が自動で増えます。数字パッドから指を離さず打てます。行の右の <b>↴</b> でも確定して次へ進めます。途中に入れ忘れたときは、その行の<b>左端の ↰</b> で空欄を差し込めます。</div>
   <div class="chips2" id="modeChips" style="display:flex;gap:6px;margin-bottom:8px">
     <button type="button" id="mPos" style="flex:1;min-height:38px;font:inherit;font-size:12px;font-weight:700;border:1px solid #1F3341;background:#1F3341;color:#fff;border-radius:9px;cursor:pointer" onclick="setMode('pos')">端からの位置を入れる</button>
     <button type="button" id="mPit" style="flex:1;min-height:38px;font:inherit;font-size:12px;font-weight:700;border:1px solid #C9D3DA;background:#fff;color:#5B707E;border-radius:9px;cursor:pointer" onclick="setMode('pit')">穴間ピッチを入れる</button>
@@ -220,24 +223,8 @@
     <div><label class="f">端から1穴目まで（空欄なら穴1を0に）</label><input type="text" inputmode="decimal" autocomplete="off" id="edge0" placeholder="―" oninput="calc();persist()"></div>
     <div></div>
   </div>
-  <div class="row" style="margin-bottom:6px">
-    <div><label class="f">方向のラベル（任意）</label><input type="text" id="axis" placeholder="X方向 / 上端から など" oninput="persist()"></div>
-    <div style="flex:none;width:130px"><label class="f">数え方</label>
-      <select id="order" onchange="calc()">
-        <option value="keep">入れた順</option>
-        <option value="asc">小さい順に並替</option>
-      </select>
-    </div>
-  </div>
-  <label class="f">まとめ入力（任意・貼り付け用／スペースや改行で区切り）</label>
-  <textarea id="bulk" inputmode="decimal" enterkeyhint="done" placeholder="5, 108.5, 212, 324.5"></textarea>
-    <div style="display:flex;gap:6px;margin-top:6px">
-      <button type="button" id="bulkSep" style="flex:1;min-height:38px;font:inherit;font-size:12px;font-weight:700;color:#5B707E;background:#fff;border:1px solid #C9D3DA;border-radius:9px;cursor:pointer">、区切りを入れる</button>
-    </div>
-    <div class="hint" style="margin-top:5px">数字キーパッドが出ます。かな・英字は入れても自動で取り除かれます。区切りは上のボタン、または貼り付けでどうぞ。</div>
   <div class="btnrow" style="margin:8px 0 12px">
-    <button class="btn primary sm" onclick="applyBulk()">まとめ入力を反映</button>
-    <button class="btn sm" onclick="addRow()">＋ 1行追加</button>
+    <button class="btn primary sm" onclick="addRow()">＋ 1行追加</button>
     <button class="btn warn sm" onclick="clearAll()">全消去</button>
   </div>
   <table class="vt"><tbody id="vtBody"></tbody></table>
@@ -324,7 +311,8 @@
     <ul>
       <li>コンベックスは引っかけと突き当てで爪のガタ分だけ動きます。全ての穴を<b>同じ端面・同じ測り方</b>で測ると、ガタが共通誤差になり、隣接ピッチ（引き算）では相殺されます。</li>
       <li>穴の中心はコンベックスでは狙えません。縁で読む場合は「両縁の中央」を位置としてください。全穴で同じ縁（例：手前縁）を読めば、これもピッチでは相殺されます。</li>
-      <li>「小さい順に並替」は、測った順がバラバラなときだけ使ってください。図面の並び順に意味がある場合は「入れた順」のままに。</li>
+      <li><b>↴</b>（行の右）… その欄を確定して次へ進みます。末尾で押すと新しい行が増えます（キーボードの「次へ／Enter」と同じ）。</li>
+      <li><b>↰</b>（行の左端）… 途中の穴を入れ忘れたときに。押すとその行の位置に空欄が入り、そこから下が1つずつ下がります。</li>
       <li>等ピッチ判定は先頭穴を基準に合わせています。先頭穴自体が端面からずれている場合、その分は全体の平行移動になり、位置ズレには出ません（隣接ピッチ誤差には出ます）。</li>
       <li>この画面は1列（1方向）の並びを見るものです。縦横2方向に広がる穴群は、基準点・基準線から見る TOOL-27 を使ってください。</li>
     </ul>
@@ -366,7 +354,7 @@ function derivedPositions(){
 function setMode(m){
   if(S.mode===m) return;
   S.mode=(m==="pit")?"pit":"pos";
-  S.pos=[NaN]; S.base=0; g("bulk").value="";
+  S.pos=[NaN]; S.base=0;
   syncMode(); renderRows(); calc(); persist(); focusRow(0);
 }
 function syncMode(){
@@ -376,45 +364,44 @@ function syncMode(){
   g("mPos").style.cssText=pit?off:on;
   g("mPit").style.cssText=pit?on:off;
   g("edge0Row").style.display=pit?"":"none";
-  g("bulk").placeholder=pit? "25, 25, 25, 40" : "5, 108.5, 212, 324.5";
   g("figCap").textContent=pit? (numOK(parseFloat(g("edge0").value))? "◤ ＝端面（原点）" : "◤ ＝穴1（原点）") : "◤ ＝端面（原点）";
 }
 
-/* ─ まとめ入力の解釈 ─ */
-function applyBulk(){
-  var raw=g("bulk").value;
-  var parts=raw.split(/[\s,、，\n\r\t;；]+/).filter(function(x){return x!=="";});
-  var nums=[];
-  parts.forEach(function(p){ var v=parseFloat(p); if(isFinite(v)) nums.push(v); });
-  if(!nums.length){ toast("数値が読み取れませんでした。"); return; }
-  if(nums.length>40) nums=nums.slice(0,40);
-  S.pos=nums; S.base=0; renderRows(); calc(); persist();
-}
 function addRow(){ if(S.pos.length>=40){toast("40穴までです。");return;} S.pos.push(NaN); renderRows(); calc(); persist(); focusRow(S.pos.length-1); }
 function delRow(i){ S.pos.splice(i,1); if(S.base>=S.pos.length) S.base=0; renderRows(); calc(); persist(); }
-function editRow(i,el){ S.pos[i]=parseFloat(el.value); calc(); persist(); }
-function clearAll(){ S.pos=[NaN]; S.base=0; g("bulk").value=""; renderRows(); calc(); persist(); focusRow(0); }
+/* その行の位置に空欄を差し込む（その行から下は1つずつ下がる）。入れ忘れに気づいたときに使う */
+function insRow(i){ if(S.pos.length>=40){toast("40穴までです。");return;} S.pos.splice(i,0,NaN); renderRows(); calc(); persist(); focusRow(i); }
+function editRow(i,el){ S.pos[i]=parseFloat(el.value); updateCnt(); calc(); persist(); }
+function clearAll(){ S.pos=[NaN]; S.base=0; renderRows(); calc(); persist(); focusRow(0); }
 
+/* 穴数バッジ。従来は行の作り直し時にしか更新されず、
+   最後の値を打ち終えてもEnterまで古い数が残っていた(v64で入力のたびに更新) */
+function updateCnt(){
+  var pit=(S.mode==="pit");
+  var c=0; S.pos.forEach(function(v){ if(numOK(v)) c++; });
+  g("cnt").textContent=(pit? (c? c+1:0) : c)+" 穴";
+}
 function renderRows(){
   var tb=g("vtBody"), h="";
   var pit=(S.mode==="pit");
-  var cntFinite=0; S.pos.forEach(function(v){ if(numOK(v)) cntFinite++; });
-  g("cnt").textContent=(pit? (cntFinite? cntFinite+1:0) : cntFinite)+" 穴";
+  updateCnt();
   S.pos.forEach(function(v,i){
-    h+='<tr><td>'+(pit? (i+1)+'→'+(i+2) : (i+1))+'</td>'
+    h+='<tr><td class="ic"><button class="xbtn ibtn" onclick="insRow('+i+')" aria-label="この行の位置に空欄を挿入" title="この行の位置に空欄を挿入">↰</button></td>'
+      +'<td>'+(pit? (i+1)+'→'+(i+2) : (i+1))+'</td>'
       +'<td><input type="text" inputmode="decimal" autocomplete="off" enterkeyhint="next" placeholder="'+(pit?'前の穴からのピッチ':'端面からの寸法')+'" value="'+(numOK(v)?v:"")+'" oninput="editRow('+i+',this)" onkeydown="rowKey('+i+',this,event)"></td>'
-      +'<td><button class="xbtn" onclick="delRow('+i+')" aria-label="削除">×</button></td></tr>';
+      +'<td style="white-space:nowrap"><button class="xbtn nbtn" onclick="nextRow('+i+')" aria-label="確定して次へ" title="確定して次へ">↴</button> <button class="xbtn" onclick="delRow('+i+')" aria-label="削除" title="この行を削除">×</button></td></tr>';
   });
-  if(!S.pos.length) h='<tr><td colspan="3" style="text-align:center;color:#8FA2AF;padding:12px">「＋1行追加」かまとめ入力で始めてください</td></tr>';
+  if(!S.pos.length) h='<tr><td colspan="4" style="text-align:center;color:#8FA2AF;padding:12px">「＋1行追加」で始めてください</td></tr>';
   tb.innerHTML=h;
 }
 function focusRow(i){
   var ins=g("vtBody").querySelectorAll("input");
   if(ins[i]){ ins[i].focus(); try{ ins[i].select(); }catch(e){} }
 }
-function rowKey(i, el, ev){
-  if(ev.key!=="Enter" && ev.keyCode!==13) return;
-  ev.preventDefault();
+/* 確定して次へ。キーボードの「次へ／Enter」と ↴ ボタンの両方から呼ぶ */
+function nextRow(i){
+  var ins=g("vtBody").querySelectorAll("input");
+  var el=ins[i]; if(!el) return;
   if(i < S.pos.length-1){ focusRow(i+1); return; }   // 途中なら次欄へ
   var v=parseFloat(el.value);
   if(isFinite(v)){                                    // 末尾で値あり → 新欄を足して移動
@@ -423,12 +410,16 @@ function rowKey(i, el, ev){
     focusRow(S.pos.length-1);
   } else { el.blur(); }                               // 末尾で空 → 閉じる
 }
+function rowKey(i, el, ev){
+  if(ev.key!=="Enter" && ev.keyCode!==13) return;
+  ev.preventDefault();
+  nextRow(i);
+}
 
 /* ─ 表示用に並べた配列 { pos, orig(元の穴番号) } ─ */
 function ordered(){
   var src=derivedPositions();
   var a=[]; src.forEach(function(v,i){ if(numOK(v)) a.push({pos:v,orig:i+1}); });
-  if(S.mode!=="pit" && g("order").value==="asc") a.sort(function(x,y){return x.pos-y.pos;});
   return a;
 }
 
@@ -557,12 +548,12 @@ function drawFig(A){
 
 /* ─ 印刷ヘッダ ─ */
 function prep(){
-  g("recHead").textContent="部品名："+(g("recName").value||"—")+"　／　方向："+(g("axis").value||"—")+"　／　検査日："+(g("recDate").value||"—");
+  g("recHead").textContent="部品名："+(g("recName").value||"—")+"　／　検査日："+(g("recDate").value||"—");
 }
 
 /* ─ 保存 ─ */
 var KEY="pitchrow_v1";
-var IDS=["axis","order","nomP","tol","recName","recDate","edge0"];
+var IDS=["nomP","tol","recName","recDate","edge0"];
 function copyPositions(){
   var A=ordered();
   if(!A.length){ toast("コピーする一覧がありません"); return; }
@@ -829,33 +820,6 @@ renderRows(); calc();
 })();
 </script>
 <div class="toast" id="toast"></div>
-<script>
-/* まとめ入力は数字だけを受け付ける（かな・英字は自動で除去。全角は半角へ）*/
-(function(){
-  "use strict";
-  var b=document.getElementById("bulk"); if(!b) return;
-  function clean(v){
-    v=String(v).replace(/[\uFF10-\uFF19]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0)});
-    v=v.replace(/[\u3002\uFF0E]/g,".").replace(/[\uFF0D\u30FC\uFF70\u2212]/g,"-").replace(/[\u3001\uFF0C]/g,",");
-    return v.replace(/[^0-9.\-,\s]/g,"");
-  }
-  b.addEventListener("input",function(){
-    var v=b.value, c=clean(v);
-    if(c!==v){
-      var p=(b.selectionStart||0)-(v.length-c.length);
-      b.value=c;
-      try{ b.setSelectionRange(p,p); }catch(e){}
-    }
-  });
-  var sep=document.getElementById("bulkSep");
-  if(sep) sep.addEventListener("click",function(){
-    var p=(b.selectionStart==null)? b.value.length : b.selectionStart;
-    b.value=b.value.slice(0,p)+", "+b.value.slice(p);
-    b.focus();
-    try{ b.setSelectionRange(p+2,p+2); }catch(e){}
-  });
-})();
-</script>
 <style>
 /* ═══ 記入例（薄字）を入力値と見分ける（v57 / 全ツール共通）═══
      薄字が入力値と同じ書体（太字・大きめ・右寄せ）で出ていたため、

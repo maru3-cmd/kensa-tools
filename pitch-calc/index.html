@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#1F3341">
 <meta name="description" content="数字を入れるだけで、穴ピッチ・ノギスの読み・中心角がまとめて出ます。何を求めるか先に選ぶ必要はありません。計算は端末内で完結し、入力値はどこにも送信されません。">
-<title>穴ピッチ電卓 | 検査計算ツール</title>
+<title>かんたん穴ピッチ | 検査計算ツール</title>
 <style>
   :root{
     --paper:#F2F4F5;
@@ -54,6 +54,11 @@
     border:1px solid #C9D3DA;background:#fff;color:#5B707E;border-radius:9px;cursor:pointer}
   .dimsw button.on{background:#1F3341;color:#fff;border-color:#1F3341}
 
+  .badge.opt{background:#fff;color:#8FA2AF;border:1px dashed #C9D3DA;font-size:13px;font-weight:400}
+  .row.opt label{font-weight:500;color:#5B707E}
+  .row.opt label small{color:#8FA2AF}
+  .row.opt input{border-bottom-color:#C9D3DA}
+  .row.opt input:focus{border-bottom-color:var(--red)}
   .orbar{display:flex;align-items:center;gap:8px;margin:2px 0 0 34px}
   .orbar span{font-size:10.5px;color:#8FA2AF;font-weight:700;letter-spacing:.06em}
   .orbar i{flex:1;height:1px;background:#E3E9EC}
@@ -148,7 +153,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>穴ピッチ電卓<small>入れた数字から、出せるものが全部出ます</small></h1>
+    <h1>かんたん穴ピッチ<small>入れた数字から、出せるものが全部出ます</small></h1>
   </header>
 
   <div class="topclear"><a class="backlink" href="../index.html">≡ ツール一覧</a><button type="button" aria-label="入力をすべて消去して最初から始める" onclick="armClear(this)">すべて消去</button></div>
@@ -162,6 +167,7 @@
       <li><b>PCD</b>（図面が半径なら「半径で入れる」に切替）と、<b>穴数</b>か<b>角度</b>のどちらか一方。この2つでピッチが出ます。</li>
       <li><b>穴径</b>（キリ径）も入れると、ノギスを当てたときの<b>外−外・内−内</b>まで出ます。下のボタンから選べます。</li>
       <li>穴数を入れたときは、<b>2つ跨ぎ・対辺</b>の寸法も一緒に出ます。測る組を変えるときにそのまま使えます。</li>
+      <li><b>2つの穴が別々の円の上にあるとき</b>（PCD100の穴とPCD140の穴、など）は、「<b>もう一方の穴</b>」に相手のPCD（または半径）を入れてください。空欄のままなら、これまでどおり同じ円の2穴として計算します。キリが違うときは「<b>もう一方の穴径</b>」も入れてください。</li>
       <li>足りない欄があるときは、<b>何が足りないか</b>を結果のところに出します。</li>
     </ol>
     <h4>このツールでできないこと</h4>
@@ -180,8 +186,15 @@
         このツールが両方を1画面で出せるのはそのためです。<br>
       ・<b>跨ぎの寸法</b> … k個先の穴までなら <code>PCD × sin(k × 180° ÷ n)</code>。
         対辺（n が偶数のとき n/2 個先）はPCDそのものになります。<br>
-      ・<b>ノギスの読み</b> … <code>外−外 = 中心間 + 穴径</code>、<code>内−内 = 中心間 − 穴径</code>。
-        等配の穴は同じキリなので穴径をそのまま足し引きします。<br>
+      ・<b>半径が違う2穴</b> … <code>p = √(r₁² + r₂² − 2 × r₁ × r₂ × cos θ)</code>（余弦定理）。
+        中心・穴①・穴② が作る三角形の、穴①と穴②を結ぶ辺の長さです。
+        <b>r₁ = r₂ を入れるとこの式は上の <code>2 × R × sin(θ ÷ 2)</code> と完全に一致します</b>ので、
+        同じ円のときの答えはこれまでと1ミリも変わりません。<br>
+      　半径が違うと「等配」という考え方が成り立たないため、<b>角度は必ず必要</b>で、穴数からは作れません。
+        同じ理由で、跨ぎ・対辺の表と弧長は出しません。<br>
+      ・<b>ノギスの読み</b> … <code>外−外 = 中心間 + (d₁ + d₂) ÷ 2</code>、<code>内−内 = 中心間 − (d₁ + d₂) ÷ 2</code>。
+        測っているのは各穴の縁までなので、足し引きするのは<b>2つの穴の半径の和</b>です。
+        同じキリ（d₁ = d₂ = d）なら <code>中心間 ± 穴径</code> になります。<br>
       ・<b>弧長</b> … <code>s = R × θ</code>（θはラジアン）。円周に沿った長さで、弦（ピッチ）より少し長くなります。<br>
       ・<b>「キリ（バカ穴）」の出典</b> … JIS B 1001:1985 付表「ボルト穴径 dh」。1級(密)・2級(中)・3級(粗)を選べます（既定は2級）。
         <b>M12・M14・M16 は旧JIS(1968)では 14・16・18</b> で、1985年版で 13.5・15.5・17.5 に変わりました。旧い値の図面もあるので確かめてください。<br>
@@ -214,6 +227,17 @@
         </div>
       </div>
     </div>
+    <div class="gx">
+      <h4>例 ── PCD100 の穴と PCD140 の穴（半径が違う2穴）</h4>
+      <div class="gxin">
+        <div class="gtxt">
+          <p class="gset">PCD 100 ／ もう一方の穴 140 ／ 角度 45 ／ 穴径 9 ／ もう一方の穴径 11</p>
+          <p class="gread">出るもの：ピッチ <b>49.500</b>、外−外 <b>59.500</b>、内−内 <b>39.500</b>、半径差 20.000。
+            <b>穴数の欄は使いません</b>（半径が違うと等配になりません）。跨ぎの表と弧長も出ません。</p>
+          <button class="gbtn" type="button" data-ex='{"set":[{"id":"inPCD","v":100},{"id":"inPCD2","v":140},{"id":"inDeg","v":45},{"id":"inHole","v":9},{"id":"inHole2","v":11}]}' onclick="tryExample(this)">この例を試す</button>
+        </div>
+      </div>
+    </div>
   </div>
 </details>
 
@@ -228,6 +252,13 @@
       <span class="badge">1</span>
       <label for="inPCD" id="lbPCD">PCD<small>ピッチ円直径</small></label>
       <input id="inPCD" type="text" inputmode="decimal" autocomplete="off" placeholder="例 100">
+      <span class="unit">mm</span>
+    </div>
+
+    <div class="row opt">
+      <span class="badge opt">＋</span>
+      <label for="inPCD2" id="lbPCD2">もう一方の穴<small>PCDが違うときだけ。同じなら空欄</small></label>
+      <input id="inPCD2" type="text" inputmode="decimal" autocomplete="off" placeholder="同じなら空欄">
       <span class="unit">mm</span>
     </div>
 
@@ -251,6 +282,13 @@
       <input id="inHole" type="text" inputmode="decimal" autocomplete="off" placeholder="例 9">
       <span class="unit">mm</span>
     </div>
+
+    <div class="row opt">
+      <span class="badge opt">＋</span>
+      <label for="inHole2" id="lbHole2">もう一方の穴径<small>キリが違うときだけ。同じなら空欄</small></label>
+      <input id="inHole2" type="text" inputmode="decimal" autocomplete="off" placeholder="同じなら空欄">
+      <span class="unit">mm</span>
+    </div>
   </div>
 
   <!-- ══ 結果 ══ -->
@@ -270,7 +308,8 @@
       <span>中心角 <b id="vTh">―</b>°</span>
       <span id="wPcd">PCD <b id="vPcd">―</b></span>
       <span id="wRad">半径 <b id="vRad">―</b></span>
-      <span>弧長 <b id="vArc">―</b></span>
+      <span id="wArc">弧長 <b id="vArc">―</b></span>
+      <span id="wDr" class="hide">半径差 <b id="vDr">―</b></span>
     </div>
   </div>
 
@@ -335,37 +374,70 @@ function readNum(id){ var v=parseFloat((g(id).value||"").replace(/\s/g,"")); ret
 function recalc(){
   var raw=readNum("inPCD");
   var R = numOK(raw) ? (dia? raw/2 : raw) : NaN;
+  var raw2=readNum("inPCD2");
+  var R2 = numOK(raw2) ? (dia? raw2/2 : raw2) : NaN;
   var n = readNum("inN");
   var th = readDeg();
-  var d = readNum("inHole");
+  var dA = readNum("inHole");
+  var dB = readNum("inHole2");
+
+  /* 片方だけ入っているときは、その値を両方の穴に使う（v56 の教訓） */
+  var d1=NaN, d2=NaN;
+  if(numOK(dA)&&dA>0&&numOK(dB)&&dB>0){ d1=dA; d2=dB; }
+  else if(numOK(dA)&&dA>0){ d1=dA; d2=dA; }
+  else if(numOK(dB)&&dB>0){ d1=dB; d2=dB; }
+  var dOK = numOK(d1)&&numOK(d2);
+  var dHalf = dOK ? (d1+d2)/2 : NaN;   /* 外−外 = 中心間 + (d1+d2)/2 */
 
   var nOK = numOK(n) && n>=2 && Math.abs(n-Math.round(n))<1e-9;
   var tOK = numOK(th) && th>0 && th<360;
   if(nOK) n=Math.round(n);
 
-  /* 中心角をどちらから作るか。両方あるときは後から入れたほう。 */
-  var theta=NaN, from="";
-  if(nOK && tOK){ if(lastAng==="d"){ theta=th; from="d"; } else { theta=360/n; from="n"; } }
-  else if(nOK){ theta=360/n; from="n"; }
-  else if(tOK){ theta=th; from="d"; }
+  var rOK  = numOK(R)&&R>0;
+  var r2OK = numOK(R2)&&R2>0;
+  /* 半径が違う＝異半径。同じ値を入れられたときは従来どおり扱う。 */
+  var diff = rOK && r2OK && Math.abs(R2-R)>1e-9;
 
-  var rOK=numOK(R)&&R>0;
-  var p = (rOK&&numOK(theta))? 2*R*Math.sin(theta*Math.PI/360) : NaN;
+  /* 中心角をどちらから作るか。両方あるときは後から入れたほう。
+     異半径のときは「等配」が成り立たないので穴数は使えない。 */
+  var theta=NaN, from="";
+  if(diff){
+    if(tOK){ theta=th; from="d"; }
+  }else{
+    if(nOK && tOK){ if(lastAng==="d"){ theta=th; from="d"; } else { theta=360/n; from="n"; } }
+    else if(nOK){ theta=360/n; from="n"; }
+    else if(tOK){ theta=th; from="d"; }
+  }
+
+  /* ピッチ。異半径は余弦定理、同半径はその特殊形（＝従来式と同値）。 */
+  var p=NaN;
+  if(numOK(theta)){
+    if(diff){
+      var c=Math.cos(theta*Math.PI/180);
+      var q=R*R+R2*R2-2*R*R2*c;
+      p = (q>0)? Math.sqrt(q) : 0;
+    }else if(rOK){
+      p = 2*R*Math.sin(theta*Math.PI/360);
+    }
+  }
 
   /* ── 足りないものを名指しする ── */
   var miss=[];
   if(!rOK) miss.push(dia? "PCD":"半径");
-  if(!numOK(theta)) miss.push("穴数か角度");
+  if(!numOK(theta)) miss.push(diff? "角度":"穴数か角度");
   var need=g("need");
   if(miss.length){
     need.innerHTML="あと <b>"+miss.join("</b> と <b>")+"</b> を入れてください";
-  }else if(!numOK(d)){
+    if(diff && !tOK && nOK){
+      need.innerHTML="半径が違うので<b>穴数からは角度が出せません</b>。2穴のあいだの<b>角度</b>を入れてください";
+    }
+  }else if(!dOK){
     need.innerHTML="穴径も入れると、ノギスの読み（外−外・内−内）が出ます";
   }else{
     need.innerHTML="";
   }
-  /* 穴数と角度が食い違っているときは黙って捨てない */
-  if(nOK&&tOK){
+  /* 穴数と角度が食い違っているときは黙って捨てない（同半径のときだけ） */
+  if(!diff && nOK && tOK){
     var thn=360/n;
     if(Math.abs(thn-th)>1e-6){
       need.innerHTML=(from==="d")
@@ -373,17 +445,21 @@ function recalc(){
         : "角度 "+nf(th,3)+"° と食い違います。いまは<b>穴数 "+n+"（"+nf(thn,3)+"°）</b>で計算しています";
     }
   }
+  /* 異半径なのに穴数も入っているときは、使っていないことを伝える */
+  if(diff && tOK && nOK){
+    need.innerHTML="半径が違うので<b>穴数は使っていません</b>（角度 "+nf(th,3)+"° で計算）";
+  }
 
   g("outP").textContent = numOK(p)? nf(p,3) : "―.―――";
 
   /* ── ノギスの読み ── */
   var box=g("rdBox");
-  if(numOK(p)&&numOK(d)&&d>0){
+  if(numOK(p)&&dOK){
     box.className="rd";
     g("rdC").textContent=nf(p,3);
-    g("rdO").textContent=nf(p+d,3);
-    g("rdI").textContent=(p-d>0)? nf(p-d,3) : "―";
-    if(p-d<=0) need.innerHTML="穴どうしが重なります（中心間 "+nf(p,3)+" ≦ 穴径 "+nf(d,3)+"）。内−内は測れません";
+    g("rdO").textContent=nf(p+dHalf,3);
+    g("rdI").textContent=(p-dHalf>0)? nf(p-dHalf,3) : "―";
+    if(p-dHalf<=0) need.innerHTML="穴どうしが重なります（中心間 "+nf(p,3)+" ≦ 穴の半径の和 "+nf(dHalf,3)+"）。内−内は測れません";
   }else box.className="rd off";
 
   /* ── そのほかの値 ── */
@@ -391,15 +467,26 @@ function recalc(){
   if(numOK(p)){
     sub.className="sub";
     g("vTh").textContent=nf(theta,3);
-    g("vPcd").textContent=nf(2*R,3);
-    g("vRad").textContent=nf(R,3);
-    g("vArc").textContent=nf(R*theta*Math.PI/180,3);
+    if(diff){
+      g("vPcd").textContent=nf(2*R,3)+" / "+nf(2*R2,3);
+      g("vRad").textContent=nf(R,3)+" / "+nf(R2,3);
+      g("vDr").textContent=nf(Math.abs(R2-R),3);
+      g("wDr").className="";
+      g("wArc").className="hide";   /* 同じ円の上にないので弧長は出さない */
+    }else{
+      g("vPcd").textContent=nf(2*R,3);
+      g("vRad").textContent=nf(R,3);
+      g("vArc").textContent=nf(R*theta*Math.PI/180,3);
+      g("wDr").className="hide";
+      g("wArc").className="";
+    }
     /* 入れたほうは出し直さない（画面の数字を減らす） */
     g("wPcd").className=dia? "hide":"";
     g("wRad").className=dia? "":"hide";
   }else sub.className="sub off";
 
-  drawSkip(rOK?R:NaN, nOK?n:NaN, numOK(d)?d:NaN);
+  /* 跨ぎ・対辺は「同じ円に等配」が前提なので、異半径では出さない */
+  drawSkip(diff? NaN : (rOK?R:NaN), (!diff&&nOK)?n:NaN, dOK?d1:NaN);
 }
 
 /* k個先の穴までの距離 = PCD × sin(k×180°÷n) */
@@ -426,6 +513,7 @@ function syncDim(){
   g("swDia").className=dia?"on":"";
   g("swRad").className=dia?"":"on";
   g("lbPCD").innerHTML=dia?'PCD<small>ピッチ円直径</small>':'半径 R<small>中心から穴中心まで</small>';
+  g("lbPCD2").innerHTML=dia?'もう一方の穴<small>PCDが違うときだけ。同じなら空欄</small>':'もう一方の穴<small>半径が違うときだけ。同じなら空欄</small>';
   recalc();
 }
 
@@ -434,7 +522,9 @@ g("swRad").addEventListener("click",function(){ dia=false; syncDim(); });
 g("inN").addEventListener("input",function(){ lastAng="n"; recalc(); });
 g("inDeg").addEventListener("input",function(){ lastAng="d"; recalc(); });
 g("inPCD").addEventListener("input",recalc);
+g("inPCD2").addEventListener("input",recalc);
 g("inHole").addEventListener("input",recalc);
+g("inHole2").addEventListener("input",recalc);
 
 syncDim();
 
@@ -786,7 +876,7 @@ window.__pitchcalc={recalc:recalc, readDeg:readDeg,
   }
   window.setPickerVisible=setVisible;
 
-  var ids=["inHole","hdS","hdA","hdB"],j2;
+  var ids=["inHole","inHole2","hdS","hdA","hdB"],j2;
   for(j2=0;j2<ids.length;j2++) if(document.getElementById(ids[j2])) attach(ids[j2]);
 
   /* 穴数 n の早見ボタン（TOOL-02 のみ）。既定は閉じておく。 */

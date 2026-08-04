@@ -87,6 +87,14 @@
   }
   .searchBox input:focus{border-color:var(--red)}
   .searchBox input::placeholder{color:#9AA9B2}
+  /* 分類チップ(v63): 横スライド。既定は「すべて」＝押さなくても全部見える */
+  .chips{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;
+    padding:2px 2px 8px;margin:4px -2px 2px;scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chips button{flex:none;font:inherit;font-size:12.5px;font-weight:700;color:#5B707E;
+    background:#fff;border:1px solid #C9D3DA;border-radius:999px;padding:9px 14px;
+    min-height:38px;cursor:pointer;white-space:nowrap}
+  .chips button.on{background:#1F3341;color:#fff;border-color:#1F3341}
   .nohit{
     text-align:center;font-size:12px;color:#5B707E;
     padding:22px 4px;line-height:1.7;
@@ -117,6 +125,9 @@
     border:1px solid #C6D2DA;border-radius:6px;padding:5px 12px;cursor:pointer;
   }
   .diag button:active{background:#E6EBEF}
+  /* 一番下の装飾。3回続けて触ると「調整中のツール」が出る(開き直すと閉じる) */
+  #labDot{text-align:center;color:#DDE4E9;font-size:12px;margin:14px 0 2px;
+    cursor:default;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
   .diagOut{margin-top:6px;font-size:11px;line-height:1.6;word-break:break-all}
   .diagOut.ng{color:#D63426}
   .diagOut.ok{color:#2E7D4F}
@@ -147,6 +158,10 @@
       <div class="chglog" id="chglog" hidden>
         <h3>更新内容（新しい順）</h3>
         <ul>
+          <li><span class="vtag">v65</span><b>一覧を整理しました。</b>まだ使い方が固まっていない6つ（真位置度・端面から円弧まで・ピン三針・カム変位線図・Cpk・フレーム削り代）を一覧から外しました。<b>計算そのものは今までどおり動きます</b>（URLを知っていれば開けます）。あわせて分類を見直し、公差判定を「ねじ・歯車」から新しい「<b>寸法・公差</b>」へ移しました。穴ピッチ電卓(36) は「<b>かんたん穴ピッチ</b>」に名前を変えました。</li>
+          <li><span class="vtag">v64</span><b>並び寸法ピッチ(28) をすっきりさせ、行の挿入を付けました。</b>「まとめ入力」「方向のラベル」「数え方」をなくし、各行に打つ形に一本化。行の左端に <b>↰</b>（挿入）、右に <b>↴</b>（確定して次へ）を置きました。↰ を押すとその行の位置に空欄が入り、そこから下が1つずつ下がります。あわせて、端面から円弧まで(34) の置き場所を「円弧・曲げ」の最後尾に移しました。</li>
+          <li><span class="vtag">v63</span><b>トップページに分類チップを付けました。</b>検索窓の下の「<b>すべて／★お気に入り／最近／穴・位置…</b>」を横にスライドしてタップすると、その仲間のツールだけに絞れます。<b>押さなければこれまでどおり全部見えます。</b>「最近」はこの端末で開いたツールが新しい順に5件並びます（★と同じく端末内にのみ保存・送信なし）。選んだチップは次に開いたときも覚えています。検索を打ち始めたときは絞り込みをいったん外し、全ツールから探します。</li>
+          <li><span class="vtag">v62</span><b>穴ピッチ電卓(36) が「半径の違う2穴」に対応しました。</b>PCD100 の穴と PCD140 の穴のように、<b>別々の円の上にある2穴の距離</b>が出せます。PCD（半径）の欄の下に増えた「<b>もう一方の穴</b>」に相手のPCDを入れるだけで、空欄のままならこれまでと同じ動きです。キリが違うときは「もう一方の穴径」も入れられ、ノギスの<b>外−外・内−内</b>は2つの穴の半径の和で足し引きします。半径が違うと等配になりませんので、<b>角度が必要</b>になり、跨ぎ・対辺の表と弧長は出ません。</li>
           <li><span class="vtag">v61</span><b>円弧を端からの寸法に(34) を作り直しました。</b>これまでは「円弧の中心を原点にして、そこに部材を置く」入力だったため、図面から組み立てるのが大変でした。<b>板の端面を基準にする</b>形に組み替え、名前も「端面から円弧まで」に変えています。板の大きさと、図面に入っている<b>角から中心までの寸法</b>、円弧の R（スペース区切りで何本でも）を入れると、選んだ端面に沿って<b>位置ごとの端面から円弧までの距離</b>が表で出ます。</li>
           <li><span class="vtag">v60</span><b>弦・矢高とR(04) に「割り部品」タブを追加。</b>割った片側だけを測るとき、割面は円の中心を通っていないので、隙間のぶんを電卓で引く手間が出ていました。<b>半径と割の隙間</b>を入れると割面での弦・矢高がそのまま出ます。さらに<b>中心から端面まで</b>を入れると、実際にハイトゲージで当てられる<b>端面から円の底まで</b>が公差つきで出ます。片割れどうしで大きさが違う部品に備えて、隙間は「合計」と「この部品ぶん」を切り替えられます。</li>
           <li><span class="vtag">v59</span><b>新ツール「穴ピッチ電卓」(36) を追加。</b>何を求めるか先に選ばずに、手元の数字をそのまま入れるだけ。入れた分から<b>出せるものが全部同時に出ます</b>（ピッチ／外−外・内−内／中心角／PCD・半径／2つ跨ぎ・対辺）。足りない欄があるときは何が足りないかを名指しします。公差の判定や逆算は従来どおり (01)(02) へ。</li>
@@ -188,8 +203,13 @@
     <input id="q" type="search" placeholder="🔎 ツール名・用途で検索(例: 歯車、下穴、角度)" autocomplete="off" aria-label="ツールを検索">
   </div>
 
+  <div class="chips" id="chips" aria-label="分類で絞り込み"></div>
+
   <h2 id="favHead" style="display:none">★ お気に入り(この端末のみ)</h2>
   <div id="favBox"></div>
+  <h2 id="recHead" style="display:none">🕒 最近使ったツール(この端末のみ)</h2>
+  <div id="recBox"></div>
+  <div id="chipEmpty" style="display:none;font-size:12.5px;color:#5B707E;background:#fff;border:1px dashed #C9D3DA;border-radius:10px;padding:14px 12px;margin:6px 0"></div>
 
   <div id="noHit" class="nohit" style="display:none">該当するツールがありません。<br>別の言葉で試してください(例: ねじ / 角度 / 公差 / 歯車)</div>
 
@@ -210,8 +230,8 @@
     </svg></span>
     <span>
       <span class="no">TOOL-36</span>
-      <div class="nm">穴ピッチ電卓</div>
-      <div class="ds">まず数字を入れるだけ。何を求めるか選ばなくても、出せるものが全部同時に出ます。ピッチ・ノギスの読み・中心角・2つ跨ぎ／対辺まで。公差判定や逆算は(01)(02)へ</div>
+      <div class="nm">かんたん穴ピッチ</div>
+      <div class="ds">まず数字を入れるだけ。何を求めるか選ばなくても、出せるものが全部同時に出ます。ピッチ・ノギスの読み・中心角・2つ跨ぎ／対辺まで。半径の違う2穴にも対応。公差判定や逆算は(01)(02)へ</div>
     </span>
     <span class="chev">›</span>
   </a>
@@ -295,23 +315,7 @@
     <span class="chev">›</span>
   </a>
   </div>
-  <div class="tool-card">
-  <a class="tool" href="true-position/">
-    <span class="icon"><svg viewBox="0 0 44 44">
-      <line x1="5" y1="22" x2="39" y2="22" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="6 2 1.5 2"/>
-      <line x1="22" y1="5" x2="22" y2="39" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="6 2 1.5 2"/>
-      <circle cx="22" cy="22" r="13" fill="#D9E2E8" stroke="#1F3341" stroke-width="1.5"/>
-      <line x1="22" y1="22" x2="28.5" y2="16" stroke="#D63426" stroke-width="1.5"/>
-      <circle cx="28.5" cy="16" r="3" fill="#D63426"/>
-    </svg></span>
-    <span>
-      <span class="no">TOOL-13</span>
-      <div class="nm">真位置度判定</div>
-      <div class="ds">2√(ΔX²+ΔY²)で合否判定。公差円に実測位置を図示。最大実体Ⓜのボーナス公差にも対応</div>
-    </span>
-    <span class="chev">›</span>
-  </a>
-  </div>
+  
   <div class="tool-card">
   <a class="tool" href="phase-shift/">
     <span class="icon"><svg viewBox="0 0 44 44">
@@ -424,28 +428,7 @@
 
   <h2>円弧・曲げ</h2>
 
-  <div class="tool-card">
-  <a class="tool" href="arc-part/">
-    <span class="icon"><svg viewBox="0 0 44 44">
-      <rect x="6" y="10" width="32" height="13" fill="none" stroke="#1F3341" stroke-width="1.5"/>
-      <path d="M 11 23 A 14 14 0 0 0 33 23" fill="none" stroke="#D63426" stroke-width="1.8"/>
-      <line x1="22" y1="23" x2="22" y2="38" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="3 2"/>
-      <line x1="18" y1="38" x2="26" y2="38" stroke="#1F3341" stroke-width="1.4"/>
-      <line x1="22" y1="34" x2="22" y2="42" stroke="#1F3341" stroke-width="1.4"/>
-      <circle cx="15" cy="20" r="1.8" fill="#1F3341"/>
-      <circle cx="22" cy="21.5" r="1.8" fill="#1F3341"/>
-      <circle cx="29" cy="20" r="1.8" fill="#1F3341"/>
-    </svg></span>
-    <span>
-      <span class="no">TOOL-34</span>
-      <div class="nm">端面から円弧まで</div>
-      <div class="ds">板の外にある遠い中心から描かれた円弧（溝など）を、板の端面からの寸法に置き換え。角から中心までの寸法とRを入れると、端面に沿った位置ごとの距離が一覧で出ます。同心の円弧はまとめて</div>
-    </span>
-    <span class="chev">›</span>
-  </a>
-  </div>
-
-  <div class="tool-card">
+    <div class="tool-card">
   <a class="tool" href="chord-r/">
     <span class="icon"><svg viewBox="0 0 44 44">
       <path d="M 5 32 Q 22 2 39 32" fill="none" stroke="#1F3341" stroke-width="1.8"/>
@@ -498,24 +481,9 @@
   </a>
   </div>
 
-  <h2>ねじ・歯車</h2>
+    <h2>ねじ・歯車</h2>
 
-  <div class="tool-card">
-  <a class="tool" href="tolerance/">
-    <span class="icon"><svg viewBox="0 0 44 44">
-      <line x1="4" y1="24" x2="40" y2="24" stroke="#1F3341" stroke-width="1.2" stroke-dasharray="6 2 1.5 2"/>
-      <rect x="16" y="10" width="13" height="11" fill="#D9E2E8" stroke="#1F3341" stroke-width="1.4"/>
-      <line x1="12" y1="16" x2="33" y2="16" stroke="#D63426" stroke-width="1.8"/>
-      <circle cx="33" cy="16" r="2" fill="#D63426"/>
-    </svg></span>
-    <span>
-      <span class="no">TOOL-05</span>
-      <div class="nm">公差判定・公差表</div>
-      <div class="ds">JISはめあい公差(h7・H7・e8など)。実測の合否判定、めっき厚の補正、穴×軸の最大最小すきまも</div>
-    </span>
-    <span class="chev">›</span>
-  </a>
-  </div>
+  
   <div class="tool-card">
   <a class="tool" href="gear-w/">
     <span class="icon"><svg viewBox="0 0 44 44">
@@ -550,21 +518,7 @@
     <span class="chev">›</span>
   </a>
   </div>
-  <div class="tool-card">
-  <a class="tool" href="pin-wire/">
-    <span class="icon"><svg viewBox="0 0 44 44">
-      <path d="M 5 31 L 13 13 L 21 31 L 29 13 L 37 31" fill="none" stroke="#1F3341" stroke-width="1.7"/>
-      <circle cx="21" cy="22.5" r="6.5" fill="#fff" stroke="#1F3341" stroke-width="1.5"/>
-      <line x1="41" y1="16" x2="41" y2="36" stroke="#D63426" stroke-width="1.7"/>
-    </svg></span>
-    <span>
-      <span class="no">TOOL-14</span>
-      <div class="nm">ピン・三針測定</div>
-      <div class="ds">ねじ有効径(三針法)・アリ溝・V溝・平行溝のピン換算</div>
-    </span>
-    <span class="chev">›</span>
-  </a>
-  </div>
+  
   <div class="tool-card">
   <a class="tool" href="pipe-thread/">
     <span class="icon"><svg viewBox="0 0 44 44">
@@ -601,7 +555,24 @@
   </a>
   </div>
 
-  <h2>円すい・寸法補正</h2>
+  <h2>寸法・公差</h2>
+
+  <div class="tool-card">
+  <a class="tool" href="tolerance/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <line x1="4" y1="24" x2="40" y2="24" stroke="#1F3341" stroke-width="1.2" stroke-dasharray="6 2 1.5 2"/>
+      <rect x="16" y="10" width="13" height="11" fill="#D9E2E8" stroke="#1F3341" stroke-width="1.4"/>
+      <line x1="12" y1="16" x2="33" y2="16" stroke="#D63426" stroke-width="1.8"/>
+      <circle cx="33" cy="16" r="2" fill="#D63426"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-05</span>
+      <div class="nm">公差判定・公差表</div>
+      <div class="ds">JISはめあい公差(h7・H7・e8など)。実測の合否判定、めっき厚の補正、穴×軸の最大最小すきまも</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  </div>
 
   <div class="tool-card">
   <a class="tool" href="taper/">
@@ -638,26 +609,7 @@
   </a>
   </div>
 
-  <h2>機構・カム</h2>
-
-  <div class="tool-card">
-  <a class="tool" href="cam-profile/">
-    <span class="icon"><svg viewBox="0 0 44 44">
-      <line x1="5" y1="34" x2="39" y2="34" stroke="#C9D3DA" stroke-width="1"/>
-      <path d="M 5 34 Q 13 34 17 18 Q 20 6 23 18 Q 27 34 31 34 L 39 34" fill="none" stroke="#1F3341" stroke-width="1.8"/>
-      <line x1="20" y1="6" x2="20" y2="38" stroke="#D63426" stroke-width="1" stroke-dasharray="3 2"/>
-      <circle cx="20" cy="11" r="2.4" fill="#D63426"/>
-    </svg></span>
-    <span>
-      <span class="no">TOOL-23</span>
-      <div class="nm">カム変位線図</div>
-      <div class="ds">板カムを区間割りで入力してリフト線図を作成。任意の角度のリフト・速度・加速度を照合</div>
-    </span>
-    <span class="chev">›</span>
-  </a>
-  </div>
-
-  <h2>材料・品質</h2>
+    <h2>材料</h2>
 
   <div class="tool-card">
   <a class="tool" href="hardness/">
@@ -678,26 +630,7 @@
     <span class="chev">›</span>
   </a>
   </div>
-  <div class="tool-card">
-  <a class="tool" href="cpk/">
-    <span class="icon"><svg viewBox="0 0 44 44">
-      <line x1="5" y1="36" x2="39" y2="36" stroke="#1F3341" stroke-width="1.4"/>
-      <rect x="12" y="24" width="4.5" height="12" fill="#8FA2AF" opacity="0.65"/>
-      <rect x="17.5" y="16" width="4.5" height="20" fill="#8FA2AF" opacity="0.65"/>
-      <rect x="23" y="20" width="4.5" height="16" fill="#8FA2AF" opacity="0.65"/>
-      <rect x="28.5" y="29" width="4.5" height="7" fill="#8FA2AF" opacity="0.65"/>
-      <path d="M 7 35 Q 20 2 37 35" fill="none" stroke="#1F3341" stroke-width="1.5"/>
-      <line x1="9" y1="8" x2="9" y2="38" stroke="#D63426" stroke-width="1.7"/>
-      <line x1="35" y1="8" x2="35" y2="38" stroke="#D63426" stroke-width="1.7"/>
-    </svg></span>
-    <span>
-      <span class="no">TOOL-21</span>
-      <div class="nm">Cpk電卓</div>
-      <div class="ds">実測値を貼り付けて工程能力Cp/Cpk・分布図・予測不良率を計算</div>
-    </span>
-    <span class="chev">›</span>
-  </a>
-  </div>
+  
   <div class="tool-card">
   <a class="tool" href="resin-guide/">
     <span class="icon"><svg viewBox="0 0 44 44">
@@ -735,22 +668,7 @@
     <span class="chev">›</span>
   </a>
   </div>
-  <div class="tool-card">
-  <a class="tool" href="frame-check/">
-    <span class="icon"><svg viewBox="0 0 44 44">
-      <path d="M 7 17 L 13 10 L 39 10 L 33 17 Z" fill="#fff" stroke="#1F3341" stroke-width="1.5"/>
-      <rect x="7" y="17" width="26" height="17" fill="#fff" stroke="#1F3341" stroke-width="1.5"/>
-      <path d="M 33 34 L 39 27 L 39 10" fill="none" stroke="#1F3341" stroke-width="1.5"/>
-      <line x1="9.5" y1="13.5" x2="35.5" y2="13.5" stroke="#D63426" stroke-width="1.8"/>
-    </svg></span>
-    <span>
-      <span class="no">TOOL-08</span>
-      <div class="nm">フレーム削り代検査</div>
-      <div class="ds">加工面ごとの削り代判定・対角/ねじれ・PDF記録の出力</div>
-    </span>
-    <span class="chev">›</span>
-  </a>
-  </div>
+  
   <!-- TOOL-08 ここまで -->
 
   <div class="tool-card">
@@ -788,6 +706,123 @@
   </a>
   </div>
 
+  <div id="labSec" style="display:none">
+  <h2>調整中のツール</h2>
+  <div class="note" style="margin-top:0">
+    使い方がまだ固まっていないものです。計算そのものは動きます。
+  </div>
+
+  <div class="tool-card">
+  <a class="tool" href="true-position/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <line x1="5" y1="22" x2="39" y2="22" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="6 2 1.5 2"/>
+      <line x1="22" y1="5" x2="22" y2="39" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="6 2 1.5 2"/>
+      <circle cx="22" cy="22" r="13" fill="#D9E2E8" stroke="#1F3341" stroke-width="1.5"/>
+      <line x1="22" y1="22" x2="28.5" y2="16" stroke="#D63426" stroke-width="1.5"/>
+      <circle cx="28.5" cy="16" r="3" fill="#D63426"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-13</span>
+      <div class="nm">真位置度判定</div>
+      <div class="ds">2√(ΔX²+ΔY²)で合否判定。公差円に実測位置を図示。最大実体Ⓜのボーナス公差にも対応</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  </div>
+
+  <div class="tool-card">
+  <a class="tool" href="arc-part/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <rect x="6" y="10" width="32" height="13" fill="none" stroke="#1F3341" stroke-width="1.5"/>
+      <path d="M 11 23 A 14 14 0 0 0 33 23" fill="none" stroke="#D63426" stroke-width="1.8"/>
+      <line x1="22" y1="23" x2="22" y2="38" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="3 2"/>
+      <line x1="18" y1="38" x2="26" y2="38" stroke="#1F3341" stroke-width="1.4"/>
+      <line x1="22" y1="34" x2="22" y2="42" stroke="#1F3341" stroke-width="1.4"/>
+      <circle cx="15" cy="20" r="1.8" fill="#1F3341"/>
+      <circle cx="22" cy="21.5" r="1.8" fill="#1F3341"/>
+      <circle cx="29" cy="20" r="1.8" fill="#1F3341"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-34</span>
+      <div class="nm">端面から円弧まで</div>
+      <div class="ds">板の外にある遠い中心から描かれた円弧（溝など）を、板の端面からの寸法に置き換え。角から中心までの寸法とRを入れると、端面に沿った位置ごとの距離が一覧で出ます。同心の円弧はまとめて</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  </div>
+
+  <div class="tool-card">
+  <a class="tool" href="pin-wire/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <path d="M 5 31 L 13 13 L 21 31 L 29 13 L 37 31" fill="none" stroke="#1F3341" stroke-width="1.7"/>
+      <circle cx="21" cy="22.5" r="6.5" fill="#fff" stroke="#1F3341" stroke-width="1.5"/>
+      <line x1="41" y1="16" x2="41" y2="36" stroke="#D63426" stroke-width="1.7"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-14</span>
+      <div class="nm">ピン・三針測定</div>
+      <div class="ds">ねじ有効径(三針法)・アリ溝・V溝・平行溝のピン換算</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  </div>
+
+  <div class="tool-card">
+  <a class="tool" href="cam-profile/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <line x1="5" y1="34" x2="39" y2="34" stroke="#C9D3DA" stroke-width="1"/>
+      <path d="M 5 34 Q 13 34 17 18 Q 20 6 23 18 Q 27 34 31 34 L 39 34" fill="none" stroke="#1F3341" stroke-width="1.8"/>
+      <line x1="20" y1="6" x2="20" y2="38" stroke="#D63426" stroke-width="1" stroke-dasharray="3 2"/>
+      <circle cx="20" cy="11" r="2.4" fill="#D63426"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-23</span>
+      <div class="nm">カム変位線図</div>
+      <div class="ds">板カムを区間割りで入力してリフト線図を作成。任意の角度のリフト・速度・加速度を照合</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  </div>
+
+  <div class="tool-card">
+  <a class="tool" href="cpk/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <line x1="5" y1="36" x2="39" y2="36" stroke="#1F3341" stroke-width="1.4"/>
+      <rect x="12" y="24" width="4.5" height="12" fill="#8FA2AF" opacity="0.65"/>
+      <rect x="17.5" y="16" width="4.5" height="20" fill="#8FA2AF" opacity="0.65"/>
+      <rect x="23" y="20" width="4.5" height="16" fill="#8FA2AF" opacity="0.65"/>
+      <rect x="28.5" y="29" width="4.5" height="7" fill="#8FA2AF" opacity="0.65"/>
+      <path d="M 7 35 Q 20 2 37 35" fill="none" stroke="#1F3341" stroke-width="1.5"/>
+      <line x1="9" y1="8" x2="9" y2="38" stroke="#D63426" stroke-width="1.7"/>
+      <line x1="35" y1="8" x2="35" y2="38" stroke="#D63426" stroke-width="1.7"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-21</span>
+      <div class="nm">Cpk電卓</div>
+      <div class="ds">実測値を貼り付けて工程能力Cp/Cpk・分布図・予測不良率を計算</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  </div>
+
+  <div class="tool-card">
+  <a class="tool" href="frame-check/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <path d="M 7 17 L 13 10 L 39 10 L 33 17 Z" fill="#fff" stroke="#1F3341" stroke-width="1.5"/>
+      <rect x="7" y="17" width="26" height="17" fill="#fff" stroke="#1F3341" stroke-width="1.5"/>
+      <path d="M 33 34 L 39 27 L 39 10" fill="none" stroke="#1F3341" stroke-width="1.5"/>
+      <line x1="9.5" y1="13.5" x2="35.5" y2="13.5" stroke="#D63426" stroke-width="1.8"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-08</span>
+      <div class="nm">フレーム削り代検査</div>
+      <div class="ds">加工面ごとの削り代判定・対角/ねじれ・PDF記録の出力</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  </div>
+  </div>
+
   <div class="note">
     <b>使い方のヒント</b><br>
     ・ブラウザの「ホーム画面に追加」で、アプリのようにワンタップで開けます<br>
@@ -797,11 +832,12 @@
 
   <footer>
     検査ミニポータル | 計算式とJIS規格値のみで構成。図面・品番などの固有情報は含みません。<br>
-    ★お気に入りはこの端末のブラウザ内にのみ保存されます(送信なし)。
+    ★お気に入り・「最近」の履歴は、この端末のブラウザ内にのみ保存されます(送信なし)。
     <div class="diag">
       <button type="button" id="diagBtn">オフライン診断</button>
       <div id="diagOut" class="diagOut"></div>
     </div>
+    <div id="labDot" aria-hidden="true">◇</div>
   </footer>
 </div>
 
@@ -841,6 +877,8 @@
     'pcd-pitch/':'PCD ピッチ円 ボルト穴 等配 弦 穴とび 角度公差 ±0.2 許容範囲 許容値 度公差'
   };
   var FAVKEY='kensa-fav';
+  var CHIPKEY='kensa-chip';   // 選んだチップ(次に開いたときも覚える)
+  var RECKEY='kensa-recent';  // 最近開いたツール(新しい順・最大5件)
 
   function loadFav(){
     try{
@@ -848,8 +886,23 @@
       return Array.isArray(v)?v:[];
     }catch(e){return []}
   }
+  function loadRecRaw(){
+    try{
+      var v=JSON.parse(localStorage.getItem(RECKEY)||'[]');
+      return Array.isArray(v)?v:[];
+    }catch(e){return []}
+  }
   function saveFav(){
     try{localStorage.setItem(FAVKEY,JSON.stringify(favs))}catch(e){}
+  }
+  function loadRec(){
+    try{
+      var v=JSON.parse(localStorage.getItem(RECKEY)||'[]');
+      return Array.isArray(v)?v:[];
+    }catch(e){return []}
+  }
+  function saveRec(){
+    try{localStorage.setItem(RECKEY,JSON.stringify(recs))}catch(e){}
   }
   // 検索用正規化: 小文字化+全角英数→半角+ひらがな→カタカナ
   function norm(s){
@@ -860,12 +913,75 @@
 
   var favs=loadFav();
   var wrap=document.querySelector('.wrap');
+  // 一覧から外したツールが保存に残っていても、表示できないので取り除く
+  function keepListed(arr){
+    return arr.filter(function(hh){
+      return !!document.querySelector('.wrap > .tool-card > a.tool[href="'+hh+'"]');
+    });
+  }
   var cards=[].slice.call(document.querySelectorAll('.wrap > .tool-card'));
   var favHead=document.getElementById('favHead');
   var favBox=document.getElementById('favBox');
+  var recHead=document.getElementById('recHead');
+  var recBox=document.getElementById('recBox');
+  var chipEmpty=document.getElementById('chipEmpty');
+  var recs=keepListed(loadRec());
   var noHit=document.getElementById('noHit');
   var qInput=document.getElementById('q');
-  var h2s=[].slice.call(document.querySelectorAll('.wrap > h2')).filter(function(h){return h.id!=='favHead'});
+  var h2s=[].slice.call(document.querySelectorAll('.wrap > h2')).filter(function(h){return h.id!=='favHead'&&h.id!=='recHead'});
+
+  // ── 分類チップ(v63) ──
+  // チップの名前: h2 の見出しを短くしたもの
+  function chipLabel(t){
+    t=String(t).replace(/\(.*?\)|（.*?）/g,'').replace(/^\s+|\s+$/g,'');
+    if(t==='穴・位置の測定')return '穴・位置';
+    if(t==='記録ツール')return '記録';
+    return t;
+  }
+  // 各カードがどの見出しの下にあるか(チップの絞り込みに使う)
+  var secOf=(function(){
+    var map={}, cur='';
+    [].slice.call(wrap.children).forEach(function(el){
+      if(el.tagName==='H2'&&el.id!=='favHead'&&el.id!=='recHead')cur=chipLabel(el.textContent);
+      else if(el.classList&&el.classList.contains('tool-card')){
+        var a=el.querySelector('a.tool');
+        if(a)map[a.getAttribute('href')]=cur;
+      }
+    });
+    return function(card){
+      var a=card.querySelector('a.tool');
+      return a?(map[a.getAttribute('href')]||''):'';
+    };
+  })();
+  var chipBar=document.getElementById('chips');
+  var chipDefs=[{k:'all',t:'すべて'},{k:'fav',t:'★お気に入り'},{k:'recent',t:'最近'}];
+  h2s.forEach(function(hh){var L=chipLabel(hh.textContent);chipDefs.push({k:L,t:L})});
+  var chip='all';
+  try{
+    var savedChip=localStorage.getItem(CHIPKEY), ci;
+    for(ci=0;ci<chipDefs.length;ci++)if(chipDefs[ci].k===savedChip){chip=savedChip;break}
+  }catch(e){}
+  chipDefs.forEach(function(d){
+    var b=document.createElement('button');
+    b.type='button';
+    b.textContent=d.t;
+    b.setAttribute('data-c',d.k);
+    if(d.k===chip)b.className='on';
+    chipBar.appendChild(b);
+  });
+  function setChip(k){
+    chip=k;
+    if(k==='recent'){ recs=loadRec(); renderRec(); }   // 押した瞬間の最新を出す
+    try{localStorage.setItem(CHIPKEY,k)}catch(e){}
+    [].slice.call(chipBar.children).forEach(function(b){
+      b.className=(b.getAttribute('data-c')===k)?'on':'';
+    });
+    applyFilter();
+  }
+  chipBar.addEventListener('click',function(e){
+    var b=e.target&&e.target.closest?e.target.closest('#chips button'):null;
+    if(b)setChip(b.getAttribute('data-c'));
+  });
 
   // ピンを全カードに注入(chevの前)
   cards.forEach(function(card){
@@ -889,6 +1005,7 @@
     });
   }
   function renderFav(){
+    favs=keepListed(favs);
     favBox.innerHTML='';
     favs.forEach(function(h){
       var src=document.querySelector('.wrap > .tool-card > a.tool[href="'+h+'"]');
@@ -906,16 +1023,27 @@
 
   function applyFilter(){
     var terms=norm(qInput.value).split(/\s+/).filter(function(t){return t!==''});
+    var searching=terms.length>0;
     var visible=0;
     cards.forEach(function(card){
       var a=card.querySelector('a.tool');
-      var txt=norm(card.textContent+' '+(KW[a.getAttribute('href')]||''));
-      var hit=true;
-      for(var i=0;i<terms.length;i++){
-        if(txt.indexOf(terms[i])<0){hit=false;break}
+      var show, i;
+      if(searching){
+        // 検索中はチップの絞り込みを外して全体から探す(「絞り込み中で見つからない」を防ぐ)
+        var txt=norm(card.textContent+' '+(KW[a.getAttribute('href')]||''));
+        show=true;
+        for(i=0;i<terms.length;i++){
+          if(txt.indexOf(terms[i])<0){show=false;break}
+        }
+      }else if(chip==='all'){
+        show=true;
+      }else if(chip==='fav'||chip==='recent'){
+        show=false;   // 本体は隠し、上の箱(複製)だけを見せる。本体の並びは変えない
+      }else{
+        show=(secOf(card)===chip);
       }
-      if(terms.length&&!hit)card.classList.add('hide');else card.classList.remove('hide');
-      if(!terms.length||hit)visible++;
+      if(show)card.classList.remove('hide');else card.classList.add('hide');
+      if(show)visible++;
     });
     // セクション見出し: 中身が全部隠れたら見出しも隠す
     h2s.forEach(function(h){
@@ -926,11 +1054,32 @@
       }
       h.style.display=any?'':'none';
     });
-    // お気に入りは検索中は隠す(本体側に出るため)
-    var showFav=favs.length>0&&terms.length===0;
+    // お気に入りの箱: 「すべて」では従来どおり一番上、「★お気に入り」ではそれだけ
+    var showFav=!searching&&favs.length>0&&(chip==='all'||chip==='fav');
     favHead.style.display=showFav?'':'none';
     favBox.style.display=showFav?'':'none';
-    noHit.style.display=(terms.length>0&&visible===0)?'':'none';
+    // 最近の箱: 「最近」チップのときだけ
+    var showRec=!searching&&chip==='recent'&&recs.length>0;
+    recHead.style.display=showRec?'':'none';
+    recBox.style.display=showRec?'':'none';
+    // 空のときの案内
+    var emp='';
+    if(!searching&&chip==='fav'&&favs.length===0)
+      emp='まだお気に入りがありません。ツールの ☆ を押すとここに並びます。';
+    if(!searching&&chip==='recent'&&recs.length===0)
+      emp='まだありません。ツールを開くと、新しい順にここへ並びます(この端末のみ・5件まで)。';
+    chipEmpty.textContent=emp;
+    chipEmpty.style.display=emp?'':'none';
+    noHit.style.display=(searching&&visible===0)?'':'none';
+  }
+  // 「最近」の描画(お気に入りと同じく本体カードの複製)
+  function renderRec(){
+    recBox.innerHTML='';
+    recs.forEach(function(hh){
+      var src=document.querySelector('.wrap > .tool-card > a.tool[href="'+hh+'"]');
+      if(src)recBox.appendChild(src.parentNode.cloneNode(true));
+    });
+    updatePins();
   }
 
   // ピンのタップ(カードへの遷移を止める)
@@ -945,6 +1094,48 @@
   });
   qInput.addEventListener('input',applyFilter);
 
+  // ツールを開いたら「最近」へ記録(遷移前に端末内へ保存される。送信なし)
+  document.addEventListener('click',function(e){
+    var a=e.target&&e.target.closest?e.target.closest('a.tool'):null;
+    if(!a)return;
+    if(a.closest&&a.closest('#labSec'))return;   // 調整中のツールは履歴に残さない
+    var hh=a.getAttribute('href');
+    var i=recs.indexOf(hh);
+    if(i>=0)recs.splice(i,1);
+    recs.unshift(hh);
+    if(recs.length>5)recs.length=5;
+    saveRec();
+  });
+
+  // iOS Safari は「戻る」でページを再実行せずに復元することがある(bfcache)。
+  // そのままだと開いたばかりのツールが「最近」に反映されないので、復帰時に読み直す。
+  window.addEventListener('pageshow',function(){
+    recs=loadRec();
+    renderRec();
+    applyFilter();
+  });
+
+  // 一番下の装飾を3回続けて触ると「調整中のツール」が出る。
+  // 保存はしない＝ページを開き直すと閉じた状態に戻る。
+  (function(){
+    var dot=document.getElementById('labDot'), sec=document.getElementById('labSec');
+    if(!dot||!sec)return;
+    var cnt=0, t=0;
+    dot.addEventListener('click',function(){
+      var now=new Date().getTime();
+      cnt=(now-t<1500)?cnt+1:1;
+      t=now;
+      if(cnt>=3){
+        cnt=0;
+        sec.style.display=(sec.style.display==='none')?'':'none';
+        if(sec.style.display===''){
+          try{sec.scrollIntoView({behavior:'smooth',block:'start'})}catch(e){sec.scrollIntoView()}
+        }
+      }
+    });
+  })();
+
+  renderRec();
   renderFav();
 })();
 </script>
