@@ -128,6 +128,27 @@
   /* 一番下の装飾。3回続けて触ると「調整中のツール」が出る(開き直すと閉じる) */
   #labDot{text-align:center;color:#DDE4E9;font-size:12px;margin:14px 0 2px;
     cursor:default;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+  /* キーボードの設定（v72）。一度きり触る設定なので一番下に置く。
+     画面の上は「ツールを探す場所」のまま空けておく。 */
+  .kbSet{margin:16px 0 4px;padding:12px;background:#fff;border:1px solid #C9D3DA;border-radius:10px;text-align:left}
+  .kbSetH{font-size:12.5px;font-weight:700;color:#1F3341;margin-bottom:8px}
+  .kbSetH small{display:block;font-weight:400;font-size:10.5px;color:#8FA2AF;margin-top:1px}
+  .kbSetR{display:flex;align-items:center;gap:6px;margin-bottom:7px;flex-wrap:wrap}
+  .kbSetR.off{display:none}
+  .kbSetL{flex:1;min-width:82px;font-size:11.5px;font-weight:700;color:#5B707E}
+  .kbSetR button{flex:none;font:inherit;font-size:12px;font-weight:700;color:#5B707E;background:#fff;
+    border:1px solid #C9D3DA;border-radius:999px;padding:8px 13px;min-height:36px;cursor:pointer}
+  .kbSetR button.on{background:#1F3341;color:#fff;border-color:#1F3341}
+  .kbPrev{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;max-width:230px;margin:8px 0 6px}
+  .kbPrev.off{display:none}
+  .kbPrev button{font:inherit;font-size:19px;font-weight:700;color:#1F3341;background:#F7F9FA;
+    border:1px solid #C9D3DA;border-radius:9px;min-height:46px;cursor:default;pointer-events:none}
+  .kbPrev button.pfn{font-size:13px;color:#D63426}
+  .kbPrev.z-s button{min-height:40px;font-size:17px}
+  .kbPrev.z-s button.pfn{font-size:12px}
+  .kbPrev.z-l button{min-height:56px;font-size:22px}
+  .kbPrev.z-l button.pfn{font-size:14px}
+  .kbSetN{font-size:10.5px;color:#8FA2AF;line-height:1.6}
   .diagOut{margin-top:6px;font-size:11px;line-height:1.6;word-break:break-all}
   .diagOut.ng{color:#D63426}
   .diagOut.ok{color:#2E7D4F}
@@ -158,6 +179,13 @@
       <div class="chglog" id="chglog" hidden>
         <h3>更新内容（新しい順）</h3>
         <ul>
+          <li><span class="vtag">v72</span><b>アプリ内キーボードを全32ツールに入れました。</b>数字を打つ欄では、機種によらず同じ並びのキーボードが出ます。数字の中を動く <b>←→</b> と、欄を送る <b>▲▼</b> が付いているので、打ち間違いも点滅位置を狙わずに直せます。切り替えとキーの大きさは<b>このページの一番下</b>でまとめて設定でき、全ツールに効きます。各ツールの画面からは切替を外しました（一度決めれば触らない設定のためです）。合わない場合は「OS標準」に戻せます。</li>
+          <li><span class="vtag">v71</span><b>キーボードの設定を全ツール共通にしました。</b>キーの大きさと「アプリ内／OS標準」の選択を、一度決めれば<b>ほかのツールでもそのまま使われます</b>（いまはお試し中の 27 だけですが、広げたときに選び直す必要がありません）。これまでの設定はそのまま引き継がれます。</li>
+          <li><span class="vtag">v70</span><b>お試しキーボード(27) に「大きさ」の切替を付けました。</b>キーの高さを<b>小・中・大</b>から選べます（40／46／56ピクセル）。手の大きさや手袋の有無、端末の画面の大きさで押しやすさが変わるためです。選んだ大きさはこの端末に覚えます。あわせて「完了」を「<b>閉じる</b>」に改めました（値は打つそばから確定しているので、確定の意味ではないためです）。</li>
+          <li><span class="vtag">v69</span><b>お試しキーボード(27) の並びを整えました。</b>使用頻度の低い <b>±</b> を左下の隅へ移し、<b>.</b>（小数点）を0の隣に、<b>C</b>（全消し）を⌫の下に置きました。右の1列が「⌫・C・次へ▼・完了」の機能キーで揃います。また上段に <b>←→</b> を足しました。1003を1103に直したいとき、点滅位置をタップで狙い撃ちしなくても、←で寄せて⌫→1で直せます（横＝数字の中を動く、縦▲▼＝欄の間を動く）。</li>
+          <li><span class="vtag">v68</span><b>お試し中のアプリ内キーボード(27) から「空白」キーを外し、代わりに「<b>次へ ▼</b>」を置きました。</b>このツールの角度は度の小数で読むため、空白は使い道が無く、「5 43」と入れると5°として計算されてしまう危険がありました。一番よく使う欄送りを、親指の届く右下に大きく置いています。</li>
+          <li><span class="vtag">v67</span><b>端面からの穴位置(27) で、アプリ内キーボードを試しています。</b>機種やOSでキーボードの並びが違う問題をなくせるか確かめるための<b>お試しです。このツールだけ</b>に入れています。画面の上で「アプリ内／OS標準」をいつでも切り替えられ、切り替えはこの端末にだけ残ります。アプリ内キーボードにはどの機種にも同じ位置に<b>空白</b>キーがあるので、度分（5 43）も打てます。使い心地を教えてください。</li>
+          <li><span class="vtag">v66</span><b>並びの入力を「1行に1つ」にしました。</b>これまで角度や左右の寸法を<b>スペースで区切って</b>1つの欄に並べていましたが、Androidの数字キーパッドにはスペースキーが無い機種があり、打てないという声がありました。図面まるごと穴ピッチ(30) の「角度の並び」「左へ／右へ」と、弦・矢高とR(04) の「穴の角度の並び」を、<b>1行に1つずつ打つ形</b>に変えました。区切り文字はもう要りません。各行の <b>↰</b> で差し込み、<b>×</b> で削除、Enterで次の行へ進みます。これまでに保存した内容はそのまま読めます。</li>
           <li><span class="vtag">v65</span><b>一覧を整理しました。</b>まだ使い方が固まっていない6つ（真位置度・端面から円弧まで・ピン三針・カム変位線図・Cpk・フレーム削り代）を一覧から外しました。<b>計算そのものは今までどおり動きます</b>（URLを知っていれば開けます）。あわせて分類を見直し、公差判定を「ねじ・歯車」から新しい「<b>寸法・公差</b>」へ移しました。穴ピッチ電卓(36) は「<b>かんたん穴ピッチ</b>」に名前を変えました。</li>
           <li><span class="vtag">v64</span><b>並び寸法ピッチ(28) をすっきりさせ、行の挿入を付けました。</b>「まとめ入力」「方向のラベル」「数え方」をなくし、各行に打つ形に一本化。行の左端に <b>↰</b>（挿入）、右に <b>↴</b>（確定して次へ）を置きました。↰ を押すとその行の位置に空欄が入り、そこから下が1つずつ下がります。あわせて、端面から円弧まで(34) の置き場所を「円弧・曲げ」の最後尾に移しました。</li>
           <li><span class="vtag">v63</span><b>トップページに分類チップを付けました。</b>検索窓の下の「<b>すべて／★お気に入り／最近／穴・位置…</b>」を横にスライドしてタップすると、その仲間のツールだけに絞れます。<b>押さなければこれまでどおり全部見えます。</b>「最近」はこの端末で開いたツールが新しい順に5件並びます（★と同じく端末内にのみ保存・送信なし）。選んだチップは次に開いたときも覚えています。検索を打ち始めたときは絞り込みをいったん外し、全ツールから探します。</li>
@@ -832,7 +860,29 @@
 
   <footer>
     検査ミニポータル | 計算式とJIS規格値のみで構成。図面・品番などの固有情報は含みません。<br>
-    ★お気に入り・「最近」の履歴は、この端末のブラウザ内にのみ保存されます(送信なし)。
+    ★お気に入り・「最近」の履歴・キーボードの設定は、この端末のブラウザ内にのみ保存されます(送信なし)。
+    <div class="kbSet" id="kbSet">
+      <div class="kbSetH">キーボードの設定<small>この端末の全ツールに効きます</small></div>
+      <div class="kbSetR">
+        <span class="kbSetL">使うキーボード</span>
+        <button type="button" data-k="1">アプリ内</button>
+        <button type="button" data-k="0">OS標準</button>
+      </div>
+      <div class="kbSetR" id="kbSetZ">
+        <span class="kbSetL">キーの大きさ</span>
+        <button type="button" data-z="s">小</button>
+        <button type="button" data-z="m">中</button>
+        <button type="button" data-z="l">大</button>
+      </div>
+      <div class="kbPrev" id="kbPrev">
+        <button type="button" tabindex="-1">7</button>
+        <button type="button" tabindex="-1">8</button>
+        <button type="button" tabindex="-1">9</button>
+        <button type="button" tabindex="-1" class="pfn">⌫</button>
+      </div>
+      <div class="kbSetN">アプリ内キーボードは機種によらず同じ並びで、数字の中を動く <b>←→</b> と、欄を送る <b>▲▼</b> が付いています。押しにくければ「OS標準」に戻せます。</div>
+    </div>
+
     <div class="diag">
       <button type="button" id="diagBtn">オフライン診断</button>
       <div id="diagOut" class="diagOut"></div>
@@ -1133,6 +1183,51 @@
         }
       }
     });
+  })();
+
+  /* ── キーボードの設定（v72）──
+     ここで決めた内容を localStorage に書き、各ツールが読み込み時に使う。
+     キー名にツール名を含めないことで全ツール共通になる（v71）。 */
+  (function(){
+    var KEY="kensa-kbd", ZKEY="kensa-kbd-size";
+    var OLDKEY="kensa-kbd-27", OLDZKEY="kensa-kbd-27-size";
+    var box=document.getElementById("kbSet");
+    var prev=document.getElementById("kbPrev");
+    var zRow=document.getElementById("kbSetZ");
+    if(!box) return;
+    var on=true, size="m";
+    try{
+      var v=localStorage.getItem(KEY);
+      if(v===null){ var o=localStorage.getItem(OLDKEY);
+        if(o!==null){ localStorage.setItem(KEY,o); localStorage.removeItem(OLDKEY); v=o; } }
+      on=(v===null)? true : (v==="1");
+      var z=localStorage.getItem(ZKEY);
+      if(z===null){ var o2=localStorage.getItem(OLDZKEY);
+        if(o2!==null){ localStorage.setItem(ZKEY,o2); localStorage.removeItem(OLDZKEY); z=o2; } }
+      size=(z==="s"||z==="m"||z==="l")? z : "m";
+    }catch(e){}
+    function draw(){
+      var b=box.querySelectorAll("button"), i, k, z;
+      for(i=0;i<b.length;i++){
+        k=b[i].getAttribute("data-k"); z=b[i].getAttribute("data-z");
+        if(k!==null) b[i].className=(k===(on?"1":"0"))?"on":"";
+        else if(z!==null) b[i].className=(z===size)?"on":"";
+      }
+      zRow.className=on? "kbSetR":"kbSetR off";
+      prev.className=on? ("kbPrev z-"+size):"kbPrev off";
+    }
+    box.addEventListener("click",function(e){
+      var b=e.target;
+      while(b&&b!==box&&b.tagName!=="BUTTON") b=b.parentNode;
+      if(!b||b===box) return;
+      var k=b.getAttribute("data-k"), z=b.getAttribute("data-z");
+      if(k!==null){ on=(k==="1"); try{localStorage.setItem(KEY,on?"1":"0")}catch(e2){} }
+      else if(z!==null){ size=z; try{localStorage.setItem(ZKEY,size)}catch(e2){} }
+      else return;
+      draw();
+    });
+    draw();
+    window.__kbSet={ isOn:function(){return on;}, size:function(){return size;} };
   })();
 
   renderRec();

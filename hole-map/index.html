@@ -42,6 +42,19 @@
     width:100%;padding:9px 8px;font:inherit;font-size:15px;
     border:1px solid var(--line);border-radius:6px;background:#FBFCFC;color:var(--ink)}
   input:focus,select:focus{outline:2px solid var(--red);outline-offset:-1px;background:#fff}
+
+  /* 並び入力（v66）: 1行に1つ。区切り文字を打つ必要をなくす */
+  .lst{margin-top:4px}
+  .lrow{display:flex;align-items:center;gap:5px;margin-bottom:5px}
+  .lrow input{flex:1;min-width:0}
+  .lno{flex:none;width:16px;text-align:right;font-size:12px;color:#8FA2AF}
+  .lbtn{flex:none;width:30px;height:32px;border:1px solid #C9D3DA;background:#fff;
+    border-radius:7px;font:inherit;font-size:14px;line-height:1;cursor:pointer;color:#1F3341}
+  .lbtn.del{color:#D63426}
+  .lbtn:active{background:#E8EDF0}
+  .ladd{width:100%;min-height:34px;border:1px dashed #C9D3DA;background:#fff;border-radius:8px;
+    font:inherit;font-size:12.5px;font-weight:700;color:#5B707E;cursor:pointer}
+  .ladd:active{background:#E8EDF0}
   .hint{font-size:10.5px;color:#7A8C97;line-height:1.65;margin-top:4px}
 
   .btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:9px 12px;font:inherit;font-size:12.5px;font-weight:600;border:1px solid var(--ink);border-radius:6px;background:var(--sheet);color:var(--ink);cursor:pointer}
@@ -375,7 +388,7 @@
         <button type="button" class="chip2" data-am="abs">真上からの角度</button>
       </div>
       <div class="row" style="margin-top:8px">
-        <div style="flex:2"><label class="f">角度の並び（スペース区切り）</label><input type="text" inputmode="decimal" autocomplete="off" id="fAngs" placeholder="30 150 30 150"></div>
+        <div style="flex:1 0 100%"><label class="f">角度の並び<small style="font-weight:400;color:#8FA2AF">（1行に1つ）</small></label><input type="text" inputmode="decimal" autocomplete="off" id="fAngs" placeholder="30 150 30 150"></div>
         <div><label class="f">起点角 θ₀</label><input type="text" inputmode="decimal" autocomplete="off" id="fTh0u" placeholder="0" data-fk="ang"></div>
       </div>
     </div>
@@ -453,8 +466,8 @@
     </div>
     <div class="ckrow"><input type="checkbox" id="fTip"><label for="fTip">先端（L 進んだ位置）にも穴を置く</label></div>
     <div class="row">
-      <div><label class="f">左へ（スペース区切り）</label><input type="text" inputmode="decimal" autocomplete="off" id="fLeft" placeholder="例 15"></div>
-      <div><label class="f">右へ</label><input type="text" inputmode="decimal" autocomplete="off" id="fRight" placeholder="例 15"></div>
+      <div><label class="f">左へ<small style="font-weight:400;color:#8FA2AF">（1行に1つ）</small></label><input type="text" inputmode="decimal" autocomplete="off" id="fLeft" placeholder="例 15"></div>
+      <div><label class="f">右へ<small style="font-weight:400;color:#8FA2AF">（1行に1つ）</small></label><input type="text" inputmode="decimal" autocomplete="off" id="fRight" placeholder="例 15"></div>
     </div>
     <div class="hint">左右は<b>基点（各点）から先端を見たときの左手・右手</b>です。中心線と直角に振ります。</div>
   </div>
@@ -1858,6 +1871,46 @@ renderParts(); calc(); initForm(); calc();
      ・「5 43」のような度分秒のスペース区切りはそのまま通します
      ・DOM構造は変更しません（再描画するツールでも壊れません）        -->
 <style>
+  /* ═══ 自前キーボード（v72 / 全ツール共通）═══ */
+    background:#fff;border:1px solid #C9D3DA;border-radius:999px;padding:8px 13px;
+    min-height:36px;cursor:pointer}
+  body.kbon .kt-aid{display:none!important}   /* 共通の±浮動ボタンは重複するので隠す */
+
+  .kpad{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#EDF1F3;
+    border-top:2px solid var(--ink);padding:6px 6px calc(6px + env(safe-area-inset-bottom));
+    display:none;-webkit-user-select:none;user-select:none;
+    box-shadow:0 -6px 18px rgba(31,51,65,.16)}
+  .kpad.on{display:block}
+  .kpHead{display:flex;align-items:center;gap:6px;padding:2px 2px 6px}
+  .kpName{flex:1;min-width:0;font-size:12px;font-weight:700;color:#1F3341;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .kpHead button.sep{margin-left:8px}
+  .kpHead button{flex:none;width:40px;height:32px;font:inherit;font-size:13px;
+    background:#fff;border:1px solid #C9D3DA;border-radius:7px;color:#1F3341;cursor:pointer}
+  .kpGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+  .kpGrid button{font:inherit;font-size:19px;font-weight:700;color:#1F3341;background:#fff;
+    border:1px solid #C9D3DA;border-radius:9px;min-height:46px;cursor:pointer;
+    -webkit-tap-highlight-color:transparent}
+  .kpGrid button:active{background:#DCE4E8}
+  .kpGrid button.fn{font-size:13px;font-weight:700;color:#5B707E;background:#F7F9FA}
+  .kpGrid button.go{background:var(--ink);color:#fff;border-color:var(--ink);font-size:14px}
+  .kpGrid button.del{color:var(--red)}
+  .kpGrid button.nx{font-size:13px;color:#1F3341;background:#F7F9FA}
+
+  /* 大きさの切替（v70）。押しやすさは端末と手袋で変わるので端末ごとに選ぶ */
+  .kpad.kp-s .kpGrid{gap:4px}
+  .kpad.kp-s .kpGrid button{min-height:40px;font-size:17px}
+  .kpad.kp-s .kpGrid button.fn,.kpad.kp-s .kpGrid button.nx{font-size:12px}
+  .kpad.kp-s .kpGrid button.go{font-size:13px}
+  .kpad.kp-s .kpHead button{height:30px;width:38px}
+  .kpad.kp-m .kpGrid{gap:5px}
+  .kpad.kp-m .kpGrid button{min-height:46px;font-size:19px}
+  .kpad.kp-l .kpGrid{gap:6px}
+  .kpad.kp-l .kpGrid button{min-height:56px;font-size:22px}
+  .kpad.kp-l .kpGrid button.fn,.kpad.kp-l .kpGrid button.nx{font-size:14px}
+  .kpad.kp-l .kpGrid button.go{font-size:15px}
+  .kpad.kp-l .kpHead button{height:36px;width:44px}
+  .kpad.kp-l .kpName{font-size:13px}
   .kt-aid{
     position:absolute;z-index:9998;display:none;gap:4px;
     background:#1F3341;border-radius:8px;padding:3px;
@@ -2117,6 +2170,389 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
   }
   scan();
   setTimeout(scan,0);
+})();
+</script>
+
+<script>
+/* ═══ 並び入力を「1行に1つ」にする（v66）═══
+   Android の数字キーパッドにはスペースキーが無い機種があり、
+   「スペース区切りで並べる」入力が打てないという声があったため。
+   ・元の <input> は hidden として残し、値は今までどおりスペース連結の文字列。
+     → 保存データ・例ボタン・parseNums など下流は一切変更しなくてよい。
+   ・value のセッターを差し替えているので、既存の el.value = "..." が
+     そのまま行の再描画になる（呼び出し側を書き換えていない）。 */
+(function(){
+  "use strict";
+  function toHalf(v){
+    return String(v==null?"":v)
+      .replace(/[\uFF10-\uFF19]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0)})
+      .replace(/[\u3002\uFF0E]/g,".")
+      .replace(/[\uFF0D\u30FC\uFF70\u2212]/g,"-");
+  }
+  function clean(v){ return toHalf(v).replace(/[^0-9.\-]/g,""); }
+  function fire(el){
+    var ev;
+    try{ ev=new Event("input",{bubbles:true}); }
+    catch(e){ ev=document.createEvent("Event"); ev.initEvent("input",true,false); }
+    el.dispatchEvent(ev);
+  }
+  function build(id, ph, max){
+    var inp=document.getElementById(id); if(!inp) return;
+    var proto=window.HTMLInputElement && window.HTMLInputElement.prototype;
+    var d=proto && Object.getOwnPropertyDescriptor(proto,"value");
+    if(!d || !d.get || !d.set) return;            /* 使えない環境では元の欄のまま */
+    var LIM=max||40;
+    var host=document.createElement("div");
+    host.className="lst"; host.id="lst_"+id;
+    inp.parentNode.insertBefore(host, inp.nextSibling);
+    inp.setAttribute("type","hidden");
+    /* inputmode を外すのが重要。残すと共通スニペットが hidden 欄も
+       「数値欄」とみなして掃除し、2つ目以降のマイナスを消してしまう。 */
+    inp.removeAttribute("inputmode");
+    var vals=[];
+    function fromHidden(){
+      var t=String(d.get.call(inp)||"").split(/[\s,\u3001\uFF0C]+/), out=[], i;
+      for(i=0;i<t.length;i++) if(t[i]!=="") out.push(t[i]);
+      return out;
+    }
+    function toHidden(){
+      var out=[], i, v;
+      for(i=0;i<vals.length;i++){ v=String(vals[i]).replace(/\s/g,""); if(v!=="") out.push(v); }
+      d.set.call(inp, out.join(" "));
+      fire(inp);
+    }
+    function render(focus){
+      var h="", i, v;
+      for(i=0;i<vals.length;i++){
+        v=String(vals[i]).replace(/"/g,"&quot;");
+        h+='<div class="lrow">'
+          +'<button type="button" class="lbtn ins" data-i="'+i+'" aria-label="ここに1つ差し込む" title="ここに1つ差し込む">\u21B0</button>'
+          +'<span class="lno">'+(i+1)+'</span>'
+          +'<input type="text" inputmode="decimal" autocomplete="off" enterkeyhint="next" data-i="'+i+'" placeholder="'+ph+'" value="'+v+'">'
+          +'<button type="button" class="lbtn del" data-i="'+i+'" aria-label="この行を消す" title="この行を消す">\u00D7</button>'
+          +'</div>';
+      }
+      h+='<button type="button" class="ladd">\uFF0B 1\u3064\u8FFD\u52A0</button>';
+      host.innerHTML=h;
+      if(typeof focus==="number"){
+        var els=host.querySelectorAll(".lrow input");
+        if(els[focus]){ els[focus].focus(); try{ els[focus].select(); }catch(e){} }
+      }
+    }
+    function sync(){ vals=fromHidden(); if(!vals.length) vals=[""]; render(); }
+    /* 外から el.value = "..." されたら行を作り直す */
+    try{
+      Object.defineProperty(inp,"value",{
+        configurable:true,
+        get:function(){ return d.get.call(inp); },
+        set:function(v){ d.set.call(inp,v); sync(); }
+      });
+    }catch(e){}
+    host.addEventListener("input",function(e){
+      var el=e.target;
+      if(!el || el.tagName!=="INPUT") return;
+      var c=clean(el.value);
+      if(c!==el.value){
+        var p=(el.selectionStart||0)-(el.value.length-c.length);
+        el.value=c;
+        try{ el.setSelectionRange(p,p); }catch(e2){}
+      }
+      vals[parseInt(el.getAttribute("data-i"),10)]=el.value;
+      toHidden();
+    });
+    host.addEventListener("keydown",function(e){
+      if(e.key!=="Enter" && e.keyCode!==13) return;
+      var el=e.target; if(!el || el.tagName!=="INPUT") return;
+      e.preventDefault();
+      var i=parseInt(el.getAttribute("data-i"),10);
+      if(i < vals.length-1){ render(i+1); return; }
+      if(String(el.value).replace(/\s/g,"")==="" || vals.length>=LIM){ el.blur(); return; }
+      vals.push(""); render(vals.length-1);
+    });
+    host.addEventListener("click",function(e){
+      var b=e.target && e.target.closest ? e.target.closest("button") : null;
+      if(!b) return;
+      var i=b.getAttribute("data-i")==null ? -1 : parseInt(b.getAttribute("data-i"),10);
+      if(b.className.indexOf("ins")>=0){
+        if(vals.length>=LIM) return;
+        vals.splice(i,0,""); toHidden(); render(i);
+      }else if(b.className.indexOf("del")>=0){
+        vals.splice(i,1); if(!vals.length) vals=[""];
+        toHidden(); render();
+      }else if(b.className.indexOf("ladd")>=0){
+        if(vals.length>=LIM) return;
+        vals.push(""); toHidden(); render(vals.length-1);
+      }
+    });
+    sync();
+  }
+  window.__buildList=build;
+})();
+</script>
+<script>
+(function(){
+  if(!window.__buildList) return;
+  window.__buildList("fAngs","\u4F8B 60",40);
+  window.__buildList("fLeft","\u4F8B 15",20);
+  window.__buildList("fRight","\u4F8B 15",20);
+})();
+</script>
+
+<div class="kpad" id="kpad" aria-hidden="true">
+  <div class="kpHead">
+    <span class="kpName" id="kpName">—</span>
+    <button type="button" data-a="left" aria-label="1つ左へ">←</button>
+    <button type="button" data-a="right" aria-label="1つ右へ">→</button>
+    <button type="button" data-a="prev" class="sep" aria-label="前の欄">▲</button>
+    <button type="button" data-a="next" aria-label="次の欄">▼</button>
+  </div>
+  <div class="kpGrid" id="kpGrid">
+    <button type="button" data-a="d" data-v="7">7</button>
+    <button type="button" data-a="d" data-v="8">8</button>
+    <button type="button" data-a="d" data-v="9">9</button>
+    <button type="button" data-a="bs" class="fn del">⌫</button>
+    <button type="button" data-a="d" data-v="4">4</button>
+    <button type="button" data-a="d" data-v="5">5</button>
+    <button type="button" data-a="d" data-v="6">6</button>
+    <button type="button" data-a="clr" class="fn">C</button>
+    <button type="button" data-a="d" data-v="1">1</button>
+    <button type="button" data-a="d" data-v="2">2</button>
+    <button type="button" data-a="d" data-v="3">3</button>
+    <button type="button" data-a="next" class="fn nx">次へ ▼</button>
+    <button type="button" data-a="sign" class="fn">±</button>
+    <button type="button" data-a="d" data-v="0">0</button>
+    <button type="button" data-a="d" data-v=".">.</button>
+    <button type="button" data-a="done" class="go">閉じる</button>
+  </div>
+</div>
+<script>
+/* ═══ 自前キーボード（v72 / 全ツール共通）═══
+   狙い: 機種やOSでキーボードが違う問題をなくす。押しやすい大きさにする。
+        「空白」キーを自分で置けるので、度分入力（5 43）も打てる。
+   要点:
+   ・OS のキーボードを出さないために inputmode="none" にする。
+     元の inputmode は data-im に退避し、OS標準へ戻すときに復元する。
+   ・押した瞬間に preventDefault してフォーカスを奪わない
+     （奪うと欄が閉じてしまう。共通の±浮動ボタンと同じ考え方）。
+   ・穴の欄は後から増えるので、focusin の委譲で拾う。
+   ・入力後に input イベントを投げる（oninput="calc()" を動かすため）。 */
+(function(){
+  "use strict";
+  /* 保存キーはツール名を含めない＝<全ツール共通>。
+     キーの大きさも使う／使わないも、手と手袋と端末で決まるもので、
+     ツールごとに変わる理由がない。同じサイト内なら保存先は共通なので、
+     このキー名にしておけば他ツールへ広げたとき移行作業が要らない。 */
+  var KEY="kensa-kbd";
+  var ZKEY="kensa-kbd-size";
+  var OLDKEY="kensa-kbd-27", OLDZKEY="kensa-kbd-27-size";   /* v70以前からの引き継ぎ */
+  /* 切替のボタンはこのツールには無い。設定はポータル(トップ)の一番下でまとめて行う。
+     一度きりの設定のために全ツールの画面を長くしないため（v72）。 */
+  var pad=document.getElementById("kpad");
+  var grid=document.getElementById("kpGrid");
+  var head=pad?pad.querySelector(".kpHead"):null;
+  var nameEl=document.getElementById("kpName");
+  if(!pad||!grid) return;
+  var cur=null, on=true, size="m";
+
+  function load(){
+    try{
+      var v=localStorage.getItem(KEY);
+      if(v===null){                        /* 旧キーがあれば引き継ぐ */
+        var o=localStorage.getItem(OLDKEY);
+        if(o!==null){ localStorage.setItem(KEY,o); localStorage.removeItem(OLDKEY); v=o; }
+      }
+      return v===null? true : v==="1";
+    }catch(e){ return true; }
+  }
+  function save(){ try{ localStorage.setItem(KEY,on?"1":"0"); }catch(e){} }
+  function loadSize(){
+    try{
+      var v=localStorage.getItem(ZKEY);
+      if(v===null){                        /* 旧キーがあれば引き継ぐ */
+        var o=localStorage.getItem(OLDZKEY);
+        if(o!==null){ localStorage.setItem(ZKEY,o); localStorage.removeItem(OLDZKEY); v=o; }
+      }
+      return (v==="s"||v==="m"||v==="l")? v : "m";
+    }catch(e){ return "m"; }
+  }
+  function saveSize(){ try{ localStorage.setItem(ZKEY,size); }catch(e){} }
+  function applySize(){
+    pad.className=(pad.className.indexOf("on")>=0? "kpad on ":"kpad ")+"kp-"+size;
+    /* 高さが変わるので、開いているなら下の余白を取り直す */
+    if(pad.className.indexOf("on")>=0) document.body.style.paddingBottom=(pad.offsetHeight+12)+"px";
+  }
+
+  function targets(){
+    var all=document.querySelectorAll("input"), out=[], i, el, im;
+    for(i=0;i<all.length;i++){
+      el=all[i];
+      /* 退避した data-im を先に見る。inputmode は "none" に差し替わっているため、
+         先に読むと対象が1つも見つからず、▲▼ の移動ができなくなる。 */
+      im=el.getAttribute("data-im")||el.getAttribute("inputmode")||"";
+      if((im==="decimal"||im==="numeric") && !el.disabled && !el.readOnly && el.offsetParent!==null) out.push(el);
+    }
+    return out;
+  }
+  /* OS のキーボードを止める／戻す */
+  function apply(){
+    var all=document.querySelectorAll("input"), i, el, im;
+    for(i=0;i<all.length;i++){
+      el=all[i];
+      im=el.getAttribute("inputmode");
+      if(on){
+        if(im==="decimal"||im==="numeric"){
+          el.setAttribute("data-im",im);
+          el.setAttribute("inputmode","none");
+        }
+      }else{
+        if(el.getAttribute("data-im")){
+          el.setAttribute("inputmode",el.getAttribute("data-im"));
+          el.removeAttribute("data-im");
+        }
+      }
+    }
+    document.body.className=on? "kbon":"";
+    if(!on) hide();
+  }
+  /* 穴の欄は後から作られるので、開くたびに掛け直す */
+  function reapply(){ if(on) apply(); }
+
+  function labelOf(el){
+    var d=el.parentNode, l=d?d.querySelector("label.f"):null;
+    if(l) return l.textContent;
+    var th, tb=el.closest? el.closest("td"):null;
+    if(tb) return "\u8868\u306e\u6b04";
+    return "\u6570\u5024";
+  }
+  function show(el){
+    cur=el;
+    nameEl.textContent=labelOf(el);
+    pad.className="kpad on kp-"+size;
+    pad.setAttribute("aria-hidden","false");
+    document.body.style.paddingBottom=(pad.offsetHeight+12)+"px";
+    try{ el.scrollIntoView({block:"center",behavior:"smooth"}); }catch(e){}
+  }
+  function hide(){
+    pad.className="kpad kp-"+size;
+    pad.setAttribute("aria-hidden","true");
+    document.body.style.paddingBottom="";
+    cur=null;
+  }
+  function fire(el){
+    var ev;
+    try{ ev=new Event("input",{bubbles:true}); }
+    catch(e){ ev=document.createEvent("Event"); ev.initEvent("input",true,false); }
+    el.dispatchEvent(ev);
+  }
+  function caret(el){
+    var a,b;
+    try{ a=el.selectionStart; b=el.selectionEnd; }catch(e){}
+    if(typeof a!=="number"){ a=el.value.length; b=a; }
+    return [a,b];
+  }
+  function put(el,txt){
+    var c=caret(el), v=el.value;
+    el.value=v.slice(0,c[0])+txt+v.slice(c[1]);
+    var p=c[0]+txt.length;
+    try{ el.setSelectionRange(p,p); }catch(e){}
+    fire(el);
+  }
+  function backsp(el){
+    var c=caret(el), v=el.value, p;
+    if(c[0]!==c[1]){ el.value=v.slice(0,c[0])+v.slice(c[1]); p=c[0]; }
+    else if(c[0]>0){ el.value=v.slice(0,c[0]-1)+v.slice(c[0]); p=c[0]-1; }
+    else return;
+    try{ el.setSelectionRange(p,p); }catch(e){}
+    fire(el);
+  }
+  function sign(el){
+    var v=el.value;
+    el.value=(v.charAt(0)==="-")? v.slice(1) : ("-"+v);
+    fire(el);
+  }
+  function move(step){
+    if(!cur) return;
+    var t=targets(), i=-1, k;
+    for(k=0;k<t.length;k++) if(t[k]===cur){ i=k; break; }
+    if(i<0) return;
+    var n=t[i+step];
+    if(!n){ return; }
+    n.focus();
+    try{ n.setSelectionRange(n.value.length,n.value.length); }catch(e){}
+    show(n);
+  }
+
+  /* 押した瞬間に処理し、既定動作を止めてフォーカスを保つ */
+  function act(e){
+    var b=e.target;
+    while(b && b!==pad && b.tagName!=="BUTTON") b=b.parentNode;
+    if(!b || b===pad) return;
+    e.preventDefault();
+    var a=b.getAttribute("data-a");
+    if(a==="done"){ if(cur) cur.blur(); hide(); return; }
+    if(a==="prev"){ move(-1); return; }
+    if(a==="next"){ move(1); return; }
+    /* ←→: 数字の中でカーソルを1文字ずつ動かす。
+       欄をタップして点滅位置を狙い撃ちしなくても、これで寄せられる。
+       上段は「横＝数字の中を動く、縦＝欄の間を動く」で意味をそろえてある。 */
+    if(a==="left"||a==="right"){
+      if(!cur) return;
+      var c2=caret(cur), p2;
+      if(a==="left")  p2=(c2[0]===c2[1])? c2[0]-1 : c2[0];
+      else            p2=(c2[0]===c2[1])? c2[1]+1 : c2[1];
+      if(p2<0)p2=0;
+      if(p2>cur.value.length)p2=cur.value.length;
+      try{ cur.setSelectionRange(p2,p2); }catch(e2){}
+      return;
+    }
+    if(!cur) return;
+    if(a==="d") put(cur,b.getAttribute("data-v"));
+    else if(a==="bs") backsp(cur);
+    else if(a==="clr"){ cur.value=""; fire(cur); }
+    else if(a==="sign") sign(cur);
+  }
+  pad.addEventListener("mousedown",act);
+  pad.addEventListener("touchstart",act,{passive:false});
+
+  /* 欄に入ったら開く（穴の欄は後から増えるので委譲で拾う） */
+  document.addEventListener("focusin",function(e){
+    if(!on) return;
+    var el=e.target;
+    if(!el||el.tagName!=="INPUT") return;
+    var im=el.getAttribute("data-im")||el.getAttribute("inputmode")||"";
+    if(im!=="decimal"&&im!=="numeric"&&im!=="none") { hide(); return; }
+    if(!el.getAttribute("data-im")) reapply();
+    show(el);
+  });
+  document.addEventListener("focusout",function(e){
+    setTimeout(function(){
+      var a=document.activeElement;
+      if(!a || a.tagName!=="INPUT") { if(cur===e.target) hide(); }
+    },80);
+  });
+
+
+  /* 穴の欄は後から作られる。作られた「その場で」inputmode を止めないと、
+     最初の1回だけOSのキーボードが一瞬出てしまう。
+     クリック後の掛け直しでは間に合わないので、DOM の変化を見て掛ける。 */
+  if(window.MutationObserver){
+    var timer=null;
+    var mo=new MutationObserver(function(){
+      if(timer) return;
+      timer=setTimeout(function(){ timer=null; reapply(); },0);
+    });
+    mo.observe(document.body,{childList:true,subtree:true});
+  }else{
+    document.addEventListener("click",function(){ setTimeout(reapply,0); },false);
+  }
+
+  on=load();
+  size=loadSize();
+  apply();
+  applySize();
+  window.__kbd={ apply:apply, targets:targets, isOn:function(){return on;},
+                 size:function(){return size;}, applySize:applySize,
+                 show:show, hide:hide, pad:pad, cur:function(){return cur;} };
 })();
 </script>
 </body>
