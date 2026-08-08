@@ -164,6 +164,38 @@
   .chglog li b{color:#1F3341}
   .chglog .vtag{display:inline-block;font-size:10.5px;font-weight:800;color:#5B707E;background:#EDF2F5;
     border:1px solid #D5DDE2;border-radius:6px;padding:0 5px;margin-right:5px}
+
+  /* ── 記録(部品ノート) v73 ── */
+  .krTop{margin:2px 0 8px}
+  .krTop button{width:100%;font:inherit;font-size:13.5px;text-align:left;
+    padding:9px 12px;border:1px solid #C9D3DA;border-radius:10px;background:#fff;
+    color:#1F3341;cursor:pointer}
+  .krTop button small{color:#5B707E;font-weight:normal}
+  #krView{position:fixed;inset:0;z-index:10000;background:#F2F4F5;overflow-y:auto;
+    padding:14px 14px calc(20px + env(safe-area-inset-bottom))}
+  #krView.off{display:none}
+  #krView .krVH{display:flex;justify-content:space-between;align-items:center;
+    max-width:480px;margin:0 auto 10px}
+  #krView .krVH b{font-size:15px;color:#1F3341}
+  #krView .krVH button{font:inherit;font-size:12.5px;padding:6px 14px;
+    border:1px solid #C9D3DA;border-radius:9px;background:#fff;cursor:pointer}
+  #krBody{max-width:480px;margin:0 auto}
+  .krRow{display:flex;align-items:stretch;gap:6px;margin:7px 0}
+  .krRow>.krMain{flex:1;min-width:0;text-align:left;font:inherit;font-size:14px;
+    padding:10px 12px;border:1px solid #C9D3DA;border-radius:10px;background:#fff;
+    color:#1F3341;cursor:pointer;text-decoration:none;display:block}
+  .krRow small{display:block;color:#5B707E;font-size:11.5px;margin-top:2px}
+  .krRow .krDel{font:inherit;font-size:12px;padding:0 12px;border:1px solid #C9D3DA;
+    border-radius:10px;background:#fff;color:#5B707E;cursor:pointer;white-space:nowrap}
+  .krRow .krDel.arm{background:#B4232C;border-color:#B4232C;color:#fff}
+  #krBody .krAddRow{display:flex;gap:6px;margin:12px 0 4px}
+  #krBody .krAddRow input{flex:1;font:inherit;font-size:14px;padding:9px 11px;
+    border:1px solid #C9D3DA;border-radius:10px;min-width:0}
+  #krBody .krAddRow button{font:inherit;font-size:13px;padding:9px 13px;
+    border:1px solid #C9D3DA;border-radius:10px;background:#1F3341;color:#fff;
+    cursor:pointer;white-space:nowrap}
+  #krBody .krHint{font-size:12.5px;color:#5B707E;background:#fff;
+    border:1px dashed #C9D3DA;border-radius:10px;padding:12px;margin:8px 0;line-height:1.7}
 </style>
 </head>
 <body>
@@ -179,6 +211,9 @@
       <div class="chglog" id="chglog" hidden>
         <h3>更新内容（新しい順）</h3>
         <ul>
+          <li><span class="vtag">v75</span><b>「図面まるごと穴ピッチ」を4点直しました。</b>①<b>不等配の起点角がスマホで打てなかった不具合を修正</b>しました（欄が画面の外へ押し出されていました。起点角は角度の並びの<b>上</b>へ移し、等配と同じ見た目に揃えました）。②「1つの穴」の置き方を<b>「距離と角度で」が先・既定</b>にしました。③「1つの穴」に<b>「指定した点から」</b>を足しました。原点ではないところを起点にして、そこから置けます。④<b>部品ごとに穴径</b>を入れられるようにしました。入れると<b>ノギスの読み（外−外・内−内）</b>がピッチと並んで出て、記録表の実測値も<b>どれで測ったかを自動で見分けます</b>。「キリ／M」の早見ボタンと「全部品にまとめて入れる」も付いています。</li>
+          <li><span class="vtag">v74</span><b>キーの大きさを見直しました（小を廃止・特大を追加）。</b>手袋だと押しにくかった「小」をやめ、<b>中・大・特大</b>の三段にしました。中と大の大きさはこれまでと同じで、<b>特大が新しく増えた一番大きいキー</b>です（数字キーの高さが 46 / 56 / 66px）。これまで「小」を選んでいた端末は、次に開いたときに自動で「中」になります。切り替えはこのページの一番下です。</li>
+          <li><span class="vtag">v73</span><b>「📒 記録」を付けました(部品ごとの計算ノート)。</b>よく使う20ツールの一番下に「記録する」ボタンがあります。押して保存先(部品名や加工先の略称)を選ぶと、いま入れている数字がそのまま保存されます。同じ部品がまた来たら、このページ上部の「📒 記録」から開けば<b>タップ1つで前回の数字が入り、答えは計算し直されます</b>(答えは保存しないので、計算式を直した後でも古い答えが出ません)。保存はこの端末の中だけです(送信なし)。行を増やして使うツール(図面まるごと・PCDずれ診断・並び寸法など)は今回は対象外で、様子を見て広げます。あわせて<b>アプリ内キーボードに「キーの音」</b>を足しました(既定は鳴らしません。入切はこのページの一番下。iOSはマナーモード中は鳴りません)。</li>
           <li><span class="vtag">v72</span><b>アプリ内キーボードを全32ツールに入れました。</b>数字を打つ欄では、機種によらず同じ並びのキーボードが出ます。数字の中を動く <b>←→</b> と、欄を送る <b>▲▼</b> が付いているので、打ち間違いも点滅位置を狙わずに直せます。切り替えとキーの大きさは<b>このページの一番下</b>でまとめて設定でき、全ツールに効きます。各ツールの画面からは切替を外しました（一度決めれば触らない設定のためです）。合わない場合は「OS標準」に戻せます。</li>
           <li><span class="vtag">v71</span><b>キーボードの設定を全ツール共通にしました。</b>キーの大きさと「アプリ内／OS標準」の選択を、一度決めれば<b>ほかのツールでもそのまま使われます</b>（いまはお試し中の 27 だけですが、広げたときに選び直す必要がありません）。これまでの設定はそのまま引き継がれます。</li>
           <li><span class="vtag">v70</span><b>お試しキーボード(27) に「大きさ」の切替を付けました。</b>キーの高さを<b>小・中・大</b>から選べます（40／46／56ピクセル）。手の大きさや手袋の有無、端末の画面の大きさで押しやすさが変わるためです。選んだ大きさはこの端末に覚えます。あわせて「完了」を「<b>閉じる</b>」に改めました（値は打つそばから確定しているので、確定の意味ではないためです）。</li>
@@ -229,6 +264,10 @@
 
   <div class="searchBox">
     <input id="q" type="search" placeholder="🔎 ツール名・用途で検索(例: 歯車、下穴、角度)" autocomplete="off" aria-label="ツールを検索">
+  </div>
+
+  <div class="krTop">
+    <button type="button" id="krOpen">📒 記録 <small>部品ごとの計算ノート(この端末のみ)</small></button>
   </div>
 
   <div class="chips" id="chips" aria-label="分類で絞り込み"></div>
@@ -860,7 +899,7 @@
 
   <footer>
     検査ミニポータル | 計算式とJIS規格値のみで構成。図面・品番などの固有情報は含みません。<br>
-    ★お気に入り・「最近」の履歴・キーボードの設定は、この端末のブラウザ内にのみ保存されます(送信なし)。
+    ★お気に入り・「最近」の履歴・キーボードの設定・「📒 記録」の内容は、この端末のブラウザ内にのみ保存されます(送信なし)。
     <div class="kbSet" id="kbSet">
       <div class="kbSetH">キーボードの設定<small>この端末の全ツールに効きます</small></div>
       <div class="kbSetR">
@@ -870,9 +909,14 @@
       </div>
       <div class="kbSetR" id="kbSetZ">
         <span class="kbSetL">キーの大きさ</span>
-        <button type="button" data-z="s">小</button>
         <button type="button" data-z="m">中</button>
         <button type="button" data-z="l">大</button>
+        <button type="button" data-z="xl">特大</button>
+      </div>
+      <div class="kbSetR" id="kbSetS">
+        <span class="kbSetL">キーの音</span>
+        <button type="button" data-s="1">鳴らす</button>
+        <button type="button" data-s="0">鳴らさない</button>
       </div>
       <div class="kbPrev" id="kbPrev">
         <button type="button" tabindex="-1">7</button>
@@ -880,7 +924,7 @@
         <button type="button" tabindex="-1">9</button>
         <button type="button" tabindex="-1" class="pfn">⌫</button>
       </div>
-      <div class="kbSetN">アプリ内キーボードは機種によらず同じ並びで、数字の中を動く <b>←→</b> と、欄を送る <b>▲▼</b> が付いています。押しにくければ「OS標準」に戻せます。</div>
+      <div class="kbSetN">アプリ内キーボードは機種によらず同じ並びで、数字の中を動く <b>←→</b> と、欄を送る <b>▲▼</b> が付いています。押しにくければ「OS標準」に戻せます。キーの音は端末の中で作る短い電子音です(既定は鳴らしません。iOSはマナーモード中は鳴りません)。</div>
     </div>
 
     <div class="diag">
@@ -1189,13 +1233,14 @@
      ここで決めた内容を localStorage に書き、各ツールが読み込み時に使う。
      キー名にツール名を含めないことで全ツール共通になる（v71）。 */
   (function(){
-    var KEY="kensa-kbd", ZKEY="kensa-kbd-size";
+    var KEY="kensa-kbd", ZKEY="kensa-kbd-size", SKEY="kensa-kbd-snd";
     var OLDKEY="kensa-kbd-27", OLDZKEY="kensa-kbd-27-size";
     var box=document.getElementById("kbSet");
     var prev=document.getElementById("kbPrev");
     var zRow=document.getElementById("kbSetZ");
+    var sRow=document.getElementById("kbSetS");
     if(!box) return;
-    var on=true, size="m";
+    var on=true, size="m", snd=false;
     try{
       var v=localStorage.getItem(KEY);
       if(v===null){ var o=localStorage.getItem(OLDKEY);
@@ -1204,16 +1249,22 @@
       var z=localStorage.getItem(ZKEY);
       if(z===null){ var o2=localStorage.getItem(OLDZKEY);
         if(o2!==null){ localStorage.setItem(ZKEY,o2); localStorage.removeItem(OLDZKEY); z=o2; } }
-      size=(z==="s"||z==="m"||z==="l")? z : "m";
+      if(z==="s") z="m";                            /* v74: 小は廃止→中へ引き上げ */
+    size=(z==="m"||z==="l"||z==="xl")? z : "m";
+    try{ localStorage.setItem(ZKEY,size); }catch(e3){}
+      snd=(localStorage.getItem(SKEY)==="1");   /* 既定は鳴らさない */
     }catch(e){}
     function draw(){
-      var b=box.querySelectorAll("button"), i, k, z;
+      var b=box.querySelectorAll("button"), i, k, z, sv;
       for(i=0;i<b.length;i++){
         k=b[i].getAttribute("data-k"); z=b[i].getAttribute("data-z");
+        sv=b[i].getAttribute("data-s");
         if(k!==null) b[i].className=(k===(on?"1":"0"))?"on":"";
         else if(z!==null) b[i].className=(z===size)?"on":"";
+        else if(sv!==null) b[i].className=(sv===(snd?"1":"0"))?"on":"";
       }
       zRow.className=on? "kbSetR":"kbSetR off";
+      sRow.className=on? "kbSetR":"kbSetR off";
       prev.className=on? ("kbPrev z-"+size):"kbPrev off";
     }
     box.addEventListener("click",function(e){
@@ -1221,8 +1272,10 @@
       while(b&&b!==box&&b.tagName!=="BUTTON") b=b.parentNode;
       if(!b||b===box) return;
       var k=b.getAttribute("data-k"), z=b.getAttribute("data-z");
+      var sv=b.getAttribute("data-s");
       if(k!==null){ on=(k==="1"); try{localStorage.setItem(KEY,on?"1":"0")}catch(e2){} }
       else if(z!==null){ size=z; try{localStorage.setItem(ZKEY,size)}catch(e2){} }
+      else if(sv!==null){ snd=(sv==="1"); try{localStorage.setItem(SKEY,snd?"1":"0")}catch(e2){} }
       else return;
       draw();
     });
@@ -1232,6 +1285,136 @@
 
   renderRec();
   renderFav();
+})();
+</script>
+
+<!-- ── 記録(部品ノート) v73 ──
+  保存先(部品名・加工先の略称)ごとに、各ツールで「記録する」した入力値が並ぶ。
+  タップすると ?rec=ID 付きでそのツールが開き、値が入って計算し直される。
+  データは kensa-rec の1キー(この端末のみ・送信なし)。削除は2回押し(armClear と同じ考え方)。 -->
+<div id="krView" class="off">
+  <div class="krVH"><b>📒 記録<small style="font-weight:normal;color:#5B707E"> 部品ごとの計算ノート</small></b>
+    <button type="button" id="krVClose">閉じる</button></div>
+  <div id="krBody"></div>
+</div>
+<script>
+(function(){
+  "use strict";
+  var RKEY="kensa-rec";
+  var view=document.getElementById("krView");
+  var body=document.getElementById("krBody");
+  var mode="d", curD="";              /* d=保存先一覧 / r=中の記録一覧 */
+  var arm={id:"",t:0};                /* 削除の2回押し(1回目から4秒で解除) */
+  function loadDB(){
+    var db=null;
+    try{ db=JSON.parse(localStorage.getItem(RKEY)||"null"); }catch(e){ db=null; }
+    if(!db||typeof db!=="object") db={};
+    if(!db.d) db.d=[]; if(!db.r) db.r=[]; if(!db.seq) db.seq=0;
+    if(db.last==null) db.last="";
+    return db;
+  }
+  function saveDB(db){ try{ localStorage.setItem(RKEY,JSON.stringify(db)); return true; }catch(e){ return false; } }
+  function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+  function fmt(ts){
+    var d=new Date(ts||0);
+    function p(n){ return (n<10?"0":"")+n; }
+    return (d.getMonth()+1)+"/"+d.getDate()+" "+p(d.getHours())+":"+p(d.getMinutes());
+  }
+  function cntOf(db,di){ var n=0,i; for(i=0;i<db.r.length;i++) if(db.r[i].d===di) n++; return n; }
+  function render(){
+    var db=loadDB(), h="", i;
+    if(mode==="d"){
+      var ds=db.d.slice().sort(function(a,b){ return (b.ts||0)-(a.ts||0); });
+      if(!ds.length){
+        h+='<div class="krHint">まだ記録がありません。<br>'
+          +'①下で保存先(部品名や加工先の略称)を作る<br>'
+          +'②各ツールの一番下の「📒 記録する」で、いま入れている数字を保存<br>'
+          +'③同じ部品がまた来たら、ここから開けばタップ1つで前回の数字が入ります</div>';
+      }
+      for(i=0;i<ds.length;i++){
+        var d=ds[i], c=cntOf(db,d.i);
+        h+='<div class="krRow">'
+          +'<button type="button" class="krMain" data-open="'+esc(d.i)+'">'+esc(d.n)
+          +'<small>'+c+'件の記録</small></button>'
+          +'<button type="button" class="krDel" data-deld="'+esc(d.i)+'">削除</button></div>';
+      }
+      h+='<div class="krAddRow"><input type="text" id="krVName" autocomplete="off"'
+        +' placeholder="例 A社 / ブラケットB-12">'
+        +'<button type="button" id="krVAdd">＋保存先を作る</button></div>';
+    }else{
+      var dn="", rs=[], r;
+      for(i=0;i<db.d.length;i++) if(db.d[i].i===curD) dn=db.d[i].n;
+      for(i=0;i<db.r.length;i++) if(db.r[i].d===curD) rs.push(db.r[i]);
+      h+='<div class="krRow"><button type="button" class="krMain" id="krBack">← 保存先の一覧へ'
+        +'<small>いまの保存先: '+esc(dn)+'</small></button></div>';
+      if(!rs.length) h+='<div class="krHint">この保存先にはまだ記録がありません。各ツールの一番下の「📒 記録する」から保存できます。</div>';
+      for(i=0;i<rs.length;i++){
+        r=rs[i];
+        h+='<div class="krRow">'
+          +'<a class="krMain" href="./'+esc(r.t)+'/?rec='+esc(r.i)+'">'
+          +'<b>'+esc(r.n)+'</b> '+esc(r.l)
+          +'<small>'+fmt(r.ts)+' に記録 ・ タップで開いて再計算</small></a>'
+          +'<button type="button" class="krDel" data-delr="'+esc(r.i)+'">削除</button></div>';
+      }
+    }
+    body.innerHTML=h;
+    armReset();
+  }
+  function armReset(){ arm.id=""; arm.t=0; }
+  function armed(id,btn){
+    var now=(new Date()).getTime();
+    if(arm.id===id && (now-arm.t)<4000){ armReset(); return true; }
+    arm.id=id; arm.t=now;
+    btn.className="krDel arm"; btn.textContent="もう一度で削除";
+    setTimeout(function(){
+      if(arm.id===id){ armReset(); if(btn&&btn.parentNode){ btn.className="krDel"; btn.textContent="削除"; } }
+    },4000);
+    return false;
+  }
+  body.addEventListener("click",function(e){
+    var b=e.target;
+    while(b&&b!==body&&!b.getAttribute) b=b.parentNode;
+    while(b&&b!==body&&b.tagName!=="BUTTON"&&b.tagName!=="A") b=b.parentNode;
+    if(!b||b===body) return;
+    var v;
+    if(b.id==="krBack"){ mode="d"; curD=""; render(); return; }
+    if(b.id==="krVAdd"){
+      var inp=document.getElementById("krVName");
+      var n=String(inp.value||"").replace(/^\s+|\s+$/g,"");
+      if(n===""){ inp.focus(); return; }
+      var db=loadDB(); db.seq++;
+      db.d.push({i:"d"+db.seq,n:n,ts:(new Date()).getTime()});
+      saveDB(db); render(); return;
+    }
+    v=b.getAttribute("data-open");
+    if(v!==null){ mode="r"; curD=v; render(); return; }
+    v=b.getAttribute("data-deld");
+    if(v!==null){
+      e.preventDefault();
+      if(!armed("d:"+v,b)) return;
+      var db2=loadDB(), i, r2=[], d2=[];
+      for(i=0;i<db2.d.length;i++) if(db2.d[i].i!==v) d2.push(db2.d[i]);
+      for(i=0;i<db2.r.length;i++) if(db2.r[i].d!==v) r2.push(db2.r[i]);
+      db2.d=d2; db2.r=r2;
+      if(db2.last===v) db2.last="";
+      saveDB(db2); render(); return;
+    }
+    v=b.getAttribute("data-delr");
+    if(v!==null){
+      e.preventDefault();
+      if(!armed("r:"+v,b)) return;
+      var db3=loadDB(), j, keep=[];
+      for(j=0;j<db3.r.length;j++) if(db3.r[j].i!==v) keep.push(db3.r[j]);
+      db3.r=keep;
+      saveDB(db3); render(); return;
+    }
+  });
+  document.getElementById("krOpen").addEventListener("click",function(){
+    mode="d"; curD=""; view.className=""; render();
+  });
+  document.getElementById("krVClose").addEventListener("click",function(){
+    view.className="off";
+  });
 })();
 </script>
 

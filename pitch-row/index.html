@@ -635,12 +635,10 @@ renderRows(); calc();
   .kpGrid button.del{color:var(--red)}
   .kpGrid button.nx{font-size:13px;color:#1F3341;background:#F7F9FA}
 
-  /* 大きさの切替（v70）。押しやすさは端末と手袋で変わるので端末ごとに選ぶ */
-  .kpad.kp-s .kpGrid{gap:4px}
-  .kpad.kp-s .kpGrid button{min-height:40px;font-size:17px}
-  .kpad.kp-s .kpGrid button.fn,.kpad.kp-s .kpGrid button.nx{font-size:12px}
-  .kpad.kp-s .kpGrid button.go{font-size:13px}
-  .kpad.kp-s .kpHead button{height:30px;width:38px}
+  /* 大きさの切替（v70／v74で見直し）。押しやすさは端末と手袋で変わるので端末ごとに選ぶ。
+     v74: 40px の「小」は手袋で押しにくく使われないため廃止し、上に「特大」を足した。
+          中=46px(旧 中) / 大=56px(旧 大) / 特大=66px(新規)。
+          保存値 "s" は loadSize() で "m" に引き上げる(端末に残っていても小に戻らない)。 */
   .kpad.kp-m .kpGrid{gap:5px}
   .kpad.kp-m .kpGrid button{min-height:46px;font-size:19px}
   .kpad.kp-l .kpGrid{gap:6px}
@@ -649,6 +647,12 @@ renderRows(); calc();
   .kpad.kp-l .kpGrid button.go{font-size:15px}
   .kpad.kp-l .kpHead button{height:36px;width:44px}
   .kpad.kp-l .kpName{font-size:13px}
+  .kpad.kp-xl .kpGrid{gap:7px}
+  .kpad.kp-xl .kpGrid button{min-height:66px;font-size:26px;border-radius:11px}
+  .kpad.kp-xl .kpGrid button.fn,.kpad.kp-xl .kpGrid button.nx{font-size:15px}
+  .kpad.kp-xl .kpGrid button.go{font-size:16px}
+  .kpad.kp-xl .kpHead button{height:40px;width:48px;font-size:15px}
+  .kpad.kp-xl .kpName{font-size:14px}
   .kt-aid{
     position:absolute;z-index:9998;display:none;gap:4px;
     background:#1F3341;border-radius:8px;padding:3px;
@@ -963,6 +967,34 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
   if(!pad||!grid) return;
   var cur=null, on=true, size="m";
 
+  /* ── キーの音（v73）──
+     Web Audio で端末の中だけで作る短い電子音（音声ファイルなし・送信なし）。
+     既定は鳴らさない。入切はトップの「キーボードの設定」（保存キー kensa-kbd-snd、
+     音も「人と端末」の性質なのでツール名は含めない）。
+     AudioContext はユーザー操作の中で初回に作る（iOS の自動再生制限のため）。
+     注意: iOS はマナーモード中は Web Audio ごと消音される（仕様。故障ではない）。 */
+  var SKEY="kensa-kbd-snd";
+  var snd=false; try{ snd=(localStorage.getItem(SKEY)==="1"); }catch(e){}
+  var sndCtx=null;
+  function beep(){
+    if(!snd) return;
+    try{
+      var AC=window.AudioContext||window.webkitAudioContext;
+      if(!AC) return;
+      if(!sndCtx) sndCtx=new AC();
+      if(sndCtx.state==="suspended"&&sndCtx.resume) sndCtx.resume();
+      var t=sndCtx.currentTime;
+      var o=sndCtx.createOscillator(), gg=sndCtx.createGain();
+      o.type="sine"; o.frequency.value=1046.5;   /* C6。短く柔らかい「ポッ」 */
+      gg.gain.setValueAtTime(0.0001,t);
+      gg.gain.exponentialRampToValueAtTime(0.08,t+0.006);
+      gg.gain.exponentialRampToValueAtTime(0.0001,t+0.055);
+      o.connect(gg); gg.connect(sndCtx.destination);
+      o.start(t); o.stop(t+0.07);
+    }catch(e){}
+  }
+
+
   function load(){
     try{
       var v=localStorage.getItem(KEY);
@@ -981,7 +1013,8 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
         var o=localStorage.getItem(OLDZKEY);
         if(o!==null){ localStorage.setItem(ZKEY,o); localStorage.removeItem(OLDZKEY); v=o; }
       }
-      return (v==="s"||v==="m"||v==="l")? v : "m";
+      if(v==="s"){ v="m"; localStorage.setItem(ZKEY,v); }   /* v74: 小は廃止→中へ */
+      return (v==="m"||v==="l"||v==="xl")? v : "m";
     }catch(e){ return "m"; }
   }
   function saveSize(){ try{ localStorage.setItem(ZKEY,size); }catch(e){} }
@@ -1097,6 +1130,7 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
     while(b && b!==pad && b.tagName!=="BUTTON") b=b.parentNode;
     if(!b || b===pad) return;
     e.preventDefault();
+    beep();
     var a=b.getAttribute("data-a");
     if(a==="done"){ if(cur) cur.blur(); hide(); return; }
     if(a==="prev"){ move(-1); return; }

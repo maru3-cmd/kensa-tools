@@ -642,12 +642,10 @@
   .kpGrid button.del{color:var(--red)}
   .kpGrid button.nx{font-size:13px;color:#1F3341;background:#F7F9FA}
 
-  /* 大きさの切替（v70）。押しやすさは端末と手袋で変わるので端末ごとに選ぶ */
-  .kpad.kp-s .kpGrid{gap:4px}
-  .kpad.kp-s .kpGrid button{min-height:40px;font-size:17px}
-  .kpad.kp-s .kpGrid button.fn,.kpad.kp-s .kpGrid button.nx{font-size:12px}
-  .kpad.kp-s .kpGrid button.go{font-size:13px}
-  .kpad.kp-s .kpHead button{height:30px;width:38px}
+  /* 大きさの切替（v70／v74で見直し）。押しやすさは端末と手袋で変わるので端末ごとに選ぶ。
+     v74: 40px の「小」は手袋で押しにくく使われないため廃止し、上に「特大」を足した。
+          中=46px(旧 中) / 大=56px(旧 大) / 特大=66px(新規)。
+          保存値 "s" は loadSize() で "m" に引き上げる(端末に残っていても小に戻らない)。 */
   .kpad.kp-m .kpGrid{gap:5px}
   .kpad.kp-m .kpGrid button{min-height:46px;font-size:19px}
   .kpad.kp-l .kpGrid{gap:6px}
@@ -656,6 +654,12 @@
   .kpad.kp-l .kpGrid button.go{font-size:15px}
   .kpad.kp-l .kpHead button{height:36px;width:44px}
   .kpad.kp-l .kpName{font-size:13px}
+  .kpad.kp-xl .kpGrid{gap:7px}
+  .kpad.kp-xl .kpGrid button{min-height:66px;font-size:26px;border-radius:11px}
+  .kpad.kp-xl .kpGrid button.fn,.kpad.kp-xl .kpGrid button.nx{font-size:15px}
+  .kpad.kp-xl .kpGrid button.go{font-size:16px}
+  .kpad.kp-xl .kpHead button{height:40px;width:48px;font-size:15px}
+  .kpad.kp-xl .kpName{font-size:14px}
   .kt-aid{
     position:absolute;z-index:9998;display:none;gap:4px;
     background:#1F3341;border-radius:8px;padding:3px;
@@ -970,6 +974,34 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
   if(!pad||!grid) return;
   var cur=null, on=true, size="m";
 
+  /* ── キーの音（v73）──
+     Web Audio で端末の中だけで作る短い電子音（音声ファイルなし・送信なし）。
+     既定は鳴らさない。入切はトップの「キーボードの設定」（保存キー kensa-kbd-snd、
+     音も「人と端末」の性質なのでツール名は含めない）。
+     AudioContext はユーザー操作の中で初回に作る（iOS の自動再生制限のため）。
+     注意: iOS はマナーモード中は Web Audio ごと消音される（仕様。故障ではない）。 */
+  var SKEY="kensa-kbd-snd";
+  var snd=false; try{ snd=(localStorage.getItem(SKEY)==="1"); }catch(e){}
+  var sndCtx=null;
+  function beep(){
+    if(!snd) return;
+    try{
+      var AC=window.AudioContext||window.webkitAudioContext;
+      if(!AC) return;
+      if(!sndCtx) sndCtx=new AC();
+      if(sndCtx.state==="suspended"&&sndCtx.resume) sndCtx.resume();
+      var t=sndCtx.currentTime;
+      var o=sndCtx.createOscillator(), gg=sndCtx.createGain();
+      o.type="sine"; o.frequency.value=1046.5;   /* C6。短く柔らかい「ポッ」 */
+      gg.gain.setValueAtTime(0.0001,t);
+      gg.gain.exponentialRampToValueAtTime(0.08,t+0.006);
+      gg.gain.exponentialRampToValueAtTime(0.0001,t+0.055);
+      o.connect(gg); gg.connect(sndCtx.destination);
+      o.start(t); o.stop(t+0.07);
+    }catch(e){}
+  }
+
+
   function load(){
     try{
       var v=localStorage.getItem(KEY);
@@ -988,7 +1020,8 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
         var o=localStorage.getItem(OLDZKEY);
         if(o!==null){ localStorage.setItem(ZKEY,o); localStorage.removeItem(OLDZKEY); v=o; }
       }
-      return (v==="s"||v==="m"||v==="l")? v : "m";
+      if(v==="s"){ v="m"; localStorage.setItem(ZKEY,v); }   /* v74: 小は廃止→中へ */
+      return (v==="m"||v==="l"||v==="xl")? v : "m";
     }catch(e){ return "m"; }
   }
   function saveSize(){ try{ localStorage.setItem(ZKEY,size); }catch(e){} }
@@ -1104,6 +1137,7 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
     while(b && b!==pad && b.tagName!=="BUTTON") b=b.parentNode;
     if(!b || b===pad) return;
     e.preventDefault();
+    beep();
     var a=b.getAttribute("data-a");
     if(a==="done"){ if(cur) cur.blur(); hide(); return; }
     if(a==="prev"){ move(-1); return; }
@@ -1169,6 +1203,255 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
   window.__kbd={ apply:apply, targets:targets, isOn:function(){return on;},
                  size:function(){return size;}, applySize:applySize,
                  show:show, hide:hide, pad:pad, cur:function(){return cur;} };
+})();
+</script>
+
+<script>
+/* ── 記録（部品ノート）v73 ──
+   狙い: 同じ部品がまた来たとき、前回の数字をタップ1つで呼び戻す。
+   仕組み: 「記録する」で、いま画面にある入力値(文字列のまま)を localStorage
+   (kensa-rec・全ツール共通の1キー)へ保存先(部品名など)ごとに保存する。
+   トップの「📒 記録」から開くと ?rec=ID 付きでこのページが開き、値を戻して
+   input/change イベントを投げ、既存の計算をそのまま走らせる。
+   要点:
+   ・保存するのは<入力値だけ>。答えは保存しない＝呼び出すたびに計算し直す。
+     後で計算式を直しても、古い答えが蘇らないようにするため。
+   ・値は文字列のまま保存。数値化すると NaN/null が JSON で化ける(v55の学び)。
+   ・id^="sw" のボタン(モード切替)は on の組を保存し、復元はクリックで再現。
+     クリック→値→イベントの順。モードが値を作り替えても後から値で上書きされる。
+   ・拾うのは id 付きの text/textarea/select/checkbox のみ(readonly は除外)。
+     行が増えるツールはこの方式では戻せないので、このスニペット自体を入れていない。
+   ・保存はこの端末の中だけ(送信なし)。削除はトップの「📒 記録」で行う。 */
+(function(){
+  "use strict";
+  var RKEY="kensa-rec";
+  var TOOL=(function(){
+    var m=(location.pathname||"").match(/\/([^\/]+)\/(?:index\.html)?$/);
+    return m? m[1] : "";
+  })();
+  var TNAME=(document.title||"").split("|")[0].replace(/^\s+|\s+$/g,"");
+  function loadDB(){
+    var db=null;
+    try{ db=JSON.parse(localStorage.getItem(RKEY)||"null"); }catch(e){ db=null; }
+    if(!db||typeof db!=="object") db={};
+    if(!db.d) db.d=[];
+    if(!db.r) db.r=[];
+    if(!db.seq) db.seq=0;
+    if(db.last==null) db.last="";
+    return db;
+  }
+  function saveDB(db){
+    try{ localStorage.setItem(RKEY,JSON.stringify(db)); return true; }
+    catch(e){ return false; }
+  }
+  function inOwn(el){
+    var n=el;
+    while(n){ if(n.id==="kpad"||n.id==="krBar"||n.id==="krSheet") return true; n=n.parentNode; }
+    return false;
+  }
+  function fields(){
+    var sel='input[type="text"][id],textarea[id],select[id],input[type="checkbox"][id]';
+    var els=document.querySelectorAll(sel), out=[], i, el;
+    for(i=0;i<els.length;i++){
+      el=els[i];
+      if(el.readOnly||inOwn(el)) continue;
+      out.push(el);
+    }
+    return out;
+  }
+  function swBtns(){
+    var els=document.querySelectorAll('button[id^="sw"]'), out=[], i;
+    for(i=0;i<els.length;i++){ if(!inOwn(els[i])) out.push(els[i]); }
+    return out;
+  }
+  function hasOn(el){ return (" "+el.className+" ").indexOf(" on ")>=0; }
+  function collect(){
+    var v={}, els=fields(), i, el, sw=[], bs=swBtns();
+    for(i=0;i<els.length;i++){
+      el=els[i];
+      if(el.type==="checkbox") v[el.id]=el.checked? "1":"0";
+      else v[el.id]=String(el.value==null? "":el.value);
+    }
+    for(i=0;i<bs.length;i++){ if(hasOn(bs[i])) sw.push(bs[i].id); }
+    return {v:v, sw:sw};
+  }
+  function makeLabel(){
+    var els=fields(), i, el, out=[], s;
+    for(i=0;i<els.length&&out.length<3;i++){
+      el=els[i];
+      if(el.type==="checkbox"||el.tagName==="SELECT"||el.tagName==="TEXTAREA") continue;
+      s=String(el.value==null? "":el.value).replace(/\s+/g," ");
+      if(s!=="") out.push(s.length>10? s.slice(0,10)+"…":s);
+    }
+    return out.length? out.join(" / ") : "(入力なし)";
+  }
+  function fire(el,type){
+    var ev;
+    try{ ev=new Event(type,{bubbles:true}); }
+    catch(e){ ev=document.createEvent("Event"); ev.initEvent(type,true,false); }
+    el.dispatchEvent(ev);
+  }
+  function esc(s){
+    return String(s==null? "":s).replace(/&/g,"&amp;").replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+  function destName(db,id){
+    var i; for(i=0;i<db.d.length;i++) if(db.d[i].i===id) return db.d[i].n;
+    return "";
+  }
+
+  /* ── 画面部品 ── */
+  var css=""
+    +"#krBar{margin:14px 0 6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}"
+    +"#krBar button{font:inherit;font-size:13px;padding:7px 14px;border:1px solid #C9D3DA;"
+    +"border-radius:9px;background:#fff;color:#1F3341;cursor:pointer}"
+    +"#krNote{font-size:12px;color:#5B707E;opacity:0;transition:opacity .25s}"
+    +"#krNote.show{opacity:1}"
+    +"#krNote.warn{color:#B4232C}"
+    +"#krSheet{position:fixed;left:0;right:0;bottom:0;z-index:10000;background:#fff;"
+    +"border-top:1px solid #C9D3DA;box-shadow:0 -6px 18px rgba(0,0,0,.18);"
+    +"padding:12px 14px calc(14px + env(safe-area-inset-bottom));max-height:60%;overflow-y:auto}"
+    +"#krSheet.off{display:none}"
+    +"#krSheet .krH{display:flex;justify-content:space-between;align-items:center;"
+    +"font-size:13px;font-weight:bold;color:#1F3341;margin-bottom:8px}"
+    +"#krSheet .krH button{font:inherit;font-size:12px;padding:5px 12px;border:1px solid #C9D3DA;"
+    +"border-radius:8px;background:#F2F4F5;cursor:pointer}"
+    +"#krList button{display:block;width:100%;text-align:left;font:inherit;font-size:14px;"
+    +"padding:10px 12px;margin:6px 0;border:1px solid #C9D3DA;border-radius:9px;"
+    +"background:#F7F9FA;color:#1F3341;cursor:pointer}"
+    +"#krList button small{color:#5B707E;margin-left:6px}"
+    +"#krNew{margin-top:10px;padding-top:10px;border-top:1px dashed #C9D3DA;display:flex;gap:6px}"
+    +"#krNew input{flex:1;font:inherit;font-size:14px;padding:8px 10px;border:1px solid #C9D3DA;"
+    +"border-radius:9px;min-width:0}"
+    +"#krNew button{font:inherit;font-size:13px;padding:8px 12px;border:1px solid #C9D3DA;"
+    +"border-radius:9px;background:#1F3341;color:#fff;cursor:pointer;white-space:nowrap}"
+    +"#krSheet .krT{font-size:11.5px;color:#5B707E;margin-top:8px}";
+
+  function build(){
+    var st=document.createElement("style");
+    st.appendChild(document.createTextNode(css));
+    document.head.appendChild(st);
+
+    var bar=document.createElement("div");
+    bar.id="krBar";
+    bar.innerHTML='<button type="button" id="krBtn">📒 記録する</button>'
+      +'<span id="krNote"></span>';
+    var src=document.querySelector(".src");
+    if(src&&src.parentNode) src.parentNode.insertBefore(bar,src);
+    else document.body.appendChild(bar);
+
+    var sh=document.createElement("div");
+    sh.id="krSheet"; sh.className="off";
+    /* 保存先名の欄には inputmode を付けない＝OS標準キーボードで文字が打てる
+       （アプリ内キーボードは inputmode が decimal/numeric の欄しか拾わない） */
+    sh.innerHTML='<div class="krH"><span>どの保存先に記録しますか</span>'
+      +'<button type="button" id="krClose">閉じる</button></div>'
+      +'<div id="krList"></div>'
+      +'<div id="krNew"><input type="text" id="krName" autocomplete="off"'
+      +' placeholder="例 A社 / ブラケットB-12">'
+      +'<button type="button" id="krAdd">＋作って記録</button></div>'
+      +'<div class="krT">保存はこの端末の中だけです(送信なし)。呼び出し・削除はトップの「📒 記録」から。</div>';
+    document.body.appendChild(sh);
+
+    document.getElementById("krBtn").addEventListener("click",openSheet);
+    document.getElementById("krClose").addEventListener("click",function(){ sheet(false); });
+    document.getElementById("krAdd").addEventListener("click",addAndSave);
+  }
+  function sheet(onoff){
+    document.getElementById("krSheet").className=onoff? "":"off";
+  }
+  function openSheet(){
+    var db=loadDB(), list=document.getElementById("krList"), h="", i, d;
+    var ds=db.d.slice();
+    ds.sort(function(a,b){
+      if(a.i===db.last) return -1;
+      if(b.i===db.last) return 1;
+      return (b.ts||0)-(a.ts||0);
+    });
+    for(i=0;i<ds.length;i++){
+      d=ds[i];
+      h+='<button type="button" data-d="'+esc(d.i)+'">'+esc(d.n)
+        +(d.i===db.last? '<small>前回</small>':'')+'</button>';
+    }
+    if(!ds.length) h='<div class="krT">まだ保存先がありません。下で最初の保存先(部品名や加工先の略称)を作ってください。</div>';
+    list.innerHTML=h;
+    list.onclick=function(e){
+      var b=e.target;
+      while(b&&b!==list&&b.tagName!=="BUTTON") b=b.parentNode;
+      if(!b||b===list) return;
+      doSave(b.getAttribute("data-d"));
+    };
+    sheet(true);
+  }
+  function addAndSave(){
+    var inp=document.getElementById("krName");
+    var n=String(inp.value||"").replace(/^\s+|\s+$/g,"");
+    if(n===""){ inp.focus(); return; }
+    var db=loadDB();
+    db.seq++;
+    var id="d"+db.seq;
+    db.d.push({i:id,n:n,ts:(new Date()).getTime()});
+    if(!saveDB(db)){ note("保存できませんでした(端末の空き容量を確認してください)",true); return; }
+    inp.value="";
+    doSave(id);
+  }
+  function doSave(destId){
+    var db=loadDB();
+    if(!destName(db,destId)){ note("その保存先が見つかりませんでした",true); sheet(false); return; }
+    var c=collect();
+    db.seq++;
+    db.r.unshift({ i:"r"+db.seq, d:destId, t:TOOL, n:TNAME, l:makeLabel(),
+                   ts:(new Date()).getTime(), v:c.v, sw:c.sw });
+    db.last=destId;
+    if(saveDB(db)) note("「"+destName(db,destId)+"」に記録しました",false);
+    else note("保存できませんでした(端末の空き容量を確認してください)",true);
+    sheet(false);
+  }
+  var noteTimer=null;
+  function note(msg,warn){
+    var el=document.getElementById("krNote");
+    if(!el) return;
+    el.textContent=msg;
+    el.className=warn? "show warn":"show";
+    if(noteTimer) clearTimeout(noteTimer);
+    noteTimer=setTimeout(function(){ el.className=""; },5000);
+  }
+
+  /* ── 呼び出し(?rec=ID) ── */
+  function restore(){
+    var m=(location.search||"").match(/[?&]rec=([^&]+)/);
+    if(!m) return;
+    var id=decodeURIComponent(m[1]);
+    var db=loadDB(), i, rec=null;
+    for(i=0;i<db.r.length;i++) if(db.r[i].i===id){ rec=db.r[i]; break; }
+    if(!rec){ note("呼び出す記録が見つかりませんでした(削除済みの可能性)",true); return; }
+    if(rec.t!==TOOL){ note("この記録は別のツールのものです",true); return; }
+    var sw=rec.sw||[], el;
+    for(i=0;i<sw.length;i++){
+      el=document.getElementById(sw[i]);
+      if(el&&!hasOn(el)) el.click();     /* モードを先に合わせる */
+    }
+    var v=rec.v||{}, k, filled=[], miss=0;
+    for(k in v){
+      if(!Object.prototype.hasOwnProperty.call(v,k)) continue;
+      el=document.getElementById(k);
+      if(!el||inOwn(el)){ miss++; continue; }
+      if(el.type==="checkbox") el.checked=(v[k]==="1");
+      else el.value=v[k];
+      filled.push(el);
+    }
+    for(i=0;i<filled.length;i++){
+      el=filled[i];
+      fire(el,(el.tagName==="SELECT"||el.type==="checkbox")? "change":"input");
+    }
+    var dn=destName(db,rec.d);
+    note("記録「"+rec.l+"」を呼び出しました"+(dn? "("+dn+")":"")
+      +(miss? "。一部の欄は復元できませんでした":""), miss>0);
+  }
+
+  function init(){ build(); restore(); }
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",init);
+  else init();
 })();
 </script>
 </body>
