@@ -42,7 +42,7 @@
     font-size:11px;color:#5B707E;letter-spacing:.22em;margin-top:4px;
     text-transform:uppercase;
   }
-  .cover .desc{font-size:12px;color:#33475299;color:#334752;margin:12px 0 14px;line-height:1.7}
+  .cover .desc{font-size:12px;color:#334752;margin:12px 0 14px;line-height:1.7}
   .cover .strip{
     display:flex;border-top:1px solid var(--ink);margin:0 -16px;
     font-size:9px;letter-spacing:.06em;
@@ -144,10 +144,13 @@
   .kbPrev button{font:inherit;font-size:19px;font-weight:700;color:#1F3341;background:#F7F9FA;
     border:1px solid #C9D3DA;border-radius:9px;min-height:46px;cursor:default;pointer-events:none}
   .kbPrev button.pfn{font-size:13px;color:#D63426}
-  .kbPrev.z-s button{min-height:40px;font-size:17px}
-  .kbPrev.z-s button.pfn{font-size:12px}
   .kbPrev.z-l button{min-height:56px;font-size:22px}
   .kbPrev.z-l button.pfn{font-size:14px}
+  /* v76: 特大の指定が無く、土台（＝中の46px）のまま表示されていた。
+     数値は各ツールの本物のキーボード（.kpad.kp-xl）と同じにそろえる。 */
+  .kbPrev.z-xl{gap:7px}
+  .kbPrev.z-xl button{min-height:66px;font-size:26px;border-radius:11px}
+  .kbPrev.z-xl button.pfn{font-size:15px}
   .kbSetN{font-size:10.5px;color:#8FA2AF;line-height:1.6}
   .diagOut{margin-top:6px;font-size:11px;line-height:1.6;word-break:break-all}
   .diagOut.ng{color:#D63426}
@@ -203,7 +206,7 @@
 
   <div class="cover">
     <div class="cover-inner">
-      <div class="h1row"><h1>検査ミニポータル</h1><button type="button" class="verBtn" id="verBtn" aria-expanded="false" aria-controls="chglog">v55 ｜ 更新内容</button></div>
+      <div class="h1row"><h1>検査ミニポータル</h1><button type="button" class="verBtn" id="verBtn" aria-expanded="false" aria-controls="chglog">v76 ｜ 更新内容</button></div>
       <div class="sub">INSPECTION MINI TOOLS</div>
       <div class="desc">
         現場のための計算・記録ツール集。すべての計算はこの端末の中で行われ、入力値がネットに送信されることはありません。
@@ -211,6 +214,7 @@
       <div class="chglog" id="chglog" hidden>
         <h3>更新内容（新しい順）</h3>
         <ul>
+          <li><span class="vtag">v76</span><b>キーの音を大きくして、音量を選べるようにしました。</b>音が小さくて現場で聞こえないというご指摘への対応です。音そのものを<b>倍音のある音色</b>に変え、<b>少し長く</b>しました（スマホの小さいスピーカーは、倍音のない音や短すぎる音を鳴らすのが苦手なためです）。あわせて「キーの音」の設定を<b>鳴らさない・小・中・大</b>の4つにしました。ボタンを押すと<b>その場で鳴る</b>ので、現場の騒がしさに合わせて選べます。これまで「鳴らす」にしていた端末は<b>「大」</b>になります。あわせて、キーの大きさで<b>「特大」を選んでも設定画面の見本が「中」の大きさのままだった不具合</b>を直しました（見本だけの不具合で、実際のキーボードは正しく特大になっていました）。</li>
           <li><span class="vtag">v75</span><b>「図面まるごと穴ピッチ」を4点直しました。</b>①<b>不等配の起点角がスマホで打てなかった不具合を修正</b>しました（欄が画面の外へ押し出されていました。起点角は角度の並びの<b>上</b>へ移し、等配と同じ見た目に揃えました）。②「1つの穴」の置き方を<b>「距離と角度で」が先・既定</b>にしました。③「1つの穴」に<b>「指定した点から」</b>を足しました。原点ではないところを起点にして、そこから置けます。④<b>部品ごとに穴径</b>を入れられるようにしました。入れると<b>ノギスの読み（外−外・内−内）</b>がピッチと並んで出て、記録表の実測値も<b>どれで測ったかを自動で見分けます</b>。「キリ／M」の早見ボタンと「全部品にまとめて入れる」も付いています。</li>
           <li><span class="vtag">v74</span><b>キーの大きさを見直しました（小を廃止・特大を追加）。</b>手袋だと押しにくかった「小」をやめ、<b>中・大・特大</b>の三段にしました。中と大の大きさはこれまでと同じで、<b>特大が新しく増えた一番大きいキー</b>です（数字キーの高さが 46 / 56 / 66px）。これまで「小」を選んでいた端末は、次に開いたときに自動で「中」になります。切り替えはこのページの一番下です。</li>
           <li><span class="vtag">v73</span><b>「📒 記録」を付けました(部品ごとの計算ノート)。</b>よく使う20ツールの一番下に「記録する」ボタンがあります。押して保存先(部品名や加工先の略称)を選ぶと、いま入れている数字がそのまま保存されます。同じ部品がまた来たら、このページ上部の「📒 記録」から開けば<b>タップ1つで前回の数字が入り、答えは計算し直されます</b>(答えは保存しないので、計算式を直した後でも古い答えが出ません)。保存はこの端末の中だけです(送信なし)。行を増やして使うツール(図面まるごと・PCDずれ診断・並び寸法など)は今回は対象外で、様子を見て広げます。あわせて<b>アプリ内キーボードに「キーの音」</b>を足しました(既定は鳴らしません。入切はこのページの一番下。iOSはマナーモード中は鳴りません)。</li>
@@ -915,8 +919,10 @@
       </div>
       <div class="kbSetR" id="kbSetS">
         <span class="kbSetL">キーの音</span>
-        <button type="button" data-s="1">鳴らす</button>
         <button type="button" data-s="0">鳴らさない</button>
+        <button type="button" data-s="s">小</button>
+        <button type="button" data-s="m">中</button>
+        <button type="button" data-s="l">大</button>
       </div>
       <div class="kbPrev" id="kbPrev">
         <button type="button" tabindex="-1">7</button>
@@ -924,7 +930,7 @@
         <button type="button" tabindex="-1">9</button>
         <button type="button" tabindex="-1" class="pfn">⌫</button>
       </div>
-      <div class="kbSetN">アプリ内キーボードは機種によらず同じ並びで、数字の中を動く <b>←→</b> と、欄を送る <b>▲▼</b> が付いています。押しにくければ「OS標準」に戻せます。キーの音は端末の中で作る短い電子音です(既定は鳴らしません。iOSはマナーモード中は鳴りません)。</div>
+      <div class="kbSetN">アプリ内キーボードは機種によらず同じ並びで、数字の中を動く <b>←→</b> と、欄を送る <b>▲▼</b> が付いています。押しにくければ「OS標準」に戻せます。キーの音は端末の中で作る短い電子音で、<b>小・中・大</b>から選べます(既定は鳴らしません。押すとその場で鳴るので、現場の騒がしさに合わせて選んでください。iOSはマナーモード中は鳴りません)。</div>
     </div>
 
     <div class="diag">
@@ -1240,7 +1246,10 @@
     var zRow=document.getElementById("kbSetZ");
     var sRow=document.getElementById("kbSetS");
     if(!box) return;
-    var on=true, size="m", snd=false;
+    /* 音量（v76）。"0"=鳴らさない / "s"=小 / "m"=中 / "l"=大。
+       各ツールの beep() と同じ表なので、値を変えるときは両方そろえる。 */
+    var SVOL={s:0.20,m:0.40,l:0.70};
+    var on=true, size="m", snd="0";
     try{
       var v=localStorage.getItem(KEY);
       if(v===null){ var o=localStorage.getItem(OLDKEY);
@@ -1252,8 +1261,36 @@
       if(z==="s") z="m";                            /* v74: 小は廃止→中へ引き上げ */
     size=(z==="m"||z==="l"||z==="xl")? z : "m";
     try{ localStorage.setItem(ZKEY,size); }catch(e3){}
-      snd=(localStorage.getItem(SKEY)==="1");   /* 既定は鳴らさない */
+      /* 既定は鳴らさない。v75以前の "1"（＝鳴らす）は「大」として引き継ぐ
+         （音が小さいという指摘への対応。ここで新しい値に書き直す）。 */
+      var sv=localStorage.getItem(SKEY);
+      if(sv==="1") sv="l";
+      snd=SVOL[sv]? sv : "0";
+      try{ localStorage.setItem(SKEY,snd); }catch(e4){}
     }catch(e){}
+    /* 選んだ音量をその場で鳴らす（v76）。設定画面だけは自前キーボードを
+       使わないため、各ツールの beep() と同じ音をここにも1つ持つ。
+       波形・高さ・長さを変えるときは各ツール側と必ずそろえること。 */
+    var sndCtx=null;
+    function beep(){
+      var v=SVOL[snd];
+      if(!v) return;
+      try{
+        var AC=window.AudioContext||window.webkitAudioContext;
+        if(!AC) return;
+        if(!sndCtx) sndCtx=new AC();
+        if(sndCtx.state==="suspended"&&sndCtx.resume) sndCtx.resume();
+        var t=sndCtx.currentTime;
+        var o=sndCtx.createOscillator(), gg=sndCtx.createGain();
+        o.type="triangle"; o.frequency.value=1046.5;
+        gg.gain.setValueAtTime(0.0001,t);
+        gg.gain.exponentialRampToValueAtTime(v,t+0.006);
+        gg.gain.exponentialRampToValueAtTime(0.0001,t+0.090);
+        o.connect(gg); gg.connect(sndCtx.destination);
+        o.start(t); o.stop(t+0.105);
+      }catch(e){}
+    }
+
     function draw(){
       var b=box.querySelectorAll("button"), i, k, z, sv;
       for(i=0;i<b.length;i++){
@@ -1261,7 +1298,7 @@
         sv=b[i].getAttribute("data-s");
         if(k!==null) b[i].className=(k===(on?"1":"0"))?"on":"";
         else if(z!==null) b[i].className=(z===size)?"on":"";
-        else if(sv!==null) b[i].className=(sv===(snd?"1":"0"))?"on":"";
+        else if(sv!==null) b[i].className=(sv===snd)?"on":"";
       }
       zRow.className=on? "kbSetR":"kbSetR off";
       sRow.className=on? "kbSetR":"kbSetR off";
@@ -1275,7 +1312,7 @@
       var sv=b.getAttribute("data-s");
       if(k!==null){ on=(k==="1"); try{localStorage.setItem(KEY,on?"1":"0")}catch(e2){} }
       else if(z!==null){ size=z; try{localStorage.setItem(ZKEY,size)}catch(e2){} }
-      else if(sv!==null){ snd=(sv==="1"); try{localStorage.setItem(SKEY,snd?"1":"0")}catch(e2){} }
+      else if(sv!==null){ snd=sv; try{localStorage.setItem(SKEY,snd)}catch(e2){} beep(); }
       else return;
       draw();
     });

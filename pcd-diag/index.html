@@ -1601,13 +1601,26 @@ window.__pcddiag={S:S, recalc:recalc, solveCircleR:solveCircleR, fitAssemble:fit
     try{ el.dispatchEvent(new Event(t,{bubbles:true})); }
     catch(e){ var ev=document.createEvent('Event'); ev.initEvent(t,true,true); el.dispatchEvent(ev); }
   }
+  function clickText(within,text){
+    var cont = within ? document.querySelector(within) : document;
+    if(!cont) return;
+    var all=cont.querySelectorAll('button,[class*="chip"],span,a,div,li'), target=String(text), j,e;
+    for(j=0;j<all.length;j++){
+      e=all[j];
+      if(e.textContent.trim()===target && (e.children.length===0 || e.tagName==='BUTTON')){ e.click(); return; }
+    }
+  }
   window.tryExample=function(btn){
     var raw=btn.getAttribute('data-ex'); if(!raw) return;
     var cfg; try{ cfg=JSON.parse(raw); }catch(e){ return; }
-    var steps=cfg.set||[], i, it, el;
+    var steps=cfg.set||[], i, it, el, k, fns, f, fn;
     for(i=0;i<steps.length;i++){
       it=steps[i];
       if(it.click){ var c=document.querySelector(it.click); if(c) c.click(); continue; }
+      if(it.clickText){ clickText(it.within, it.clickText); continue; }
+      if(it.setState){ if(window.S){ for(k in it.setState){ window.S[k]=it.setState[k]; } }
+        fns=(it.apply||'').split(';'); for(f=0;f<fns.length;f++){ fn=fns[f].replace(/^\s+|\s+$/g,''); if(fn && typeof window[fn]==='function'){ try{ window[fn](); }catch(e){} } }
+        continue; }
       el = it.sel ? document.querySelector(it.sel) : document.getElementById(it.id);
       if(!el) continue;
       el.value=String(it.v);
@@ -1756,17 +1769,26 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
   if(!pad||!grid) return;
   var cur=null, on=true, size="m";
 
-  /* ── キーの音（v73）──
+  /* ── キーの音（v73／音量は v76）──
      Web Audio で端末の中だけで作る短い電子音（音声ファイルなし・送信なし）。
-     既定は鳴らさない。入切はトップの「キーボードの設定」（保存キー kensa-kbd-snd、
+     既定は鳴らさない。設定はトップの「キーボードの設定」（保存キー kensa-kbd-snd、
      音も「人と端末」の性質なのでツール名は含めない）。
      AudioContext はユーザー操作の中で初回に作る（iOS の自動再生制限のため）。
      注意: iOS はマナーモード中は Web Audio ごと消音される（仕様。故障ではない）。 */
   var SKEY="kensa-kbd-snd";
-  var snd=false; try{ snd=(localStorage.getItem(SKEY)==="1"); }catch(e){}
+  /* 保存値は "0"=鳴らさない / "s"=小 / "m"=中 / "l"=大（v76）。
+     v75以前の "1"（＝鳴らす。音が小さいという指摘があった）は「大」として読む。
+     数字と英字で世代が見分けられるので、新旧の取り違えが起きない。 */
+  var SVOL={s:0.20,m:0.40,l:0.70};
+  var svol=0;
+  try{
+    var sv0=localStorage.getItem(SKEY);
+    if(sv0==="1") svol=SVOL.l;                 /* v75以前からの引き継ぎ */
+    else if(SVOL[sv0]) svol=SVOL[sv0];
+  }catch(e){}
   var sndCtx=null;
   function beep(){
-    if(!snd) return;
+    if(!svol) return;
     try{
       var AC=window.AudioContext||window.webkitAudioContext;
       if(!AC) return;
@@ -1774,12 +1796,14 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
       if(sndCtx.state==="suspended"&&sndCtx.resume) sndCtx.resume();
       var t=sndCtx.currentTime;
       var o=sndCtx.createOscillator(), gg=sndCtx.createGain();
-      o.type="sine"; o.frequency.value=1046.5;   /* C6。短く柔らかい「ポッ」 */
+      /* 三角波（v76）。サイン波は倍音がなく、スマホの小さいスピーカーでは
+         同じ振幅でも小さく聞こえるため差し替えた。高さは従来どおり C6。 */
+      o.type="triangle"; o.frequency.value=1046.5;
       gg.gain.setValueAtTime(0.0001,t);
-      gg.gain.exponentialRampToValueAtTime(0.08,t+0.006);
-      gg.gain.exponentialRampToValueAtTime(0.0001,t+0.055);
+      gg.gain.exponentialRampToValueAtTime(svol,t+0.006);
+      gg.gain.exponentialRampToValueAtTime(0.0001,t+0.090);   /* 90ms */
       o.connect(gg); gg.connect(sndCtx.destination);
-      o.start(t); o.stop(t+0.07);
+      o.start(t); o.stop(t+0.105);
     }catch(e){}
   }
 
