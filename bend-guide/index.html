@@ -1384,42 +1384,57 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
   /* ▲差込口ここまで▲ */
 
 
-  /* ── 保存先の6項目（全ツール・ポータル共通の並び）── */
-  var FLD=[["mk","加工先"],["pt","部品名"],["dw","図番"],
-           ["as","部組（機種）"],["sh","形状"],["nt","備考（通称）"]];
-  function emptyF(){ return {mk:"",pt:"",dw:"",as:"",sh:"",nt:""}; }
-  function normF(f){
-    var o=emptyF(), i;
-    if(f) for(i=0;i<FLD.length;i++) o[FLD[i][0]]=trim(f[FLD[i][0]]);
+  /* ── 項目の定義（全ツール・ポータル共通。並び・ラベルは必ずそろえる）──
+     フォルダ(保存先)は軽く、ファイル(記録1件)に詳細を持たせる。
+     同じ部品でも回ごとに加工先や図番の版が変わるので、詳細は<記録ごと>が正しい。 */
+  var DFLD=[["nm","名前"],["as","部組（機種）"],["nt","備考"]];
+  var RFLD=[["mk","加工先"],["pt","部品名"],["dw","図番"],["sh","形状"],["nt","備考（通称）"]];
+
+  function emptyD(){ return {nm:"",as:"",nt:""}; }
+  function emptyR(){ return {mk:"",pt:"",dw:"",sh:"",nt:""}; }
+  function normBy(list,f){
+    var o={}, i;
+    for(i=0;i<list.length;i++) o[list[i][0]]=trim(f? f[list[i][0]]:"");
     return o;
   }
-  function anyF(f){
-    var i; for(i=0;i<FLD.length;i++) if(f[FLD[i][0]]!=="") return true;
+  function anyOf(list,f){
+    var i; for(i=0;i<list.length;i++) if(f[list[i][0]]!=="") return true;
     return false;
   }
-  /* 見出し: 部品名 ・ 図番 ・ 加工先 の順。空はとばす。全部空はあり得ない。 */
-  function headOf(f){
-    var out=[], k=["pt","dw","mk"], i;
-    for(i=0;i<k.length;i++) if(f[k[i]]!=="") out.push(f[k[i]]);
-    if(!out.length) for(i=0;i<FLD.length;i++) if(f[FLD[i][0]]!==""){ out.push(f[FLD[i][0]]); break; }
-    return out.length? out.join(" ・ ") : "(名称なし)";
+  /* フォルダの見出しは名前そのもの（名前は必須）。 */
+  function headD(f){ return f.nm!==""? f.nm : "(名称なし)"; }
+  function subD(f){
+    var out=[], i, k;
+    for(i=1;i<DFLD.length;i++){ k=DFLD[i][0]; if(f[k]!=="") out.push(DFLD[i][1]+" "+f[k]); }
+    return out.join(" / ");
   }
-  /* 見出しに出なかった残りの項目（取り違え防止のため小さく併記する） */
-  function subOf(f){
+  /* ファイルの見出しは 部品名 ・ 図番 ・ 加工先。空はとばす。 */
+  function headR(g){
+    var out=[], k=["pt","dw","mk"], i;
+    if(!g) return "";
+    for(i=0;i<k.length;i++) if(g[k[i]]&&g[k[i]]!=="") out.push(g[k[i]]);
+    if(!out.length) for(i=0;i<RFLD.length;i++) if(g[RFLD[i][0]]&&g[RFLD[i][0]]!==""){ out.push(g[RFLD[i][0]]); break; }
+    return out.join(" ・ ");
+  }
+  function subR(g){
     var out=[], used={pt:1,dw:1,mk:1}, i, k;
-    for(i=0;i<FLD.length;i++){
-      k=FLD[i][0];
-      if(used[k]||f[k]==="") continue;
-      out.push(FLD[i][1]+" "+f[k]);
+    if(!g) return "";
+    for(i=0;i<RFLD.length;i++){
+      k=RFLD[i][0];
+      if(used[k]||!g[k]||g[k]==="") continue;
+      out.push(RFLD[i][1]+" "+g[k]);
     }
     return out.join(" / ");
   }
 
   /* ── 保存の入れ物 ──
-     v79以前の保存先は名前1つ(n)だけだった。読み込んだ時点で6項目の形に直し、
-     もとの名前は<部品名>に入れる（後からトップの📒記録で編集できる）。 */
+     v80 はフォルダ側に6項目を持たせていたが、詳細は記録ごとに要るという指摘で
+     v81 で組み替えた。古い形は読み込んだ時点で新しい形に直す。
+     ・v79以前 … d.n（名前だけ）→ フォルダ名へ
+     ・v80    … d.f{mk,pt,dw,as,sh,nt} → 名前は見出し、部組と備考はそのまま、
+                残り(加工先・部品名・図番・形状)は取りこぼさないよう備考へ添える。 */
   function loadDB(){
-    var db=null, i;
+    var db=null, i, f, o, ex;
     try{ db=JSON.parse(localStorage.getItem(RKEY)||"null"); }catch(e){ db=null; }
     if(!db||typeof db!=="object") db={};
     if(!db.d) db.d=[];
@@ -1427,10 +1442,25 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
     if(!db.seq) db.seq=0;
     if(db.last==null) db.last="";
     for(i=0;i<db.d.length;i++){
-      if(!db.d[i].f) db.d[i].f={pt:trim(db.d[i].n)};
-      db.d[i].f=normF(db.d[i].f);
-      db.d[i].n=headOf(db.d[i].f);      /* n は見出しの控え（古い画面が読むため） */
+      f=db.d[i].f;
+      if(f&&f.nm!=null){ db.d[i].f=normBy(DFLD,f); }
+      else if(f){
+        o=emptyD();
+        o.nm=trim(f.pt)||trim(f.dw)||trim(f.mk)||trim(f.sh)||trim(db.d[i].n)||"";
+        o.as=trim(f.as);
+        ex=[];
+        if(trim(f.mk)&&trim(f.mk)!==o.nm) ex.push("加工先 "+trim(f.mk));
+        if(trim(f.pt)&&trim(f.pt)!==o.nm) ex.push("部品名 "+trim(f.pt));
+        if(trim(f.dw)&&trim(f.dw)!==o.nm) ex.push("図番 "+trim(f.dw));
+        if(trim(f.sh)&&trim(f.sh)!==o.nm) ex.push("形状 "+trim(f.sh));
+        o.nt=[trim(f.nt)].concat(ex).join(" / ").replace(/^ \/ | \/ $/g,"").replace(/^\s*\/\s*/,"");
+        db.d[i].f=normBy(DFLD,o);
+      }else{
+        db.d[i].f=normBy(DFLD,{nm:trim(db.d[i].n)});
+      }
+      db.d[i].n=headD(db.d[i].f);
     }
+    for(i=0;i<db.r.length;i++) if(db.r[i].g) db.r[i].g=normBy(RFLD,db.r[i].g);
     return db;
   }
   function saveDB(db){
@@ -1439,6 +1469,12 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
   }
   function destOf(db,id){
     var i; for(i=0;i<db.d.length;i++) if(db.d[i].i===id) return db.d[i];
+    return null;
+  }
+  /* 同じフォルダの直近の記録を、次の記入の下敷きにする（打ち直しを減らす） */
+  function lastGOf(db,did){
+    var i;
+    for(i=0;i<db.r.length;i++) if(db.r[i].d===did&&db.r[i].g) return db.r[i].g;
     return null;
   }
 
@@ -1476,17 +1512,19 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
     +"#krCall button.arm{background:#B4232C;border-color:#B4232C}"
     +"#krNewBtn{display:block;width:100%;font:inherit;font-size:13.5px;padding:11px;margin-top:10px;"
     +"border:1px dashed #C9D3DA;border-radius:9px;background:#fff;color:#1F3341;cursor:pointer}"
-    +"#krForm{margin-top:10px;padding-top:10px;border-top:1px dashed #C9D3DA}"
-    +"#krForm.off{display:none}"
-    +"#krForm .krFR{margin-bottom:7px}"
-    +"#krForm label{display:block;font-size:11.5px;font-weight:bold;color:#5B707E;margin-bottom:3px}"
-    +"#krForm input{width:100%;font:inherit;font-size:15px;padding:9px 10px;"
+    +"#krPick.off,#krDForm.off,#krRForm.off,#krSheet .krT.off{display:none}"
+    +"#krSheet .krFR{margin-bottom:7px}"
+    +"#krSheet .krFR label{display:block;font-size:11.5px;font-weight:bold;color:#5B707E;margin-bottom:3px}"
+    +"#krSheet .krFR input{width:100%;font:inherit;font-size:15px;padding:9px 10px;"
     +"border:1px solid #C9D3DA;border-radius:9px;background:#fff;color:#1F3341}"
-    +"#krForm .krFB{display:flex;gap:7px;margin-top:9px}"
-    +"#krForm .krFB button{flex:1;font:inherit;font-size:13.5px;padding:11px;border:1px solid #C9D3DA;"
+    +"#krSheet .krFB{display:flex;gap:7px;margin-top:9px}"
+    +"#krSheet .krFB button{flex:1;font:inherit;font-size:13.5px;padding:11px;border:1px solid #C9D3DA;"
     +"border-radius:9px;background:#1F3341;color:#fff;cursor:pointer;min-height:44px}"
-    +"#krForm .krFB button.sub{background:#fff;color:#1F3341}"
-    +"#krFormN{font-size:11.5px;color:#B4232C;margin-top:6px;min-height:16px}";
+    +"#krSheet .krFB button.sub{background:#fff;color:#1F3341}"
+    +"#krSheet .krFN{font-size:11.5px;color:#B4232C;margin-top:6px;min-height:16px}"
+    +"#krWhere{font-size:12.5px;color:#1F3341;background:#F2F4F5;border-radius:8px;"
+    +"padding:8px 10px;margin-bottom:9px;line-height:1.6}"
+    +"#krWhere .krPre{font-size:11px;color:#5B707E}";
 
   function build(){
     var st=document.createElement("style");
@@ -1502,104 +1540,166 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
     if(src&&src.parentNode) src.parentNode.insertBefore(bar,src);
     else document.body.appendChild(bar);
 
+    /* 名前などの欄には inputmode を付けない＝OS標準キーボードで文字が打てる */
+    function fh(list,pre){
+      var h="", i;
+      for(i=0;i<list.length;i++){
+        h+='<div class="krFR"><label for="'+pre+list[i][0]+'">'+list[i][1]+'</label>'
+          +'<input type="text" id="'+pre+list[i][0]+'" autocomplete="off"></div>';
+      }
+      return h;
+    }
     var sh=document.createElement("div");
     sh.id="krSheet"; sh.className="off";
-    /* 6項目の欄には inputmode を付けない＝OS標準キーボードで文字が打てる */
-    var fh="", i;
-    for(i=0;i<FLD.length;i++){
-      fh+='<div class="krFR"><label for="krF_'+FLD[i][0]+'">'+FLD[i][1]+'</label>'
-        +'<input type="text" id="krF_'+FLD[i][0]+'" autocomplete="off"></div>';
-    }
-    sh.innerHTML='<div class="krH"><span>どの部品として記録しますか</span>'
+    sh.innerHTML='<div class="krH"><span id="krTitle">どのフォルダに入れますか</span>'
       +'<button type="button" id="krClose">閉じる</button></div>'
+
+      /* ① フォルダを選ぶ */
+      +'<div id="krPick">'
       +'<div id="krList"></div>'
-      +'<button type="button" id="krNewBtn">＋ 新しい保存先を作る</button>'
-      +'<div id="krForm" class="off">'+fh
-      +'<div id="krFormN"></div>'
-      +'<div class="krFB"><button type="button" id="krFormGo">作って記録する</button>'
-      +'<button type="button" class="sub" id="krFormNo">やめる</button></div></div>'
-      +'<div class="krT">6つのうち<b>どれか1つ</b>を入れれば作れます。'
-      +'あとからトップの「📒 記録」で書き直せます。<br>'
+      +'<button type="button" id="krNewBtn">＋ 新しいフォルダを作る</button>'
+      +'</div>'
+
+      /* ② フォルダを作る（軽く：名前・部組・備考） */
+      +'<div id="krDForm" class="off">'+fh(DFLD,"krD_")
+      +'<div id="krDNote" class="krFN"></div>'
+      +'<div class="krFB"><button type="button" id="krDGo">作る</button>'
+      +'<button type="button" class="sub" id="krDNo">やめる</button></div></div>'
+
+      /* ③ 記録の中身を書く（詳細はこちら） */
+      +'<div id="krRForm" class="off">'
+      +'<div class="krWhere" id="krWhere"></div>'+fh(RFLD,"krR_")
+      +'<div id="krRNote" class="krFN"></div>'
+      +'<div class="krFB"><button type="button" id="krRGo">記録する</button>'
+      +'<button type="button" class="sub" id="krRNo">フォルダを選び直す</button></div></div>'
+
+      +'<div class="krT" id="krTip">フォルダは<b>名前</b>だけ必須です。'
+      +'加工先・図番などの詳しい内容は、次の画面で<b>記録1件ごと</b>に書きます。<br>'
       +'保存はこの端末の中だけです(送信なし)。</div>';
     document.body.appendChild(sh);
 
     document.getElementById("krBtn").onclick=function(){ openSheet(); };
     document.getElementById("krClose").onclick=function(){ sheet(false); };
-    document.getElementById("krNewBtn").onclick=function(){ showForm(true); };
-    document.getElementById("krFormNo").onclick=function(){ showForm(false); };
-    document.getElementById("krFormGo").onclick=function(){ addAndSave(); };
+    document.getElementById("krNewBtn").onclick=function(){ showPane("d"); };
+    document.getElementById("krDNo").onclick=function(){ showPane("pick"); };
+    document.getElementById("krDGo").onclick=function(){ addDest(); };
+    document.getElementById("krRNo").onclick=function(){ showPane("pick"); };
+    document.getElementById("krRGo").onclick=function(){ saveRec(); };
     document.getElementById("krUndo").onclick=function(){ undo(); };
   }
 
   function sheet(on){
     var el=document.getElementById("krSheet");
     if(el) el.className=on? "":"off";
-    if(!on) showForm(false);
+    if(!on) showPane("pick");
   }
-  function showForm(on){
-    var el=document.getElementById("krForm"), i, f;
-    if(!el) return;
-    el.className=on? "":"off";
-    document.getElementById("krFormN").textContent="";
-    if(on){
-      for(i=0;i<FLD.length;i++){ f=document.getElementById("krF_"+FLD[i][0]); if(f) f.value=""; }
-      f=document.getElementById("krF_pt"); if(f) f.focus();
+  function showPane(p){
+    var pick=document.getElementById("krPick"), df=document.getElementById("krDForm"),
+        rf=document.getElementById("krRForm"), ti=document.getElementById("krTitle"),
+        tip=document.getElementById("krTip"), i, el;
+    if(!pick) return;
+    pick.className=(p==="pick")? "":"off";
+    df.className=(p==="d")? "":"off";
+    rf.className=(p==="r")? "":"off";
+    tip.className=(p==="pick")? "krT":"krT off";
+    document.getElementById("krDNote").textContent="";
+    document.getElementById("krRNote").textContent="";
+    if(p==="pick") ti.textContent="どのフォルダに入れますか";
+    if(p==="d"){
+      ti.textContent="フォルダを作ります";
+      for(i=0;i<DFLD.length;i++){ el=document.getElementById("krD_"+DFLD[i][0]); if(el) el.value=""; }
+      el=document.getElementById("krD_nm"); if(el) el.focus();
     }
+    if(p==="r") ti.textContent="この記録の内容";
   }
+
   function openSheet(){
     var db=loadDB(), list=document.getElementById("krList"), h="", i, d;
     var ds=db.d.slice().sort(function(a,b){ return (b.ts||0)-(a.ts||0); });
     if(!ds.length){
-      h='<div class="krT">まだ保存先がありません。下の「＋ 新しい保存先を作る」から、'
-        +'いま測っている部品の身元を入れてください。</div>';
+      h='<div class="krT">まだフォルダがありません。下の「＋ 新しいフォルダを作る」から作ってください。</div>';
     }
     for(i=0;i<ds.length;i++){
       d=ds[i];
-      h+='<button type="button" data-d="'+esc(d.i)+'">'+esc(headOf(d.f))
-        +(subOf(d.f)? '<small>'+esc(subOf(d.f))+'</small>':'')+'</button>';
+      h+='<button type="button" data-d="'+esc(d.i)+'">'+esc(headD(d.f))
+        +(subD(d.f)? '<small>'+esc(subD(d.f))+'</small>':'')+'</button>';
     }
     list.innerHTML=h;
     list.onclick=function(e){
       var b=e.target;
       while(b&&b!==list&&b.tagName!=="BUTTON") b=b.parentNode;
       if(!b||b===list) return;
-      doSave(b.getAttribute("data-d"),false);
+      openRecForm(b.getAttribute("data-d"),false);
     };
-    showForm(!ds.length);
+    showPane(ds.length? "pick":"d");
     sheet(true);
   }
-  function addAndSave(){
-    var f=emptyF(), i, el;
-    for(i=0;i<FLD.length;i++){
-      el=document.getElementById("krF_"+FLD[i][0]);
-      f[FLD[i][0]]=trim(el? el.value:"");
+
+  function addDest(){
+    var f=emptyD(), i, el;
+    for(i=0;i<DFLD.length;i++){
+      el=document.getElementById("krD_"+DFLD[i][0]);
+      f[DFLD[i][0]]=trim(el? el.value:"");
     }
-    if(!anyF(f)){
-      document.getElementById("krFormN").textContent="6つのうち、どれか1つは入れてください。";
-      el=document.getElementById("krF_pt"); if(el) el.focus();
+    if(f.nm===""){
+      document.getElementById("krDNote").textContent="フォルダの名前を入れてください。";
+      el=document.getElementById("krD_nm"); if(el) el.focus();
       return;
     }
     var db=loadDB();
     db.seq++;
     var id="d"+db.seq;
-    db.d.push({i:id,n:headOf(f),f:f,ts:(new Date()).getTime()});
+    db.d.push({i:id,n:f.nm,f:f,ts:(new Date()).getTime()});
     if(!saveDB(db)){ note("保存できませんでした(端末の空き容量を確認してください)",true); return; }
-    doSave(id,true);
+    openRecForm(id,true);
+  }
+
+  /* ── 記録の中身を書く画面 ──
+     同じフォルダの直近の記録があれば下敷きにする。同じ部品を何度も測るときに
+     打ち直さずに済み、それでいて<今回の内容として目を通した>形になる。 */
+  var curDest="", curNew=false;
+  function openRecForm(destId,isNew){
+    var db=loadDB(), d=destOf(db,destId);
+    if(!d){ note("そのフォルダが見つかりませんでした",true); sheet(false); return; }
+    curDest=destId; curNew=!!isNew;
+    var g=lastGOf(db,destId), i, el, k;
+    for(i=0;i<RFLD.length;i++){
+      k=RFLD[i][0];
+      el=document.getElementById("krR_"+k);
+      if(el) el.value=(g&&g[k])? g[k] : "";
+    }
+    document.getElementById("krWhere").innerHTML="入れ先: <b>"+esc(headD(d.f))+"</b>"
+      +(g? '　<span class="krPre">前回の内容を写しています</span>':"");
+    showPane("r");
+    el=document.getElementById("krR_pt"); if(el&&!(g&&g.pt)) el.focus();
+  }
+  function saveRec(){
+    var g=emptyR(), i, el;
+    for(i=0;i<RFLD.length;i++){
+      el=document.getElementById("krR_"+RFLD[i][0]);
+      g[RFLD[i][0]]=trim(el? el.value:"");
+    }
+    if(!anyOf(RFLD,g)){
+      document.getElementById("krRNote").textContent="5つのうち、どれか1つは入れてください。";
+      el=document.getElementById("krR_pt"); if(el) el.focus();
+      return;
+    }
+    doSave(curDest,curNew,g);
   }
 
   var lastSave=null, undoTimer=null;
-  function doSave(destId,isNew){
+  function doSave(destId,isNew,g){
     var db=loadDB(), d=destOf(db,destId);
-    if(!d){ note("その保存先が見つかりませんでした",true); sheet(false); return; }
+    if(!d){ note("そのフォルダが見つかりませんでした",true); sheet(false); return; }
     var c=collect();
     db.seq++;
     var rid="r"+db.seq;
-    db.r.unshift({ i:rid, d:destId, t:TOOL, n:TNAME, l:makeLabel(),
+    db.r.unshift({ i:rid, d:destId, t:TOOL, n:TNAME, l:makeLabel(), g:g,
                    ts:(new Date()).getTime(), v:c.v, sw:c.sw });
     db.last=destId;
     if(saveDB(db)){
       lastSave={r:rid, d:destId, newDest:!!isNew};
-      note("「"+headOf(d.f)+"」に記録しました",false);
+      note("「"+headD(d.f)+"」に "+headR(g)+" として記録しました",false);
       armUndo();
     }else{
       note("保存できませんでした(端末の空き容量を確認してください)",true);
@@ -1608,7 +1708,7 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
   }
   /* ── 取り消し（v80）──
      失敗に気づくのはたいてい保存した直後。トップまで戻らずその場で消せるようにする。
-     その保存で作った保存先なら、中が空になる場合は保存先ごと戻す。 */
+     その保存で作ったフォルダなら、中が空になる場合はフォルダごと戻す。 */
   function armUndo(){
     var b=document.getElementById("krUndo");
     if(!b) return;
@@ -1664,13 +1764,13 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
     try{ o=JSON.parse(raw); }catch(e){ o=null; }
     if(!o){ note("記録の中身を読めませんでした",true); return; }
 
-    var d=destOf(db,rec.d), dn=d? headOf(d.f):"";
+    var d=destOf(db,rec.d), dn=d? headD(d.f):"";
     /* 中身があるかは<押した瞬間>に見る。読み込み時に決め打ちすると、帯を出した
        あとで入れ足したものを、確認なしで消してしまう。 */
     function curHas(){ return (typeof window.krHasInput==="function")? !!window.krHasInput() : false; }
     var bar=document.createElement("div");
     bar.id="krCall";
-    bar.innerHTML='<div class="krCallT">記録「'+esc(rec.l)+'」'+(dn? "（"+esc(dn)+"）":"")+'を呼び出します。</div>'
+    bar.innerHTML='<div class="krCallT">記録「'+esc(headR(rec.g)||rec.l)+'」'+(dn? "（"+esc(dn)+"）":"")+'を呼び出します。</div>'
       +'<div class="krCallN">'+(curHas()
         ? 'いま画面にある入力は<b>置き換わります</b>。残したいときは先に別の保存先へ記録してください。'
         : 'いまの画面は空なので、そのまま入ります。')+'</div>'
@@ -1702,7 +1802,7 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
         return;
       }
       if(bar.parentNode) bar.parentNode.removeChild(bar);
-      note("記録「"+rec.l+"」を呼び出しました"+(dn? "("+dn+")":""),false);
+      note("記録「"+(headR(rec.g)||rec.l)+"」を呼び出しました"+(dn? "("+dn+")":""),false);
     };
   }
 
