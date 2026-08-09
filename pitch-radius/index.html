@@ -1133,8 +1133,8 @@
 
     var bar=document.createElement("div");
     bar.className="picks";
-    bar.innerHTML='<button type="button" data-t="c">キリ（バカ穴）▾</button>'+
-                  '<button type="button" data-t="t">M（ねじ下穴）▾</button>';
+    bar.innerHTML='<button type="button" data-pk="c">キリ（バカ穴）▾</button>'+
+                  '<button type="button" data-pk="t">M（ねじ下穴）▾</button>';
 
     /* バカ穴パネル */
     var pc=document.createElement("div"); pc.className="pnl hide";
@@ -1215,13 +1215,20 @@
       pc.className="pnl"+((openTab==="c")?"":" hide");
       pt.className="pnl"+((openTab==="t")?"":" hide");
       var bs=bar.getElementsByTagName("button"),j;
-      for(j=0;j<bs.length;j++) bs[j].className=(bs[j].getAttribute("data-t")===openTab)?"on":"";
+      for(j=0;j<bs.length;j++) bs[j].className=(bs[j].getAttribute("data-pk")===openTab)?"on":"";
     }
+    /* v77: 早見ボタンの押下を外へ伝えない。TOOL-30 は入力フォーム全体に
+       委譲クリックを張っており、data-t が「部品の種類」チップと衝突して
+       入力欄がまるごと隠れていた。名前を data-pk にしたうえで、
+       ピッカー内の操作は外に漏らさないようにして再発を防ぐ。 */
+    function stopIt(e){ if(e.stopPropagation) e.stopPropagation(); }
+    pc.onclick=stopIt; pt.onclick=stopIt;
     bar.onclick=function(e){
       var b=e.target;
       while(b&&b!==bar&&b.tagName!=="BUTTON") b=b.parentNode;
       if(!b||b===bar) return;
-      open(b.getAttribute("data-t"));
+      stopIt(e);
+      open(b.getAttribute("data-pk"));
     };
 
     row.parentNode.insertBefore(bar,row.nextSibling);
