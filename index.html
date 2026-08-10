@@ -208,6 +208,13 @@
   #krBody .krUse.warn .krBar>i{background:#B4232C}
   #krBody .krUseSub{font-size:11.5px;color:#5B707E;line-height:1.6}
   #krBody .krUse.warn .krUseSub b{color:#B4232C}
+  /* v87: 記録のサムネイル。図は探す手がかりで、寸法の根拠ではない。 */
+  #krBody .krTh{flex:0 0 auto;width:46px;height:46px;border:1px solid #E3E9ED;border-radius:8px;
+    background:#fff;position:relative;overflow:hidden;align-self:flex-start;margin-top:2px}
+  #krBody .krTh svg{display:block;width:100%;height:100%}
+  #krBody .krTh .krBadge{position:absolute;left:0;bottom:0;right:0;font-size:8.5px;line-height:1.35;
+    text-align:center;background:#B4232C;color:#fff;letter-spacing:.02em}
+  #krBody .krThNote{font-size:11px;color:#B4232C;margin-top:2px}
   /* v80: 保存先の6項目を入れる／書き直すフォーム */
   #krBody .krForm{background:#fff;border:1px solid #C9D3DA;border-radius:10px;padding:12px;margin:8px 0}
   #krBody .krFR{margin-bottom:8px}
@@ -226,7 +233,7 @@
 
   <div class="cover">
     <div class="cover-inner">
-      <div class="h1row"><h1>検査ミニポータル</h1><button type="button" class="verBtn" id="verBtn" aria-expanded="false" aria-controls="chglog">v85 ｜ 更新内容</button></div>
+      <div class="h1row"><h1>検査ミニポータル</h1><button type="button" class="verBtn" id="verBtn" aria-expanded="false" aria-controls="chglog">v87 ｜ 更新内容</button></div>
       <div class="sub">INSPECTION MINI TOOLS</div>
       <div class="desc">
         現場のための計算・記録ツール集。すべての計算はこの端末の中で行われ、入力値がネットに送信されることはありません。
@@ -234,6 +241,8 @@
       <div class="chglog" id="chglog" hidden>
         <h3>更新内容（新しい順）</h3>
         <ul>
+          <li><span class="vtag">v87</span><b>📒記録の一覧に、記録したときの図が小さく出るようになりました。</b>同じ部品を探すとき、部品名や図番を読まなくても<b>形で見分けられます</b>。いまのところ図が付くのは<b>PCD穴ピッチ(02)・かんたん穴ピッチ(36)・図面まるごと穴ピッチ(30)</b>の3つです。ほかのツールの記録はこれまでどおり文字だけで、<b>使い方は何も変わりません</b>。図はその記録を保存したときの形なので、あとでツールを新しくして図の描き方が変わった場合は、図の下に<b>「旧」</b>の印が付きます。印が付いていても<b>数字は正しいまま</b>で、タップして開けば今の形で計算し直されます。図は記録とは<b>別の入れ物</b>に入るので、記録できる件数は減りません（何枚あるかは記録の一覧の一番上に出ます）。記録を消せば図も一緒に消えます。</li>
+          <li><span class="vtag">v86</span><b>「図面まるごと穴ピッチ(30)」の図を2点直しました。</b>①部品のボタンを押して色を付けたとき、<b>角度の数字も一緒に色が変わる</b>ようにしました。等配の隣どうしの角度も、不等配の穴ごとの角度も対象です。②<b>「1つの穴」に寸法が出るようにしました。</b>これまでは「基準の穴から」置いたときだけ線が出て、<b>原点から・指定した点から・端面から</b>置いた穴には線も寸法もありませんでした。どの置き方でも起点から線を引き、<b>距離と角度</b>を線のすぐ隣に出します（例 50.000／53.13°）。角度は真上0°・時計回り＋で、0〜360°で表します。起点は、基準の穴から置いたならその穴、端面からならワークの左下隅、それ以外は指定した起点（既定は原点）です。</li>
           <li><span class="vtag">v85</span><b>「図面まるごと穴ピッチ(30)」の図を見やすくしました。</b>①<b>PCDや半径の数値に部品の記号（A・B・C）を付け、部品ごとに置く向きを変えました</b>。中心が同じ部品どうしで数値が重なって読めなくなっていたのを直したものです。②<b>「1つの穴」と「中心線で左右に振る」の寸法を、線のすぐ隣に出しました</b>。座標の表を開かなくても、図だけで図面と突き合わせられます。③<b>穴の丸を実際の径に比例させました</b>。φ5.5・φ6.8・φ9 が見た目で見分けられます（穴径を入れている部品だけ。入れていなければこれまでどおりです）。④<b>図の下に部品のボタンを並べました</b>。押すとその部品だけ色が付き、どれがどれか確かめられます。もう一度押すと戻ります。<b>穴間ピッチを選ぶと色は消えます</b>（同じ図に色が2つあると、どちらを測っているのか分からなくなるためです）。</li>
           <li><span class="vtag">v84</span><b>「かんたん穴ピッチ(36)」で角度の公差が使えるようになりました。</b>図面の角度に ±0.2° などが付いているとき、<b>ノギスで測るピッチの許容範囲</b>に換算します（「0 12」＝0°12′の書き方もできます）。穴径を入れてあれば外−外・内−内の範囲も出ます。図には<b>穴がどこまで動くか</b>を赤い帯で重ねました。実測を入れての合否判定は、これまでどおり<b>角度から穴ピッチ(01)</b>にあります。<b>「図面まるごと穴ピッチ(30)」の図も直しました。</b>PCDの部品に<b>中心から各穴への線</b>を敷き、<b>等配なら隣どうしの角度と直径 φ</b>、<b>不等配なら穴ごとの角度と半径 R</b> を出します。等配で角度を全部書くと同じ数字が並ぶだけなので1つにしています（13穴以上の不等配は字が重なるため省きます）。</li>
           <li><span class="vtag">v83</span><b>📒記録に「いま何件・どれくらい使っているか」を出しました。</b>フォルダの一覧の一番上に、フォルダ数・記録の件数と、この端末の保存領域の使用量が帯グラフで出ます。記録だけでなく<b>各ツールが覚えている入力なども合わせた合計</b>です（同じ入れ物を分け合っているためです）。8割を超えると赤くなり、整理をうながします。<b>あわせて図を2つ直しました。</b>「PCD穴ピッチ(02)」の図に<b>穴ごとの角度</b>と中心からの線を出しました（真上0°・時計回り＋。13穴以上は字が重なるため省略します）。「かんたん穴ピッチ(36)」には<b>図がありませんでした</b>ので新しく付けました。中心・穴の位置と番号・角度が、入れた数字に合わせて変わります。<b>図面と見くらべるための図</b>なので、寸法線は入れていません（同じ数字が表と図の2か所に出ると迷うためです）。</li>
@@ -1450,6 +1459,70 @@
     function p(n){ return (n<10?"0":"")+n; }
     return (d.getMonth()+1)+"/"+d.getDate()+" "+p(d.getHours())+":"+p(d.getMinutes());
   }
+  /* ── 図のサムネイル（v87）──
+     ツール側は保存だけ、ポータル側は<読む・消す>だけを受け持つ。
+     読み込みは非同期なので、先に全部読んでから一覧を描く。
+     ★版の表はポータルに持たない。各ツールが自分の版を kensa-thumbver に
+       書き込み、ポータルはそれと記録の版を見比べるだけ。ポータルにも版を
+       書くと、生成元と成果物の二重管理（v82の原因）と同じことになる。 */
+  var TDB="kensa-thumbs", TSTORE="thumbs", TVKEY="kensa-thumbver";
+  var TH={}, THbytes=0;
+  function tOpen(cb){
+    var idb=window.indexedDB, rq;
+    if(!idb){ cb(null); return; }
+    try{ rq=idb.open(TDB,1); }catch(e){ cb(null); return; }
+    rq.onupgradeneeded=function(ev){
+      var db=ev.target.result;
+      if(!db.objectStoreNames.contains(TSTORE)) db.createObjectStore(TSTORE,{keyPath:"id"});
+    };
+    rq.onsuccess=function(){ cb(rq.result); };
+    rq.onerror=function(){ cb(null); };
+  }
+  function tLoadAll(cb){
+    tOpen(function(db){
+      if(!db){ cb({}); return; }
+      var out={};
+      try{
+        var rq=db.transaction(TSTORE,"readonly").objectStore(TSTORE).openCursor();
+        rq.onsuccess=function(){
+          var c=rq.result;
+          if(c){ out[c.value.id]=c.value.svg||""; c["continue"](); return; }
+          cb(out);
+        };
+        rq.onerror=function(){ cb({}); };
+      }catch(e){ cb({}); }
+    });
+  }
+  function tDrop(ids){
+    if(!ids.length) return;
+    tOpen(function(db){
+      if(!db) return;
+      try{
+        var st=db.transaction(TSTORE,"readwrite").objectStore(TSTORE), i;
+        for(i=0;i<ids.length;i++) st["delete"](ids[i]);
+      }catch(e){}
+      for(i=0;i<ids.length;i++) delete TH[ids[i]];
+    });
+  }
+  function thumbVers(){
+    var m=null;
+    try{ m=JSON.parse(localStorage.getItem(TVKEY)||"{}"); }catch(e){ m=null; }
+    return (m&&typeof m==="object")? m : {};
+  }
+  /* 記録から外れた図は残さない。記録側だけ消えて図が残ると、
+     容量表示と実態がずれ、次に同じIDが振られたとき別部品の図が出る。 */
+  function tSweep(db){
+    var live={}, i, drop=[], k;
+    for(i=0;i<db.r.length;i++) live[db.r[i].i]=1;
+    for(k in TH) if(TH.hasOwnProperty(k) && !live[k]) drop.push(k);
+    if(drop.length) tDrop(drop);
+  }
+  function thBytes(){
+    var n=0, k;
+    for(k in TH) if(TH.hasOwnProperty(k)) n+=(TH[k].length+k.length)*2;
+    return n;
+  }
+
   /* v83: 保存領域の使い具合。
      localStorage は文字を UTF-16 で持つので 1文字=2バイトで見積もる。
      記録(kensa-rec)だけでなく<全キー>を数える。各ツールの入力の保存も
@@ -1474,6 +1547,7 @@
     if(b<1024*1024) return (b/1024).toFixed(1)+" KB";
     return (b/(1024*1024)).toFixed(2)+" MB";
   }
+  function thCount(){ var n=0,k; for(k in TH) if(TH.hasOwnProperty(k)) n++; return n; }
   function useHtml(db){
     var u=usage(), pct=u.all/LSMAX*100;
     var w=Math.max(1,Math.min(100,pct));
@@ -1483,6 +1557,7 @@
       +'<div class="krBar"><i style="width:'+w.toFixed(1)+'%"></i></div>'
       +'<div class="krUseSub">記録 '+sizeTxt(u.rec)+' ／ この端末の保存ぜんぶで <b>'
       +sizeTxt(u.all)+'</b>（使える目安 5MB の '+pct.toFixed(1)+'%）'
+      +(thCount()? ('<br>図 '+thCount()+' 枚 '+sizeTxt(thBytes())+'（記録とは別の入れ物なので 5MB には入りません）') : '')
       +(warn? '<br>残りが少なくなっています。使わないフォルダを削除してください。':'')
       +'</div></div>';
   }
@@ -1546,15 +1621,26 @@
         +'<small>いまのフォルダ: '+esc(dd? headD(dd.f):"")+(dd&&subD(dd.f)? ' ／ '+esc(subD(dd.f)):'')+'</small></button>'
         +'<button type="button" class="krDel" data-edit="'+esc(curD)+'">編集</button></div>';
       if(!rs.length) h+='<div class="krHint">このフォルダにはまだ記録がありません。各ツールの一番下の「📒 記録する」から保存できます。</div>';
+      var VERS=thumbVers();
       for(i=0;i<rs.length;i++){
         r=rs[i];
         hd=headR(r.g)||r.l;
         sb2=subR(r.g);
+        /* v87: 図は<探す手がかり>であって寸法の根拠ではない。
+           作ったときの版といまの版が違えばバッジを出す。出さないより、
+           出したうえで古いと分かる方がよい（＝サイレントな誤解を作らない）。
+           そのツールをまだ一度も開いていない端末では版が分からないので、
+           バッジは出さない。分からないのに「古い」と書く方が有害。 */
+        var svg=TH[r.i]||"", old=false;
+        if(svg && r.tv && VERS[r.t] && VERS[r.t]!==r.tv) old=true;
         h+='<div class="krRow">'
+          +(svg? ('<span class="krTh">'+svg+(old? '<i class="krBadge">旧</i>':'')+'</span>') : '')
           +'<a class="krMain" href="./'+esc(r.t)+'/?rec='+esc(r.i)+'">'
           +'<b>'+esc(hd)+'</b>'
           +'<small>'+(sb2? esc(sb2)+'<br>':'')
-          +esc(r.n)+' ・ '+esc(r.l)+' ・ '+fmt(r.ts)+' に記録<br>タップで開いて再計算</small></a>'
+          +esc(r.n)+' ・ '+esc(r.l)+' ・ '+fmt(r.ts)+' に記録<br>タップで開いて再計算</small>'
+          +(old? '<span class="krThNote">図は記録した当時のものです（計算し直せば今の形になります）</span>':'')
+          +'</a>'
           +'<button type="button" class="krDel" data-editr="'+esc(r.i)+'">編集</button>'
           +'<button type="button" class="krDel" data-delr="'+esc(r.i)+'">削除</button></div>';
       }
@@ -1620,10 +1706,11 @@
       e.preventDefault();
       if(!armed("d:"+v,b)) return;
       db=loadDB();
-      var r2=[], d2=[];
+      var r2=[], d2=[], gone=[];
       for(i=0;i<db.d.length;i++) if(db.d[i].i!==v) d2.push(db.d[i]);
-      for(i=0;i<db.r.length;i++) if(db.r[i].d!==v) r2.push(db.r[i]);
+      for(i=0;i<db.r.length;i++){ if(db.r[i].d!==v) r2.push(db.r[i]); else gone.push(db.r[i].i); }
       db.d=d2; db.r=r2;
+      tDrop(gone);                                  /* v87: 中の記録の図もまとめて消す */
       if(db.last===v) db.last="";
       saveDB(db); render(); return;
     }
@@ -1635,11 +1722,19 @@
       var keep=[];
       for(i=0;i<db.r.length;i++) if(db.r[i].i!==v) keep.push(db.r[i]);
       db.r=keep;
+      tDrop([v]);                                   /* v87: 図も一緒に消す */
       saveDB(db); render(); return;
     }
   });
   document.getElementById("krOpen").addEventListener("click",function(){
     mode="d"; curD=""; editD=""; view.className=""; render();
+    /* 図は非同期に届く。先に一覧を出しておき、届いたら描き直す。
+       待ってから出すと、図の無い端末で一覧が遅れて見える。 */
+    tLoadAll(function(map){
+      TH=map;
+      tSweep(loadDB());
+      render();
+    });
   });
   document.getElementById("krVClose").addEventListener("click",function(){
     view.className="off";

@@ -1794,6 +1794,52 @@ function spokes(pi, pt, col, M){   /* M は draw() が作る座標変換。draw 
   }
   return out;
 }
+/* v87: 記録の一覧に出す小さな図。
+   図面まるごとなので<外形・ピッチ円・穴>だけを描く。記号も寸法も入れない。
+   46px では読めないうえ、配置の形さえ残れば見分けはつく。 */
+window.krThumbVer="hole-map.1";
+window.krThumb=function(){
+  if(!H.length) return "";
+  var xs=[], ys=[], i, wx, wy;
+  S.parts.forEach(function(p){
+    if(p.t==="circle" && numOK(p.pcd)&&numOK(p.cx)&&numOK(p.cy)){
+      var R=p.pcd/2; xs.push(p.cx-R,p.cx+R); ys.push(p.cy-R,p.cy+R);
+    }
+  });
+  if(numOK(S.work.w)&&numOK(S.work.h)&&S.work.w>0&&S.work.h>0){
+    wx=(S.work.org==="center")? -S.work.w/2 : 0;
+    wy=(S.work.org==="center")? -S.work.h/2 : 0;
+    xs.push(wx,wx+S.work.w); ys.push(wy,wy+S.work.h);
+  }
+  for(i=0;i<H.length;i++){ xs.push(H[i].x); ys.push(H[i].y); }
+  if(!xs.length) return "";
+  var mnx=Math.min.apply(null,xs), mxx=Math.max.apply(null,xs);
+  var mny=Math.min.apply(null,ys), mxy=Math.max.apply(null,ys);
+  var pad=9, s=Math.min((100-2*pad)/((mxx-mnx)||1),(100-2*pad)/((mxy-mny)||1));
+  var ox=(100-(mxx-mnx)*s)/2-mnx*s, oy=(100-(mxy-mny)*s)/2-mny*s;
+  function T(x,y){ return [x*s+ox, 100-(y*s+oy)]; }
+  var o='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">';
+  if(numOK(wx)){
+    var q0=T(wx,wy), q1=T(wx+S.work.w, wy+S.work.h);
+    o+='<rect x="'+Math.min(q0[0],q1[0]).toFixed(1)+'" y="'+Math.min(q0[1],q1[1]).toFixed(1)
+      +'" width="'+Math.abs(q1[0]-q0[0]).toFixed(1)+'" height="'+Math.abs(q1[1]-q0[1]).toFixed(1)
+      +'" fill="none" stroke="#B4C2CC" stroke-width="1.2"/>';
+  }
+  S.parts.forEach(function(p){
+    if(p.t!=="circle"||!numOK(p.pcd)||!numOK(p.cx)||!numOK(p.cy)) return;
+    var c=T(p.cx,p.cy);
+    o+='<circle cx="'+c[0].toFixed(1)+'" cy="'+c[1].toFixed(1)+'" r="'+(p.pcd/2*s).toFixed(1)
+      +'" fill="none" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="5 2 1.2 2"/>';
+  });
+  for(i=0;i<H.length;i++){
+    var q=T(H[i].x,H[i].y);
+    var rr=(numOK(H[i].hd)&&H[i].hd>0)? Math.max(1.6, Math.min(5, H[i].hd/2*s)) : 2.4;
+    o+='<circle cx="'+q[0].toFixed(1)+'" cy="'+q[1].toFixed(1)+'" r="'+rr.toFixed(1)
+      +'" fill="#fff" stroke="#1F3341" stroke-width="1.1"/>';
+  }
+  return o+'</svg>';
+};
+
 /* v85: 寸法の文字（線のすぐ隣・白フチ付きで下の線に負けないように） */
 function dimTxt(x,y,s,col){
   return '<text x="'+x.toFixed(1)+'" y="'+(y-3).toFixed(1)+'" font-size="8.5" fill="'+col
@@ -1885,7 +1931,8 @@ function draw(pv){
           var ar=R*0.42;
           var ax=ct[0]+p.dir*ar*Math.sin(am), ay=ct[1]-ar*Math.cos(am);
           h+='<text x="'+ax.toFixed(1)+'" y="'+(ay+3).toFixed(1)
-            +'" font-size="9" fill="#1F3341" text-anchor="middle" font-family="monospace"'
+            +'" font-size="9" fill="'+(HL===i?ACC:"#1F3341")+'" text-anchor="middle" font-family="monospace"'
+            +' font-weight="'+(HL===i?"700":"400")+'"'
             +' stroke="#fff" stroke-width="3" paint-order="stroke">'+f2(step)+'\u00B0</text>';
         }else if(!eq && mine.length<=12){
           /* 不等配は穴ごとの角度を外側に */
@@ -1893,24 +1940,45 @@ function draw(pv){
             var th=mine[z].th, tr=R+11;
             var tx=ct[0]+p.dir*tr*Math.sin(th*Math.PI/180), ty=ct[1]-tr*Math.cos(th*Math.PI/180);
             h+='<text x="'+tx.toFixed(1)+'" y="'+(ty+3).toFixed(1)
-              +'" font-size="8" fill="#8FA2AF" text-anchor="middle" font-family="monospace"'
+              +'" font-size="'+(HL===i?9:8)+'" fill="'+(HL===i?ACC:"#8FA2AF")+'" text-anchor="middle" font-family="monospace"'
+              +' font-weight="'+(HL===i?"700":"400")+'"'
               +' stroke="#fff" stroke-width="2.5" paint-order="stroke">'+f2(th)+'\u00B0</text>';
           }
         }
       }
     }
-    if(p.t==="hole" && (p.mode==="rxy"||p.mode==="rpolar"||p.mode==="rperp") && BASE[i]){
-      var rh=refHole(p.rpi,p.rhi);
-      if(rh){
-        var r0=M(rh.x,rh.y), r1=M(BASE[i].x,BASE[i].y);
-        h+='<line x1="'+r0[0].toFixed(1)+'" y1="'+r0[1].toFixed(1)+'" x2="'+r1[0].toFixed(1)+'" y2="'+r1[1].toFixed(1)+'" stroke="#7F77DD" stroke-width="1.2" stroke-dasharray="7 3 1.5 3"/>';
-        h+='<circle cx="'+r0[0].toFixed(1)+'" cy="'+r0[1].toFixed(1)+'" r="2.2" fill="#7F77DD"/>';
+    if(p.t==="hole" && BASE[i]){
+      /* v86: 置き方によらず<起点>を決めて、そこから線を引く。
+         v85 までは基準の穴から置いたときだけ線があり、原点・指定点・端面から
+         置いた穴は線も寸法も出ていなかった（＝図だけでは位置を確かめられない）。
+           基準の穴から … その穴
+           端面から     … ワークの左下隅（穴の座標から端面寸法を引いた点）
+           それ以外     … 起点 (bx,by)。既定は 0,0 ＝ 原点
+         起点は build() が使ったのと同じ値を使う。ここで置き方を解釈し直すと
+         二重管理になる。 */
+      var hp=BASE[i], op=null;
+      if(p.mode==="rxy"||p.mode==="rpolar"||p.mode==="rperp"){
+        var rh=refHole(p.rpi,p.rhi);
+        if(rh) op={x:rh.x, y:rh.y};
+      }else if(p.mode==="edge"){
+        if(numOK(p.ex)&&numOK(p.ey)) op={x:hp.x-p.ex, y:hp.y-p.ey};
+      }else{
+        op={x:(numOK(p.bx)?p.bx:0), y:(numOK(p.by)?p.by:0)};
+      }
+      if(op){
+        var hc=(HL===i?ACC:"#7F77DD");
+        var r0=M(op.x,op.y), r1=M(hp.x,hp.y);
+        h+='<line x1="'+r0[0].toFixed(1)+'" y1="'+r0[1].toFixed(1)+'" x2="'+r1[0].toFixed(1)+'" y2="'+r1[1].toFixed(1)+'" stroke="'+hc+'" stroke-width="1.2" stroke-dasharray="7 3 1.5 3"/>';
+        h+='<circle cx="'+r0[0].toFixed(1)+'" cy="'+r0[1].toFixed(1)+'" r="2.2" fill="'+hc+'"/>';
         h+='<text x="'+(r1[0]+6).toFixed(1)+'" y="'+(r1[1]-5).toFixed(1)+'" font-size="10" fill="'
           +(HL===i?ACC:"#5B707E")+'" font-family="monospace">'+nm+'</text>';
-        /* v85: 寸法は線のすぐ隣に。座標の表を開かなくても図だけで突き合わせられる。 */
-        h+=dimTxt((r0[0]+r1[0])/2,(r0[1]+r1[1])/2,
-                  f3(Math.sqrt((BASE[i].x-rh.x)*(BASE[i].x-rh.x)+(BASE[i].y-rh.y)*(BASE[i].y-rh.y))),
-                  (HL===i?ACC:"#7F77DD"));
+        /* 距離と角度を線のすぐ隣に。角度は真上0°・時計回り＋（他の図と同じ規約）。
+           0〜360° に直して出す。−90° と 270° が混ざると図面と読み比べにくい。 */
+        var ddx=hp.x-op.x, ddy=hp.y-op.y, dd=Math.sqrt(ddx*ddx+ddy*ddy);
+        if(dd>0.0005){
+          var aa=angOf(ddx,ddy); aa=((aa%360)+360)%360;
+          h+=dimTxt((r0[0]+r1[0])/2,(r0[1]+r1[1])/2, f3(dd)+"\uFF0F"+f2(aa)+"\u00B0", hc);
+        }
       }
     }
     if(p.t==="axis" && !p.rep && BASE[i]){
@@ -3106,6 +3174,64 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
   })();
   var TNAME=(document.title||"").split("|")[0].replace(/^\s+|\s+$/g,"");
 
+
+  /* ── 図のサムネイル（v87）──
+     狙い: 記録の一覧で「探している部品か」を見て分かるようにする。
+     ・入れ物は IndexedDB。localStorage(5MB)とは別枠なので、図を入れても
+       記録そのものを圧迫しない。使えない端末では黙って何もしない。
+     ・ここは「答えは保存しない」の<例外>。保存しない道を選ぶと、ポータル側に
+       各ツールの描画を持つことになり、生成元と成果物の二重管理（v82の原因）に
+       戻ってしまう。保存すれば描くのはツールだけで済む。
+     ・代わりに<作ったときの版>を一緒に残す。いまの版と違えばポータルが
+       バッジを出す。古いことが分かれば、黙って誤解させることはない。
+     ・ツール側で window.krThumb() を用意すれば図が付く。無ければ付かない。
+       ★この共有ブロックは全ツールで完全に同じままにすること。 */
+  var TDB="kensa-thumbs", TSTORE="thumbs", TVKEY="kensa-thumbver";
+  function tOpen(cb){
+    var idb=window.indexedDB, rq;
+    if(!idb){ cb(null); return; }
+    try{ rq=idb.open(TDB,1); }catch(e){ cb(null); return; }
+    rq.onupgradeneeded=function(ev){
+      var db=ev.target.result;
+      if(!db.objectStoreNames.contains(TSTORE)) db.createObjectStore(TSTORE,{keyPath:"id"});
+    };
+    rq.onsuccess=function(){ cb(rq.result); };
+    rq.onerror=function(){ cb(null); };
+  }
+  function tPut(id,svg){
+    tOpen(function(db){
+      if(!db) return;
+      try{ db.transaction(TSTORE,"readwrite").objectStore(TSTORE)
+             .put({id:id, svg:svg, ts:(new Date()).getTime()}); }catch(e){}
+    });
+  }
+  function tDel(id){
+    tOpen(function(db){
+      if(!db) return;
+      try{ db.transaction(TSTORE,"readwrite").objectStore(TSTORE)["delete"](id); }catch(e){}
+    });
+  }
+  function thumbVer(){ return (typeof window.krThumbVer==="string")? window.krThumbVer : ""; }
+  function makeThumb(){
+    var s="";
+    if(typeof window.krThumb!=="function") return "";
+    try{ s=window.krThumb(); }catch(e){ s=""; }
+    if(typeof s!=="string") return "";
+    if(s.length>20000) return "";        /* 大きすぎる図は入れない（一覧が重くなる） */
+    return s;
+  }
+  /* いまの版を控える。ポータルはこれと記録の版を見比べてバッジを出す。
+     ツールが自分で書くので、ポータルに版の表を持たない（二重管理を避ける）。 */
+  (function(){
+    var v=thumbVer(), m;
+    if(!v||!TOOL) return;
+    try{
+      m=JSON.parse(localStorage.getItem(TVKEY)||"{}");
+      if(!m||typeof m!=="object") m={};
+      if(m[TOOL]!==v){ m[TOOL]=v; localStorage.setItem(TVKEY,JSON.stringify(m)); }
+    }catch(e){}
+  })();
+
   function inOwn(el){
     var n=el;
     while(n){ if(n.id==="kpad"||n.id==="krBar"||n.id==="krSheet"||n.id==="krCall") return true; n=n.parentNode; }
@@ -3445,14 +3571,17 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
     var db=loadDB(), d=destOf(db,destId);
     if(!d){ note("そのフォルダが見つかりませんでした",true); sheet(false); return; }
     var c=collect();
+    var tsvg=makeThumb();                 /* v87: 図。ツールが用意していなければ空 */
     db.seq++;
     var rid="r"+db.seq;
     db.r.unshift({ i:rid, d:destId, t:TOOL, n:TNAME, l:makeLabel(), g:g,
-                   ts:(new Date()).getTime(), v:c.v, sw:c.sw });
+                   ts:(new Date()).getTime(), v:c.v, sw:c.sw,
+                   tv:(tsvg? thumbVer():"") });
     db.last=destId;
     if(saveDB(db)){
       lastSave={r:rid, d:destId, newDest:!!isNew};
       note("「"+headD(d.f)+"」に "+headR(g)+" として記録しました",false);
+      if(tsvg) tPut(rid,tsvg);            /* v87: 記録が保存できたときだけ図を入れる */
       armUndo();
     }else{
       note("保存できませんでした(端末の空き容量を確認してください)",true);
@@ -3474,6 +3603,7 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
     var db=loadDB(), keep=[], i, n=0;
     for(i=0;i<db.r.length;i++) if(db.r[i].i!==lastSave.r) keep.push(db.r[i]);
     db.r=keep;
+    tDel(lastSave.r);                     /* v87: 記録を消したら図も消す（孤児を作らない） */
     if(lastSave.newDest){
       for(i=0;i<db.r.length;i++) if(db.r[i].d===lastSave.d) n++;
       if(n===0){
