@@ -136,6 +136,14 @@
   .topclear button{font-size:12px;font-weight:700;color:#B23B2E;background:#FBECEA;border:1px solid #E7B7B0;border-radius:9px;padding:7px 14px;cursor:pointer;min-height:38px}
   .topclear button:active{background:#F6DAD5}
   .topclear button.arm{background:#B23B2E;color:#fff;border-color:#B23B2E}
+  /* v84: 角度公差 → ピッチの許容範囲 */
+  .tolBox{margin-top:10px;padding:9px 11px;border-radius:10px;
+    background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.22)}
+  .tolBox.off{display:none}
+  .tolTop{font-size:13px;letter-spacing:.02em}
+  .tolTop b{font-size:19px;font-weight:700;letter-spacing:.01em}
+  .tolSub{font-size:11.5px;opacity:.82;margin-top:3px;line-height:1.6}
+  .tolSub:empty{display:none}
   /* v83: 図面シート。図面と突き合わせるための図。 */
   .dwgSheet{background:var(--sheet);border:2px solid var(--ink);padding:5px;margin-bottom:10px}
   .dwgInner{border:1px solid var(--ink)}
@@ -293,6 +301,13 @@
       <input id="inHole2" type="text" inputmode="decimal" autocomplete="off" placeholder="同じなら空欄">
       <span class="unit">mm</span>
     </div>
+
+    <div class="row opt">
+      <span class="badge opt">±</span>
+      <label for="inTol">角度の公差 ±<small>図面に ±0.2° などが付いているとき。「0 12」＝0°12′</small></label>
+      <input id="inTol" type="text" inputmode="decimal" autocomplete="off" placeholder="入れると許容範囲が出ます">
+      <span class="unit">°</span>
+    </div>
   </div>
 
   <!-- ══ 結果 ══ -->
@@ -307,6 +322,11 @@
       <div><span>中心間</span><b id="rdC">―</b></div>
       <div><span>外−外</span><b id="rdO" class="hi">―</b></div>
       <div><span>内−内</span><b id="rdI">―</b></div>
+    </div>
+    <div class="tolBox off" id="tolBox">
+      <div class="tolTop">ピッチの許容範囲 <b id="tolOut">―</b> mm</div>
+      <div class="tolSub" id="tolSub"></div>
+      <div class="tolSub" id="tolRd"></div>
     </div>
     <div class="sub off" id="subBox">
       <span>中心角 <b id="vTh">―</b>°</span>
@@ -503,11 +523,70 @@ function recalc(){
     g("wRad").className=dia? "":"hide";
   }else sub.className="sub off";
 
+  /* v84: 角度公差。範囲は図にも薄く重ねる。 */
+  var band=tolCalc(rOK?R:NaN, diff?R2:NaN, theta, dHalf);
+
   /* v83: 図。異半径なら2つ目の半径も渡す（同半径なら NaN で1円のまま） */
-  drawFig(rOK?R:NaN, diff?R2:NaN, theta, p);
+  drawFig(rOK?R:NaN, diff?R2:NaN, theta, p, band);
 
   /* 跨ぎ・対辺は「同じ円に等配」が前提なので、異半径では出さない */
   drawSkip(diff? NaN : (rOK?R:NaN), (!diff&&nOK)?n:NaN, dOK?d1:NaN);
+}
+
+/* ══ 角度の公差 → ピッチの許容範囲（v84）══
+   TOOL-01 と同じ考え方: θ を ±Δ 振って、上と同じ式に入れ直す。
+   ・同半径 … L = 2·r·sin(θ/2)
+   ・異半径 … L = √(r1²+r2²−2·r1·r2·cos θ)   （v62 の余弦定理）
+   どちらも θ に対して 0〜180° で単調増加、180〜360° で単調減少なので、
+   振れ幅が 180° をまたぐときだけ 180° での値が最大になる。ここを取り違えると
+   上限を小さく出してしまい、通るはずのものを不合格にする。
+   実測の合否判定は付けない。それは TOOL-01 の役割で、36 は速さが身上。 */
+function readTol(){
+  var s=(g("inTol").value||"").replace(/\s+/g," ").replace(/^\s+|\s+$/g,"");
+  if(s==="") return NaN;
+  var p=s.split(" "), v=parseFloat(p[0]);
+  if(!numOK(v)) return NaN;
+  var a=Math.abs(v);
+  if(p.length>1){ var m=parseFloat(p[1]); if(numOK(m)) a+=Math.abs(m)/60; }
+  if(p.length>2){ var c=parseFloat(p[2]); if(numOK(c)) a+=Math.abs(c)/3600; }
+  return a;
+}
+function fmtTol(x){
+  var s=String(Math.round(x*10000)/10000)+"\u00B0";
+  if(x<1){ var mm=Math.round(x*60*100)/100; if(Math.abs(x*60-mm)<1e-9) s+="\uFF08"+mm+"\u2032\uFF09"; }
+  return s;
+}
+function chordAt(deg,R,R2){
+  var rad=deg*Math.PI/180;
+  if(numOK(R2)&&R2>0){ var q=R*R+R2*R2-2*R*R2*Math.cos(rad); return (q>0)?Math.sqrt(q):0; }
+  return 2*R*Math.sin(rad/2);
+}
+function tolCalc(R,R2,theta,dHalf){
+  var box=g("tolBox"), tv=readTol();
+  function off(){ box.className="tolBox off"; return null; }
+  if(!(tv>0)) return off();
+  if(!(numOK(R)&&R>0&&numOK(theta))) return off();
+  var lo0=theta-tv, hi0=theta+tv;
+  if(lo0<=0||hi0>=360){
+    box.className="tolBox";
+    g("tolOut").textContent="\u2015";
+    g("tolSub").textContent="\u516C\u5DEE\u304C\u5927\u304D\u3059\u304E\u307E\u3059\uFF08\u03B8\u00B1 \u304C 0\u00B0\u301C360\u00B0 \u3092\u51FA\u307E\u3059\uFF09";
+    g("tolRd").textContent="";
+    return null;
+  }
+  var a=chordAt(lo0,R,R2), b=chordAt(hi0,R,R2);
+  var lo=Math.min(a,b);
+  var hi=(lo0<180&&hi0>180)? chordAt(180,R,R2) : Math.max(a,b);
+  box.className="tolBox";
+  g("tolOut").textContent=nf(lo,3)+" \u301C "+nf(hi,3);
+  var rc=(numOK(R2)&&R2>0)? Math.max(R,R2) : R;
+  g("tolSub").textContent="\u03B8 = "+nf(theta,3)+"\u00B0 \u00B1 "+fmtTol(tv)
+    +"\u3000\u5E45 "+nf(hi-lo,3)+" mm\u3000\u5186\u5468\u65B9\u5411 \u00B1"+nf(rc*tv*Math.PI/180,3)+" mm";
+  g("tolRd").textContent = (numOK(dHalf)&&dHalf>0)
+    ? ("\u30CE\u30AE\u30B9\u306E\u8AAD\u307F\uFF1A\u5916\u2212\u5916 "+nf(lo+dHalf,3)+" \u301C "+nf(hi+dHalf,3)
+       +((lo-dHalf>0)? ("\u3000\uFF0F\u3000\u5185\u2212\u5185 "+nf(lo-dHalf,3)+" \u301C "+nf(hi-dHalf,3)) : ""))
+    : "";
+  return {lo:lo0, hi:hi0};
 }
 
 /* ══ 図（v83） ══
@@ -528,7 +607,7 @@ function stxt(x,y,s,at){
   e.appendChild(document.createTextNode(s));
   return e;
 }
-function drawFig(rA,rB,theta,p){
+function drawFig(rA,rB,theta,p,band){
   var box=g("dwgDyn");
   if(!box) return;
   while(box.firstChild) box.removeChild(box.firstChild);
@@ -579,6 +658,20 @@ function drawFig(rA,rB,theta,p){
   gg.appendChild(sel("line",{x1:h1.x.toFixed(1),y1:h1.y.toFixed(1),x2:h2.x.toFixed(1),y2:h2.y.toFixed(1),
     stroke:"#D63426","stroke-width":1.6,"marker-start":"url(#pcAr)","marker-end":"url(#pcAr)"}));
 
+  /* v84: 角度公差の振れ幅。穴2が動く範囲を弧の帯＋端の破線で見せる。
+     数字（許容範囲）は上の欄に出るので、図には<どこまで動くか>だけを描く。 */
+  if(live && band && numOK(band.lo) && numOK(band.hi) && band.hi>band.lo){
+    var bl=pos(dr2,band.lo), bh=pos(dr2,band.hi);
+    var lg=((band.hi-band.lo)>180)?1:0;
+    gg.appendChild(sel("path",{
+      d:"M "+bl.x.toFixed(1)+" "+bl.y.toFixed(1)+" A "+dr2.toFixed(1)+" "+dr2.toFixed(1)+" 0 "+lg+" 1 "+bh.x.toFixed(1)+" "+bh.y.toFixed(1),
+      fill:"none",stroke:"#D63426","stroke-width":4.5,opacity:0.22,"stroke-linecap":"round"}));
+    gg.appendChild(sel("line",{x1:CX,y1:CY,x2:bl.x.toFixed(1),y2:bl.y.toFixed(1),
+      stroke:"#D63426","stroke-width":0.9,"stroke-dasharray":"3 3",opacity:0.55}));
+    gg.appendChild(sel("line",{x1:CX,y1:CY,x2:bh.x.toFixed(1),y2:bh.y.toFixed(1),
+      stroke:"#D63426","stroke-width":0.9,"stroke-dasharray":"3 3",opacity:0.55}));
+  }
+
   /* 穴・番号・角度 */
   function hole(hp,dr,no,deg){
     gg.appendChild(sel("circle",{cx:hp.x.toFixed(1),cy:hp.y.toFixed(1),r:6.5,fill:"#fff",stroke:"#1F3341","stroke-width":1.6}));
@@ -595,9 +688,12 @@ function drawFig(rA,rB,theta,p){
 
   box.appendChild(gg);
   /* 凡例（見本のときも読めるよう不透明のまま） */
-  box.appendChild(stxt(170,242,
-    live? "角度は真上0\u00B0\u30FB時計回り\uFF0B\u3000\u8D64\u3044\u7DDA\uFF1D\u7A74\u9593\u30D4\u30C3\u30C1"
-        : "\u6570\u5B57\u3092\u5165\u308C\u308B\u3068\u3001\u3053\u306E\u56F3\u304C\u5165\u529B\u306B\u5408\u308F\u305B\u3066\u5909\u308F\u308A\u307E\u3059",
+  var legend = live
+    ? ((band && numOK(band.lo))
+        ? "\u89D2\u5EA6\u306F\u771F\u4E0A0\u00B0\u30FB\u6642\u8A08\u56DE\u308A\uFF0B\u3000\u8D64\u3044\u5E2F\uFF1D\u516C\u5DEE\u306E\u632F\u308C\u5E45"
+        : "\u89D2\u5EA6\u306F\u771F\u4E0A0\u00B0\u30FB\u6642\u8A08\u56DE\u308A\uFF0B\u3000\u8D64\u3044\u7DDA\uFF1D\u7A74\u9593\u30D4\u30C3\u30C1")
+    : "\u6570\u5B57\u3092\u5165\u308C\u308B\u3068\u3001\u3053\u306E\u56F3\u304C\u5165\u529B\u306B\u5408\u308F\u305B\u3066\u5909\u308F\u308A\u307E\u3059";
+  box.appendChild(stxt(170,242, legend,
     {"font-size":9.5,fill:"#8FA2AF"}));
 }
 
@@ -637,6 +733,7 @@ g("inPCD").addEventListener("input",recalc);
 g("inPCD2").addEventListener("input",recalc);
 g("inHole").addEventListener("input",recalc);
 g("inHole2").addEventListener("input",recalc);
+g("inTol").addEventListener("input",recalc);
 
 syncDim();
 

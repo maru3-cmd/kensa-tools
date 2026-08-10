@@ -1785,6 +1785,47 @@ function draw(pv){
       h+='<line x1="'+(ct[0]-5).toFixed(1)+'" y1="'+ct[1].toFixed(1)+'" x2="'+(ct[0]+5).toFixed(1)+'" y2="'+ct[1].toFixed(1)+'" stroke="#1F3341" stroke-width="1.2"/>';
       h+='<line x1="'+ct[0].toFixed(1)+'" y1="'+(ct[1]-5).toFixed(1)+'" x2="'+ct[0].toFixed(1)+'" y2="'+(ct[1]+5).toFixed(1)+'" stroke="#1F3341" stroke-width="1.2"/>';
       h+='<text x="'+(ct[0]+7).toFixed(1)+'" y="'+(ct[1]-6).toFixed(1)+'" font-size="10" fill="#5B707E" font-family="monospace">'+nm+'</text>';
+
+      /* ── v84: 角度と径を出す（図面と突き合わせるため）──
+         等配は「隣どうしの角度」を1つだけ。どこも同じ値なので全部書くと figure が字だらけになる。
+         不等配は1本ずつ違うので全部書く。ただし穴が多いと重なるので 12 穴まで。
+         角度は真上0°・時計回り＋（build() の th と同じ規約）。 */
+      var mine=[], z;
+      for(z=0;z<H.length;z++) if(H[z].pi===i) mine.push(H[z]);
+      if(mine.length){
+        var eq=(p.mode==="eq");
+        /* 中心から各穴への細い線 */
+        for(z=0;z<mine.length;z++){
+          var mq=M(mine[z].x,mine[z].y);
+          h+='<line x1="'+ct[0].toFixed(1)+'" y1="'+ct[1].toFixed(1)+'" x2="'+mq[0].toFixed(1)
+            +'" y2="'+mq[1].toFixed(1)+'" stroke="#DCE3E8" stroke-width="0.9"/>';
+        }
+        /* 径。等配は直径 φ、不等配は半径 R（図面の書き方に合わせる） */
+        h+='<text x="'+ct[0].toFixed(1)+'" y="'+(ct[1]+13).toFixed(1)
+          +'" font-size="8.5" fill="#5B707E" text-anchor="middle" font-family="monospace"'
+          +' stroke="#fff" stroke-width="2.5" paint-order="stroke">'
+          +(eq? ("\u03C6"+f3(p.pcd)) : ("R"+f3(p.pcd/2)))+'</text>';
+
+        if(eq && mine.length>=2){
+          /* 隣どうしの角度を、穴1と穴2のあいだに1つだけ */
+          var step=360/mine.length;
+          var am=(mine[0].th+step/2)*Math.PI/180;
+          var ar=R*0.42;
+          var ax=ct[0]+p.dir*ar*Math.sin(am), ay=ct[1]-ar*Math.cos(am);
+          h+='<text x="'+ax.toFixed(1)+'" y="'+(ay+3).toFixed(1)
+            +'" font-size="9" fill="#1F3341" text-anchor="middle" font-family="monospace"'
+            +' stroke="#fff" stroke-width="3" paint-order="stroke">'+f2(step)+'\u00B0</text>';
+        }else if(!eq && mine.length<=12){
+          /* 不等配は穴ごとの角度を外側に */
+          for(z=0;z<mine.length;z++){
+            var th=mine[z].th, tr=R+11;
+            var tx=ct[0]+p.dir*tr*Math.sin(th*Math.PI/180), ty=ct[1]-tr*Math.cos(th*Math.PI/180);
+            h+='<text x="'+tx.toFixed(1)+'" y="'+(ty+3).toFixed(1)
+              +'" font-size="8" fill="#8FA2AF" text-anchor="middle" font-family="monospace"'
+              +' stroke="#fff" stroke-width="2.5" paint-order="stroke">'+f2(th)+'\u00B0</text>';
+          }
+        }
+      }
     }
     if(p.t==="hole" && (p.mode==="rxy"||p.mode==="rpolar"||p.mode==="rperp") && BASE[i]){
       var rh=refHole(p.rpi,p.rhi);
