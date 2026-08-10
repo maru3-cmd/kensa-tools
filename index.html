@@ -191,6 +191,19 @@
   .krRow .krDel{font:inherit;font-size:12px;padding:0 12px;border:1px solid #C9D3DA;
     border-radius:10px;background:#fff;color:#5B707E;cursor:pointer;white-space:nowrap}
   .krRow .krDel.arm{background:#B4232C;border-color:#B4232C;color:#fff}
+  /* v88: 編集・削除は<小さく・縦並びで右端>に寄せる。
+     押しやすさは残したいので、幅は詰めても高さは44px（指の当たり）を割らない。 */
+  #krBody .krOps{flex:0 0 auto;display:flex;flex-direction:column;gap:5px;justify-content:center}
+  #krBody .krOps .krDel{font-size:11.5px;padding:0 9px;min-height:44px;border-radius:9px;
+    min-width:52px;text-align:center}
+  /* v88: 記録の行。1件ぶんの高さを増やし、図を大きく出す。
+     図は「探している部品か」を形で見分けるためのもので、小さいと役に立たない。 */
+  #krBody .krRec>.krMain{display:flex;gap:10px;align-items:flex-start;padding:9px 10px}
+  #krBody .krRec .krTx{flex:1;min-width:0}
+  #krBody .krRec.noTh>.krMain{display:block;min-height:92px}
+  /* 文字も少しだけ大きく。図と並んだとき、題が小さいと拾いにくい。 */
+  #krBody .krRec .krTx b{font-size:15px;line-height:1.35}
+  #krBody .krRec .krTx small{font-size:12px;line-height:1.55}
   #krBody .krAddRow{display:flex;gap:6px;margin:12px 0 4px}
   #krBody .krAddRow input{flex:1;font:inherit;font-size:14px;padding:9px 11px;
     border:1px solid #C9D3DA;border-radius:10px;min-width:0}
@@ -209,12 +222,15 @@
   #krBody .krUseSub{font-size:11.5px;color:#5B707E;line-height:1.6}
   #krBody .krUse.warn .krUseSub b{color:#B4232C}
   /* v87: 記録のサムネイル。図は探す手がかりで、寸法の根拠ではない。 */
-  #krBody .krTh{flex:0 0 auto;width:46px;height:46px;border:1px solid #E3E9ED;border-radius:8px;
-    background:#fff;position:relative;overflow:hidden;align-self:flex-start;margin-top:2px}
-  #krBody .krTh svg{display:block;width:100%;height:100%}
-  #krBody .krTh .krBadge{position:absolute;left:0;bottom:0;right:0;font-size:8.5px;line-height:1.35;
-    text-align:center;background:#B4232C;color:#fff;letter-spacing:.02em}
-  #krBody .krThNote{font-size:11px;color:#B4232C;margin-top:2px}
+  /* v88: 図は行幅のおよそ4割の正方形。
+     高さは padding-bottom の％で作る（幅に対する割合なので必ず正方形になり、
+     aspect-ratio が無い古い端末でも崩れない）。 */
+  #krBody .krTh{flex:0 0 42%;width:42%;height:0;padding-bottom:42%;
+    border:1px solid #E3E9ED;border-radius:9px;background:#fff;position:relative;overflow:hidden}
+  #krBody .krTh svg{position:absolute;left:0;top:0;width:100%;height:100%;display:block}
+  #krBody .krTh .krBadge{position:absolute;left:0;bottom:0;right:0;font-size:10px;line-height:1.5;
+    text-align:center;background:#B4232C;color:#fff;letter-spacing:.02em;font-style:normal}
+  #krBody .krThNote{display:block;font-size:11px;color:#B4232C;margin-top:3px}
   /* v80: 保存先の6項目を入れる／書き直すフォーム */
   #krBody .krForm{background:#fff;border:1px solid #C9D3DA;border-radius:10px;padding:12px;margin:8px 0}
   #krBody .krFR{margin-bottom:8px}
@@ -233,7 +249,7 @@
 
   <div class="cover">
     <div class="cover-inner">
-      <div class="h1row"><h1>検査ミニポータル</h1><button type="button" class="verBtn" id="verBtn" aria-expanded="false" aria-controls="chglog">v87 ｜ 更新内容</button></div>
+      <div class="h1row"><h1>検査ミニポータル</h1><button type="button" class="verBtn" id="verBtn" aria-expanded="false" aria-controls="chglog">v88 ｜ 更新内容</button></div>
       <div class="sub">INSPECTION MINI TOOLS</div>
       <div class="desc">
         現場のための計算・記録ツール集。すべての計算はこの端末の中で行われ、入力値がネットに送信されることはありません。
@@ -241,6 +257,7 @@
       <div class="chglog" id="chglog" hidden>
         <h3>更新内容（新しい順）</h3>
         <ul>
+          <li><span class="vtag">v88</span><b>📒記録の一覧を見やすくしました。</b>①<b>図を大きくしました</b>（横幅のおよそ4割の正方形）。前は小さすぎて形の見分けがつきませんでした。②<b>1件ぶんの高さを増やしました</b>。図のない記録も、これまでより高くしています。③<b>「編集」「削除」を小さくして、右端に縦に並べました</b>。指で押せる大きさ（高さ44px）は変えていません。④<b>図を押しても記録が開く</b>ようにしました。フォルダの一覧も同じ並びにそろえています。</li>
           <li><span class="vtag">v87</span><b>📒記録の一覧に、記録したときの図が小さく出るようになりました。</b>同じ部品を探すとき、部品名や図番を読まなくても<b>形で見分けられます</b>。いまのところ図が付くのは<b>PCD穴ピッチ(02)・かんたん穴ピッチ(36)・図面まるごと穴ピッチ(30)</b>の3つです。ほかのツールの記録はこれまでどおり文字だけで、<b>使い方は何も変わりません</b>。図はその記録を保存したときの形なので、あとでツールを新しくして図の描き方が変わった場合は、図の下に<b>「旧」</b>の印が付きます。印が付いていても<b>数字は正しいまま</b>で、タップして開けば今の形で計算し直されます。図は記録とは<b>別の入れ物</b>に入るので、記録できる件数は減りません（何枚あるかは記録の一覧の一番上に出ます）。記録を消せば図も一緒に消えます。</li>
           <li><span class="vtag">v86</span><b>「図面まるごと穴ピッチ(30)」の図を2点直しました。</b>①部品のボタンを押して色を付けたとき、<b>角度の数字も一緒に色が変わる</b>ようにしました。等配の隣どうしの角度も、不等配の穴ごとの角度も対象です。②<b>「1つの穴」に寸法が出るようにしました。</b>これまでは「基準の穴から」置いたときだけ線が出て、<b>原点から・指定した点から・端面から</b>置いた穴には線も寸法もありませんでした。どの置き方でも起点から線を引き、<b>距離と角度</b>を線のすぐ隣に出します（例 50.000／53.13°）。角度は真上0°・時計回り＋で、0〜360°で表します。起点は、基準の穴から置いたならその穴、端面からならワークの左下隅、それ以外は指定した起点（既定は原点）です。</li>
           <li><span class="vtag">v85</span><b>「図面まるごと穴ピッチ(30)」の図を見やすくしました。</b>①<b>PCDや半径の数値に部品の記号（A・B・C）を付け、部品ごとに置く向きを変えました</b>。中心が同じ部品どうしで数値が重なって読めなくなっていたのを直したものです。②<b>「1つの穴」と「中心線で左右に振る」の寸法を、線のすぐ隣に出しました</b>。座標の表を開かなくても、図だけで図面と突き合わせられます。③<b>穴の丸を実際の径に比例させました</b>。φ5.5・φ6.8・φ9 が見た目で見分けられます（穴径を入れている部品だけ。入れていなければこれまでどおりです）。④<b>図の下に部品のボタンを並べました</b>。押すとその部品だけ色が付き、どれがどれか確かめられます。もう一度押すと戻ります。<b>穴間ピッチを選ぶと色は消えます</b>（同じ図に色が2つあると、どちらを測っているのか分からなくなるためです）。</li>
@@ -1610,8 +1627,9 @@
         h+='<div class="krRow">'
           +'<button type="button" class="krMain" data-open="'+esc(d.i)+'">'+esc(headD(d.f))
           +'<small>'+(sb? esc(sb)+' ・ ':'')+c+'件の記録</small></button>'
+          +'<span class="krOps">'
           +'<button type="button" class="krDel" data-edit="'+esc(d.i)+'">編集</button>'
-          +'<button type="button" class="krDel" data-deld="'+esc(d.i)+'">削除</button></div>';
+          +'<button type="button" class="krDel" data-deld="'+esc(d.i)+'">削除</button></span></div>';
       }
       h+='<div class="krAddRow"><button type="button" id="krVAdd" style="flex:1">＋ フォルダを作る</button></div>';
     }else{                                             /* フォルダの中身 */
@@ -1619,7 +1637,7 @@
       for(i=0;i<db.r.length;i++) if(db.r[i].d===curD) rs.push(db.r[i]);
       h+='<div class="krRow"><button type="button" class="krMain" id="krBack">← フォルダの一覧へ'
         +'<small>いまのフォルダ: '+esc(dd? headD(dd.f):"")+(dd&&subD(dd.f)? ' ／ '+esc(subD(dd.f)):'')+'</small></button>'
-        +'<button type="button" class="krDel" data-edit="'+esc(curD)+'">編集</button></div>';
+        +'<span class="krOps"><button type="button" class="krDel" data-edit="'+esc(curD)+'">編集</button></span></div>';
       if(!rs.length) h+='<div class="krHint">このフォルダにはまだ記録がありません。各ツールの一番下の「📒 記録する」から保存できます。</div>';
       var VERS=thumbVers();
       for(i=0;i<rs.length;i++){
@@ -1633,16 +1651,20 @@
            バッジは出さない。分からないのに「古い」と書く方が有害。 */
         var svg=TH[r.i]||"", old=false;
         if(svg && r.tv && VERS[r.t] && VERS[r.t]!==r.tv) old=true;
-        h+='<div class="krRow">'
-          +(svg? ('<span class="krTh">'+svg+(old? '<i class="krBadge">旧</i>':'')+'</span>') : '')
+        /* v88: 図もリンクの中に入れる。絵を押しても何も起きないのは不親切。
+           図が無い記録は noTh にして、文字だけで高さがそろうようにする。 */
+        h+='<div class="krRow krRec'+(svg? '':' noTh')+'">'
           +'<a class="krMain" href="./'+esc(r.t)+'/?rec='+esc(r.i)+'">'
+          +(svg? ('<span class="krTh">'+svg+(old? '<i class="krBadge">旧</i>':'')+'</span>') : '')
+          +'<span class="krTx">'
           +'<b>'+esc(hd)+'</b>'
           +'<small>'+(sb2? esc(sb2)+'<br>':'')
           +esc(r.n)+' ・ '+esc(r.l)+' ・ '+fmt(r.ts)+' に記録<br>タップで開いて再計算</small>'
           +(old? '<span class="krThNote">図は記録した当時のものです（計算し直せば今の形になります）</span>':'')
-          +'</a>'
+          +'</span></a>'
+          +'<span class="krOps">'
           +'<button type="button" class="krDel" data-editr="'+esc(r.i)+'">編集</button>'
-          +'<button type="button" class="krDel" data-delr="'+esc(r.i)+'">削除</button></div>';
+          +'<button type="button" class="krDel" data-delr="'+esc(r.i)+'">削除</button></span></div>';
       }
     }
     body.innerHTML=h;
