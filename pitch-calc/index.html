@@ -136,6 +136,10 @@
   .topclear button{font-size:12px;font-weight:700;color:#B23B2E;background:#FBECEA;border:1px solid #E7B7B0;border-radius:9px;padding:7px 14px;cursor:pointer;min-height:38px}
   .topclear button:active{background:#F6DAD5}
   .topclear button.arm{background:#B23B2E;color:#fff;border-color:#B23B2E}
+  /* v83: 図面シート。図面と突き合わせるための図。 */
+  .dwgSheet{background:var(--sheet);border:2px solid var(--ink);padding:5px;margin-bottom:10px}
+  .dwgInner{border:1px solid var(--ink)}
+  .dwgSheet svg{display:block;width:100%;height:auto}
   .clearBtn{width:100%;font-size:13px;font-weight:700;padding:12px 4px;border:1.5px solid #C9D3DA;border-radius:10px;background:var(--sheet);color:#5B707E;letter-spacing:.05em;margin-bottom:6px;cursor:pointer}
   .clearBtn.arm{border-color:var(--red);color:var(--red);background:#FCF0EF}
   .backlink{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:8px 14px;
@@ -313,6 +317,20 @@
     </div>
   </div>
 
+  <!-- ══ 図（v83） ══ -->
+  <div class="dwgSheet">
+    <div class="dwgInner">
+      <svg viewBox="0 0 340 250" role="img" aria-label="中心と2つの穴の位置・角度・穴間ピッチを示した図">
+        <defs>
+          <marker id="pcAr" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L8,3 L0,6 z" fill="#D63426"/>
+          </marker>
+        </defs>
+        <g id="dwgDyn"></g>
+      </svg>
+    </div>
+  </div>
+
   <div class="card hide" id="skipCard">
     <h3>ほかの組で測るとき<span>　穴数から出しています</span></h3>
     <table class="skip" id="skipTbl"></table>
@@ -485,8 +503,102 @@ function recalc(){
     g("wRad").className=dia? "":"hide";
   }else sub.className="sub off";
 
+  /* v83: 図。異半径なら2つ目の半径も渡す（同半径なら NaN で1円のまま） */
+  drawFig(rOK?R:NaN, diff?R2:NaN, theta, p);
+
   /* 跨ぎ・対辺は「同じ円に等配」が前提なので、異半径では出さない */
   drawSkip(diff? NaN : (rOK?R:NaN), (!diff&&nOK)?n:NaN, dOK?d1:NaN);
+}
+
+/* ══ 図（v83） ══
+   狙い: 図面と突き合わせられるようにする。出すのは<中心・穴の位置と番号・角度>の3つだけ。
+   ・寸法線は入れない。同じ数字が表と図の2か所に出ると、どちらを見るか迷うため。
+   ・角度は真上0°・時計回り＋（位置関連ツール共通の規約）。穴1が起点。
+   ・数字が揃っていないときは、薄く見本を描いて「まだ入力に追従していない」と分かる形にする。 */
+var SVGNS="http://www.w3.org/2000/svg";
+function sel(tag,at){
+  var e=document.createElementNS(SVGNS,tag), k;
+  for(k in at) if(at.hasOwnProperty(k)) e.setAttribute(k,at[k]);
+  return e;
+}
+function stxt(x,y,s,at){
+  var a={x:x,y:y,"font-size":9,fill:"#5B707E","text-anchor":"middle"}, k;
+  for(k in at) if(at.hasOwnProperty(k)) a[k]=at[k];
+  var e=sel("text",a);
+  e.appendChild(document.createTextNode(s));
+  return e;
+}
+function drawFig(rA,rB,theta,p){
+  var box=g("dwgDyn");
+  if(!box) return;
+  while(box.firstChild) box.removeChild(box.firstChild);
+
+  var CX=170, CY=138, MAXR=88;
+  /* 入力が揃っていないときの見本（薄く描く） */
+  var live = numOK(rA)&&rA>0&&numOK(theta);
+  var a1r = numOK(rA)&&rA>0 ? rA : 50;
+  var a2r = numOK(rB)&&rB>0 ? rB : a1r;
+  var th  = numOK(theta) ? theta : 60;
+  var big = Math.max(a1r,a2r);
+  var sc  = MAXR/big;
+  var dr1 = a1r*sc, dr2 = a2r*sc;
+  var op  = live? "1" : "0.32";
+
+  function pos(dr,deg){
+    var a=(90-deg)*Math.PI/180;
+    return {x:CX+dr*Math.cos(a), y:CY-dr*Math.sin(a), a:a};
+  }
+  var h1=pos(dr1,0), h2=pos(dr2,th);
+  var gg=sel("g",{opacity:op});
+
+  /* 中心十字（一点鎖線） */
+  gg.appendChild(sel("line",{x1:40,y1:CY,x2:300,y2:CY,stroke:"#8FA2AF","stroke-width":1,"stroke-dasharray":"12 3 2 3"}));
+  gg.appendChild(sel("line",{x1:CX,y1:22,x2:CX,y2:246,stroke:"#8FA2AF","stroke-width":1,"stroke-dasharray":"12 3 2 3"}));
+
+  /* ピッチ円（異半径なら2本） */
+  gg.appendChild(sel("circle",{cx:CX,cy:CY,r:dr1.toFixed(1),fill:"none",stroke:"#8FA2AF","stroke-width":1,"stroke-dasharray":"12 3 2 3"}));
+  if(Math.abs(dr2-dr1)>0.5)
+    gg.appendChild(sel("circle",{cx:CX,cy:CY,r:dr2.toFixed(1),fill:"none",stroke:"#8FA2AF","stroke-width":1,"stroke-dasharray":"12 3 2 3"}));
+
+  /* 中心から各穴への線 */
+  gg.appendChild(sel("line",{x1:CX,y1:CY,x2:h1.x.toFixed(1),y2:h1.y.toFixed(1),stroke:"#B8C4CC","stroke-width":1.2}));
+  gg.appendChild(sel("line",{x1:CX,y1:CY,x2:h2.x.toFixed(1),y2:h2.y.toFixed(1),stroke:"#B8C4CC","stroke-width":1.2}));
+
+  /* 角度の円弧（0° → θ、時計回り） */
+  var ra=32;
+  var s0=pos(ra,0), s1=pos(ra,th);
+  var large=(th>180)?1:0;
+  gg.appendChild(sel("path",{d:"M "+s0.x.toFixed(1)+" "+s0.y.toFixed(1)+" A "+ra+" "+ra+" 0 "+large+" 1 "+s1.x.toFixed(1)+" "+s1.y.toFixed(1),
+    fill:"none",stroke:"#5B707E","stroke-width":1.2}));
+  var mid=pos(ra+16,th/2);
+  gg.appendChild(stxt(mid.x.toFixed(1),(mid.y+3).toFixed(1),
+    live? ("\u03B8 "+nf(th,3)+"\u00B0") : "\u03B8",
+    {"font-size":11,fill:"#1F3341",stroke:"#fff","stroke-width":3,"paint-order":"stroke"}));
+
+  /* 弦（穴間ピッチ） */
+  gg.appendChild(sel("line",{x1:h1.x.toFixed(1),y1:h1.y.toFixed(1),x2:h2.x.toFixed(1),y2:h2.y.toFixed(1),
+    stroke:"#D63426","stroke-width":1.6,"marker-start":"url(#pcAr)","marker-end":"url(#pcAr)"}));
+
+  /* 穴・番号・角度 */
+  function hole(hp,dr,no,deg){
+    gg.appendChild(sel("circle",{cx:hp.x.toFixed(1),cy:hp.y.toFixed(1),r:6.5,fill:"#fff",stroke:"#1F3341","stroke-width":1.6}));
+    var o1=pos(dr+17,deg), o2=pos(dr+30,deg);
+    gg.appendChild(stxt(o1.x.toFixed(1),(o1.y+3).toFixed(1),no,
+      {"font-size":10,"font-weight":700,fill:"#1F3341",stroke:"#fff","stroke-width":3,"paint-order":"stroke"}));
+    gg.appendChild(stxt(o2.x.toFixed(1),(o2.y+3).toFixed(1),
+      live? (nf(deg,(Math.abs(deg-Math.round(deg))<1e-9)?0:2)+"\u00B0") : "\u2015",
+      {"font-size":8.5,fill:"#8FA2AF",stroke:"#fff","stroke-width":2.5,"paint-order":"stroke"}));
+  }
+  hole(h1,dr1,"1",0);
+  hole(h2,dr2,"2",th);
+  gg.appendChild(sel("circle",{cx:CX,cy:CY,r:2.4,fill:"#1F3341"}));
+
+  box.appendChild(gg);
+  /* 凡例（見本のときも読めるよう不透明のまま） */
+  box.appendChild(stxt(170,242,
+    live? "角度は真上0\u00B0\u30FB時計回り\uFF0B\u3000\u8D64\u3044\u7DDA\uFF1D\u7A74\u9593\u30D4\u30C3\u30C1"
+        : "\u6570\u5B57\u3092\u5165\u308C\u308B\u3068\u3001\u3053\u306E\u56F3\u304C\u5165\u529B\u306B\u5408\u308F\u305B\u3066\u5909\u308F\u308A\u307E\u3059",
+    {"font-size":9.5,fill:"#8FA2AF"}));
 }
 
 /* k個先の穴までの距離 = PCD × sin(k×180°÷n) */

@@ -199,6 +199,15 @@
     cursor:pointer;white-space:nowrap}
   #krBody .krHint{font-size:12.5px;color:#5B707E;background:#fff;
     border:1px dashed #C9D3DA;border-radius:10px;padding:12px;margin:8px 0;line-height:1.7}
+  /* v83: 記録の件数・容量の表示。入れ物の残りが見えないまま増やさないため。 */
+  #krBody .krUse{background:#fff;border:1px solid #C9D3DA;border-radius:10px;
+    padding:11px 12px;margin:4px 0 10px}
+  #krBody .krUseTop{font-size:13px;font-weight:700;color:#1F3341}
+  #krBody .krBar{height:7px;border-radius:99px;background:#EDF1F3;overflow:hidden;margin:7px 0 5px}
+  #krBody .krBar>i{display:block;height:100%;background:#1F3341;border-radius:99px}
+  #krBody .krUse.warn .krBar>i{background:#B4232C}
+  #krBody .krUseSub{font-size:11.5px;color:#5B707E;line-height:1.6}
+  #krBody .krUse.warn .krUseSub b{color:#B4232C}
   /* v80: 保存先の6項目を入れる／書き直すフォーム */
   #krBody .krForm{background:#fff;border:1px solid #C9D3DA;border-radius:10px;padding:12px;margin:8px 0}
   #krBody .krFR{margin-bottom:8px}
@@ -217,7 +226,7 @@
 
   <div class="cover">
     <div class="cover-inner">
-      <div class="h1row"><h1>検査ミニポータル</h1><button type="button" class="verBtn" id="verBtn" aria-expanded="false" aria-controls="chglog">v82 ｜ 更新内容</button></div>
+      <div class="h1row"><h1>検査ミニポータル</h1><button type="button" class="verBtn" id="verBtn" aria-expanded="false" aria-controls="chglog">v83 ｜ 更新内容</button></div>
       <div class="sub">INSPECTION MINI TOOLS</div>
       <div class="desc">
         現場のための計算・記録ツール集。すべての計算はこの端末の中で行われ、入力値がネットに送信されることはありません。
@@ -225,6 +234,7 @@
       <div class="chglog" id="chglog" hidden>
         <h3>更新内容（新しい順）</h3>
         <ul>
+          <li><span class="vtag">v83</span><b>📒記録に「いま何件・どれくらい使っているか」を出しました。</b>フォルダの一覧の一番上に、フォルダ数・記録の件数と、この端末の保存領域の使用量が帯グラフで出ます。記録だけでなく<b>各ツールが覚えている入力なども合わせた合計</b>です（同じ入れ物を分け合っているためです）。8割を超えると赤くなり、整理をうながします。<b>あわせて図を2つ直しました。</b>「PCD穴ピッチ(02)」の図に<b>穴ごとの角度</b>と中心からの線を出しました（真上0°・時計回り＋。13穴以上は字が重なるため省略します）。「かんたん穴ピッチ(36)」には<b>図がありませんでした</b>ので新しく付けました。中心・穴の位置と番号・角度が、入れた数字に合わせて変わります。<b>図面と見くらべるための図</b>なので、寸法線は入れていません（同じ数字が表と図の2か所に出ると迷うためです）。</li>
           <li><span class="vtag">v82</span><b>トップの📒記録で「編集」を押しても何も起きなかった不具合を直しました。</b>フォルダの編集・記録の編集とも、押した瞬間に内部で止まっていました（変数の宣言が1行抜けていたためです）。編集は<b>名称などの書き直し</b>で、フォルダは名前・部組（機種）・備考、記録は加工先・部品名・図番・形状・備考（通称）を書き直せます。<b>測った数字そのものは変わりません</b>。</li>
           <li><span class="vtag">v81</span><b>📒記録の保存の仕方を作り直しました。</b>詳しい内容は<b>記録1件ごと</b>に書く形にしました。フォルダは<b>名前・部組（機種）・備考</b>だけの軽いもので、名前さえあれば作れます。記録するときは、フォルダを選んだあとに<b>加工先・部品名・図番・形状・備考（通称）</b>を書く画面が出ます（5つのうちどれか1つは必要です）。同じフォルダに前の記録があれば<b>その内容を写して出す</b>ので、変わったところだけ直せば済みます。一覧では記録ごとの部品名・図番・加工先がそのまま見え、<b>あとから書き直せます</b>（トップの📒記録の「編集」）。これまでのフォルダはそのまま使えます。</li>
           <li><span class="vtag">v80</span><b>📒記録を作り直し、記録できるツールを21→27に増やしました。</b>記録した直後に<b>「取り消す」</b>が出るようにしました（60秒）。押すとその記録が消え、そのとき新しく作ったフォルダなら、中が空になる場合はフォルダごと戻ります。トップまで戻らずに消せます。新しく記録できるようになったのは<b>PCDずれ診断・角－角 距離・端面からの穴位置・並び寸法ピッチ・曲げガイド計算(2D/3D)</b>です。行が増えるツールは入力欄を拾う方式では戻せないため、<b>入力をまるごと</b>保存する形にしました。呼び出すといまの入力は置き換わるので、中身があるときは確認の帯が出て2回押しになります。</li>
@@ -1438,6 +1448,42 @@
     function p(n){ return (n<10?"0":"")+n; }
     return (d.getMonth()+1)+"/"+d.getDate()+" "+p(d.getHours())+":"+p(d.getMinutes());
   }
+  /* v83: 保存領域の使い具合。
+     localStorage は文字を UTF-16 で持つので 1文字=2バイトで見積もる。
+     記録(kensa-rec)だけでなく<全キー>を数える。各ツールの入力の保存も
+     お気に入りも同じ5MBを分け合っているため、記録だけ数えると実態より軽く見える。 */
+  var LSMAX=5*1024*1024;
+  function usage(){
+    var rec=0, all=0, i, k, v;
+    try{
+      v=localStorage.getItem(RKEY);
+      if(v!=null) rec=(RKEY.length+v.length)*2;
+      for(i=0;i<localStorage.length;i++){
+        k=localStorage.key(i);
+        if(k==null) continue;
+        v=localStorage.getItem(k);
+        all+=(k.length+(v==null?0:v.length))*2;
+      }
+    }catch(e){}
+    return {rec:rec, all:all};
+  }
+  function sizeTxt(b){
+    if(b<1024) return b+" B";
+    if(b<1024*1024) return (b/1024).toFixed(1)+" KB";
+    return (b/(1024*1024)).toFixed(2)+" MB";
+  }
+  function useHtml(db){
+    var u=usage(), pct=u.all/LSMAX*100;
+    var w=Math.max(1,Math.min(100,pct));
+    var warn=(pct>=80);
+    return '<div class="krUse'+(warn?' warn':'')+'">'
+      +'<div class="krUseTop">フォルダ '+db.d.length+' ・ 記録 '+db.r.length+' 件</div>'
+      +'<div class="krBar"><i style="width:'+w.toFixed(1)+'%"></i></div>'
+      +'<div class="krUseSub">記録 '+sizeTxt(u.rec)+' ／ この端末の保存ぜんぶで <b>'
+      +sizeTxt(u.all)+'</b>（使える目安 5MB の '+pct.toFixed(1)+'%）'
+      +(warn? '<br>残りが少なくなっています。使わないフォルダを削除してください。':'')
+      +'</div></div>';
+  }
   function cntOf(db,di){ var n=0,i; for(i=0;i<db.r.length;i++) if(db.r[i].d===di) n++; return n; }
   function destOf(db,id){ var i; for(i=0;i<db.d.length;i++) if(db.d[i].i===id) return db.d[i]; return null; }
 
@@ -1475,6 +1521,7 @@
         "この記録の内容を書き直します（5つのうちどれか1つは必要です）");
     }else if(mode==="d"){                              /* フォルダ一覧 */
       var ds=db.d.slice().sort(function(a,b){ return (b.ts||0)-(a.ts||0); });
+      h+=useHtml(db);
       if(!ds.length){
         h+='<div class="krHint">まだ記録がありません。<br>'
           +'①各ツールの一番下の「📒 記録する」を押す<br>'
