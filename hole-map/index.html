@@ -7,6 +7,14 @@
 <meta name="description" content="PCD・単独の穴・中心線からの左右振り分け・端面からの寸法を1枚の図の上で合成し、全ての穴の座標と穴間ピッチをまとめて計算します。計算は端末内で完結します。">
 <title>図面まるごと穴ピッチ | 検査計算ツール</title>
 <style>
+  /* v85: 図の下の部品チップ。押すとその部品だけ色が付く。 */
+  .figChips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .figChips:empty{display:none}
+  .figChips button{font:inherit;font-size:11.5px;padding:6px 10px;border:1px solid #C9D3DA;
+    border-radius:99px;background:#fff;color:#5B707E;cursor:pointer;min-height:32px;white-space:nowrap}
+  .figChips button.on{background:#1B7F9E;border-color:#1B7F9E;color:#fff;font-weight:700}
+  .figChips .figHint{font-size:11px;color:#8FA2AF;align-self:center;padding-left:2px}
+
   :root{
     --paper:#F2F4F5; --sheet:#FFFFFF; --ink:#1F3341; --line:#8FA2AF; --red:#D63426;
     --amber:#B97A1E; --green:#2E9E5B;
@@ -543,6 +551,7 @@
 <div class="card">
   <h2>図<span class="tag">タップで選択と連動</span></h2>
   <figure><svg id="fig" viewBox="0 0 300 300" role="img" aria-label="部品を合成した穴配置の図"></svg><figcaption>上 が 0°／緑の十字が読み替え原点（既定は原点 0,0）</figcaption></figure>
+  <div class="figChips" id="figChips"></div>
 </div>
 
 <div class="card">
@@ -1328,6 +1337,10 @@ function pcdIn(){ var v=fnum("fPcd"); return (FS.pd==="r"&&numOK(v))? v*2 : v; }
 function angOf(dx,dy){ return Math.atan2(dx,dy)/RAD; }                 /* 座標差 → 0°=真上・時計回り＋ */
 function pos(c,th){ var R=c.pcd/2; return {x:c.cx + c.dir*R*Math.sin(th*RAD), y:c.cy + R*Math.cos(th*RAD)}; }
 
+var HL=-1;       /* v85: 図で色づけ中の部品の番号。-1＝なし。
+                    ★S に入れない。これは<見え方>であって図面の中身ではないので、
+                      記録に保存すると呼び出したときに関係のない色が付く。 */
+var ACC="#1B7F9E";   /* 強調の色。赤(穴間ピッチ)・緑(原点)・紫(基準線)と重ならない色 */
 var H=[];        /* 全穴 {key,pi,hi,nh,x,y,src,th,adjable} */
 var BASE=[];     /* 部品ごとの基準点 {x,y,lb} または null */
 
@@ -1520,6 +1533,7 @@ function build(){
       used[key]=1;
       H.push({key:key, pi:i, hi:j, nh:out.length, x:o.x, y:o.y, th:o.th,
               src:o.src, adjable:o.adjable, grp:(o.grp?o.grp:key), pa:(numOK(o.pa)?o.pa:NaN),
+              role:(o.role||""),        /* v85: 先/左/右。図で寸法を出すのに使う */
               pidx:(typeof o.pidx==="number"?o.pidx:-1), pn:(o.pn||0),
               hd:((numOK(p.hd)&&p.hd>0)?p.hd:NaN)});
     });
@@ -1644,7 +1658,25 @@ function renderOrg(){
 }
 
 /* ═══ 表示 ═══ */
-function calc(){ build(); renderOrg(); renderPos(); renderPairs(); renderDRO(); draw(); renderRec(); }
+function calc(){ build(); renderOrg(); renderPos(); renderPairs(); renderDRO(); draw(); renderFigChips(); renderRec(); }
+
+/* v85: 部品チップ。図のどれがどの部品かを、押して確かめられるようにする。
+   ★穴間ピッチ（赤い線）とは同時に出さない。同じ図に色が2系統あると、
+     どちらが測っている組か分からなくなるため、片方を出したら片方を消す。 */
+function renderFigChips(){
+  var box=g("figChips");
+  if(!box) return;
+  if(!S.parts.length){ box.innerHTML=""; return; }
+  var h="", i, p, kind;
+  for(i=0;i<S.parts.length;i++){
+    p=S.parts[i];
+    kind=(p.t==="circle") ? ((p.mode==="eq")?"PCD":"不等配") : (p.t==="axis" ? "軸" : "穴");
+    h+='<button type="button" class="'+(HL===i?"on":"")+'" data-hl="'+i+'">'
+      +LB.charAt(i)+' '+kind+'</button>';
+  }
+  h+='<span class="figHint">'+(HL>=0? "もう一度押すと戻ります" : "押すと図で色が付きます")+'</span>';
+  box.innerHTML=h;
+}
 
 function renderPos(){
   var tb=g("posBody"), h="";
@@ -1694,14 +1726,23 @@ function renderPairs(){
   tb.innerHTML=h;
 }
 document.addEventListener("click",function(e){
+  /* v85: 部品チップ。押した部品を色づけし、穴間ピッチの選択は落とす。 */
+  var ch=e.target.closest? e.target.closest("#figChips button[data-hl]"):null;
+  if(ch){
+    var hi=parseInt(ch.getAttribute("data-hl"),10);
+    HL=(HL===hi)? -1 : hi;
+    if(HL>=0) S.sel=null;
+    calc(); persist(); return;
+  }
   var tr=e.target.closest? e.target.closest("#pairBody tr[data-p]"):null;
-  if(tr){ S.sel=tr.getAttribute("data-p").split("|"); calc(); persist(); return; }
+  if(tr){ S.sel=tr.getAttribute("data-p").split("|"); HL=-1; calc(); persist(); return; }
   var tp=e.target.closest? e.target.closest("#posBody tr[data-k]"):null;
   if(tp){
     var k=tp.getAttribute("data-k");
     if(!S.sel || S.sel.length===2) S.sel=[k];
     else if(S.sel[0]===k) S.sel=null;
     else S.sel=[S.sel[0],k];
+    HL=-1;                                   /* 穴間ピッチを選んだら色づけは消す */
     calc(); persist();
   }
 });
@@ -1733,6 +1774,31 @@ function renderDRO(){
   }
 }
 
+/* v85: 先端の穴から左右の穴へ細い線を引き、振り分け量をその隣に出す。
+   pt に grp があれば同じ組だけ（複製モードで代表1組にするため）、
+   無ければその部品の穴すべて（従来モードは1組しかない）。
+   ★描画は必ず build() が出した座標から測る。ここで入力値を読み直すと、
+     反時計回り指定や起点角の扱いが二重管理になる。 */
+function spokes(pi, pt, col, M){   /* M は draw() が作る座標変換。draw の外からは見えないので受け取る */
+  var out="", z, hh, d;
+  for(z=0;z<H.length;z++){
+    hh=H[z];
+    if(hh.pi!==pi) continue;
+    if(pt.grp && hh.grp!==pt.grp) continue;
+    d=Math.sqrt((hh.x-pt.x)*(hh.x-pt.x)+(hh.y-pt.y)*(hh.y-pt.y));
+    if(d<0.001) continue;                       /* 先端そのもの */
+    var q0=M(pt.x,pt.y), q1=M(hh.x,hh.y);
+    out+='<line x1="'+q0[0].toFixed(1)+'" y1="'+q0[1].toFixed(1)+'" x2="'+q1[0].toFixed(1)
+      +'" y2="'+q1[1].toFixed(1)+'" stroke="'+col+'" stroke-width="0.9" stroke-dasharray="4 2"/>';
+    out+=dimTxt((q0[0]+q1[0])/2,(q0[1]+q1[1])/2, f3(d), col);
+  }
+  return out;
+}
+/* v85: 寸法の文字（線のすぐ隣・白フチ付きで下の線に負けないように） */
+function dimTxt(x,y,s,col){
+  return '<text x="'+x.toFixed(1)+'" y="'+(y-3).toFixed(1)+'" font-size="8.5" fill="'+col
+    +'" text-anchor="middle" font-family="monospace" stroke="#fff" stroke-width="2.8" paint-order="stroke">'+s+'</text>';
+}
 function draw(pv){
   var svg=g("fig");
   if(!H.length && !pv){ svg.innerHTML=""; return; }
@@ -1781,10 +1847,11 @@ function draw(pv){
     if(p.t==="circle"){
       if(!numOK(p.pcd)||!numOK(p.cx)||!numOK(p.cy)) return;
       var ct=M(p.cx,p.cy), R=p.pcd/2*s;
-      h+='<circle cx="'+ct[0].toFixed(1)+'" cy="'+ct[1].toFixed(1)+'" r="'+R.toFixed(1)+'" fill="none" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="6 2 1.5 2"/>';
+      h+='<circle cx="'+ct[0].toFixed(1)+'" cy="'+ct[1].toFixed(1)+'" r="'+R.toFixed(1)
+        +'" fill="none" stroke="'+(HL===i?ACC:"#8FA2AF")+'" stroke-width="'+(HL===i?2:1)
+        +'" stroke-dasharray="6 2 1.5 2"/>';
       h+='<line x1="'+(ct[0]-5).toFixed(1)+'" y1="'+ct[1].toFixed(1)+'" x2="'+(ct[0]+5).toFixed(1)+'" y2="'+ct[1].toFixed(1)+'" stroke="#1F3341" stroke-width="1.2"/>';
       h+='<line x1="'+ct[0].toFixed(1)+'" y1="'+(ct[1]-5).toFixed(1)+'" x2="'+ct[0].toFixed(1)+'" y2="'+(ct[1]+5).toFixed(1)+'" stroke="#1F3341" stroke-width="1.2"/>';
-      h+='<text x="'+(ct[0]+7).toFixed(1)+'" y="'+(ct[1]-6).toFixed(1)+'" font-size="10" fill="#5B707E" font-family="monospace">'+nm+'</text>';
 
       /* ── v84: 角度と径を出す（図面と突き合わせるため）──
          等配は「隣どうしの角度」を1つだけ。どこも同じ値なので全部書くと figure が字だらけになる。
@@ -1800,11 +1867,16 @@ function draw(pv){
           h+='<line x1="'+ct[0].toFixed(1)+'" y1="'+ct[1].toFixed(1)+'" x2="'+mq[0].toFixed(1)
             +'" y2="'+mq[1].toFixed(1)+'" stroke="#DCE3E8" stroke-width="0.9"/>';
         }
-        /* 径。等配は直径 φ、不等配は半径 R（図面の書き方に合わせる） */
-        h+='<text x="'+ct[0].toFixed(1)+'" y="'+(ct[1]+13).toFixed(1)
-          +'" font-size="8.5" fill="#5B707E" text-anchor="middle" font-family="monospace"'
-          +' stroke="#fff" stroke-width="2.5" paint-order="stroke">'
-          +(eq? ("\u03C6"+f3(p.pcd)) : ("R"+f3(p.pcd/2)))+'</text>';
+        /* v85: 径のラベルは<部品記号つき>で、部品ごとに向きを変えて置く。
+           中心の真下に置くと、原点が同じ部品どうしで重なって前のが読めなくなる。
+           円の内側 0.72R の位置に、部品番号で 37° ずつ回して逃がす。 */
+        var lab=nm+" "+(eq? ("\u03C6"+f3(p.pcd)) : ("R"+f3(p.pcd/2)));
+        var la=(200+i*37)%360, lr=Math.max(16, R*0.72);
+        var lx=ct[0]+p.dir*lr*Math.sin(la*RAD), ly=ct[1]-lr*Math.cos(la*RAD);
+        h+='<text x="'+lx.toFixed(1)+'" y="'+(ly+3).toFixed(1)
+          +'" font-size="9" fill="'+(HL===i?ACC:"#5B707E")+'" text-anchor="middle" font-family="monospace"'
+          +' font-weight="'+(HL===i?"700":"400")+'"'
+          +' stroke="#fff" stroke-width="3" paint-order="stroke">'+lab+'</text>';
 
         if(eq && mine.length>=2){
           /* 隣どうしの角度を、穴1と穴2のあいだに1つだけ */
@@ -1833,21 +1905,40 @@ function draw(pv){
         var r0=M(rh.x,rh.y), r1=M(BASE[i].x,BASE[i].y);
         h+='<line x1="'+r0[0].toFixed(1)+'" y1="'+r0[1].toFixed(1)+'" x2="'+r1[0].toFixed(1)+'" y2="'+r1[1].toFixed(1)+'" stroke="#7F77DD" stroke-width="1.2" stroke-dasharray="7 3 1.5 3"/>';
         h+='<circle cx="'+r0[0].toFixed(1)+'" cy="'+r0[1].toFixed(1)+'" r="2.2" fill="#7F77DD"/>';
-        h+='<text x="'+(r1[0]+6).toFixed(1)+'" y="'+(r1[1]-5).toFixed(1)+'" font-size="10" fill="#5B707E" font-family="monospace">'+nm+'</text>';
+        h+='<text x="'+(r1[0]+6).toFixed(1)+'" y="'+(r1[1]-5).toFixed(1)+'" font-size="10" fill="'
+          +(HL===i?ACC:"#5B707E")+'" font-family="monospace">'+nm+'</text>';
+        /* v85: 寸法は線のすぐ隣に。座標の表を開かなくても図だけで突き合わせられる。 */
+        h+=dimTxt((r0[0]+r1[0])/2,(r0[1]+r1[1])/2,
+                  f3(Math.sqrt((BASE[i].x-rh.x)*(BASE[i].x-rh.x)+(BASE[i].y-rh.y)*(BASE[i].y-rh.y))),
+                  (HL===i?ACC:"#7F77DD"));
       }
     }
     if(p.t==="axis" && !p.rep && BASE[i]){
       var b0=M(p.bx,p.by), b1=M(BASE[i].x,BASE[i].y);
-      h+='<line x1="'+b0[0].toFixed(1)+'" y1="'+b0[1].toFixed(1)+'" x2="'+b1[0].toFixed(1)+'" y2="'+b1[1].toFixed(1)+'" stroke="#7F77DD" stroke-width="1.2" stroke-dasharray="7 3 1.5 3"/>';
-      h+='<circle cx="'+b0[0].toFixed(1)+'" cy="'+b0[1].toFixed(1)+'" r="2.2" fill="#7F77DD"/>';
-      h+='<text x="'+(b1[0]+6).toFixed(1)+'" y="'+(b1[1]-5).toFixed(1)+'" font-size="10" fill="#5B707E" font-family="monospace">'+nm+'</text>';
+      var axc=(HL===i?ACC:"#7F77DD");
+      h+='<line x1="'+b0[0].toFixed(1)+'" y1="'+b0[1].toFixed(1)+'" x2="'+b1[0].toFixed(1)+'" y2="'+b1[1].toFixed(1)+'" stroke="'+axc+'" stroke-width="1.2" stroke-dasharray="7 3 1.5 3"/>';
+      h+='<circle cx="'+b0[0].toFixed(1)+'" cy="'+b0[1].toFixed(1)+'" r="2.2" fill="'+axc+'"/>';
+      h+='<text x="'+(b1[0]+6).toFixed(1)+'" y="'+(b1[1]-5).toFixed(1)+'" font-size="10" fill="'+(HL===i?ACC:"#5B707E")+'" font-family="monospace">'+nm+'</text>';
+      /* v85: 基点→先端の距離 L を線のすぐ隣に */
+      h+=dimTxt((b0[0]+b1[0])/2,(b0[1]+b1[1])/2, f3(p.L), axc);
+      /* v85: 先端→左右の穴に細い線を引き、オフセットをその隣に */
+      h+=spokes(i, BASE[i], axc, M);
     }
     /* 複製 axis：グループごとの穴を薄い線で結び、どの点のパターンかを見せる */
     if(p.t==="axis" && p.rep && BASE[i]){
       var groups={}, gk;
       H.forEach(function(hh){ if(hh.pi===i){ (groups[hh.grp]=groups[hh.grp]||[]).push(hh); } });
+      var firstGk=null;
       for(gk in groups){ if(!groups.hasOwnProperty(gk)) continue;
         var gg=groups[gk]; if(gg.length<2) continue;
+        if(firstGk===null){
+          /* v85: 同じ形が並ぶので、寸法は最初の1組だけに出す。
+             全部に出すと図が字で埋まる（等配の角度を1つにしたのと同じ考え）。 */
+          firstGk=gk;
+          var tipH=null, zz;
+          for(zz=0;zz<gg.length;zz++) if(gg[zz].role&&gg[zz].role.charAt(0)==="\u5148") tipH=gg[zz];
+          if(tipH) h+=spokes(i, tipH, (HL===i?ACC:"#7F77DD"), M);
+        }
         var cxc=0,cyc=0,z; for(z=0;z<gg.length;z++){ cxc+=gg[z].x; cyc+=gg[z].y; } cxc/=gg.length; cyc/=gg.length;
         var cm=M(cxc,cyc);
         for(z=0;z<gg.length;z++){ var pm=M(gg[z].x,gg[z].y);
@@ -1865,8 +1956,16 @@ function draw(pv){
 
   H.forEach(function(p){
     var q=M(p.x,p.y), sel=S.sel&&(S.sel[0]===p.key||S.sel[1]===p.key);
-    h+='<circle cx="'+q[0].toFixed(1)+'" cy="'+q[1].toFixed(1)+'" r="'+(sel?4.6:3.4)+'" fill="'+(sel?"#D63426":"#fff")+'" stroke="'+(sel?"#D63426":"#1F3341")+'" stroke-width="1.4"/>';
-    h+='<text x="'+(q[0]+5.5).toFixed(1)+'" y="'+(q[1]-4).toFixed(1)+'" font-size="8.5" fill="'+(sel?"#D63426":"#5B707E")+'" font-family="monospace">'+p.key+'</text>';
+    var hi=(HL>=0&&p.pi===HL);
+    /* v85: 穴径が入っていれば<実寸に比例>させる。φ5.5 と φ9 が見て分かる。
+       ただし縮尺しだいで点にも巨大にもなるので 2.2〜9px に収める。
+       径が無い部品はこれまでどおり 3.4px。 */
+    var rr = (numOK(p.hd)&&p.hd>0) ? Math.max(2.2, Math.min(9, p.hd/2*s)) : 3.4;
+    if(sel) rr=Math.max(rr+1.2, 4.6);
+    var st = sel? "#D63426" : (hi? ACC : "#1F3341");
+    var fl = sel? "#D63426" : (hi? "#E3F2F5" : "#fff");
+    h+='<circle cx="'+q[0].toFixed(1)+'" cy="'+q[1].toFixed(1)+'" r="'+rr.toFixed(1)+'" fill="'+fl+'" stroke="'+st+'" stroke-width="'+(hi?1.8:1.4)+'"/>';
+    h+='<text x="'+(q[0]+rr+2.1).toFixed(1)+'" y="'+(q[1]-rr-0.6).toFixed(1)+'" font-size="8.5" fill="'+(sel?"#D63426":(hi?ACC:"#5B707E"))+'" font-family="monospace">'+p.key+'</text>';
   });
   if(S.sel&&S.sel.length===2){
     var a=byKey(S.sel[0]), b=byKey(S.sel[1]);
