@@ -1582,7 +1582,10 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
     +"#krSheet .krFN{font-size:11.5px;color:#B4232C;margin-top:6px;min-height:16px}"
     +"#krWhere{font-size:12.5px;color:#1F3341;background:#F2F4F5;border-radius:8px;"
     +"padding:8px 10px;margin-bottom:9px;line-height:1.6}"
-    +"#krWhere .krPre{font-size:11px;color:#5B707E}";
+    +"#krWhere .krPre{font-size:11px;color:#5B707E}"
+    /* 記録の部品は紙に出さない。v88まではガイドの中にいたので印刷されて
+       いなかったが、外へ出したので明示的に外す(v89)。 */
+    +"@media print{#krBar,#krSheet,#krCall{display:none !important}}";
 
   function build(){
     var st=document.createElement("style");
@@ -1594,9 +1597,26 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
     bar.innerHTML='<button type="button" id="krBtn">📒 記録する</button>'
       +'<button type="button" id="krUndo" class="off">取り消す</button>'
       +'<span id="krNote"></span>';
-    var src=document.querySelector(".src");
-    if(src&&src.parentNode) src.parentNode.insertBefore(bar,src);
-    else document.body.appendChild(bar);
+    /* 置き場所は<結果の直下>。v88まで .src の前に入れていたが、.src は
+       「使い方と例を見る」(details)の中にあるため、ガイドを開かないと
+       ボタンが出てこなかった。jsdom は details を描画しないので検算では
+       見えず、実機で発覚した(v89)。
+       ・結果ブロックがタブの中にあるツール(axis-tilt/chord-r/corner-dist)は、
+         タブごと消えないようタブ群の外へ出す。
+       ・結果ブロックが無いツール(pitch-row/resin-guide)はフッターの直前。 */
+    var wrap=document.querySelector(".wrap");
+    var dro=wrap? wrap.querySelector(".dro"):null;
+    if(wrap&&dro){
+      var host=dro;
+      while(host.parentNode&&host.parentNode!==wrap) host=host.parentNode;
+      if(host.tagName==="SECTION"){
+        while(host.nextElementSibling&&host.nextElementSibling.tagName==="SECTION")
+          host=host.nextElementSibling;
+      }
+      wrap.insertBefore(bar,host.nextSibling);
+    }else if(wrap){
+      wrap.insertBefore(bar,wrap.querySelector("footer"));
+    }else document.body.appendChild(bar);
 
     /* 名前などの欄には inputmode を付けない＝OS標準キーボードで文字が打てる */
     function fh(list,pre){

@@ -378,8 +378,8 @@
 </section>
 
 <!-- ════════ 記録表 ════════ -->
-<div class="card">
-  <h2>記録表<span class="tag">印刷 → PDF 保存</span></h2>
+<details class="card recbox">
+  <summary><b>📄 記録表</b><span class="recCnt"></span><span class="tag">印刷・PDFで残す</span></summary>
   <div class="row noprint">
     <div><label class="f">部品名</label><input type="text" id="recName" placeholder="—" oninput="persist()"></div>
     <div><label class="f">検査日</label><input type="date" id="recDate" oninput="persist()"></div>
@@ -401,7 +401,7 @@
     <button class="btn" onclick="window.print()">印刷 / PDF</button>
     <button class="btn warn sm" onclick="armClear(this)">すべて消去</button>
   </div>
-</div>
+</details>
 
 <div class="card noprint">
   <details open>
@@ -1598,7 +1598,10 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
     +"#krSheet .krFN{font-size:11.5px;color:#B4232C;margin-top:6px;min-height:16px}"
     +"#krWhere{font-size:12.5px;color:#1F3341;background:#F2F4F5;border-radius:8px;"
     +"padding:8px 10px;margin-bottom:9px;line-height:1.6}"
-    +"#krWhere .krPre{font-size:11px;color:#5B707E}";
+    +"#krWhere .krPre{font-size:11px;color:#5B707E}"
+    /* 記録の部品は紙に出さない。v88まではガイドの中にいたので印刷されて
+       いなかったが、外へ出したので明示的に外す(v89)。 */
+    +"@media print{#krBar,#krSheet,#krCall{display:none !important}}";
 
   function build(){
     var st=document.createElement("style");
@@ -1610,9 +1613,26 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
     bar.innerHTML='<button type="button" id="krBtn">📒 記録する</button>'
       +'<button type="button" id="krUndo" class="off">取り消す</button>'
       +'<span id="krNote"></span>';
-    var src=document.querySelector(".src");
-    if(src&&src.parentNode) src.parentNode.insertBefore(bar,src);
-    else document.body.appendChild(bar);
+    /* 置き場所は<結果の直下>。v88まで .src の前に入れていたが、.src は
+       「使い方と例を見る」(details)の中にあるため、ガイドを開かないと
+       ボタンが出てこなかった。jsdom は details を描画しないので検算では
+       見えず、実機で発覚した(v89)。
+       ・結果ブロックがタブの中にあるツール(axis-tilt/chord-r/corner-dist)は、
+         タブごと消えないようタブ群の外へ出す。
+       ・結果ブロックが無いツール(pitch-row/resin-guide)はフッターの直前。 */
+    var wrap=document.querySelector(".wrap");
+    var dro=wrap? wrap.querySelector(".dro"):null;
+    if(wrap&&dro){
+      var host=dro;
+      while(host.parentNode&&host.parentNode!==wrap) host=host.parentNode;
+      if(host.tagName==="SECTION"){
+        while(host.nextElementSibling&&host.nextElementSibling.tagName==="SECTION")
+          host=host.nextElementSibling;
+      }
+      wrap.insertBefore(bar,host.nextSibling);
+    }else if(wrap){
+      wrap.insertBefore(bar,wrap.querySelector("footer"));
+    }else document.body.appendChild(bar);
 
     /* 名前などの欄には inputmode を付けない＝OS標準キーボードで文字が打てる */
     function fh(list,pre){
@@ -1860,6 +1880,88 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
 
 
   function init(){ build(); restore(); }
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",init);
+  else init();
+})();
+</script>
+
+<!-- ═══ 記録表の折りたたみ（v90 / 印刷を持つ5ツール共通・全本同一） ═══
+     狙い: 印刷して残す運用は当面 TOOL-08 だけなので、他は既定で畳んでおく。
+           機能は消さない。畳むだけ。
+     ★いちばん危ないのは印刷。閉じた details の中身はブラウザが刷らないので、
+       畳んだまま刷ると記録表が白紙で出る。開く手当てを2つ重ねてある。         -->
+<script>
+(function(){
+  "use strict";
+  var css=""
+    +"details.recbox>summary{list-style:none;cursor:pointer;display:flex;"
+    +"align-items:center;gap:8px;flex-wrap:wrap;min-height:44px;padding:2px 0}"
+    +"details.recbox>summary::-webkit-details-marker{display:none}"
+    +"details.recbox>summary::before{content:\"\\25B8\";color:#5B707E;font-size:13px;"
+    +"display:inline-block;width:12px;text-align:center}"
+    +"details.recbox[open]>summary::before{content:\"\\25BE\"}"
+    +"details.recbox>summary b{font-size:14px;color:#1F3341}"
+    +"details.recbox>summary .recCnt{font-size:12px;color:#5B707E}"
+    /* ★印刷の保険その1: 畳んだままでも中身を出す。閉じた details を
+       CSS だけで開くことはできない端末もあるので、その2(JS)と両方いる。 */
+    +"@media print{details.recbox>summary{display:none}"
+    +"details.recbox>*{display:block !important}}";
+
+  function box(){ return document.querySelector("details.recbox"); }
+  function openBox(){ var b=box(); if(b&&!b.open) b.open=true; }
+
+  function count(){
+    var b=box(), el, tb, n;
+    if(!b) return;
+    el=b.querySelector(".recCnt");
+    if(!el) return;
+    tb=b.querySelector("tbody");
+    n=0;
+    if(tb){
+      /* 空のときに出る案内行（「ペアを選んで…」）は colspan で1マスにしてある。
+         これを数えると、まだ何も記録していないのに「（1件）」と出る。 */
+      var rows=tb.getElementsByTagName("tr"), i;
+      for(i=0;i<rows.length;i++){
+        if(rows[i].querySelector&&rows[i].querySelector("td[colspan]")) continue;
+        n++;
+      }
+    }
+    /* 0件のときは何も出さない。「（0件）」は畳んだ見出しを重くするだけ。 */
+    el.textContent = n? ("（"+n+"件）") : "";
+  }
+
+  function init(){
+    var st=document.createElement("style");
+    st.appendChild(document.createTextNode(css));
+    document.head.appendChild(st);
+
+    var b=box();
+    if(!b) return;
+    count();
+
+    /* 行の増減を追う。描画の関数名がツールごとに違うので、表そのものを見る。 */
+    var tb=b.querySelector("tbody");
+    if(tb&&window.MutationObserver){
+      new MutationObserver(count).observe(tb,{childList:true,subtree:true});
+    }
+
+    /* ② 記録表へ足すボタンは折りたたみの外にある。押したら開く。 */
+    document.addEventListener("click",function(e){
+      var n=e.target, oc;
+      while(n&&n!==document.body){
+        if(n.tagName==="BUTTON"){
+          oc=n.getAttribute("onclick")||"";
+          if(oc.indexOf("addRec")>=0){ openBox(); count(); return; }
+        }
+        n=n.parentNode;
+      }
+    },false);
+
+    /* ★印刷の保険その2: 刷る直前に開く。印刷ボタンは折りたたみの中にあるので
+       普通は既に開いているが、ブラウザのメニューから刷る道もあるため。 */
+    if(window.addEventListener) window.addEventListener("beforeprint",openBox,false);
+  }
+
   if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",init);
   else init();
 })();
