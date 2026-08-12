@@ -42,13 +42,24 @@
 
   .hint{margin-top:10px;font-size:11px;color:#5B707E;line-height:1.7;padding:0 2px}
   /* v91: 直線の入れ方・原点の切り替え */
-  .modeRow,.oriRow{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:12px}
+  .modeRow,.oriRow,.turnRow{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:12px}
+  .turnRow{margin-bottom:6px}
+  #turnNote b{color:#1F3341}
   .modeLab{font-size:11px;color:#5B707E;font-weight:700}
   .modeBtn{font:inherit;font-size:12px;padding:7px 14px;min-height:36px;
     border:1px solid #C9D3DA;border-radius:9px;background:#fff;color:#1F3341;cursor:pointer}
   .modeBtn.on{background:#1F3341;color:#fff;border-color:#1F3341;font-weight:700}
   .modeNote{font-size:11px;color:#5B707E;flex-basis:100%}
   .lyFoot{font-size:11px;color:#5B707E;line-height:1.7;margin-top:8px}
+  /* v94: 向きの案内 */
+  .alignCard{border-radius:10px;padding:9px 11px;margin-top:9px;font-size:11px;line-height:1.7}
+  .alignCard.ok{border:1px solid #A8CDB4;background:#EDF7F0;color:#1F3341}
+  .alignCard.tip{border:1px solid #C9D3DA;background:#F4F7F9;color:#1F3341}
+  .alignCard b{color:#1F3341}
+  .alignCard .amark{font-weight:700;color:#2E7D4F}
+  .alignCard .amiss{font-weight:700;color:#B23B2E}
+  #alignGo{font:inherit;font-size:12px;padding:8px 14px;min-height:40px;margin-top:7px;
+    border:1px solid #1F3341;border-radius:9px;background:#1F3341;color:#fff;font-weight:700;cursor:pointer}
   .lyMemo{font-size:10px;color:#5B707E}
   .lyFar{color:#B23B2E;font-weight:700}
   .farCard{border:1px solid #E7B7B0;background:#FBECEA;border-radius:10px;
@@ -220,7 +231,8 @@
       <li>「直線 → 曲げ → 直線 …」の順に入れます。曲げは<b>θ（＋左/−右）とR</b>。</li>
       <li>「＋ 曲げ+直線を追加」で杖型・S字・多段曲げも表現できます。最初から弧で始まる形は直線1を0に。</li>
       <li>入力すると形状が描かれ、<b>展開長（切断長）・端点間距離・外形</b>が出ます。</li>
-      <li>実物大で写すときは<b>「段ボールに写す座標」</b>を開きます。打つ点（接点）とコンパスの中心が出ます。<b>中心が図の外に出る曲げ</b>には、弦・矢高と中間点が出るのでコンパス無しで描けます。</li>
+      <li>手元の図面と向きが違うときは、図の上の<b>「図の向き」</b>で<b>左右反転</b>と<b>90°回転</b>を組み合わせて合わせられます（8通りすべて出せます）。<b>向きを変えても、入力した寸法・角度・展開長は変わりません</b>。図・座標・外形が同じ向きになるだけです。</li>
+      <li>実物大で写すときは<b>「段ボールに写す座標」</b>を開き、原点を<b>「左下」</b>にします。段ボールの<b>左下の角を(0,0)</b>にして、表の X を横・Y を縦に測れば点が打てます（数字は全部プラスなので、図が段ボールからはみ出しません）。<b>左の辺に始点・下の辺に終点</b>を乗せたいときは、その向きになっているかを画面が教えます。なっていなければ<b>「その向きにする」</b>を押すと一発で合います。打つ点（接点）とコンパスの中心が出ます。<b>中心が図の外に出る曲げ</b>には、弦・矢高と中間点が出るのでコンパス無しで描けます。</li>
     </ol>
     <div class="src">
       <b>計算のしかた</b><br>
@@ -232,6 +244,7 @@
       <code>交点寸法 = 実長 + T(前の曲げ) + T(次の曲げ)</code>、<code>T = R × tan(θ/2)</code><br>
       　Rが大きいほど T は伸びます（R200・45°で T=82.843mm）。同じ形でも実長と交点寸法では数字が大きく違います。<br>
       ・<b>弦と矢高</b>（中心が遠いとき） … <code>弦 = 2R·sin(θ/2)</code>、<code>矢高 = R(1−cos(θ/2))</code><br>
+      ・<b>図の向き</b> … 見せ方だけを変えます。左右反転は <code>x → −x</code>、回転は画面上で時計回りに <code>(x, y) → (y, −x)</code> を回数ぶん。反転→回転の順に当てるので、<b>この2つで8通りすべて</b>になります（上下反転＝左右反転＋180°）。回転は始端を中心にするので、始端はどの向きでも動きません。展開長・端点間距離・弧長・弦は向きで変わりません。<br>
       ・端が「0」のとき … 弧から始まる／弧で終わる形として扱います<br>
       ・<b>展開長 = 直線部の合計 + 円弧部の合計</b>（中心線の長さ）<br>
       ・角度は<b>度・分・秒</b>でも入れられます（<code>1°47′24″</code> の形式）<br>
@@ -261,6 +274,15 @@
 </details>
 
 
+
+  <!-- 図の向き（v93）: 見せ方だけを変える。入力値は書き換えない。 -->
+  <div class="turnRow">
+    <span class="modeLab">図の向き</span>
+    <button type="button" class="modeBtn" id="turnFlip" aria-pressed="false">⇄ 左右反転</button>
+    <button type="button" class="modeBtn" id="turnRot">↻ 90°回す</button>
+    <button type="button" class="modeBtn" id="turnReset">元に戻す</button>
+    <span class="modeNote" id="turnNote">図面の向きに合わせられます。寸法・角度・展開長は変わりません。</span>
+  </div>
 
   <!-- 図面シート -->
   <div class="sheet">
@@ -348,6 +370,8 @@
       <tbody id="lyBody"></tbody>
     </table>
     <div class="lyFoot" id="lyFoot"></div>
+    <!-- v94: 段ボールの左下の角に、始点と終点を合わせられる向きを教える -->
+    <div id="alignBox"></div>
     <div id="farBox"></div>
     <button class="copy" type="button" id="copyLayout" style="margin-top:10px">この座標をコピー</button>
   </details>
@@ -375,6 +399,12 @@
   var straights=[''];
   var bends=[];
   var mode='act';
+  /* 図の向き（v93）。見せ方だけを変える。入力値は書き換えない。
+     rot … 0〜3。画面上で時計回りに 90°×rot
+     flip … 左右反転。反転→回転 の順に当てる。
+     この2つで8通りすべてを出せる（上下反転＝左右反転＋180°）。 */
+  var rot=0;
+  var flip=false;
 
   function zen(v){
     return String(v).replace(/[０-９．−]/g,function(c){
@@ -625,6 +655,115 @@
     te.textContent='終';dyn.appendChild(te);
   }
 
+  /* ---- 図の向きを変える（v93）----
+     向きは見せ方だけ。図・座標表・段ボール座標・外形をすべて同じ向きにする。
+     図だけ回して表がそのままだと、突き合わせられず かえって危ない。 */
+  function turn(p){
+    /* 反転 → 回転 の順。回転は原点(始端)まわりなので、どの向きでも
+       始端は (0,0) のまま動かない。 */
+    var x=flip? -p.x : p.x, y=p.y, k, t;
+    for(k=0;k<rot;k++){ t=x; x=y; y=-t; }   /* 画面上で時計回り90°: (x,y)→(y,−x) */
+    return {x:x, y:y};
+  }
+  function viewOf(m){
+    if(!m) return null;
+    if(!flip && rot===0) return m;          /* そのままなら作り直さない */
+    var v={}, k;
+    for(k in m) if(Object.prototype.hasOwnProperty.call(m,k)) v[k]=m[k];
+    v.arcs=[];
+    m.arcs.forEach(function(ar){
+      v.arcs.push({
+        t1:turn(ar.t1), t2:turn(ar.t2), c:turn(ar.c), apex:turn(ar.apex),
+        r:ar.r, len:ar.len,
+        /* ★反転すると弧を回る向きが逆になる。回転では変わらない。
+           a は中間点の計算（arcMid）に効くので、ここで符号を合わせる。 */
+        a: flip? -ar.a : ar.a
+      });
+    });
+    v.nodes=m.nodes.map(turn);
+    v.end=turn(m.end);
+    /* draw() は A[i] の符号で円弧の回り方(sweep)を決める。反転で逆になる。 */
+    v.A= flip? m.A.map(function(a){return -a}) : m.A.slice();
+    /* 90°の倍数の回転と軸対称は、外形の枠をそのまま枠に移す。
+       4隅を移して min/max を取り直せば正確。 */
+    var xs=[], ys=[];
+    [[m.minX,m.minY],[m.maxX,m.minY],[m.minX,m.maxY],[m.maxX,m.maxY]].forEach(function(c){
+      var q=turn({x:c[0],y:c[1]}); xs.push(q.x); ys.push(q.y);
+    });
+    v.minX=Math.min.apply(null,xs); v.maxX=Math.max.apply(null,xs);
+    v.minY=Math.min.apply(null,ys); v.maxY=Math.max.apply(null,ys);
+    return v;
+  }
+  /* ── 段ボールの左下の角に合わせる（v94）──
+     ムギさんのやり方: 左の辺に始点、下の辺に終点を乗せて、そこから描く。
+     ★始点は回転の中心なので、どの向きでも (0,0) のまま動かない。
+       外形の枠も90°回転と軸対称なら枠のまま移る。だから8通りの判定は
+       <4隅と終点を移すだけ>で足りる。実際に8回描き直す必要はない。 */
+  function fitOf(m,fp,rt){
+    function tp(p){
+      var x=fp? -p.x : p.x, y=p.y, k, t;
+      for(k=0;k<rt;k++){ t=x; x=y; y=-t; }
+      return {x:x,y:y};
+    }
+    var xs=[], ys=[];
+    [[m.minX,m.minY],[m.maxX,m.minY],[m.minX,m.maxY],[m.maxX,m.maxY]].forEach(function(c){
+      var q=tp({x:c[0],y:c[1]}); xs.push(q.x); ys.push(q.y);
+    });
+    var mnX=Math.min.apply(null,xs), mnY=Math.min.apply(null,ys);
+    var e=tp(m.end);
+    /* 始点は常に(0,0)。左の辺までの距離＝ −mnX（0なら辺の上）。 */
+    return { sx:0-mnX, ey:e.y-mnY };
+  }
+  function alignPlan(m){
+    var best=null, cur=fitOf(m,flip,rot), list=[], fp, rt, f, presses;
+    for(fp=0;fp<2;fp++)for(rt=0;rt<4;rt++){
+      f=fitOf(m,!!fp,rt);
+      if(f.sx<1e-6&&f.ey<1e-6){
+        presses=((!!fp)!==flip?1:0)+((rt-rot+4)%4);
+        list.push({fp:!!fp,rt:rt,p:presses});
+      }
+    }
+    list.forEach(function(o){ if(!best||o.p<best.p) best=o; });
+    return { cur:cur, ok:(cur.sx<1e-6&&cur.ey<1e-6), best:best, any:list.length>0 };
+  }
+  function alignView(m){
+    var box=$('alignBox');
+    box.innerHTML='';
+    if(!m||oriMode!=='ll')return;          /* 左下の角の話なので左下原点のときだけ */
+    var a=alignPlan(m), h;
+    if(a.ok){
+      h='<div class="alignCard ok"><span class="amark">✓ いまの向きで合っています。</span><br>'+
+        '段ボールの<b>左の辺に始点</b>、<b>下の辺に終点</b>が乗ります。左下の角を(0,0)にして、'+
+        '表のとおりに点を打ってください。</div>';
+    }else if(a.best){
+      /* 片方だけ合っていることが多い。「0.000mm 内側」と書くと、
+         乗っているのに外れているように読める。合っている側は○で出す。 */
+      var ms=[];
+      ms.push(a.cur.sx<1e-6 ? '始点は<span class="amark">左の辺に乗っています</span>'
+                            : '始点が左の辺から<span class="amiss">'+fmt(a.cur.sx)+'mm 内側</span>');
+      ms.push(a.cur.ey<1e-6 ? '終点は<span class="amark">下の辺に乗っています</span>'
+                            : '終点が下の辺から<span class="amiss">'+fmt(a.cur.ey)+'mm 上</span>');
+      h='<div class="alignCard tip">いまの向きは、'+ms.join('、')+'です。<br>'+
+        '<b>両方そろう向き</b>があります。'+
+        '<button type="button" id="alignGo" data-fp="'+(a.best.fp?1:0)+'" data-rt="'+a.best.rt+'">'+
+        'その向きにする</button></div>';
+    }else{
+      h='<div class="alignCard tip">この形は、どの向きにしても'+
+        '「始点＝左の辺・終点＝下の辺」の両方には合いません'+
+        '（始点より左、または終点より下に形がふくらむため）。<br>'+
+        'いまの向きでは 始点が左の辺から <b>'+fmt(a.cur.sx)+'mm 内側</b>、'+
+        '終点が下の辺から <b>'+fmt(a.cur.ey)+'mm 上</b>になります。'+
+        'この数字ぶん内側に取れば、<b>図全体は段ボールに収まります</b>。</div>';
+    }
+    box.innerHTML=h;
+  }
+
+  function turnLabel(){
+    var deg=[0,90,180,270][rot];
+    if(!flip&&!deg) return 'そのまま';
+    return (flip?'左右反転':'')+((flip&&deg)?' ＋ ':'')+(deg?deg+'°回転':'');
+  }
+
   /* ---- 段ボールに写すための座標（v91）----
      用途: 点を打つ → 直線は点同士を結ぶ → 曲線はコンパス。
      コンパスが使えるのは中心が紙に乗るときだけなので、乗らない曲げには
@@ -651,10 +790,11 @@
     var ang=a1+(ar.a*Math.PI/180)*(k/steps);
     return {x:ar.c.x+ar.r*Math.cos(ang), y:ar.c.y+ar.r*Math.sin(ang)};
   }
-  function layout(m){
+  function layout(m,base){
     var body=$('lyBody'), foot=$('lyFoot'), far=$('farBox');
     body.innerHTML=''; far.innerHTML=''; foot.textContent='';
     lastLayout='';
+    alignView(base||null);      /* 向きの案内は<回す前の形>から8通りを調べる */
     if(!m){ foot.textContent='直線と曲げを入力すると座標が出ます'; return; }
 
     /* 原点のずらし量。左下は全部プラスになる。 */
@@ -730,6 +870,7 @@
 
   /* ---- 表示更新 ---- */
   var lastModel=null;
+  var lastView=null;
   function recalc(){
     var m=compute();
     if(m.err){
@@ -738,18 +879,21 @@
       $('vDist').textContent='―';$('vX').textContent='―';$('vY').textContent='―';
       $('vBend').textContent=String(bends.length);
       $('secBody').innerHTML='';$('coBody').innerHTML='';
-      layout(null);
+      layout(null,null);
       $('statusTxt').textContent=m.err;
       $('statusTxt').className='statusTxt';
       draw(null);
       return;
     }
     lastModel=m;
+    var mv=viewOf(m);            /* 向きを当てたもの。図と座標はこちらを使う */
+    lastView=mv;
     $('out').textContent=fmt(m.dev);
     $('vDist').textContent=fmt(m.dist);
     $('vBend').textContent=String(m.n);
-    $('vX').textContent=fmt(m.maxX-m.minX);
-    $('vY').textContent=fmt(m.maxY-m.minY);
+    /* 外形は向きで入れ替わる（90°回すと X と Y が入れ替わる） */
+    $('vX').textContent=fmt(mv.maxX-mv.minX);
+    $('vY').textContent=fmt(mv.maxY-mv.minY);
 
     var sb=$('secBody');
     sb.innerHTML='';
@@ -773,8 +917,8 @@
     var cb=$('coBody');
     cb.innerHTML='';
     var pts=[['始端',{x:0,y:0}]];
-    for(i=0;i<m.n;i++)pts.push(['交点'+(i+1),m.nodes[i+1]]);
-    pts.push(['終端',m.end]);
+    for(i=0;i<m.n;i++)pts.push(['交点'+(i+1),mv.nodes[i+1]]);
+    pts.push(['終端',mv.end]);
     pts.forEach(function(a){
       var tr=document.createElement('tr');
       tr.innerHTML='<td>'+a[0]+'</td><td>'+fmt(a[1].x)+'</td><td>'+fmt(a[1].y)+'</td>';
@@ -788,8 +932,8 @@
       $('statusTxt').textContent=(m.startArc?'弧から開始 ':'')+(m.endArc?'弧で終了 ':'')+'| 実直線長は内訳表を参照';
       $('statusTxt').className='statusTxt';
     }
-    layout(m);
-    draw(m);
+    layout(mv,m);
+    draw(mv);
   }
 
   /* ---- 保存（v79）----
@@ -800,7 +944,7 @@
   function snapshot(){
     var i, bs=[];
     for(i=0;i<bends.length;i++) bs.push({a:String(bends[i].a||''),r:String(bends[i].r||'')});
-    return { s:straights.slice(), b:bs, m:mode };
+    return { s:straights.slice(), b:bs, m:mode, rt:rot, fp:flip?1:0 };
   }
   function applySaved(o){
     if(!o||typeof o!=="object") return false;
@@ -814,6 +958,9 @@
     /* ★mode が無い保存は v90 以前のもの＝<交点寸法で打った数字>。
        ここで実長にすると、同じ数字の意味が黙って変わってしまう。 */
     mode=(o.m==='act')?'act':'apex';
+    /* 向きは無ければ「そのまま」。古い保存の見え方を変えない。 */
+    rot=(o.rt===1||o.rt===2||o.rt===3)?o.rt:0;
+    flip=!!o.fp;
     return true;
   }
   function persist(){
@@ -838,7 +985,9 @@
     for(i=0;i<bends.length;i++) if((bends[i].a&&bends[i].a!=="")||(bends[i].r&&bends[i].r!=="")) return true;
     return false;
   };
-  window.krRedraw=function(){ buildRows(); recalc(); persist(); };
+  /* ★記録から呼び出すと state だけが差し替わる。ボタンの見た目も
+     合わせ直さないと、実際の設定とボタンがずれる（v91の見落とし）。 */
+  window.krRedraw=function(){ paintMode(); paintOri(); paintTurn(); buildRows(); recalc(); persist(); };
 
   /* ---- イベント ---- */
   $('segList').addEventListener('input',function(e){
@@ -854,8 +1003,12 @@
      ★切り替えても<打った数字はそのまま>。意味だけが変わる。
        勝手に換算して数字を書き換えると、図面と突き合わせたときに
        自分が何を打ったのか分からなくなる。 */
-  function setMode(v){
-    mode=v;
+  /* ★paint* は<見た目を状態に合わせるだけ>。状態は変えない。
+     記録から呼び出したときは状態だけが差し替わるので、ボタンの塗り直しを
+     別に呼べる形にしておく必要がある（v91ではこれが無く、記録を開くと
+     入れ方のボタンが実際の状態とずれていた）。 */
+  function paintMode(){
+    var v=mode;
     $('modeAct').className='modeBtn'+(v==='act'?' on':'');
     $('modeApex').className='modeBtn'+(v==='apex'?' on':'');
     $('modeAct').setAttribute('aria-pressed',v==='act'?'true':'false');
@@ -863,10 +1016,13 @@
     $('modeNote').textContent=(v==='act')
       ? '真っすぐな部分だけの長さ（曲げの始まり〜終わり）'
       : '曲げの延長線が交わる点までの長さ（図面によくある入れ方）';
+  }
+  function setMode(v){
+    mode=v; paintMode();
     buildRows();recalc();persist();
   }
-  function setOri(v){
-    oriMode=v;
+  function paintOri(){
+    var v=oriMode;
     $('oriLL').className='modeBtn'+(v==='ll'?' on':'');
     $('oriSt').className='modeBtn'+(v==='st'?' on':'');
     $('oriLL').setAttribute('aria-pressed',v==='ll'?'true':'false');
@@ -874,8 +1030,41 @@
     $('oriNote').textContent=(v==='ll')
       ? '図全体の左下が(0,0)。全部プラスなので段ボールの角から測れます'
       : '始端が(0,0)。曲がる向きによってはマイナスが出ます';
+  }
+  function setOri(v){
+    oriMode=v; paintOri();
     recalc();
   }
+  /* ---- 図の向き（v93）----
+     ★向きは<見せ方>だけ。打った寸法・角度は書き換えない。
+       書き換えると、図面と突き合わせたときに何を打ったのか分からなくなる。 */
+  function paintTurn(){
+    $('turnFlip').className='modeBtn'+(flip?' on':'');
+    $('turnFlip').setAttribute('aria-pressed',flip?'true':'false');
+    $('turnRot').textContent='↻ 90°回す'+(rot?'（'+[0,90,180,270][rot]+'°）':'');
+    var plain=(!flip&&rot===0);
+    $('turnReset').disabled=plain;
+    $('turnNote').innerHTML= plain
+      ? '図面の向きに合わせられます。寸法・角度・展開長は変わりません。'
+      : 'いまの向き: <b>'+turnLabel()+'</b>　図・座標・外形はこの向きで出ます（寸法・角度・展開長は変わりません）。';
+  }
+  function setTurn(){
+    paintTurn();
+    recalc();persist();
+  }
+  /* 「その向きにする」は作り直されるので、親で受ける（v94） */
+  $('alignBox').addEventListener('click',function(e){
+    var b=e.target;
+    if(!b||b.id!=='alignGo')return;
+    flip=(b.getAttribute('data-fp')==='1');
+    rot=Number(b.getAttribute('data-rt'))||0;
+    setTurn();
+    toast('始点を左の辺・終点を下の辺に合わせました');
+  });
+  $('turnFlip').addEventListener('click',function(){flip=!flip;setTurn()});
+  $('turnRot').addEventListener('click',function(){rot=(rot+1)%4;setTurn()});
+  $('turnReset').addEventListener('click',function(){rot=0;flip=false;setTurn()});
+
   $('modeAct').addEventListener('click',function(){setMode('act')});
   $('modeApex').addEventListener('click',function(){setMode('apex')});
   $('oriLL').addEventListener('click',function(){setOri('ll')});
@@ -911,10 +1100,12 @@
     }
     lines.push('展開長(切断長): '+fmt(m.dev));
     lines.push('端点間距離: '+fmt(m.dist));
-    lines.push('外形: X='+fmt(m.maxX-m.minX)+' × Y='+fmt(m.maxY-m.minY));
+    var mv=lastView||m;
+    lines.push('向き: '+turnLabel());
+    lines.push('外形: X='+fmt(mv.maxX-mv.minX)+' × Y='+fmt(mv.maxY-mv.minY));
     var pts=['始端(0, 0)'];
-    for(i=0;i<m.n;i++)pts.push('交点'+(i+1)+'('+fmt(m.nodes[i+1].x)+', '+fmt(m.nodes[i+1].y)+')');
-    pts.push('終端('+fmt(m.end.x)+', '+fmt(m.end.y)+')');
+    for(i=0;i<m.n;i++)pts.push('交点'+(i+1)+'('+fmt(mv.nodes[i+1].x)+', '+fmt(mv.nodes[i+1].y)+')');
+    pts.push('終端('+fmt(mv.end.x)+', '+fmt(mv.end.y)+')');
     lines.push('座標: '+pts.join(' '));
     var s=lines.join('\n');
     if(navigator.clipboard&&navigator.clipboard.writeText){
@@ -942,8 +1133,9 @@
   });
 
   restoreSaved();
-  setMode(mode);          /* 保存から戻した入れ方をボタンにも反映する */
-  setOri(oriMode);
+  paintMode();            /* 保存から戻した設定をボタンにも反映する */
+  paintOri();
+  paintTurn();
   buildRows();
   recalc();
 })();
