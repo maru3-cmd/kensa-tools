@@ -41,6 +41,20 @@
   .titleblock b{font-weight:700}
 
   .hint{margin-top:10px;font-size:11px;color:#5B707E;line-height:1.7;padding:0 2px}
+  /* v91: 直線の入れ方・原点の切り替え */
+  .modeRow,.oriRow{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:12px}
+  .modeLab{font-size:11px;color:#5B707E;font-weight:700}
+  .modeBtn{font:inherit;font-size:12px;padding:7px 14px;min-height:36px;
+    border:1px solid #C9D3DA;border-radius:9px;background:#fff;color:#1F3341;cursor:pointer}
+  .modeBtn.on{background:#1F3341;color:#fff;border-color:#1F3341;font-weight:700}
+  .modeNote{font-size:11px;color:#5B707E;flex-basis:100%}
+  .lyFoot{font-size:11px;color:#5B707E;line-height:1.7;margin-top:8px}
+  .lyMemo{font-size:10px;color:#5B707E}
+  .lyFar{color:#B23B2E;font-weight:700}
+  .farCard{border:1px solid #E7B7B0;background:#FBECEA;border-radius:10px;
+    padding:9px 11px;margin-top:9px}
+  .farCard h5{margin:0 0 5px;font-size:12px;color:#B23B2E}
+  .farCard .fc{font-size:11px;color:#1F3341;line-height:1.7}
   .hint b{color:var(--ink)}
 
   .inputs{margin-top:8px;display:flex;flex-direction:column;gap:8px}
@@ -202,9 +216,11 @@
   <div class="gb">
     <h4>使い方</h4>
     <ol>
-      <li>「直線 → 曲げ → 直線 …」の並びを入れます。直線は図面の<b>交点寸法</b>、曲げは<b>θ（＋左/−右）とR</b>。</li>
+      <li>まず<b>直線の入れ方</b>を選びます。<b>実長</b>＝真っすぐな部分だけの長さ、<b>交点寸法</b>＝曲げの延長線が交わる点までの長さ。図面がどちらで入っているかで選んでください。</li>
+      <li>「直線 → 曲げ → 直線 …」の順に入れます。曲げは<b>θ（＋左/−右）とR</b>。</li>
       <li>「＋ 曲げ+直線を追加」で杖型・S字・多段曲げも表現できます。最初から弧で始まる形は直線1を0に。</li>
       <li>入力すると形状が描かれ、<b>展開長（切断長）・端点間距離・外形</b>が出ます。</li>
+      <li>実物大で写すときは<b>「段ボールに写す座標」</b>を開きます。打つ点（接点）とコンパスの中心が出ます。<b>中心が図の外に出る曲げ</b>には、弦・矢高と中間点が出るのでコンパス無しで描けます。</li>
     </ol>
     <div class="src">
       <b>計算のしかた</b><br>
@@ -212,6 +228,10 @@
       ・進む向き … 曲げ角を順に足していく … <code>φᵏ = φᵏ₋₁ + 曲げ角ᵏ</code>（真っすぐの向きが0°、＋が左曲げ）<br>
       ・次の頂点 … <code>(x, y) = 前の頂点 + L × (cos φ, sin φ)</code>（Lは交点寸法から円弧の食い込み分を引いた実効長）<br>
       ・曲げ部の円弧 … 中心線の曲げ半径 R と曲げ角から各頂点に当てはめます。弧の長さは <code>R × 角度[rad]</code><br>
+      ・<b>実長で入れたとき</b> … タンジェント長を足し戻して交点寸法にしてから組み立てます …
+      <code>交点寸法 = 実長 + T(前の曲げ) + T(次の曲げ)</code>、<code>T = R × tan(θ/2)</code><br>
+      　Rが大きいほど T は伸びます（R200・45°で T=82.843mm）。同じ形でも実長と交点寸法では数字が大きく違います。<br>
+      ・<b>弦と矢高</b>（中心が遠いとき） … <code>弦 = 2R·sin(θ/2)</code>、<code>矢高 = R(1−cos(θ/2))</code><br>
       ・端が「0」のとき … 弧から始まる／弧で終わる形として扱います<br>
       ・<b>展開長 = 直線部の合計 + 円弧部の合計</b>（中心線の長さ）<br>
       ・角度は<b>度・分・秒</b>でも入れられます（<code>1°47′24″</code> の形式）<br>
@@ -229,10 +249,11 @@
           <text x="66" y="52" font-size="7" fill="#D63426">端点間</text>
         </svg></div>
         <div class="gtxt">
-          <p>直線50 → 90°曲げ(R10) → 直線50 のL字パイプの切断長は？</p>
-          <p class="gset">直線1 50 ／ 曲げ θ90 R10 ／ 直線2 50</p>
-          <p class="gread">読み方：展開長（切断長）≈ <b>95.708mm</b>、外形 50×50。端点間距離も図に赤点線で出ます。</p>
-          <button class="gbtn" type="button" data-ex='{"set":[{"sel":"[data-t=\"s\"][data-i=\"0\"]","v":50},{"click":"#addBend"},{"sel":"[data-t=\"a\"][data-i=\"0\"]","v":90},{"sel":"[data-t=\"r\"][data-i=\"0\"]","v":10},{"sel":"[data-t=\"s\"][data-i=\"1\"]","v":50}]}' onclick="tryExample(this)">この例を試す</button>
+          <p>真っすぐな部分が50 → 90°曲げ(R10) → 真っすぐな部分が50 のL字パイプの切断長は？</p>
+          <p class="gset">入れ方=実長 ／ 直線1 50 ／ 曲げ θ90 R10 ／ 直線2 50</p>
+          <p class="gread">読み方：展開長（切断長）≈ <b>115.708mm</b>、外形 60×60。<br>
+                同じ「50 / 50」でも<b>交点寸法で入れると 95.708mm</b>（外形 50×50）になります。入れ方でこれだけ変わるので、図面がどちらか確かめてください。</p>
+          <button class="gbtn" type="button" data-ex='{"set":[{"click":"#modeAct"},{"sel":"[data-t=\"s\"][data-i=\"0\"]","v":50},{"click":"#addBend"},{"sel":"[data-t=\"a\"][data-i=\"0\"]","v":90},{"sel":"[data-t=\"r\"][data-i=\"0\"]","v":10},{"sel":"[data-t=\"s\"][data-i=\"1\"]","v":50}]}' onclick="tryExample(this)">この例を試す</button>
         </div>
       </div>
     </div>
@@ -261,8 +282,15 @@
     </div>
   </div>
 
+  <div class="modeRow">
+    <span class="modeLab">直線の入れ方</span>
+    <button type="button" class="modeBtn on" id="modeAct" aria-pressed="true">実長</button>
+    <button type="button" class="modeBtn" id="modeApex" aria-pressed="false">交点寸法</button>
+    <span class="modeNote" id="modeNote">真っすぐな部分だけの長さ（曲げの始まり〜終わり）</span>
+  </div>
   <div class="hint">
-    直線は<b>交点寸法</b>(曲げの延長線が交わる点までの長さ=図面の入れ方)で入力。曲げ角度は<b>進行方向が変わる量</b>で、<b>+が左曲げ/−が右曲げ</b>。Rは中心線の曲げ半径です。<b>弧から始まる形は最初の直線を0</b>に(終わりも同様)。
+    曲げ角度は<b>進行方向が変わる量</b>で、<b>+が左曲げ/−が右曲げ</b>。Rは中心線の曲げ半径です。<b>弧から始まる形は最初の直線を0</b>に(終わりも同様)。<br>
+    ホースのように<b>Rが大きいと、実長と交点寸法は大きく違います</b>（R200・45°でタンジェント長82.8mm）。図面がどちらで入っているか確かめてから選んでください。
   </div>
 
   <!-- 区間入力 -->
@@ -304,6 +332,26 @@
     </table>
   </details>
 
+  <!-- ═══ 段ボールに写すための座標（v91） ═══
+       用途: 点を打つ → 直線は点同士を結ぶ → 曲線はコンパス。
+       中心が遠すぎてコンパスが使えない曲げのために、弦・矢高と中間点も出す。 -->
+  <details class="dtl" id="layoutBox">
+    <summary>▼ 段ボールに写す座標（打つ点・コンパスの中心）</summary>
+    <div class="oriRow">
+      <span class="modeLab">原点</span>
+      <button type="button" class="modeBtn on" id="oriLL" aria-pressed="true">左下</button>
+      <button type="button" class="modeBtn" id="oriSt" aria-pressed="false">始端</button>
+      <span class="modeNote" id="oriNote">図全体の左下が(0,0)。全部プラスなので段ボールの角から測れます</span>
+    </div>
+    <table class="dt" style="margin-top:8px">
+      <thead><tr><th>打つ点</th><th>X</th><th>Y</th><th>メモ</th></tr></thead>
+      <tbody id="lyBody"></tbody>
+    </table>
+    <div class="lyFoot" id="lyFoot"></div>
+    <div id="farBox"></div>
+    <button class="copy" type="button" id="copyLayout" style="margin-top:10px">この座標をコピー</button>
+  </details>
+
   <button class="clearBtn" type="button" onclick="armClear(this)">すべて消去</button>
 
   <footer>
@@ -320,9 +368,13 @@
   var NS='http://www.w3.org/2000/svg';
   var MAXBEND=4;
 
-  // 状態: 直線 straights[0..n](交点寸法), 曲げ bends[0..n-1] {a,r}
+  // 状態: 直線 straights[0..n], 曲げ bends[0..n-1] {a,r}
+  // mode … 直線の入れ方。'act'=実長(真っすぐな部分だけ) / 'apex'=交点寸法
+  //   v90まで交点寸法だけだった。ホースのようにRが大きいとタンジェント長が
+  //   数十mmになり、実長のつもりで入れると曲げ同士が重なって形が崩れる(v91)。
   var straights=[''];
   var bends=[];
+  var mode='act';
 
   function zen(v){
     return String(v).replace(/[０-９．−]/g,function(c){
@@ -364,7 +416,10 @@
       d.className='seg st';
       d.innerHTML=
         '<span class="tag">直線'+(i+1)+'</span>'+
-        '<span class="fld"><span class="fl">'+(i===0&&n>0?'交点寸法(0=弧から開始)':(i===n&&n>0?'交点寸法(0=弧で終了)':'長さ'))+'</span>'+
+        /* v91: 途中の直線だけ「長さ」と出ていたが中身は交点寸法だった。
+           全部同じ表記にそろえ、いまの入れ方を必ず書く。 */
+        '<span class="fld"><span class="fl">'+(mode==='act'?'実長':'交点寸法')+
+          (n>0&&i===0?'(0=弧から開始)':(n>0&&i===n?'(0=弧で終了)':''))+'</span>'+
         '<input data-t="s" data-i="'+i+'" type="text" inputmode="decimal" autocomplete="off" placeholder="―"></span>'+
         '<span class="unit">mm</span>';
       box.appendChild(d);
@@ -406,8 +461,21 @@
     var T=[];
     for(i=0;i<n;i++)T.push(R[i]*Math.tan(Math.abs(A[i])*Math.PI/360));
 
+    /* v91: 実長で入れたときは、ここで交点寸法に直してから先へ渡す。
+         交点寸法ᵢ = 実長ᵢ + T(前の曲げ) + T(次の曲げ)
+       こうすると以降の計算(交点寸法で組んである)を一切変えずに済む。
+       実長モードでは「短くて重なる」が起きない代わりに、Rが大きいと
+       交点寸法が実長よりずっと長くなる。内訳表に両方出す。 */
+    var Lapex=L.slice();
+    if(mode==='act'){
+      for(i=0;i<=n;i++){
+        if(L[i]===0)continue;               /* 0は「弧から開始/弧で終了」の合図 */
+        Lapex[i]=L[i]+(i>0?T[i-1]:0)+(i<n?T[i]:0);
+      }
+    }
+
     // 弧から開始/終了(交点寸法0)
-    var Leff=L.slice();
+    var Leff=Lapex.slice();
     var startArc=false, endArc=false;
     if(n>0&&L[0]===0){Leff[0]=T[0];startArc=true}
     if(n>0&&L[n]===0){Leff[n]=T[n-1];endArc=true}
@@ -417,7 +485,8 @@
     for(i=0;i<=n;i++){
       var a=Leff[i]-(i>0?T[i-1]:0)-(i<n?T[i]:0);
       act.push(a);
-      if(a<-1e-9&&!warn)warn='直線'+(i+1)+' が短く、曲げ同士が重なります(交点寸法を確認)';
+      if(a<-1e-9&&!warn)warn='直線'+(i+1)+' が短く、曲げ同士が重なります('+
+        (mode==='act'?'実長':'交点寸法')+'とR・角度を確認)';
     }
 
     // ノード(始端・交点・終端)と方位
@@ -472,7 +541,7 @@
 
     var dist=Math.sqrt(end.x*end.x+end.y*end.y);
 
-    return {n:n,L:L,Leff:Leff,A:A,R:R,T:T,act:act,arcs:arcs,nodes:nodes,end:end,
+    return {n:n,L:L,Lapex:Lapex,mode:mode,Leff:Leff,A:A,R:R,T:T,act:act,arcs:arcs,nodes:nodes,end:end,
       dev:dev,dist:dist,minX:minX,maxX:maxX,minY:minY,maxY:maxY,
       warn:warn,startArc:startArc,endArc:endArc};
   }
@@ -556,6 +625,109 @@
     te.textContent='終';dyn.appendChild(te);
   }
 
+  /* ---- 段ボールに写すための座標（v91）----
+     用途: 点を打つ → 直線は点同士を結ぶ → 曲線はコンパス。
+     コンパスが使えるのは中心が紙に乗るときだけなので、乗らない曲げには
+     弦・矢高と中間点を出す。 */
+  var oriMode='ll';        /* 'll'=図全体の左下 / 'st'=始端 */
+  var lastLayout='';
+
+  function farInfo(m,ar){
+    /* 「遠い」＝コンパスの針が<図の外に出る>こと。段ボールは図の外形に
+       少し足した大きさで用意するので、中心が外形の矩形からはみ出したら
+       針を刺せない。
+       ★最初 R と図の対角線を比べる作りにしたが、それでは中心が外に出ていても
+         引っかからなかった（R200・外形161×274で中心X=260）。長さではなく
+         <位置>で見ること。 */
+    var out=0, d;
+    d=m.minX-ar.c.x; if(d>out)out=d;
+    d=ar.c.x-m.maxX; if(d>out)out=d;
+    d=m.minY-ar.c.y; if(d>out)out=d;
+    d=ar.c.y-m.maxY; if(d>out)out=d;
+    return {far:out>0, out:out};
+  }
+  function arcMid(ar,k,steps){
+    var a1=Math.atan2(ar.t1.y-ar.c.y, ar.t1.x-ar.c.x);
+    var ang=a1+(ar.a*Math.PI/180)*(k/steps);
+    return {x:ar.c.x+ar.r*Math.cos(ang), y:ar.c.y+ar.r*Math.sin(ang)};
+  }
+  function layout(m){
+    var body=$('lyBody'), foot=$('lyFoot'), far=$('farBox');
+    body.innerHTML=''; far.innerHTML=''; foot.textContent='';
+    lastLayout='';
+    if(!m){ foot.textContent='直線と曲げを入力すると座標が出ます'; return; }
+
+    /* 原点のずらし量。左下は全部プラスになる。 */
+    var ox=(oriMode==='ll')? -m.minX : 0;
+    var oy=(oriMode==='ll')? -m.minY : 0;
+    function P(p){ return {x:p.x+ox, y:p.y+oy}; }
+
+    var rows=[], i, txt=[];
+    rows.push(['始端',P({x:0,y:0}),'ここから始める']);
+    for(i=0;i<m.n;i++){
+      var ar=m.arcs[i];
+      var fi=farInfo(m,ar), isFar=fi.far;
+      rows.push(['曲げ'+(i+1)+' 接点(入)',P(ar.t1),'直線'+(i+1)+'の終わり＝弧の始まり']);
+      rows.push(['曲げ'+(i+1)+' 中心',P(ar.c),
+        isFar? '<span class="lyFar">図の外に'+fmt(fi.out)+'mm はみ出す・下の弦と矢高で描く</span>'
+             : 'コンパスの針。半径 '+fmt(ar.r)]);
+      rows.push(['曲げ'+(i+1)+' 接点(出)',P(ar.t2),'弧の終わり＝直線'+(i+2)+'の始まり']);
+    }
+    rows.push(['終端',P(m.end),'ここまで']);
+
+    rows.forEach(function(r){
+      var tr=document.createElement('tr');
+      tr.innerHTML='<td>'+r[0]+'</td><td>'+fmt(r[1].x)+'</td><td>'+fmt(r[1].y)+
+        '</td><td class="lyMemo">'+r[2]+'</td>';
+      body.appendChild(tr);
+      txt.push(r[0]+'\tX='+fmt(r[1].x)+'\tY='+fmt(r[1].y));
+    });
+
+    foot.innerHTML='単位mm。'+(oriMode==='ll'
+      ? '図全体の左下が(0,0)なので、<b>段ボールの角から X は横・Y は縦</b>に測れます。'
+      : '始端が(0,0)です。曲がる向きによっては<b>マイナスが出ます</b>。')+
+      '<br>打つ順番は上から。<b>直線は点と点を定規で結び</b>、<b>弧は中心にコンパスの針を刺して接点から接点まで</b>。'+
+      '外形は '+fmt(m.maxX-m.minX)+' × '+fmt(m.maxY-m.minY)+' mm なので、段ボールはこれより大きめに。';
+
+    /* 中心が遠い曲げ … 弦・矢高・中間点 */
+    var fars=[];
+    for(i=0;i<m.n;i++) if(farInfo(m,m.arcs[i]).far) fars.push(i);
+    if(fars.length){
+      fars.forEach(function(i){
+        var ar=m.arcs[i];
+        var dx=ar.t2.x-ar.t1.x, dy=ar.t2.y-ar.t1.y;
+        var chord=Math.sqrt(dx*dx+dy*dy);
+        /* 矢高 = R − √(R² − (弦/2)²)。弦の中央から弧までの直角距離。 */
+        var half=chord/2;
+        var sag=ar.r-Math.sqrt(Math.max(ar.r*ar.r-half*half,0));
+        var steps=Math.min(10,Math.max(3,Math.ceil(Math.abs(ar.a)/15)));
+        var box=document.createElement('div');
+        box.className='farCard';
+        var fi=farInfo(m,ar);
+        var h='<h5>曲げ'+(i+1)+' は中心が図の外（R'+fmt(ar.r)+'・はみ出し'+fmt(fi.out)+'mm）</h5>'+
+          '<div class="fc">段ボールを'+fmt(fi.out)+'mm 以上大きく取ればコンパスも使えます。'+
+          'そうでなければ、こちらで描いてください。<br>'+
+          '・弦（接点から接点までの直線）… <b>'+fmt(chord)+' mm</b><br>'+
+          '・矢高（弦の中央から弧までの直角距離）… <b>'+fmt(sag)+' mm</b><br>'+
+          '弦を引き、中央から直角に矢高だけ離れた点を取ります。下の中間点も打って、'+
+          'しなる定規かフリーハンドでなめらかに結んでください。</div>'+
+          '<table class="dt" style="margin-top:6px"><thead><tr><th>中間点</th><th>X</th><th>Y</th></tr></thead><tbody>';
+        var k;
+        txt.push('');
+        txt.push('曲げ'+(i+1)+' 弦='+fmt(chord)+' 矢高='+fmt(sag));
+        for(k=1;k<steps;k++){
+          var p=P(arcMid(ar,k,steps));
+          h+='<tr><td>'+k+'/'+steps+'</td><td>'+fmt(p.x)+'</td><td>'+fmt(p.y)+'</td></tr>';
+          txt.push('  中間'+k+'/'+steps+'\tX='+fmt(p.x)+'\tY='+fmt(p.y));
+        }
+        h+='</tbody></table>';
+        box.innerHTML=h;
+        far.appendChild(box);
+      });
+    }
+    lastLayout=txt.join('\n');
+  }
+
   /* ---- 表示更新 ---- */
   var lastModel=null;
   function recalc(){
@@ -566,6 +738,7 @@
       $('vDist').textContent='―';$('vX').textContent='―';$('vY').textContent='―';
       $('vBend').textContent=String(bends.length);
       $('secBody').innerHTML='';$('coBody').innerHTML='';
+      layout(null);
       $('statusTxt').textContent=m.err;
       $('statusTxt').className='statusTxt';
       draw(null);
@@ -585,6 +758,9 @@
       var tr=document.createElement('tr');
       var inp=m.startArc&&i===0?'0(弧から)':(m.endArc&&i===m.n?'0(弧まで)':fmt(m.L[i]));
       if(!(m.startArc&&i===0)&&!(m.endArc&&i===m.n))inp=fmt(m.L[i]);
+      /* 実長で入れたときは、計算に使った交点寸法も出す。
+         Rが大きいと数十mm違うので、図面と照らすときに要る。 */
+      if(m.mode==='act'&&m.L[i]!==0&&m.Lapex[i]!==m.L[i]) inp=inp+'<span class="lyMemo">（交点 '+fmt(m.Lapex[i])+'）</span>';
       tr.innerHTML='<td>直線'+(i+1)+'</td><td>'+inp+'</td><td>'+fmt(Math.max(m.act[i],0))+'</td>';
       sb.appendChild(tr);
       if(i<m.n){
@@ -612,6 +788,7 @@
       $('statusTxt').textContent=(m.startArc?'弧から開始 ':'')+(m.endArc?'弧で終了 ':'')+'| 実直線長は内訳表を参照';
       $('statusTxt').className='statusTxt';
     }
+    layout(m);
     draw(m);
   }
 
@@ -623,7 +800,7 @@
   function snapshot(){
     var i, bs=[];
     for(i=0;i<bends.length;i++) bs.push({a:String(bends[i].a||''),r:String(bends[i].r||'')});
-    return { s:straights.slice(), b:bs };
+    return { s:straights.slice(), b:bs, m:mode };
   }
   function applySaved(o){
     if(!o||typeof o!=="object") return false;
@@ -634,6 +811,9 @@
     for(i=0;i<n;i++) bs.push({a:String((ob[i]&&ob[i].a)||''),r:String((ob[i]&&ob[i].r)||'')});
     for(i=0;i<=n;i++) ss.push(String(os[i]==null?"":os[i]));
     bends=bs; straights=ss;
+    /* ★mode が無い保存は v90 以前のもの＝<交点寸法で打った数字>。
+       ここで実長にすると、同じ数字の意味が黙って変わってしまう。 */
+    mode=(o.m==='act')?'act':'apex';
     return true;
   }
   function persist(){
@@ -670,6 +850,37 @@
     if(ty==='r')bends[i].r=t.value;
     recalc(); persist();
   });
+  /* ---- 入れ方・原点の切り替え（v91）----
+     ★切り替えても<打った数字はそのまま>。意味だけが変わる。
+       勝手に換算して数字を書き換えると、図面と突き合わせたときに
+       自分が何を打ったのか分からなくなる。 */
+  function setMode(v){
+    mode=v;
+    $('modeAct').className='modeBtn'+(v==='act'?' on':'');
+    $('modeApex').className='modeBtn'+(v==='apex'?' on':'');
+    $('modeAct').setAttribute('aria-pressed',v==='act'?'true':'false');
+    $('modeApex').setAttribute('aria-pressed',v==='apex'?'true':'false');
+    $('modeNote').textContent=(v==='act')
+      ? '真っすぐな部分だけの長さ（曲げの始まり〜終わり）'
+      : '曲げの延長線が交わる点までの長さ（図面によくある入れ方）';
+    buildRows();recalc();persist();
+  }
+  function setOri(v){
+    oriMode=v;
+    $('oriLL').className='modeBtn'+(v==='ll'?' on':'');
+    $('oriSt').className='modeBtn'+(v==='st'?' on':'');
+    $('oriLL').setAttribute('aria-pressed',v==='ll'?'true':'false');
+    $('oriSt').setAttribute('aria-pressed',v==='st'?'true':'false');
+    $('oriNote').textContent=(v==='ll')
+      ? '図全体の左下が(0,0)。全部プラスなので段ボールの角から測れます'
+      : '始端が(0,0)。曲がる向きによってはマイナスが出ます';
+    recalc();
+  }
+  $('modeAct').addEventListener('click',function(){setMode('act')});
+  $('modeApex').addEventListener('click',function(){setMode('apex')});
+  $('oriLL').addEventListener('click',function(){setOri('ll')});
+  $('oriSt').addEventListener('click',function(){setOri('st')});
+
   $('addBend').addEventListener('click',function(){
     if(bends.length>=MAXBEND){toast('曲げは最大'+MAXBEND+'箇所です');return}
     bends.push({a:'',r:''});
@@ -694,7 +905,8 @@
     var lines=['[曲げガイド計算]'];
     var i;
     for(i=0;i<=m.n;i++){
-      lines.push('直線'+(i+1)+': 交点寸法'+fmt(m.L[i])+' 実長'+fmt(Math.max(m.act[i],0)));
+      lines.push('直線'+(i+1)+': '+(m.mode==='act'?'実長(入力)':'交点寸法(入力)')+fmt(m.L[i])+
+        ' / 交点寸法'+fmt(m.Lapex[i])+' / 実直線長'+fmt(Math.max(m.act[i],0)));
       if(i<m.n)lines.push('曲げ'+(i+1)+': θ='+(m.A[i]>0?'+':'')+m.A[i]+'° R='+m.R[i]+' 弧長'+fmt(m.arcs[i].len));
     }
     lines.push('展開長(切断長): '+fmt(m.dev));
@@ -715,7 +927,23 @@
     }
   });
 
+  $('copyLayout').addEventListener('click',function(){
+    if(!lastLayout){toast('まだ座標がありません');return}
+    var head='[段ボールに写す座標] 原点='+(oriMode==='ll'?'図の左下':'始端')+' 単位mm\n';
+    var s=head+lastLayout;
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(s).then(function(){toast('コピーしました')},function(){toast('コピーできませんでした')});
+    }else{
+      var ta=document.createElement('textarea');
+      ta.value=s;document.body.appendChild(ta);ta.select();
+      try{document.execCommand('copy');toast('コピーしました')}catch(e){toast('コピーできませんでした')}
+      document.body.removeChild(ta);
+    }
+  });
+
   restoreSaved();
+  setMode(mode);          /* 保存から戻した入れ方をボタンにも反映する */
+  setOri(oriMode);
   buildRows();
   recalc();
 })();
