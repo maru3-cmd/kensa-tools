@@ -1340,6 +1340,11 @@ setTab(S.savedTab || "box");
     border-color:var(--ink);font-size:14px}
   .kpad.calcon .kpGrid button.ceq:disabled{background:#C9D3DA;border-color:#C9D3DA;color:#F2F6F8}
   .kpGrid button.cop{font-size:20px;font-weight:700;color:#1F3341;background:#F7F9FA}
+  /* v99: 計算モードのあいだだけ意味が変わるキー */
+  .kpGrid button.ceq2{font-size:22px;font-weight:700;color:#fff;background:var(--ink);
+    border-color:var(--ink)}
+  .kpGrid button.ceq2:disabled{background:#C9D3DA;border-color:#C9D3DA;color:#F2F6F8}
+  .kpHead button.paren{font-size:20px;font-weight:700;color:#1F3341}
 
   /* ── 電卓を常に出しておくボタン（v98）──
      置き場所はトップの設定で選ぶ。キーボードが開いているあいだは隠す
@@ -1898,65 +1903,157 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
   var eqEl=document.getElementById("kpEqv");
   var calcBtn=document.getElementById("kpCalcBtn");
 
-  function calcEval(s){
-    var toks=[], num="", i, c, prev;
+  /* 式の読み取り（v99でかっこに対応）。
+     戻り値は {v:数} か {err:理由}。理由が分かれば断り書きを分けられる。
+     ★eval は使わない。読み取りは <式→項→因子> の形。
+       因子 … 数 / (式) / −因子
+       項   … 因子 を × ÷ でつなぐ
+       式   … 項 を + − でつなぐ
+     組み込む前に dev/calc_probe2.js で43項目を単体で確かめてある。 */
+  function calcTok(s){
+    var t=[], num="", i, c;
     for(i=0;i<s.length;i++){
       c=s.charAt(i);
       if(c>="0"&&c<="9"){ num+=c; continue; }
       /* ★小数点が2つある数(1.2.3)は parseFloat が 1.2 として通してしまう。
-         打ち間違いが静かに別の数になるので、ここで弾く。 */
+         打ち間違いが静かに別の数になるので弾く。 */
       if(c==="."){ if(num.indexOf(".")>=0) return null; num+=c; continue; }
       if(c===" ") continue;
-      if("+-×÷".indexOf(c)<0) return null;
-      prev=toks.length? toks[toks.length-1] : null;
-      /* 先頭のマイナス、演算子の直後のマイナスは「負の数」 */
-      if(c==="-"&&num===""&&(prev===null||typeof prev==="string")){ num="-"; continue; }
-      if(num===""||num==="-"||num===".") return null;
-      toks.push(parseFloat(num)); num="";
-      toks.push(c);
+      if(num!==""){ if(num===".") return null; t.push(parseFloat(num)); num=""; }
+      if("+-×÷()".indexOf(c)<0) return null;
+      t.push(c);
     }
-    if(num===""||num==="-"||num===".") return null;
-    toks.push(parseFloat(num));
-    var k=1;
-    while(k<toks.length){
-      var op=toks[k];
-      if(op==="×"||op==="÷"){
-        var a=toks[k-1], b=toks[k+1];
-        if(op==="÷"&&b===0) return null;
-        toks.splice(k-1,3,(op==="×")? a*b : a/b);
-      }else k+=2;
-    }
-    var acc=toks[0];
-    for(k=1;k<toks.length;k+=2) acc=(toks[k]==="+")? acc+toks[k+1] : acc-toks[k+1];
-    if(!isFinite(acc)) return null;
-    return Math.round(acc*1e6)/1e6;   /* mm の桁として6桁あれば足りる */
+    if(num!==""){ if(num===".") return null; t.push(parseFloat(num)); }
+    return t;
   }
+  function calcParen(s){
+    var i, c, n=0;
+    for(i=0;i<s.length;i++){
+      c=s.charAt(i);
+      if(c==="(") n++;
+      else if(c===")"){ n--; if(n<0) return "extra"; }
+    }
+    return n>0? "open" : "ok";
+  }
+  function calcRun(s){
+    if(s==="") return {err:"empty"};
+    if(calcParen(s)!=="ok") return {err:"paren"};
+    var t=calcTok(s);
+    if(t===null) return {err:"partial"};
+    var p=0, div0=false;
+    function peek(){ return p<t.length? t[p] : null; }
+    function factor(){
+      var c=peek(), v;
+      if(c===null) return null;
+      if(c==="-"){ p++; v=factor(); return v===null? null : -v; }
+      /* ★頭の「＋」は受け付けない。1++2 が 1+(+2)=3 として通ってしまい、
+         二度押しの打ち間違いが黙って計算される。負の数のための「−」だけ許す。 */
+      if(c==="("){ p++; v=expr(); if(v===null) return null;
+                   if(peek()!==")") return null; p++; return v; }
+      if(typeof c==="number"){ p++; return c; }
+      return null;
+    }
+    function term(){
+      var v=factor(), op, r;
+      if(v===null) return null;
+      while(peek()==="×"||peek()==="÷"){
+        op=t[p++]; r=factor();
+        if(r===null) return null;
+        if(op==="÷"){ if(r===0){ div0=true; return null; } v=v/r; }
+        else v=v*r;
+      }
+      return v;
+    }
+    function expr(){
+      var v=term(), op, r;
+      if(v===null) return null;
+      while(peek()==="+"||peek()==="-"){
+        op=t[p++]; r=term();
+        if(r===null) return null;
+        v=(op==="+")? v+r : v-r;
+      }
+      return v;
+    }
+    var v=expr();
+    if(div0) return {err:"div0"};
+    if(v===null||p!==t.length) return {err:"partial"};
+    if(!isFinite(v)) return {err:"partial"};
+    return {v:Math.round(v*1e6)/1e6};   /* mm の桁として6桁あれば足りる */
+  }
+  function calcEval(s){ var r=calcRun(s); return ("v" in r)? r.v : null; }
   function paintCalc(){
     if(!expEl) return;
     expEl.textContent = expr===""? "0" : expr;
     /* 長い式では、いま打っている右端が見えるようにする。
        CSS の direction:rtl でこれをやると<並びが逆に見える>ので使わない(v98)。 */
     try{ expEl.scrollLeft = expEl.scrollWidth; }catch(e){}
-    var v=(expr==="")? null : calcEval(expr);
+    var res=calcRun(expr);
+    var v=("v" in res)? res.v : null;
     var eqBtn=pad.querySelector("button.ceq");
+    var gridEq=pad.querySelector("#kpGrid button.nx");
     if(v===null){
-      /* 「式が途中」と「0で割った」は直し方が違うので分けて出す。
-         0で割ったのに「途中です」と出ると、数字を足そうとしてしまう。 */
-      eqEl.textContent = expr===""? "" : (/÷\s*0*\.?0*$/.test(expr)? "0では割れません" : "式が途中です");
-      eqEl.className="kpEq"+(expr===""?"":" bad");
+      /* 直し方が違うので、理由ごとに分けて出す。まとめると何を直せばよいか
+         分からない（0で割ったのに「途中です」と出ると数字を足そうとする）。 */
+      var msg="";
+      if(res.err==="paren") msg="かっこが閉じていません";
+      else if(res.err==="div0") msg="0では割れません";
+      else if(res.err!=="empty") msg="式が途中です";
+      eqEl.textContent=msg;
+      eqEl.className="kpEq"+(msg?" bad":"");
       if(eqBtn) eqBtn.disabled=true;
+      if(gridEq) gridEq.disabled=true;
     }else{
       eqEl.textContent="= "+v;
       eqEl.className="kpEq";
       if(eqBtn) eqBtn.disabled=false;
+      if(gridEq) gridEq.disabled=false;
     }
     /* ＝が何をするかは、欄を選んでいるかで変わる。押す前に分かるようにする。 */
     if(eqBtn) eqBtn.textContent= cur? "＝ この欄に入れる" : "＝ 計算する";
+  }
+  /* 計算モードのあいだだけキーの意味を差し替える（v99・ムギさん依頼）。
+       グリッドの「次へ▼」 → 「＝」（計算するだけ。続けて計算できる）
+       上の行の「▲」「▼」  → 「(」「)」
+     ふだんは元の文字に戻す。 */
+  var lblGridNext=null, lblPrev=null, lblNext=null;
+  function calcKeys(onoff){
+    var g=pad.querySelector("#kpGrid button.nx");
+    var hp=pad.querySelector('.kpHead button[data-a="prev"]');
+    var hn=pad.querySelector('.kpHead button[data-a="next"]');
+    if(lblGridNext===null){
+      lblGridNext=g? g.innerHTML : "";
+      lblPrev=hp? hp.innerHTML : "";
+      lblNext=hn? hn.innerHTML : "";
+    }
+    if(g){
+      g.innerHTML= onoff? "＝" : lblGridNext;
+      g.className= onoff? "nx ceq2" : "nx";
+      g.setAttribute("aria-label", onoff? "計算する" : "次の欄へ");
+      if(!onoff) g.disabled=false;
+    }
+    if(hp){
+      hp.innerHTML= onoff? "(" : lblPrev;
+      hp.className= onoff? "sep paren" : "sep";
+      hp.setAttribute("aria-label", onoff? "かっこを開く" : "前の欄");
+    }
+    if(hn){
+      hn.innerHTML= onoff? ")" : lblNext;
+      hn.className= onoff? "paren" : "";
+      hn.setAttribute("aria-label", onoff? "かっこを閉じる" : "次の欄");
+    }
+  }
+  /* 計算するだけ（欄には入れない）。答えが式に残るので続けて計算できる。 */
+  function calcResult(){
+    var r=calcRun(expr);
+    if(!("v" in r)) return;
+    expr=String(r.v);
+    paintCalc();
   }
   function calcSet(v){
     calcOn=!!v;
     pad.className=(pad.className.replace(/\s*calcon/g,""))+(calcOn?" calcon":"");
     if(calcBtn) calcBtn.setAttribute("aria-pressed",calcOn?"true":"false");
+    calcKeys(calcOn);
     if(calcOn){
       /* いま欄にある数字を式の先頭に置く。100 が入っていれば ÷ 2 ＝ で 50。
          度分入力(「60 30」)のように数字でないものは、空から始める。 */
@@ -1970,7 +2067,9 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
   function calcPut(t){ expr+=t; paintCalc(); }
   function calcBack(){ expr=expr.slice(0,-1); paintCalc(); }
   function calcSign(){
-    /* 式の最後の数のプラスマイナスを入れ替える */
+    /* 式の最後の数のプラスマイナスを入れ替える。
+       かっこで終わっているときは、どの数を指すか決まらないので何もしない。 */
+    if(/[)(]$/.test(expr)) return;
     var m=expr.match(/(-?)(\d*\.?\d*)$/);
     if(!m||m[2]==="") return;
     var head=expr.slice(0,expr.length-m[0].length);
@@ -2012,8 +2111,11 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
       if(a==="clr"){ expr=""; paintCalc(); return; }
       if(a==="sign"){ calcSign(); return; }
       if(a==="left"||a==="right") return;    /* 欄の中の移動は計算中は使わない */
-      /* ▲▼・次へ は欄を移る動きなので、計算をやめてから移る */
-      if(a==="prev"||a==="next"){ calcSet(false); }
+      /* ★グリッドの「次へ」は計算モードでは ＝（計算するだけ）。
+         上の行の ▲▼ は ( ) 。どちらも先に見分ける。 */
+      if(a==="next"&&b.className.indexOf("nx")>=0){ calcResult(); return; }
+      if(a==="prev"){ calcPut("("); return; }
+      if(a==="next"){ calcPut(")"); return; }
     }
     if(a==="prev"){ move(-1); return; }
     if(a==="next"){ move(1); return; }
@@ -2124,7 +2226,8 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
                  calc:{ set:calcSet, evalExpr:calcEval,
                         isOn:function(){return calcOn;},
                         expr:function(){return expr;},
-                        open:calcOpen, fabPos:fabPos, fabPaint:fabPaint } };
+                        open:calcOpen, fabPos:fabPos, fabPaint:fabPaint,
+                        run:calcRun, result:calcResult } };
 })();
 </script>
 <script>
