@@ -751,6 +751,26 @@ setTab(TAB);
   .kpGrid button.del{color:var(--red)}
   .kpGrid button.nx{font-size:13px;color:#1F3341;background:#F7F9FA}
 
+  /* ── 電卓（v97）──
+     計算モードのキーと式の帯は、ふだんは出さない。 */
+  .kpHead button.calcBtn{width:auto;padding:0 12px;font-weight:700}
+  .kpHead button.calcBtn[aria-pressed="true"]{background:#1F3341;color:#fff;border-color:#1F3341}
+  .kpCalc{display:none;align-items:baseline;gap:8px;background:#fff;
+    border:1px solid #C9D3DA;border-radius:8px;padding:7px 10px;margin:0 2px 6px;
+    min-height:34px;overflow:hidden}
+  .kpad.calcon .kpCalc{display:flex}
+  .kpExp{flex:1;min-width:0;font-size:17px;font-weight:700;color:#1F3341;
+    text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    direction:rtl}
+  .kpEq{flex:none;font-size:12px;color:#5B707E}
+  .kpEq.bad{color:#B23B2E;font-weight:700}
+  .kpGrid button.cop{display:none}
+  .kpad.calcon .kpGrid button.cop{display:block}
+  .kpad.calcon .kpGrid button.ceq{grid-column:span 4;background:var(--ink);color:#fff;
+    border-color:var(--ink);font-size:14px}
+  .kpad.calcon .kpGrid button.ceq:disabled{background:#C9D3DA;border-color:#C9D3DA;color:#F2F6F8}
+  .kpGrid button.cop{font-size:20px;font-weight:700;color:#1F3341;background:#F7F9FA}
+
   /* 大きさの切替（v70／v74で見直し）。押しやすさは端末と手袋で変わるので端末ごとに選ぶ。
      v74: 40px の「小」は手袋で押しにくく使われないため廃止し、上に「特大」を足した。
           中=46px(旧 中) / 大=56px(旧 大) / 特大=66px(新規)。
@@ -1034,6 +1054,12 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
     <button type="button" data-a="right" aria-label="1つ右へ">→</button>
     <button type="button" data-a="prev" class="sep" aria-label="前の欄">▲</button>
     <button type="button" data-a="next" aria-label="次の欄">▼</button>
+    <button type="button" data-a="calc" id="kpCalcBtn" class="sep calcBtn" aria-pressed="false" aria-label="電卓を使う">計算</button>
+  </div>
+  <!-- 計算モードの式（v97）。ここに出るあいだ、欄の数字は変わらない。 -->
+  <div class="kpCalc" id="kpCalc" aria-live="polite">
+    <span class="kpExp" id="kpExp">0</span>
+    <span class="kpEq" id="kpEqv"></span>
   </div>
   <div class="kpGrid" id="kpGrid">
     <button type="button" data-a="d" data-v="7">7</button>
@@ -1052,6 +1078,12 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
     <button type="button" data-a="d" data-v="0">0</button>
     <button type="button" data-a="d" data-v=".">.</button>
     <button type="button" data-a="done" class="go">閉じる</button>
+    <!-- 計算モードのときだけ出る（v97） -->
+    <button type="button" data-a="op" data-v="÷" class="cop">÷</button>
+    <button type="button" data-a="op" data-v="×" class="cop">×</button>
+    <button type="button" data-a="op" data-v="-" class="cop">−</button>
+    <button type="button" data-a="op" data-v="+" class="cop">＋</button>
+    <button type="button" data-a="eq" class="cop ceq">＝ この欄に入れる</button>
   </div>
 </div>
 <script>
@@ -1146,7 +1178,8 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
   }
   function saveSize(){ try{ localStorage.setItem(ZKEY,size); }catch(e){} }
   function applySize(){
-    pad.className=(pad.className.indexOf("on")>=0? "kpad on ":"kpad ")+"kp-"+size;
+    pad.className=(pad.className.indexOf("on")>=0? "kpad on ":"kpad ")+"kp-"+size+
+      (pad.className.indexOf("calcon")>=0? " calcon":"");
     /* 高さが変わるので、開いているなら下の余白を取り直す */
     if(pad.className.indexOf("on")>=0) document.body.style.paddingBottom=(pad.offsetHeight+12)+"px";
   }
@@ -1194,14 +1227,19 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
     return "\u6570\u5024";
   }
   function show(el){
+    /* 別の欄に移ったら計算はやめる。式はその欄の数字から始めるものなので、
+       持ち越すと「どの欄の計算か」が分からなくなる。 */
+    if(cur!==el&&calcOn) calcSet(false);
     cur=el;
     nameEl.textContent=labelOf(el);
-    pad.className="kpad on kp-"+size;
+    pad.className="kpad on kp-"+size+(calcOn?" calcon":"");
     pad.setAttribute("aria-hidden","false");
     document.body.style.paddingBottom=(pad.offsetHeight+12)+"px";
     try{ el.scrollIntoView({block:"center",behavior:"smooth"}); }catch(e){}
   }
   function hide(){
+    calcOn=false; expr="";
+    if(calcBtn) calcBtn.setAttribute("aria-pressed","false");
     pad.className="kpad kp-"+size;
     pad.setAttribute("aria-hidden","true");
     document.body.style.paddingBottom="";
@@ -1251,6 +1289,100 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
     show(n);
   }
 
+  /* ══ 電卓（v97）══
+     狙い: 「半分にする」ような計算のために電卓アプリへ移らなくて済むように。
+     ★ここで組み立てている式は<電卓の中だけ>のもの。＝を押すまで欄は変えない。
+       途中の数字を欄へ書くと、ツールがその値で計算し直してしまう。
+     ★右端スワイプで出す案は採らなかった。iOS Safari も Android Chrome も
+       端からのスワイプが「戻る／進む」で、取り合いになるため。 */
+  var calcOn=false, expr="";
+  var expEl=document.getElementById("kpExp");
+  var eqEl=document.getElementById("kpEqv");
+  var calcBtn=document.getElementById("kpCalcBtn");
+
+  function calcEval(s){
+    var toks=[], num="", i, c, prev;
+    for(i=0;i<s.length;i++){
+      c=s.charAt(i);
+      if(c>="0"&&c<="9"){ num+=c; continue; }
+      /* ★小数点が2つある数(1.2.3)は parseFloat が 1.2 として通してしまう。
+         打ち間違いが静かに別の数になるので、ここで弾く。 */
+      if(c==="."){ if(num.indexOf(".")>=0) return null; num+=c; continue; }
+      if(c===" ") continue;
+      if("+-×÷".indexOf(c)<0) return null;
+      prev=toks.length? toks[toks.length-1] : null;
+      /* 先頭のマイナス、演算子の直後のマイナスは「負の数」 */
+      if(c==="-"&&num===""&&(prev===null||typeof prev==="string")){ num="-"; continue; }
+      if(num===""||num==="-"||num===".") return null;
+      toks.push(parseFloat(num)); num="";
+      toks.push(c);
+    }
+    if(num===""||num==="-"||num===".") return null;
+    toks.push(parseFloat(num));
+    var k=1;
+    while(k<toks.length){
+      var op=toks[k];
+      if(op==="×"||op==="÷"){
+        var a=toks[k-1], b=toks[k+1];
+        if(op==="÷"&&b===0) return null;
+        toks.splice(k-1,3,(op==="×")? a*b : a/b);
+      }else k+=2;
+    }
+    var acc=toks[0];
+    for(k=1;k<toks.length;k+=2) acc=(toks[k]==="+")? acc+toks[k+1] : acc-toks[k+1];
+    if(!isFinite(acc)) return null;
+    return Math.round(acc*1e6)/1e6;   /* mm の桁として6桁あれば足りる */
+  }
+  function paintCalc(){
+    if(!expEl) return;
+    expEl.textContent = expr===""? "0" : expr;
+    var v=(expr==="")? null : calcEval(expr);
+    var eqBtn=pad.querySelector("button.ceq");
+    if(v===null){
+      /* 「式が途中」と「0で割った」は直し方が違うので分けて出す。
+         0で割ったのに「途中です」と出ると、数字を足そうとしてしまう。 */
+      eqEl.textContent = expr===""? "" : (/÷\s*0*\.?0*$/.test(expr)? "0では割れません" : "式が途中です");
+      eqEl.className="kpEq"+(expr===""?"":" bad");
+      if(eqBtn) eqBtn.disabled=true;
+    }else{
+      eqEl.textContent="= "+v;
+      eqEl.className="kpEq";
+      if(eqBtn) eqBtn.disabled=false;
+    }
+  }
+  function calcSet(v){
+    calcOn=!!v;
+    pad.className=(pad.className.replace(/\s*calcon/g,""))+(calcOn?" calcon":"");
+    if(calcBtn) calcBtn.setAttribute("aria-pressed",calcOn?"true":"false");
+    if(calcOn){
+      /* いま欄にある数字を式の先頭に置く。100 が入っていれば ÷ 2 ＝ で 50。
+         度分入力(「60 30」)のように数字でないものは、空から始める。 */
+      var v0=cur? String(cur.value||"") : "";
+      expr=/^-?\d*\.?\d+$/.test(v0)? v0 : "";
+    }else{ expr=""; }
+    paintCalc();
+    /* 高さが変わるので下の余白を取り直す */
+    if(pad.className.indexOf("on")>=0) document.body.style.paddingBottom=(pad.offsetHeight+12)+"px";
+  }
+  function calcPut(t){ expr+=t; paintCalc(); }
+  function calcBack(){ expr=expr.slice(0,-1); paintCalc(); }
+  function calcSign(){
+    /* 式の最後の数のプラスマイナスを入れ替える */
+    var m=expr.match(/(-?)(\d*\.?\d*)$/);
+    if(!m||m[2]==="") return;
+    var head=expr.slice(0,expr.length-m[0].length);
+    expr=head+((m[1]==="-")? m[2] : ("-"+m[2]));
+    paintCalc();
+  }
+  function calcEnter(){
+    var v=calcEval(expr);
+    if(v===null||!cur) return;
+    cur.value=String(v);
+    try{ cur.setSelectionRange(cur.value.length,cur.value.length); }catch(e){}
+    fire(cur);
+    calcSet(false);            /* ＝のあとは数字キーに戻る（ムギさん判断） */
+  }
+
   /* 押した瞬間に処理し、既定動作を止めてフォーカスを保つ */
   function act(e){
     var b=e.target;
@@ -1259,7 +1391,21 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
     e.preventDefault();
     beep();
     var a=b.getAttribute("data-a");
-    if(a==="done"){ if(cur) cur.blur(); hide(); return; }
+    if(a==="calc"){ calcSet(!calcOn); return; }
+    if(a==="done"){ if(calcOn) calcSet(false); if(cur) cur.blur(); hide(); return; }
+    /* 計算モードのあいだは、数字も⌫もCも±も<式のほう>へ向ける。
+       欄は＝を押すまで変えない。 */
+    if(calcOn){
+      if(a==="op"){ calcPut(b.getAttribute("data-v")); return; }
+      if(a==="eq"){ calcEnter(); return; }
+      if(a==="d"){ calcPut(b.getAttribute("data-v")); return; }
+      if(a==="bs"){ calcBack(); return; }
+      if(a==="clr"){ expr=""; paintCalc(); return; }
+      if(a==="sign"){ calcSign(); return; }
+      if(a==="left"||a==="right") return;    /* 欄の中の移動は計算中は使わない */
+      /* ▲▼・次へ は欄を移る動きなので、計算をやめてから移る */
+      if(a==="prev"||a==="next"){ calcSet(false); }
+    }
     if(a==="prev"){ move(-1); return; }
     if(a==="next"){ move(1); return; }
     /* ←→: 数字の中でカーソルを1文字ずつ動かす。
@@ -1322,7 +1468,10 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
   applySize();
   window.__kbd={ apply:apply, targets:targets, isOn:function(){return on;},
                  size:function(){return size;}, applySize:applySize,
-                 show:show, hide:hide, pad:pad, cur:function(){return cur;} };
+                 show:show, hide:hide, pad:pad, cur:function(){return cur;},
+                 calc:{ set:calcSet, evalExpr:calcEval,
+                        isOn:function(){return calcOn;},
+                        expr:function(){return expr;} } };
 })();
 </script>
 

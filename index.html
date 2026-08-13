@@ -133,6 +133,8 @@
   .kbSet{margin:16px 0 4px;padding:12px;background:#fff;border:1px solid #C9D3DA;border-radius:10px;text-align:left}
   .kbSetH{font-size:12.5px;font-weight:700;color:#1F3341;margin-bottom:8px}
   .kbSetH small{display:block;font-weight:400;font-size:10.5px;color:#8FA2AF;margin-top:1px}
+  .kbSetNote{font-size:11px;color:#5B707E;line-height:1.7;margin:-2px 0 9px}
+  .kbSetNote b{color:#1F3341}
   .kbSetR{display:flex;align-items:center;gap:6px;margin-bottom:7px;flex-wrap:wrap}
   .kbSetR.off{display:none}
   .kbSetL{flex:1;min-width:82px;font-size:11.5px;font-weight:700;color:#5B707E}
@@ -249,7 +251,7 @@
 
   <div class="cover">
     <div class="cover-inner">
-      <div class="h1row"><h1>検査ミニポータル</h1><button type="button" class="verBtn" id="verBtn" aria-expanded="false" aria-controls="chglog">v94 ｜ 更新内容</button></div>
+      <div class="h1row"><h1>検査ミニポータル</h1><button type="button" class="verBtn" id="verBtn" aria-expanded="false" aria-controls="chglog">v97 ｜ 更新内容</button></div>
       <div class="sub">INSPECTION MINI TOOLS</div>
       <div class="desc">
         現場のための計算・記録ツール集。すべての計算はこの端末の中で行われ、入力値がネットに送信されることはありません。
@@ -257,6 +259,9 @@
       <div class="chglog" id="chglog" hidden>
         <h3>更新内容（新しい順）</h3>
         <ul>
+          <li><span class="vtag">v97</span><b>アプリ内キーボードに電卓が付きました。</b>キーボードの上の<b>「計算」</b>を押すと、<b>÷ × − ＋</b> と <b>＝</b> が出ます。<b>いま入っている数字が式の先頭に入る</b>ので、半分にしたいときは <b>÷ → 2 → ＝</b> の3回で終わります。式と答えはキーボードの中に出ます。<b>＝を押すまで欄の数字は変わりません</b>（途中の数字でツールが計算し直さないようにしています）。<b>＝を押すと欄に入って、数字キーに戻ります</b>。そのまま次の欄へ進めます。0で割ったときや式が途中のときは＝が押せず、理由が出ます。⌫は式を1文字消し、Cは式を消し、±は最後の数の符号を変えます。別の欄に移るかキーボードを閉じると、計算はやめます。<b>32ツールすべて</b>で使えます。</li>
+          <li><span class="vtag">v96</span><b>「角度から穴ピッチ(01)」の入口を、一覧で2つに分けました。</b><b>「同半径 穴ピッチ」</b>と<b>「異半径 穴ピッチ」</b>の2枚のカードが並びます。異半径がどこにあるか分かりにくい、というご指摘への対応です。押したほうのやり方で最初から開き、画面の見出しもその名前になります。<b>中身はこれまでと同じ1つのツール</b>なので、開いたあとに上のボタンでもう一方へ切り替えられます（入力した数字もそのままです）。<b>検索でも見つかります</b>。「異半径」「余弦定理」「ちがう半径」「段違い」などで絞り込めます。前の名前の「角度から穴ピッチ」「穴間ピッチ」でも、これまでどおり両方が出ます。★お気に入りは<b>片方だけ</b>付けられます。オフラインでもこれまでどおり開けます。</li>
+          <li><span class="vtag">v95</span><b>かんたん穴ピッチ(36)で、穴数と角度が「どちらか一方」になりました。</b>これまでは<b>両方に数字を入れられて</b>、計算には<b>後から入れたほうが黙って使われて</b>いました。「穴数8」と「角度90」が両方見えているのに答えは45°で出ている、という状態が起きていました（見えている数字が効いていない、いちばん分かりにくい形です）。これからは<b>片方に入れると、もう片方の数字は消えて薄くなります</b>。いま使っているほうは<b>色が反転して「使用中」</b>と出るので、どちらで計算しているかが一目で分かります。<b>薄いほうを押せばそちらに切り替わります</b>（先に消す必要はありません）。半径が違う2穴のとき（もう一方の穴にPCDを入れたとき）は、穴数からは角度が出せないので、<b>角度はいつでも入れられる</b>ようにしています。</li>
           <li><span class="vtag">v94</span><b>曲げガイド計算(10)で、段ボールの左下の角に合わせやすくしました。</b>「段ボールに写す座標」を原点<b>「左下」</b>にすると、段ボールの<b>左下の角が(0,0)</b>になり、Xを横・Yを縦に測って点を打てます。数字は全部プラスなので、図が段ボールからはみ出しません。あわせて、<b>「左の辺に始点・下の辺に終点」が乗る向きになっているか</b>を画面に出すようにしました。乗っていないときは<b>「その向きにする」</b>ボタンが出て、押すと一発でその向きになります（8通りの中から探します）。形によっては、どの向きでも両方は乗らないことがあります（始点より左や終点より下にふくらむ形）。そのときはその旨と、<b>左の辺から何mm内側になるか</b>を出します。この場合も図は必ず段ボールに収まります。</li>
           <li><span class="vtag">v93</span><b>曲げガイド計算(10)で、図の向きを変えられるようにしました。</b>図のすぐ上に<b>「⇄ 左右反転」「↻ 90°回す」「元に戻す」</b>を付けました。この2つの組み合わせで<b>8通りすべての向き</b>に合わせられます（上下反転は「左右反転＋180°」です）。手元の図面が反転していたり90°回っていても、画面をその向きに揃えて見比べられます。<b>向きを変えても、入力した寸法・角度・展開長・端点間距離は変わりません</b>。図・座標表・段ボールに写す座標・外形X/Yが、すべて同じ向きで出るだけです。向きは<b>記録にも一緒に保存</b>されます。<b>あわせて不具合を1つ直しました。</b>記録から呼び出したとき、<b>「直線の入れ方（実長／交点寸法）」のボタンが実際の設定とずれて表示される</b>ことがありました（v91から）。中身は正しく計算されていましたが、ボタンの見た目だけが前のまま残っていました。</li>
           <li><span class="vtag">v92</span><b>公差判定(05)に公差域クラスを7つ足しました。</b>追加したのは<b>P7</b>（穴）・<b>g8</b>・<b>h11 / h12 / h13</b>・<b>js9 / js10</b> です（全部で28クラスになりました）。「はめあいのすきま」の選択肢にも出ます。あわせて<b>g・p・js は φ500 まで</b>使えるようにしました（これまでは φ50 までで、それを超えると「対応範囲外」でした）。<b>あわせて古い不具合を1つ直しました。</b>これまで IT11 を「IT6の10倍」という規則で作っていましたが、<b>φ3を超えφ6以下だけJISの表と違う値（80µm／正しくは75µm）</b>になっていました。これまでは「実測が何等級相当か」の目安にしか使っていなかったので実害はありませんでしたが、h11を足すと合否判定そのものに効くため、<b>IT11〜IT13はJISの表の値</b>に差し替えています。たとえば<b>φ4 h11 は 0／−75µm</b>と出ます。</li>
@@ -369,23 +374,42 @@
   </a>
   </div>
   <div class="tool-card">
-  <a class="tool" href="pitch-radius/">
-    <span class="icon"><svg viewBox="0 0 44 44">
-      <line x1="7" y1="37" x2="17" y2="12" stroke="#1F3341" stroke-width="1.4"/>
-      <line x1="7" y1="37" x2="32" y2="25" stroke="#1F3341" stroke-width="1.4"/>
-      <circle cx="7" cy="37" r="1.8" fill="#1F3341"/>
-      <circle cx="18" cy="10" r="4" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
-      <circle cx="34" cy="24" r="4.5" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
-      <line x1="21.5" y1="13" x2="30.5" y2="21" stroke="#D63426" stroke-width="1.8"/>
-    </svg></span>
-    <span>
-      <span class="no">TOOL-01</span>
-      <div class="nm">角度から穴ピッチ</div>
-      <div class="ds">中心からの半径（直径でも可）と、間の角度から2穴の距離。キリ径を入れるとノギスの読み（外−外・内−内）も。半径が違う2穴・穴径が違う2穴にも対応。角度±公差→ピッチ許容範囲の換算も。旧称：穴間ピッチ</div>
-    </span>
-    <span class="chev">›</span>
-  </a>
-  </div>
+      <a class="tool" href="pitch-radius/?m=same">
+        <span class="icon"><svg viewBox="0 0 44 44">
+          <circle cx="22" cy="22" r="14" fill="none" stroke="#C9D3DA" stroke-width="1.2" stroke-dasharray="3 3"/>
+          <line x1="22" y1="22" x2="10.8" y2="13.6" stroke="#1F3341" stroke-width="1.4"/>
+          <line x1="22" y1="22" x2="33.2" y2="13.6" stroke="#1F3341" stroke-width="1.4"/>
+          <circle cx="22" cy="22" r="1.8" fill="#1F3341"/>
+          <circle cx="10.8" cy="13.6" r="4" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+          <circle cx="33.2" cy="13.6" r="4" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+          <line x1="14.8" y1="13.6" x2="29.2" y2="13.6" stroke="#D63426" stroke-width="1.8"/>
+        </svg></span>
+        <span>
+          <span class="no">TOOL-01</span>
+          <div class="nm">同半径 穴ピッチ</div>
+          <div class="ds">2穴が<b>同じ半径</b>のとき。中心からの半径（直径でも可）と間の角度から2穴の距離。キリ径を入れるとノギスの読み（外−外・内−内）も。角度±公差→ピッチ許容範囲の換算も。旧称：角度から穴ピッチ・穴間ピッチ</div>
+        </span>
+        <span class="chev">›</span>
+      </a>
+    </div>
+    <div class="tool-card">
+      <a class="tool" href="pitch-radius/?m=diff">
+        <span class="icon"><svg viewBox="0 0 44 44">
+          <line x1="7" y1="37" x2="17" y2="12" stroke="#1F3341" stroke-width="1.4"/>
+          <line x1="7" y1="37" x2="32" y2="25" stroke="#1F3341" stroke-width="1.4"/>
+          <circle cx="7" cy="37" r="1.8" fill="#1F3341"/>
+          <circle cx="18" cy="10" r="4" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+          <circle cx="34" cy="24" r="4.5" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+          <line x1="21.5" y1="13" x2="30.5" y2="21" stroke="#D63426" stroke-width="1.8"/>
+        </svg></span>
+        <span>
+          <span class="no">TOOL-01</span>
+          <div class="nm">異半径 穴ピッチ</div>
+          <div class="ds">2穴が<b>別々の半径</b>にあるとき（r₁とr₂が違う）。余弦定理で2穴の距離を出します。穴径が違う2穴にも対応。同じ画面の上のボタンで同半径へ切り替えられます</div>
+        </span>
+        <span class="chev">›</span>
+      </a>
+    </div>
   <div class="tool-card">
   <a class="tool" href="pcd-pitch/">
     <span class="icon"><svg viewBox="0 0 44 44">
@@ -967,6 +991,7 @@
     ★お気に入り・「最近」の履歴・キーボードの設定・「📒 記録」の内容は、この端末のブラウザ内にのみ保存されます(送信なし)。
     <div class="kbSet" id="kbSet">
       <div class="kbSetH">キーボードの設定<small>この端末の全ツールに効きます</small></div>
+        <div class="kbSetNote">アプリ内キーボードには<b>電卓</b>が付いています。上の「計算」を押すと <b>÷ × − ＋</b> が出て、いまの欄の数字から計算できます（例：100 → ÷ → 2 → ＝ で 50）。<b>＝を押すまで欄の数字は変わりません</b>。</div>
       <div class="kbSetR">
         <span class="kbSetL">使うキーボード</span>
         <button type="button" data-k="1">アプリ内</button>
@@ -1006,7 +1031,8 @@
 (function(){
   // 検索用の追加キーワード(名前・説明に出てこない言い回しを補完)
   var KW={
-    'pitch-radius/':'直径 φ PCD 直径入力 余弦定理 2穴 ピッチ 距離 はんけい 弦 同半径 異半径 角度 穴間ピッチ 角度から穴ピッチ 中心 振り角 角度公差 ±0.2 許容範囲 許容値 度公差',
+    'pitch-radius/?m=same':'直径 φ PCD 直径入力 2穴 ピッチ 距離 はんけい 弦 同半径 おなじはんけい 同一半径 角度 穴間ピッチ 角度から穴ピッチ 中心 振り角 角度公差 ±0.2 許容範囲 許容値 度公差',
+    'pitch-radius/?m=diff':'異半径 ちがう半径 違う半径 別半径 段違い 余弦定理 第二余弦定理 2穴 ピッチ 距離 r1 r2 角度 穴間ピッチ 角度から穴ピッチ 中心 角度公差 許容範囲',
     'chord-r/':'アール 半径 弦 矢高 コード 円弧 R測定 カバー 開き角 中心角 周長 展開 展開長 扇 割り出し 盾 シールド 度分',
     'right-triangle/':'直角三角形 三平方 ピタゴラス 斜辺 底辺 高さ サイン コサイン タンジェント 勾配 角度 三角比',
     'tolerance/':'はめあい 公差 H7 h7 g6 js k m p s 軸 穴 合否 寸法許容差 めっき メッキ 下地 すきま 隙間 しめしろ 締め代 圧入 e8 e9 E8',
