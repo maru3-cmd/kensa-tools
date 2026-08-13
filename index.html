@@ -251,7 +251,7 @@
 
   <div class="cover">
     <div class="cover-inner">
-      <div class="h1row"><h1>検査ミニポータル</h1><button type="button" class="verBtn" id="verBtn" aria-expanded="false" aria-controls="chglog">v97 ｜ 更新内容</button></div>
+      <div class="h1row"><h1>検査ミニポータル</h1><button type="button" class="verBtn" id="verBtn" aria-expanded="false" aria-controls="chglog">v98 ｜ 更新内容</button></div>
       <div class="sub">INSPECTION MINI TOOLS</div>
       <div class="desc">
         現場のための計算・記録ツール集。すべての計算はこの端末の中で行われ、入力値がネットに送信されることはありません。
@@ -259,6 +259,7 @@
       <div class="chglog" id="chglog" hidden>
         <h3>更新内容（新しい順）</h3>
         <ul>
+          <li><span class="vtag">v98</span><b>実機のご指摘3件に対応しました。</b>①<b>かんたん穴ピッチ(36)で、選んだほうの数字が見えなくなっていました</b>。濃い色で反転させたところ、数字の色と同じだったため背景に溶けていました（申し訳ありません）。反転をやめて<b>淡い水色の帯と左の太線</b>で示すようにしました。数字はこれまでどおりの色なので、はっきり読めます。②<b>電卓の式が右から並んでいました</b>。100÷2 が 2÷100 のように見えてしまい、特に割り算で混乱する状態でした。<b>左から順に</b>並ぶよう直しました（長い式は右端まで指でずらせます）。③<b>電卓ボタンを画面に出しておけるようにしました</b>。置き場所は<b>右下・左下・右上・左上・下のバー・出さない</b>から選べます（トップの「キーボードの設定」）。既定は右下です。<b>欄を選んでいなくても押せて、ただの電卓として使えます</b>（＝で答えが残り、続けて計算できます）。キーボードが開いているあいだは二重になるので隠れます。</li>
           <li><span class="vtag">v97</span><b>アプリ内キーボードに電卓が付きました。</b>キーボードの上の<b>「計算」</b>を押すと、<b>÷ × − ＋</b> と <b>＝</b> が出ます。<b>いま入っている数字が式の先頭に入る</b>ので、半分にしたいときは <b>÷ → 2 → ＝</b> の3回で終わります。式と答えはキーボードの中に出ます。<b>＝を押すまで欄の数字は変わりません</b>（途中の数字でツールが計算し直さないようにしています）。<b>＝を押すと欄に入って、数字キーに戻ります</b>。そのまま次の欄へ進めます。0で割ったときや式が途中のときは＝が押せず、理由が出ます。⌫は式を1文字消し、Cは式を消し、±は最後の数の符号を変えます。別の欄に移るかキーボードを閉じると、計算はやめます。<b>32ツールすべて</b>で使えます。</li>
           <li><span class="vtag">v96</span><b>「角度から穴ピッチ(01)」の入口を、一覧で2つに分けました。</b><b>「同半径 穴ピッチ」</b>と<b>「異半径 穴ピッチ」</b>の2枚のカードが並びます。異半径がどこにあるか分かりにくい、というご指摘への対応です。押したほうのやり方で最初から開き、画面の見出しもその名前になります。<b>中身はこれまでと同じ1つのツール</b>なので、開いたあとに上のボタンでもう一方へ切り替えられます（入力した数字もそのままです）。<b>検索でも見つかります</b>。「異半径」「余弦定理」「ちがう半径」「段違い」などで絞り込めます。前の名前の「角度から穴ピッチ」「穴間ピッチ」でも、これまでどおり両方が出ます。★お気に入りは<b>片方だけ</b>付けられます。オフラインでもこれまでどおり開けます。</li>
           <li><span class="vtag">v95</span><b>かんたん穴ピッチ(36)で、穴数と角度が「どちらか一方」になりました。</b>これまでは<b>両方に数字を入れられて</b>、計算には<b>後から入れたほうが黙って使われて</b>いました。「穴数8」と「角度90」が両方見えているのに答えは45°で出ている、という状態が起きていました（見えている数字が効いていない、いちばん分かりにくい形です）。これからは<b>片方に入れると、もう片方の数字は消えて薄くなります</b>。いま使っているほうは<b>色が反転して「使用中」</b>と出るので、どちらで計算しているかが一目で分かります。<b>薄いほうを押せばそちらに切り替わります</b>（先に消す必要はありません）。半径が違う2穴のとき（もう一方の穴にPCDを入れたとき）は、穴数からは角度が出せないので、<b>角度はいつでも入れられる</b>ようにしています。</li>
@@ -991,7 +992,7 @@
     ★お気に入り・「最近」の履歴・キーボードの設定・「📒 記録」の内容は、この端末のブラウザ内にのみ保存されます(送信なし)。
     <div class="kbSet" id="kbSet">
       <div class="kbSetH">キーボードの設定<small>この端末の全ツールに効きます</small></div>
-        <div class="kbSetNote">アプリ内キーボードには<b>電卓</b>が付いています。上の「計算」を押すと <b>÷ × − ＋</b> が出て、いまの欄の数字から計算できます（例：100 → ÷ → 2 → ＝ で 50）。<b>＝を押すまで欄の数字は変わりません</b>。</div>
+        <div class="kbSetNote">アプリ内キーボードには<b>電卓</b>が付いています。上の「計算」を押すと <b>÷ × − ＋</b> が出て、いまの欄の数字から計算できます（例：100 → ÷ → 2 → ＝ で 50）。<b>＝を押すまで欄の数字は変わりません</b>。<br><b>電卓ボタン</b>は全ツールの画面に出しておく丸いボタンです。欄を選んでいなくても押せて、そのときは<b>ただの電卓</b>として使えます（＝で答えが残り、続けて計算できます）。キーボードが開いているあいだは、二重になるので隠れます。</div>
       <div class="kbSetR">
         <span class="kbSetL">使うキーボード</span>
         <button type="button" data-k="1">アプリ内</button>
@@ -1003,7 +1004,16 @@
         <button type="button" data-z="l">大</button>
         <button type="button" data-z="xl">特大</button>
       </div>
-      <div class="kbSetR" id="kbSetS">
+      <div class="kbSetR" id="kbSetC">
+          <span class="kbSetL">電卓ボタン</span>
+          <button type="button" data-c="br">右下</button>
+          <button type="button" data-c="bl">左下</button>
+          <button type="button" data-c="tr">右上</button>
+          <button type="button" data-c="tl">左上</button>
+          <button type="button" data-c="bar">下のバー</button>
+          <button type="button" data-c="off">出さない</button>
+        </div>
+        <div class="kbSetR" id="kbSetS">
         <span class="kbSetL">キーの音</span>
         <button type="button" data-s="0">鳴らさない</button>
         <button type="button" data-s="s">小</button>
@@ -1327,16 +1337,18 @@
      キー名にツール名を含めないことで全ツール共通になる（v71）。 */
   (function(){
     var KEY="kensa-kbd", ZKEY="kensa-kbd-size", SKEY="kensa-kbd-snd";
+    var CKEY="kensa-calcbtn";      /* 電卓ボタンの置き場所（v98） */
     var OLDKEY="kensa-kbd-27", OLDZKEY="kensa-kbd-27-size";
     var box=document.getElementById("kbSet");
     var prev=document.getElementById("kbPrev");
     var zRow=document.getElementById("kbSetZ");
     var sRow=document.getElementById("kbSetS");
+    var cRow=document.getElementById("kbSetC");
     if(!box) return;
     /* 音量（v76）。"0"=鳴らさない / "s"=小 / "m"=中 / "l"=大。
        各ツールの beep() と同じ表なので、値を変えるときは両方そろえる。 */
     var SVOL={s:0.20,m:0.40,l:0.70};
-    var on=true, size="m", snd="0";
+    var on=true, size="m", snd="0", cpos="br";
     try{
       var v=localStorage.getItem(KEY);
       if(v===null){ var o=localStorage.getItem(OLDKEY);
@@ -1354,6 +1366,10 @@
       if(sv==="1") sv="l";
       snd=SVOL[sv]? sv : "0";
       try{ localStorage.setItem(SKEY,snd); }catch(e4){}
+      /* 電卓ボタンの置き場所（v98）。既定は右下。 */
+      var cv=localStorage.getItem(CKEY);
+      cpos=(cv==="br"||cv==="bl"||cv==="tr"||cv==="tl"||cv==="bar"||cv==="off")? cv : "br";
+      try{ localStorage.setItem(CKEY,cpos); }catch(e5){}
     }catch(e){}
     /* 選んだ音量をその場で鳴らす（v76）。設定画面だけは自前キーボードを
        使わないため、各ツールの beep() と同じ音をここにも1つ持つ。
@@ -1383,12 +1399,17 @@
       for(i=0;i<b.length;i++){
         k=b[i].getAttribute("data-k"); z=b[i].getAttribute("data-z");
         sv=b[i].getAttribute("data-s");
+        var cv2=b[i].getAttribute("data-c");
         if(k!==null) b[i].className=(k===(on?"1":"0"))?"on":"";
         else if(z!==null) b[i].className=(z===size)?"on":"";
         else if(sv!==null) b[i].className=(sv===snd)?"on":"";
+        else if(cv2!==null) b[i].className=(cv2===cpos)?"on":"";
       }
       zRow.className=on? "kbSetR":"kbSetR off";
       sRow.className=on? "kbSetR":"kbSetR off";
+      /* ★電卓ボタンは OS標準キーボードのときも使える（押すと電卓だけ開く）。
+         だからこの行は隠さない。 */
+      if(cRow) cRow.className="kbSetR";
       prev.className=on? ("kbPrev z-"+size):"kbPrev off";
     }
     box.addEventListener("click",function(e){
@@ -1400,11 +1421,16 @@
       if(k!==null){ on=(k==="1"); try{localStorage.setItem(KEY,on?"1":"0")}catch(e2){} }
       else if(z!==null){ size=z; try{localStorage.setItem(ZKEY,size)}catch(e2){} }
       else if(sv!==null){ snd=sv; try{localStorage.setItem(SKEY,snd)}catch(e2){} beep(); }
+      else if(b.getAttribute("data-c")!==null){
+        cpos=b.getAttribute("data-c");
+        try{localStorage.setItem(CKEY,cpos)}catch(e2){}
+      }
       else return;
       draw();
     });
     draw();
-    window.__kbSet={ isOn:function(){return on;}, size:function(){return size;} };
+    window.__kbSet={ isOn:function(){return on;}, size:function(){return size;},
+                     calcPos:function(){return cpos;} };
   })();
 
   renderRec();

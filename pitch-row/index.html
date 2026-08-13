@@ -651,9 +651,14 @@ renderRows(); calc();
     border:1px solid #C9D3DA;border-radius:8px;padding:7px 10px;margin:0 2px 6px;
     min-height:34px;overflow:hidden}
   .kpad.calcon .kpCalc{display:flex}
+    /* ★v97 は direction:rtl を入れていた。長い式で右端(いま打った側)を
+     見せるつもりだったが、この指定は<式の並びそのもの>を右から左にする。
+     100÷2 が 2÷100 に見え、割り算で取り違える。実機で発覚(v98)。
+     並びは必ず左から右。長い式は JS で右端へスクロールさせる。 */
   .kpExp{flex:1;min-width:0;font-size:17px;font-weight:700;color:#1F3341;
-    text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-    direction:rtl}
+    text-align:left;white-space:nowrap;overflow-x:auto;overflow-y:hidden;
+    -webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .kpExp::-webkit-scrollbar{display:none}
   .kpEq{flex:none;font-size:12px;color:#5B707E}
   .kpEq.bad{color:#B23B2E;font-weight:700}
   .kpGrid button.cop{display:none}
@@ -662,6 +667,27 @@ renderRows(); calc();
     border-color:var(--ink);font-size:14px}
   .kpad.calcon .kpGrid button.ceq:disabled{background:#C9D3DA;border-color:#C9D3DA;color:#F2F6F8}
   .kpGrid button.cop{font-size:20px;font-weight:700;color:#1F3341;background:#F7F9FA}
+
+  /* ── 電卓を常に出しておくボタン（v98）──
+     置き場所はトップの設定で選ぶ。キーボードが開いているあいだは隠す
+     （キーボードの上にも「計算」があるので二重になり、指の下にも来る）。 */
+  .calcFab{position:fixed;z-index:55;display:none;align-items:center;gap:6px;
+    font:inherit;font-size:13px;font-weight:700;color:#fff;background:#1F3341;
+    border:2px solid #fff;border-radius:999px;padding:11px 16px;min-height:48px;
+    box-shadow:0 3px 12px rgba(31,51,65,.28);cursor:pointer;
+    -webkit-tap-highlight-color:transparent}
+  .calcFab:active{background:#33506A}
+  .calcFab.br{display:flex;right:14px;bottom:calc(14px + env(safe-area-inset-bottom))}
+  .calcFab.bl{display:flex;left:14px;bottom:calc(14px + env(safe-area-inset-bottom))}
+  .calcFab.tr{display:flex;right:14px;top:14px}
+  .calcFab.tl{display:flex;left:14px;top:14px}
+  /* 下のバー: 画面いっぱいの帯。body の下余白は JS で確保する。 */
+  .calcFab.bar{display:flex;left:0;right:0;bottom:0;justify-content:center;
+    border-radius:0;border:none;border-top:2px solid #33506A;
+    padding:13px 16px calc(13px + env(safe-area-inset-bottom));box-shadow:0 -4px 14px rgba(31,51,65,.18)}
+  .calcFab .cfIco{font-size:16px;line-height:1}
+  body.kbon-open .calcFab, .kpad.on ~ .calcFab{display:none !important}
+  @media print{.calcFab{display:none !important}}
 
   /* 大きさの切替（v70／v74で見直し）。押しやすさは端末と手袋で変わるので端末ごとに選ぶ。
      v74: 40px の「小」は手袋で押しにくく使われないため廃止し、上に「特大」を足した。
@@ -939,6 +965,11 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
 })();
 </script>
 
+<!-- 電卓を常に出しておくボタン（v98）。置き場所はトップの設定で選ぶ。 -->
+<button type="button" class="calcFab off" id="calcFab" aria-label="電卓を開く">
+  <span class="cfIco">🖩</span><span class="cfTxt">電卓</span>
+</button>
+
 <div class="kpad" id="kpad" aria-hidden="true">
   <div class="kpHead">
     <span class="kpName" id="kpName">—</span>
@@ -1126,11 +1157,13 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
     nameEl.textContent=labelOf(el);
     pad.className="kpad on kp-"+size+(calcOn?" calcon":"");
     pad.setAttribute("aria-hidden","false");
+    setTimeout(function(){ fabPaint(); },0);
     document.body.style.paddingBottom=(pad.offsetHeight+12)+"px";
     try{ el.scrollIntoView({block:"center",behavior:"smooth"}); }catch(e){}
   }
   function hide(){
     calcOn=false; expr="";
+    setTimeout(function(){ fabPaint(); },0);
     if(calcBtn) calcBtn.setAttribute("aria-pressed","false");
     pad.className="kpad kp-"+size;
     pad.setAttribute("aria-hidden","true");
@@ -1228,6 +1261,9 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
   function paintCalc(){
     if(!expEl) return;
     expEl.textContent = expr===""? "0" : expr;
+    /* 長い式では、いま打っている右端が見えるようにする。
+       CSS の direction:rtl でこれをやると<並びが逆に見える>ので使わない(v98)。 */
+    try{ expEl.scrollLeft = expEl.scrollWidth; }catch(e){}
     var v=(expr==="")? null : calcEval(expr);
     var eqBtn=pad.querySelector("button.ceq");
     if(v===null){
@@ -1241,6 +1277,8 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
       eqEl.className="kpEq";
       if(eqBtn) eqBtn.disabled=false;
     }
+    /* ＝が何をするかは、欄を選んでいるかで変わる。押す前に分かるようにする。 */
+    if(eqBtn) eqBtn.textContent= cur? "＝ この欄に入れる" : "＝ 計算する";
   }
   function calcSet(v){
     calcOn=!!v;
@@ -1268,7 +1306,13 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
   }
   function calcEnter(){
     var v=calcEval(expr);
-    if(v===null||!cur) return;
+    if(v===null) return;
+    if(!cur){
+      /* 欄を選んでいないとき（電卓ボタンから開いたとき）は、
+         答えを式の場所に残す。そのまま次の計算に使える。 */
+      expr=String(v); paintCalc();
+      return;
+    }
     cur.value=String(v);
     try{ cur.setSelectionRange(cur.value.length,cur.value.length); }catch(e){}
     fire(cur);
@@ -1354,16 +1398,60 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
     document.addEventListener("click",function(){ setTimeout(reapply,0); },false);
   }
 
+  /* ══ 電卓を常に出しておくボタン（v98）══
+     置き場所は全ツール共通の設定（トップで選ぶ）。 */
+  var FKEY="kensa-calcbtn";
+  var fab=document.getElementById("calcFab");
+  function fabPos(){
+    try{
+      var v=localStorage.getItem(FKEY);
+      if(v===null) return "br";                    /* 既定は右下 */
+      return (v==="br"||v==="bl"||v==="tr"||v==="tl"||v==="bar"||v==="off")? v : "br";
+    }catch(e){ return "br"; }
+  }
+  function fabPaint(){
+    if(!fab) return;
+    var p=fabPos();
+    var open=(pad.className.indexOf("on")>=0);
+    fab.className="calcFab"+((p==="off"||open)? " off":(" "+p));
+    /* 下のバーは画面の下を占めるので、その分の余白を空ける。
+       キーボードが開いているときはキーボード側が余白を決める。 */
+    if(p==="bar"&&!open){ document.body.style.paddingBottom=(fab.offsetHeight+10)+"px"; }
+    else if(!open&&document.body.style.paddingBottom){ document.body.style.paddingBottom=""; }
+  }
+  /* 欄を選んでいなくても開ける。選んでいればその欄に入れる。 */
+  function calcOpen(){
+    var a=document.activeElement, im;
+    if(a&&a.tagName==="INPUT"){
+      im=a.getAttribute("data-im")||a.getAttribute("inputmode")||"";
+      if(im==="decimal"||im==="numeric"||im==="none"){ show(a); calcSet(true); fabPaint(); return; }
+    }
+    /* どの欄も選んでいないとき: 電卓だけを開く。cur は null のまま。 */
+    cur=null;
+    if(nameEl) nameEl.textContent="電卓";
+    pad.className="kpad on kp-"+size+" calcon";
+    pad.setAttribute("aria-hidden","false");
+    calcOn=true; expr=""; paintCalc();
+    document.body.style.paddingBottom=(pad.offsetHeight+12)+"px";
+    fabPaint();
+  }
+  if(fab){
+    fab.addEventListener("click",function(e){ e.preventDefault(); calcOpen(); });
+    window.addEventListener("storage",function(e){ if(e&&e.key===FKEY) fabPaint(); });
+  }
+
   on=load();
   size=loadSize();
   apply();
   applySize();
+  fabPaint();
   window.__kbd={ apply:apply, targets:targets, isOn:function(){return on;},
                  size:function(){return size;}, applySize:applySize,
                  show:show, hide:hide, pad:pad, cur:function(){return cur;},
                  calc:{ set:calcSet, evalExpr:calcEval,
                         isOn:function(){return calcOn;},
-                        expr:function(){return expr;} } };
+                        expr:function(){return expr;},
+                        open:calcOpen, fabPos:fabPos, fabPaint:fabPaint } };
 })();
 </script>
 <script>
