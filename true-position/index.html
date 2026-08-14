@@ -613,6 +613,21 @@
   .kpGrid button.ceq2:disabled{background:#C9D3DA;border-color:#C9D3DA;color:#F2F6F8}
   .kpHead button.paren{font-size:20px;font-weight:700;color:#1F3341}
 
+  /* ── 計算モードは<色＋文字＋形>の3つで示す（v100）──
+     色だけに頼らない。手袋・明るい工場・画面の見え方は人によって違う。
+       色 … キーボードの帯全体を濃紺にする
+       文字 … 見出しに「電卓」、「計算」ボタンが反転、式の帯が出る
+       形 … ＝ と ( ) が現れる（キーの並びが変わる） */
+  .kpad.calcon{background:#1F3341;border-top-color:#0E1B24}
+  .kpad.calcon .kpHead{color:#F2F6F8}
+  .kpad.calcon .kpName{color:#F2F6F8}
+  .kpad.calcon .kpHead button{background:#33506A;border-color:#4A6B87;color:#F2F6F8}
+  .kpad.calcon .kpHead button.calcBtn[aria-pressed="true"]{background:#F2F6F8;color:#1F3341;border-color:#F2F6F8}
+  .kpad.calcon .kpHead button.paren{color:#fff}
+  .kpad.calcon .kpCalc{border-color:#4A6B87}
+  .kpad.calcon .kpGrid button{border-color:#4A6B87}
+  .kpad.calcon .kpGrid button.cop{background:#33506A;color:#fff;border-color:#4A6B87}
+
   /* ── 電卓を常に出しておくボタン（v98）──
      置き場所はトップの設定で選ぶ。キーボードが開いているあいだは隠す
      （キーボードの上にも「計算」があるので二重になり、指の下にも来る）。 */
@@ -1108,6 +1123,9 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
   }
   function hide(){
     calcOn=false; expr="";
+    /* ★入力モードの切り替え（apply→hide）でもここを通る。
+       戻しておかないと ＝ ( ) の文字が残ったままになる(v99)。 */
+    calcKeys(false);
     setTimeout(function(){ fabPaint(); },0);
     if(calcBtn) calcBtn.setAttribute("aria-pressed","false");
     pad.className="kpad kp-"+size;
@@ -1366,7 +1384,13 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
     e.preventDefault();
     beep();
     var a=b.getAttribute("data-a");
-    if(a==="calc"){ calcSet(!calcOn); return; }
+    if(a==="calc"){
+      /* ★欄を選ばずに開いた電卓で「計算」を切ると、入力先が無いのに数字キー
+         だけが残る。どこにも入らず、電卓でもない行き止まりになる(v99)。
+         欄が無いときは切らずに閉じる。 */
+      if(calcOn&&!cur){ hide(); return; }
+      calcSet(!calcOn); return;
+    }
     if(a==="done"){ if(calcOn) calcSet(false); if(cur) cur.blur(); hide(); return; }
     /* 計算モードのあいだは、数字も⌫もCも±も<式のほう>へ向ける。
        欄は＝を押すまで変えない。 */
@@ -1471,16 +1495,29 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
     /* どの欄も選んでいないとき: 電卓だけを開く。cur は null のまま。 */
     cur=null;
     if(nameEl) nameEl.textContent="電卓";
-    pad.className="kpad on kp-"+size+" calcon";
+    pad.className="kpad on kp-"+size;
     pad.setAttribute("aria-hidden","false");
-    calcOn=true; expr=""; paintCalc();
+    /* ★ここで pad.className を自分で組み立てていたため calcSet を通らず、
+       キーの文字を差し替える calcKeys() が呼ばれていなかった。
+       「次へ▼」「▲」「▼」のままなのに、押すと ＝ ( ) として働いていた(v99)。
+       calcSet に任せる。 */
+    calcSet(true);
     document.body.style.paddingBottom=(pad.offsetHeight+12)+"px";
     fabPaint();
   }
   if(fab){
     fab.addEventListener("click",function(e){ e.preventDefault(); calcOpen(); });
-    window.addEventListener("storage",function(e){ if(e&&e.key===FKEY) fabPaint(); });
   }
+  /* ★設定はトップの画面で変える。ふつうはツールを開き直すので読み直されるが、
+     開いたままのときは on が古いまま残る。すると欄は inputmode="none" のまま
+     なのに自前キーボードが出ない＝<どこにも入力できない>状態になりうる。
+     設定の変更を拾って当て直す。 */
+  window.addEventListener("storage",function(e){
+    if(!e) return;
+    if(e.key===FKEY){ fabPaint(); return; }
+    if(e.key===KEY){ on=load(); apply(); return; }
+    if(e.key===ZKEY){ size=loadSize(); applySize(); return; }
+  });
 
   on=load();
   size=loadSize();
