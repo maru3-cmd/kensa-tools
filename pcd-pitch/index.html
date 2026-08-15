@@ -97,13 +97,36 @@
   .angbtns button:disabled{opacity:.35}
   .angbtns #angCnt{font-size:12px;color:#5B707E}
 
+  /* 穴間ピッチ 一覧（v105でCSSを用意。v103は class だけ付けて CSS が無かった） */
+  table.tol{
+    width:100%;border-collapse:collapse;background:var(--sheet);
+    border:2px solid var(--ink);font-size:13px;
+    font-variant-numeric:tabular-nums;
+  }
+  table.tol th,table.tol td{
+    border:1px solid #C9D3DA;padding:8px 6px;text-align:right;
+  }
+  table.tol th{background:#E8EDF0;font-size:11px;font-weight:700;text-align:center}
+  table.tol td:first-child{text-align:left;font-size:12px;white-space:nowrap}
+  table.tol tr[data-pi]{cursor:pointer}
+  table.tol tr[data-pi]:active td{background:#EEF3F6}
+  table.tol tr.skip td{color:#5B707E}
+  /* ★選んだ行。行の色だけだと、図まで目を移したときに
+     どれを選んでいたか思い出せない。左端に太い縦棒を出して、
+     行そのものが「いま図に出ている組」だと分かるようにする。 */
+  table.tol tr.hit td{background:#FCE9E7;font-weight:700;color:var(--ink)}
+  table.tol tr.hit td:first-child{
+    box-shadow:inset 5px 0 0 0 var(--red);padding-left:11px;
+  }
+  table.tol tr.hit td .mk{color:var(--red);font-weight:700}
+
   /* 結果表示器 */
   .dro{
     margin-top:16px;background:var(--dro-bg);border-radius:12px;
     padding:16px 18px 14px;box-shadow:inset 0 2px 8px rgba(0,0,0,.5);
   }
   .dro-line{display:flex;align-items:baseline;gap:10px;justify-content:flex-end}
-  .dro-label{color:#7d8a91;font-size:14px;font-weight:700;letter-spacing:.1em}
+  .dro-label{color:#7d8a91;font-size:14px;font-weight:700;letter-spacing:.1em;white-space:nowrap}
   .dro-val{
     font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
     font-variant-numeric:tabular-nums;
@@ -319,8 +342,9 @@
     <button type="button" id="swRev">ピッチ → PCD</button>
   </div>
 
-  <!-- 図面シート -->
-  <div class="sheet">
+  <!-- 図面シート。不等配のときは一覧の直下(#sheetSlot)へ移す -->
+  <div id="sheetHome"></div>
+  <div class="sheet" id="sheetBox">
     <div class="sheet-inner">
       <svg id="dwg" viewBox="0 0 340 250" role="img" aria-label="ピッチ円上に等配された穴と、PCD・穴間ピッチ・中心角の関係図">
         <defs>
@@ -495,14 +519,17 @@
 
   <div id="pairBox" style="display:none;margin-top:14px">
     <div class="hint" style="margin:0 0 8px">
-      <b>穴間ピッチ 一覧</b>：組み合わせを全部並べています。<b>押す必要はありません</b>。
-      行を押すと、その組だけ図の中で赤く太くなります（どの線か確かめたいときだけ）。
+      <b>穴間ピッチ 一覧</b>：組み合わせを全部並べています。<b>数字を見るのに押す必要はありません</b>。
+      行を押すと、その組が<b>すぐ下の図</b>で赤く太くなり、<b>上の大きな数字</b>と
+      <b>角度公差の判定</b>もその組に切り替わります。
     </div>
     <div id="pairWrap"></div>
     <div class="dro-foot" style="margin-top:8px">
       <span class="formula" id="pairStat">PCD と角度の並びを入れてください</span>
       <button class="copy" id="copyPairs" type="button">一覧をコピー</button>
     </div>
+    <!-- 不等配のとき、上の図面シートをここへ移す（図は1つだけ。複製しない） -->
+    <div id="sheetSlot"></div>
   </div>
 
   <div class="hint" style="margin-top:14px"><b>角度公差 → ピッチの許容範囲</b>：図面の角度に ±公差（例 ±0.2°）が付いているとき、ノギスで測る<b>ピッチ(弦)の許容範囲</b>と、PCD上の<b>円周方向のズレ量</b>に換算します。PCD・穴数・とびは上の入力を使います。±は<b>穴と穴の間の角度</b>に付いた公差として扱います。※換算は PCD が図面どおりの前提です（PCD自体の公差は別途）。</div>
@@ -872,7 +899,8 @@
       if(n<=12) dyn.appendChild(chordLabel(pa,pb,hr,pairs[i].len.toFixed(3),'#D63426',11));
     }
 
-    /* ④ 押された組を上から太く重ねる（どの線か確かめたいときだけ使う） */
+    /* ④ 選んでいる組を上から太く重ねる。大きな数字・ノギスの読み・公差も
+         この組で出る（v105。押すのは確認のためだけ、ではなくなった）。 */
     if(hlPair>=0&&hlPair<pairs.length){
       var q=pairs[hlPair];
       dyn.appendChild(seg(pos[q.a],pos[q.b],hr,{stroke:'#D63426','stroke-width':3.2}));
@@ -953,9 +981,13 @@
     var i,p,lines=[];
     for(i=0;i<pairs.length;i++){
       p=pairs[i];
-      h+='<tr data-pi="'+i+'"'+(i===hlPair?' class="hit"':'')
-        +(p.adj?'':' style="color:#5B707E"')+'>'
-        +'<td>穴'+(p.a+1)+' – 穴'+(p.b+1)+(p.adj?'':' <span style="font-size:10px">とび</span>')+'</td>'
+      var cls=[];
+      if(i===hlPair)cls.push('hit');
+      if(!p.adj)cls.push('skip');
+      h+='<tr data-pi="'+i+'"'+(cls.length?' class="'+cls.join(' ')+'"':'')+'>'
+        +'<td>'+(i===hlPair?'<span class="mk">▶</span> ':'')
+        +'穴'+(p.a+1)+' – 穴'+(p.b+1)
+        +(p.adj?'':' <span style="font-size:10px">とび</span>')+'</td>'
         +'<td>'+p.th.toFixed(3)+'°</td>'
         +'<td>'+p.len.toFixed(3)+'</td>';
       if(dia>0){
@@ -1115,24 +1147,27 @@
     $('unMsg').textContent=r.note||'';
     var pairs=pairsOf(r.th,v1);
     lastPairList=pairs;
-    if(hlPair>=pairs.length) hlPair=-1;
-    /* いちばん狭い隣どうしを代表の答えにする（現場で最初に測る組） */
-    var minAdj=null, i;
-    for(i=0;i<pairs.length;i++){
-      if(!pairs[i].adj)continue;
-      if(minAdj===null||pairs[i].len<pairs[minAdj].len)minAdj=i;
-    }
-    lastResult=pairs[minAdj].len.toFixed(3);
+    /* ★大きな数字は<選んだ組>の値。開いた直後や穴数が変わったときは
+       最初の組（穴1–穴2）を選んだ状態にしておく。
+       v104 までは「いちばん狭い組」を代表に出していたが、
+       なぜその組なのかが読み手に分からず、一覧の選択とも連動しなかった。 */
+    if(hlPair<0||hlPair>=pairs.length) hlPair=0;
+    var q=pairs[hlPair];
+    lastResult=q.len.toFixed(3);
     $('out').textContent=lastResult;
-    $('thOut').textContent='いちばん狭い組は 穴'+(pairs[minAdj].a+1)+'–穴'+(pairs[minAdj].b+1)
-      +'（中心角 '+pairs[minAdj].th.toFixed(3)+'°）。ほかの組は下の一覧に出ています';
+    $('droLbl').textContent='穴'+(q.a+1)+'–'+(q.b+1);
+    $('thOut').textContent='中心角 '+q.th.toFixed(3)+'°'
+      +(q.adj? '（隣どうし）' : '（とび）')
+      +' ／ 下の一覧の行を押すと切り替わります';
     drawUneven(r.th,v1,pairs);
     drawPairs(pairs,dia);
     $('pairBox').style.display='';
+    /* ★選んだ組のノギスの読みを大きな数字の下にも出す。
+       v104 までは NaN を渡していたので、この欄がずっと空だった。 */
+    readCalc(q.len);
     $('pairStat').textContent = (r.th.length<=SKIPMAX)
       ? ('穴'+r.th.length+'・'+pairs.length+'組。実線=隣どうし / 破線=飛ばした組')
       : ('穴'+r.th.length+'・'+pairs.length+'組。図には隣どうしだけ描いています');
-    readCalc(NaN);
     tolCalc();
   }
 
@@ -1179,6 +1214,16 @@
     if(!e)return;
     e.readOnly=!!on;
   }
+  /* 図面シートを、一覧の下（不等配）と元の位置（等配）で行き来させる。
+     ★同じ要素を appendChild で動かすだけ。SVG の id も中身もそのまま
+       なので、描画のコードは何も変えなくてよい。 */
+  function moveSheet(toList){
+    var box=$('sheetBox'), slot=$('sheetSlot'), home=$('sheetHome');
+    if(!box||!slot||!home)return;
+    var want=toList? slot : home;
+    if(box.parentNode===want)return;
+    want.appendChild(box);
+  }
   function syncUI(){
     var fwd=(mode==='fwd'), rad=(pdim==='r'), un=(lay==='un');
     $('swEq').classList.toggle('on',!un);
@@ -1202,6 +1247,7 @@
 
     $('lbl1').childNodes[0].textContent = fwd?(rad?'半径 R':'PCD'):'実測ピッチ p';
     $('lbl1s').textContent = fwd?(rad?'ピッチ円の半径':'ピッチ円直径'):'穴の中心間距離';
+    /* 不等配の順算では、選んだ組の名前を出すので recalcUneven が書き換える */
     $('droLbl').textContent = fwd?'p':(rad?'R':'PCD');
     $('swDia').textContent = fwd? 'PCD（直径）で' : '答えをPCDで';
     $('swRad').textContent = fwd? '半径で' : '答えを半径で';
@@ -1226,6 +1272,10 @@
     lock('inS12', !un||fwd);
     lock('inS23', !un||fwd);
     lock('inS13', !un||fwd);
+
+    /* ★図の置き場所。不等配（一覧が出るとき）は一覧の直下、
+       それ以外は元の位置。動かすのは同じ1つの要素で、複製はしない。 */
+    moveSheet(un&&fwd);
 
     recalc();
   }
