@@ -633,6 +633,11 @@
      ★現場では外−外で当てることが多い（ムギさん）。穴径が入っていれば
        そちらを既定にする。穴径が無ければ中心間しか出せない。 */
   var rdKind='o';
+  /* 穴の塗りの濃さ（v107・ムギさんのご要望で半透明に）。
+     輪郭線には効かないので、穴の位置ははっきり分かる。
+     ★サムネイル（krThumb）はここを使わない。46px では薄いと見えないため、
+       白塗りのまま据え置く＝krThumbVer も上げない。 */
+  var HOLE_FILL=0.5;
 
   function num(v){
     if(v==null)return NaN;
@@ -815,7 +820,8 @@
     // 穴
     for(i=0;i<nD;i++){
       var p=holePos(i,nD);
-      dyn.appendChild(el('circle',{cx:p.x.toFixed(1),cy:p.y.toFixed(1),r:hr.toFixed(1),fill:'#fff',stroke:'#1F3341','stroke-width':1.5}));
+      dyn.appendChild(el('circle',{cx:p.x.toFixed(1),cy:p.y.toFixed(1),r:hr.toFixed(1),
+        fill:'#fff','fill-opacity':HOLE_FILL,stroke:'#1F3341','stroke-width':1.5}));
       if(nD<=16 || i===0 || i===kD){
         var rn=R+hr+9;
         var tn=el('text',{x:(CX+rn*Math.cos(p.a)).toFixed(1),y:(CY-rn*Math.sin(p.a)+3).toFixed(1),'font-size':8.5,fill:'#5B707E','text-anchor':'middle'});
@@ -926,14 +932,16 @@
       }
     }
 
-    /* ③ 隣どうしの実線と数字 */
+    /* ③ 隣どうしの実線。★数値はここでは描かず、最後にまとめて描く。
+       SVG は後から描いたものが上に来る。先に描くと穴に隠れる。 */
+    var labels=[];
     for(i=0;i<pairs.length;i++){
       if(!pairs[i].adj)continue;
       var pa=pos[pairs[i].a], pb=pos[pairs[i].b];
       dyn.appendChild(seg(pa,pb,hr,{stroke:'#D63426','stroke-width':1.6}));
       if(n<=12){
         var sv=shownLen(pairs[i].len,dia);
-        dyn.appendChild(chordLabel(pa,pb,hr,(sv===null?'―':sv.toFixed(3)),'#D63426',11));
+        labels.push(chordLabel(pa,pb,hr,(sv===null?'―':sv.toFixed(3)),'#D63426',11));
       }
     }
 
@@ -944,14 +952,16 @@
       dyn.appendChild(seg(pos[q.a],pos[q.b],hr,{stroke:'#D63426','stroke-width':3.2}));
       if(!q.adj||n>12){
         var sq=shownLen(q.len,dia);
-        dyn.appendChild(chordLabel(pos[q.a],pos[q.b],hr,(sq===null?'―':sq.toFixed(3)),'#D63426',12));
+        labels.push(chordLabel(pos[q.a],pos[q.b],hr,(sq===null?'―':sq.toFixed(3)),'#D63426',12));
       }
     }
 
-    /* ⑤ 穴と番号・角度 */
+    /* ⑤ 穴と番号・角度。★塗りは半透明（輪郭は不透明のまま）。
+       下を通るピッチ円や中心線が透けて見える。 */
     for(i=0;i<n;i++){
       dyn.appendChild(el('circle',{cx:pos[i].x.toFixed(1),cy:pos[i].y.toFixed(1),
-        r:hr.toFixed(1),fill:'#fff',stroke:'#1F3341','stroke-width':1.5}));
+        r:hr.toFixed(1),fill:'#fff','fill-opacity':HOLE_FILL,
+        stroke:'#1F3341','stroke-width':1.5}));
       if(n<=16){
         var rn=R+hr+9;
         var tn=el('text',{x:(CX+rn*Math.cos(pos[i].a)).toFixed(1),
@@ -972,7 +982,12 @@
       }
     }
 
-    /* ⑥ PCD 寸法線と凡例 */
+    /* ⑥ ★弦の数値はここで描く。いちばん最後なので穴の上に出る。
+       数値には白い縁取りが付いているので、穴の線と重なっても読める。 */
+    var li;
+    for(li=0;li<labels.length;li++) dyn.appendChild(labels[li]);
+
+    /* ⑦ PCD 寸法線と凡例 */
     var pl=$('pcdLine');
     pl.setAttribute('stroke','#1F3341');
     pl.setAttribute('marker-start','url(#ar)');
