@@ -558,8 +558,11 @@
      ・DOM構造は変更しません（再描画するツールでも壊れません）        -->
 <style>
   /* ═══ 自前キーボード（v72 / 全ツール共通）═══ */
-    background:#fff;border:1px solid #C9D3DA;border-radius:999px;padding:8px 13px;
-    min-height:36px;cursor:pointer}
+  /* ★v100まで、ここに<セレクタの無い断片>が残っていた（v72からの取りこぼし）。
+     CSSは「{ が来るまでがセレクタ」なので、その断片が次の規則まで飲み込み、
+     body.kbon .kt-aid ごと無効にしていた。v101で断片を削除。
+     ±の浮動バーは inputmode="none" のせいで元々作られず実害は無かったが、
+     規則が効かない状態は残さない。 */
   body.kbon .kt-aid{display:none!important}   /* 共通の±浮動ボタンは重複するので隠す */
 
   .kpad{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#EDF1F3;
