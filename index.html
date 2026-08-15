@@ -251,7 +251,7 @@
 
   <div class="cover">
     <div class="cover-inner">
-      <div class="h1row"><h1>検査ミニポータル</h1><button type="button" class="verBtn" id="verBtn" aria-expanded="false" aria-controls="chglog">v103 ｜ 更新内容</button></div>
+      <div class="h1row"><h1>検査ミニポータル</h1><button type="button" class="verBtn" id="verBtn" aria-expanded="false" aria-controls="chglog">v104 ｜ 更新内容</button></div>
       <div class="sub">INSPECTION MINI TOOLS</div>
       <div class="desc">
         現場のための計算・記録ツール集。すべての計算はこの端末の中で行われ、入力値がネットに送信されることはありません。
@@ -259,6 +259,7 @@
       <div class="chglog" id="chglog" hidden>
         <h3>更新内容（新しい順）</h3>
         <ul>
+          <li><span class="vtag">v104</span><b>不等配の角度が、スマホのキーボードだけで入れられるようになりました。</b>これまで「スペースで区切って」と書いていましたが、<b>数字キーパッドにスペースが無く、実機では打てませんでした</b>。角度を1つ入れるたびに<b>「＋ 次の穴へ」</b>を押す形に変えました（30 →「次の穴へ」→ 150 →「次の穴へ」→ 30）。打ち間違えたら<b>「← 1つ消す」</b>で最後の1つが消えます。いま角度が何個入っていて何穴になるかも、ボタンの右に出ます。<b>あわせて、トップのアイコンを縦並びにし</b>（2つの円が重なって見えていました）、<b>最初に見えている図を8穴から6穴に</b>しました。</li>
           <li><span class="vtag">v103</span><b>PCD穴ピッチが、不等配にも対応しました。</b>上の段で<b>「不等配」</b>を選び、<b>角度の並び</b>を1つの欄にスペース区切りで入れます（例 <code>30 150 30 150</code>）。<b>「隣との角度」なら最後の1つは省略できます</b>。図面が真上からの角度で書いてあるときは切り替えられます。<b>組み合わせを全部並べた一覧</b>が下に出るので、<b>1組ずつ押す必要はありません</b>。中心角・中心間・外−外・内−内が横一列に並びます。図には<b>隣どうしを実線</b>、<b>飛ばした組を破線</b>で描きます（破線は6穴まで。それ以上は線だらけになるので一覧表で見てください）。行を押すと、その組だけ図で赤く太くなり、角度公差の許容範囲もその組で出ます。<b>図面が無い現物から PCD を拾う</b>ときは、「不等配」＋「ピッチ → PCD」で<b>隣り合う3つの穴の距離を3本</b>入れてください。3点を通る円は1つに決まるので、等配でなくても PCD が出ます。</li>
           <li><span class="vtag">v102</span><b>公差判定・公差表で、f・k・m・d が φ500 まで使えるようになりました。</b>これまで <b>f と k と m は φ50 まで</b>、<b>d は φ200 まで</b>しか出せず、大きい寸法で「範囲外」になっていました。f7・f8・k7・k8・m6・d9 のどれも、軸・穴の両方で φ500 まで出ます。<b>s だけは今までどおり φ50 までです</b>（規格が φ50 を超えると寸法区分をさらに細かく割るため。画面の下にも理由を書いてあります）。<b>あわせて、穴 M6 の φ250〜315 だけにある規格の例外を入れました</b>（規則どおり計算すると −11 になりますが、規格は −9 です）。</li>
           <li><span class="vtag">v101</span><b>トップ画面でも電卓が使えるようになりました。</b>ツールを開かなくても、トップの<b>電卓ボタン</b>を押せばそのまま計算できます。かっこも＝もツールの中と同じです。これで、検査で使う計算はこのスマホだけで足りるはずです。置き場所の設定（右下・左下・右上・左上・下のバー・出さない）はトップでも効きます。<b>あわせて、内部の指定の書き間違いを1件直しました</b>（v72から残っていたもので、見た目や動きは変わりません）。</li>
@@ -418,24 +419,24 @@
     </div>
   <div class="tool-card">
   <a class="tool" href="pcd-pitch/">
-    <span class="icon"><svg viewBox="0 0 44 44" aria-label="左が等配、右が不等配">
-      <circle cx="12" cy="22" r="10" fill="none" stroke="#8FA2AF" stroke-width="0.9" stroke-dasharray="4 1.5 1 1.5"/>
-      <circle cx="12" cy="12" r="2" fill="#fff" stroke="#1F3341" stroke-width="1.1"/>
-      <circle cx="20.66" cy="17" r="2" fill="#fff" stroke="#1F3341" stroke-width="1.1"/>
-      <circle cx="20.66" cy="27" r="2" fill="#fff" stroke="#1F3341" stroke-width="1.1"/>
-      <circle cx="12" cy="32" r="2" fill="#fff" stroke="#1F3341" stroke-width="1.1"/>
-      <circle cx="3.34" cy="27" r="2" fill="#fff" stroke="#1F3341" stroke-width="1.1"/>
-      <circle cx="3.34" cy="17" r="2" fill="#fff" stroke="#1F3341" stroke-width="1.1"/>
-      <line x1="13.7" y1="13" x2="18.9" y2="16" stroke="#D63426" stroke-width="1.5"/>
-      <circle cx="32" cy="22" r="10" fill="none" stroke="#8FA2AF" stroke-width="0.9" stroke-dasharray="4 1.5 1 1.5"/>
-      <line x1="32" y1="22" x2="32" y2="13" stroke="#DCE3E8" stroke-width="0.8"/>
-      <line x1="32" y1="22" x2="36.6" y2="14" stroke="#DCE3E8" stroke-width="0.8"/>
-      <circle cx="32" cy="12" r="2" fill="#fff" stroke="#1F3341" stroke-width="1.1"/>
-      <circle cx="37" cy="13.34" r="2" fill="#fff" stroke="#1F3341" stroke-width="1.1"/>
-      <circle cx="32" cy="32" r="2" fill="#fff" stroke="#1F3341" stroke-width="1.1"/>
-      <circle cx="27" cy="30.66" r="2" fill="#fff" stroke="#1F3341" stroke-width="1.1"/>
-      <line x1="33.9" y1="12.5" x2="35.1" y2="12.8" stroke="#D63426" stroke-width="1.5"/>
-      <line x1="36.4" y1="15.3" x2="32.6" y2="30" stroke="#D63426" stroke-width="1.2"/>
+    <span class="icon"><svg viewBox="0 0 44 44" aria-label="上が等配、下が不等配">
+      <circle cx="22" cy="10.5" r="8.5" fill="none" stroke="#8FA2AF" stroke-width="0.9" stroke-dasharray="3.5 1.3 0.9 1.3"/>
+      <circle cx="22" cy="2" r="1.9" fill="#fff" stroke="#1F3341" stroke-width="1.1"/>
+      <circle cx="29.36" cy="6.25" r="1.9" fill="#fff" stroke="#1F3341" stroke-width="1.1"/>
+      <circle cx="29.36" cy="14.75" r="1.9" fill="#fff" stroke="#1F3341" stroke-width="1.1"/>
+      <circle cx="22" cy="19" r="1.9" fill="#fff" stroke="#1F3341" stroke-width="1.1"/>
+      <circle cx="14.64" cy="14.75" r="1.9" fill="#fff" stroke="#1F3341" stroke-width="1.1"/>
+      <circle cx="14.64" cy="6.25" r="1.9" fill="#fff" stroke="#1F3341" stroke-width="1.1"/>
+      <line x1="23.65" y1="2.95" x2="27.71" y2="5.3" stroke="#D63426" stroke-width="1.5"/>
+      <circle cx="22" cy="33.5" r="8.5" fill="none" stroke="#8FA2AF" stroke-width="0.9" stroke-dasharray="3.5 1.3 0.9 1.3"/>
+      <line x1="22" y1="33.5" x2="22" y2="26.9" stroke="#DCE3E8" stroke-width="0.8"/>
+      <line x1="22" y1="33.5" x2="25.3" y2="27.79" stroke="#DCE3E8" stroke-width="0.8"/>
+      <circle cx="22" cy="25" r="1.9" fill="#fff" stroke="#1F3341" stroke-width="1.1"/>
+      <circle cx="26.25" cy="26.14" r="1.9" fill="#fff" stroke="#1F3341" stroke-width="1.1"/>
+      <circle cx="22" cy="42" r="1.9" fill="#fff" stroke="#1F3341" stroke-width="1.1"/>
+      <circle cx="17.75" cy="40.86" r="1.9" fill="#fff" stroke="#1F3341" stroke-width="1.1"/>
+      <line x1="23.84" y1="25.49" x2="24.41" y2="25.65" stroke="#D63426" stroke-width="1.5"/>
+      <line x1="25.76" y1="27.98" x2="22.49" y2="40.16" stroke="#D63426" stroke-width="1.2"/>
     </svg></span>
     <span>
       <span class="no">TOOL-02</span>
