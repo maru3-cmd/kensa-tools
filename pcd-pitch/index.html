@@ -159,6 +159,21 @@
   }
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+  /* ── 折りたためる解説（v106）──
+     ★見出しは常に見えるようにする。閉じたときに何の欄か分からなくなる
+       折りたたみにしない。畳むのは中身だけ。 */
+  .fold{margin:14px 0 8px;border:1px solid #D5DDE2;border-radius:10px;background:#FFFFFF;overflow:hidden}
+  .fold>summary{
+    list-style:none;cursor:pointer;padding:11px 13px;font-size:12.5px;color:#1F3341;
+    display:flex;align-items:center;justify-content:space-between;gap:8px;
+  }
+  .fold>summary::-webkit-details-marker{display:none}
+  .fold .foldhint{font-size:11px;font-weight:700;color:#5B707E;flex:none}
+  .fold .foldhint::after{content:" ▾"}
+  .fold[open] .foldhint::after{content:" ▴"}
+  .fold[open]>summary{border-bottom:1px solid #E3E9EC}
+  .fold .foldbody{padding:10px 13px 12px;font-size:11.5px;line-height:1.75;color:#3A5060}
+
   /* ── 使い方ガイド（全ツール共通） ── */
   .guide{background:#FFFFFF;border:1px solid #D5DDE2;border-radius:12px;margin:0 0 12px;overflow:hidden}
   .guide>summary{list-style:none;cursor:pointer;padding:12px 14px;font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.04em;display:flex;align-items:center;gap:7px}
@@ -266,6 +281,7 @@
       <li><b>「隣との角度」なら最後の1つは省略できます</b>（残りを自動で補います）。図面が真上からの角度で書いてあるときは<b>「真上からの角度」</b>に切り替えます。</li>
       <li>不等配では、<b>組み合わせを全部並べた一覧</b>が下に出ます。<b>押す必要はありません</b>。中心角・中心間・外−外・内−内が横一列に並ぶので、そのまま拾えます。行を押すと、その組だけ図の中で赤く太くなります。</li>
       <li>図には<b>隣どうしを実線</b>で、<b>飛ばした組を破線</b>で描きます。<b>破線は6穴まで</b>です。7穴以上は線だらけで穴の位置が読めなくなるため描きません（数字は一覧表で見てください）。</li>
+      <li><b>穴径を入れると、図に出る数値を「中心間／外−外／内−内」から選べます</b>（一覧の上のボタン）。<b>はじめは外−外</b>です。ノギスを当てたまま図が読めます。穴が重なって内−内が測れない組は「―」になります。穴径を入れていないときは中心間しか出せないので、ボタンは出ません。</li>
       <li><b>図面が無い現物から PCD を拾う</b>ときは、「不等配」＋「ピッチ → PCD」で、<b>隣り合う3つの穴の距離を3本</b>入れます。<b>3点を通る円は1つに決まる</b>ので、等配でなくても PCD が出ます。現場戻り品の確認に使えます。</li>
       <li>座標・偏心・複数のPCDの重なりが要るときは <b>図面まるごと穴ピッチ（TOOL-30）</b>へ。</li>
     </ol>
@@ -522,6 +538,14 @@
       <b>穴間ピッチ 一覧</b>：組み合わせを全部並べています。<b>数字を見るのに押す必要はありません</b>。
       行を押すと、その組が<b>すぐ下の図</b>で赤く太くなり、<b>上の大きな数字</b>と
       <b>角度公差の判定</b>もその組に切り替わります。
+      図に出す数値は、下のボタンで<b>中心間／外−外／内−内</b>を選べます。
+    </div>
+    <!-- ★ID を sw で始めない。記録は button[id^="sw"] をモードとして保存するが、
+         図に出す数値の選び方は<見せ方>であって入力値ではないので保存しない。 -->
+    <div class="dimsw" id="rdswBox" role="group" aria-label="図に出す数値" style="margin-bottom:8px;display:none">
+      <button type="button" id="rdKindC">中心間</button>
+      <button type="button" id="rdKindO" class="on">外−外</button>
+      <button type="button" id="rdKindI">内−内</button>
     </div>
     <div id="pairWrap"></div>
     <div class="dro-foot" style="margin-top:8px">
@@ -532,16 +556,23 @@
     <div id="sheetSlot"></div>
   </div>
 
-  <div class="hint" style="margin-top:14px"><b>角度公差 → ピッチの許容範囲</b>：図面の角度に ±公差（例 ±0.2°）が付いているとき、ノギスで測る<b>ピッチ(弦)の許容範囲</b>と、PCD上の<b>円周方向のズレ量</b>に換算します。PCD・穴数・とびは上の入力を使います。±は<b>穴と穴の間の角度</b>に付いた公差として扱います。※換算は PCD が図面どおりの前提です（PCD自体の公差は別途）。</div>
-  <div class="inputs">
+  <details class="fold" id="tolFold">
+    <summary><b>角度公差 → ピッチの許容範囲</b><span class="foldhint">説明を見る</span></summary>
+    <div class="foldbody">
+      図面の角度に ±公差（例 ±0.2°）が付いているとき、ノギスで測る<b>ピッチ(弦)の許容範囲</b>と、
+      PCD上の<b>円周方向のズレ量</b>に換算します。<br>
+      等配では PCD・穴数・とびを、<b>不等配では一覧で選んでいる組</b>を使います。
+      ±は<b>穴と穴の間の角度</b>に付いた公差として扱います。<br>
+      ※換算は PCD が図面どおりの前提です（PCD自体の公差は別途）。
+    </div>
+  </details>
+  <div class="inputs" style="margin-top:8px">
     <div class="row">
       <span class="badge">4</span>
       <label for="inTol">角度の公差 ±<small>図面の ±値（片側）</small></label>
       <input id="inTol" type="text" inputmode="decimal" autocomplete="off" placeholder="例 0.2">
       <span class="unit">°</span>
     </div>
-  </div>
-  <div class="inputs">
     <div class="row">
       <span class="badge">5</span>
       <label for="inMeasP">実測ピッチ<small>任意：入れると合否判定</small></label>
@@ -598,6 +629,10 @@
   /* 破線（飛ばした組）を図に描く上限。7穴以上は線だらけで穴の位置が
      読めなくなるので描かない（数字は一覧表で見る）。ムギさん判断。 */
   var SKIPMAX=6;
+  /* 図の弦の上に出す数値。c:中心間 / o:外−外 / i:内−内（v106）
+     ★現場では外−外で当てることが多い（ムギさん）。穴径が入っていれば
+       そちらを既定にする。穴径が無ければ中心間しか出せない。 */
+  var rdKind='o';
 
   function num(v){
     if(v==null)return NaN;
@@ -860,7 +895,7 @@
      隣どうしは実線＋数字。飛ばした組は破線だけで数字は出さない。
      ★組の数は穴数の2乗で増える（4穴6組・6穴15組・8穴28組）。図に数字を
        全部載せると、穴の位置が数字で埋まって読めなくなる。数字は一覧表で見る。 */
-  function drawUneven(th,d,pairs){
+  function drawUneven(th,d,pairs,dia){
     var dyn=$('dyn');
     while(dyn.firstChild)dyn.removeChild(dyn.firstChild);
     var n=th.length, i, pos=[];
@@ -896,7 +931,10 @@
       if(!pairs[i].adj)continue;
       var pa=pos[pairs[i].a], pb=pos[pairs[i].b];
       dyn.appendChild(seg(pa,pb,hr,{stroke:'#D63426','stroke-width':1.6}));
-      if(n<=12) dyn.appendChild(chordLabel(pa,pb,hr,pairs[i].len.toFixed(3),'#D63426',11));
+      if(n<=12){
+        var sv=shownLen(pairs[i].len,dia);
+        dyn.appendChild(chordLabel(pa,pb,hr,(sv===null?'―':sv.toFixed(3)),'#D63426',11));
+      }
     }
 
     /* ④ 選んでいる組を上から太く重ねる。大きな数字・ノギスの読み・公差も
@@ -904,8 +942,10 @@
     if(hlPair>=0&&hlPair<pairs.length){
       var q=pairs[hlPair];
       dyn.appendChild(seg(pos[q.a],pos[q.b],hr,{stroke:'#D63426','stroke-width':3.2}));
-      if(!q.adj||n>12)
-        dyn.appendChild(chordLabel(pos[q.a],pos[q.b],hr,q.len.toFixed(3),'#D63426',12));
+      if(!q.adj||n>12){
+        var sq=shownLen(q.len,dia);
+        dyn.appendChild(chordLabel(pos[q.a],pos[q.b],hr,(sq===null?'―':sq.toFixed(3)),'#D63426',12));
+      }
     }
 
     /* ⑤ 穴と番号・角度 */
@@ -942,9 +982,21 @@
     $('pcdLabel').setAttribute('fill','#1F3341');
     $('pcdLabel').setAttribute('font-weight','400');
     $('nTxt').textContent='穴数 n = '+n+'(不等配)';
-    $('kTxt').textContent=showSkip? '実線=隣どうし / 破線=飛ばした組'
-                                  : '実線=隣どうし / 飛ばした組は一覧表';
+    $('kTxt').textContent=(showSkip? '実線=隣どうし / 破線=飛ばした組'
+                                  : '実線=隣どうし / 飛ばした組は一覧表')
+      +((dia>0)? ' ／ 数値は'+rdName() : '');
     $('aTxt').textContent=(n<=12)? '角度は真上0°・時計回り＋' : '穴が多いため角度は省略';
+  }
+
+  /* 図に出す数値。穴径が無ければ中心間。内−内が測れない組は null。
+     ★出せない値を 0 や負の数で出さない。測れないことが分かる形にする。 */
+  function shownLen(len,dia){
+    if(!(dia>0)||rdKind==='c') return len;
+    if(rdKind==='o') return len+dia;
+    return (len-dia>0)? (len-dia) : null;
+  }
+  function rdName(){
+    return (rdKind==='o')? '外−外' : (rdKind==='i')? '内−内' : '中心間';
   }
 
   /* 2つの穴を結ぶ線。穴の丸の縁で止める（丸の中を突き抜けさせない） */
@@ -1056,6 +1108,7 @@
     hlPair=-1;
     lastPairList=null;
     $('pairBox').style.display='none';
+    $('rdswBox').style.display='none';
     var v1=num($('in1').value);
     if(mode==='fwd'&&pdim==='r') v1=v1*2;      /* 半径で入れたら直径に直す */
     var n=intVal($('inN').value);
@@ -1096,7 +1149,7 @@
         $('out').textContent='―.―――';
         $('thOut').textContent='中心角 θ = ―';
         $('unMsg').textContent='';
-        drawUneven([0,120,240],0,pairsOf([0,120,240],0));
+        drawUneven([0,120,240],0,pairsOf([0,120,240],0),NaN);
         readCalc(NaN); tolCalc();
         return;
       }
@@ -1115,7 +1168,7 @@
         +'° ／ 穴1-3 = '+cr.th13.toFixed(3)+'°';
       /* 出た PCD の上に、測った3穴をそのまま置いて見せる */
       var th3=[0, cr.th12, cr.th12+cr.th23];
-      drawUneven(th3, cr.d, pairsOf(th3, cr.d));
+      drawUneven(th3, cr.d, pairsOf(th3, cr.d), NaN);
       readCalc(NaN); tolCalc();
       return;
     }
@@ -1140,7 +1193,7 @@
       $('unMsg').textContent=r.note||'';
       $('pairBox').style.display='none';
       var demo=[0,30,180,210];
-      drawUneven(demo,0,pairsOf(demo,0));
+      drawUneven(demo,0,pairsOf(demo,0),NaN);
       readCalc(NaN); tolCalc();
       return;
     }
@@ -1159,9 +1212,10 @@
     $('thOut').textContent='中心角 '+q.th.toFixed(3)+'°'
       +(q.adj? '（隣どうし）' : '（とび）')
       +' ／ 下の一覧の行を押すと切り替わります';
-    drawUneven(r.th,v1,pairs);
+    drawUneven(r.th,v1,pairs,dia);
     drawPairs(pairs,dia);
     $('pairBox').style.display='';
+    syncRdSw();
     /* ★選んだ組のノギスの読みを大きな数字の下にも出す。
        v104 までは NaN を渡していたので、この欄がずっと空だった。 */
     readCalc(q.len);
@@ -1276,6 +1330,10 @@
     /* ★図の置き場所。不等配（一覧が出るとき）は一覧の直下、
        それ以外は元の位置。動かすのは同じ1つの要素で、複製はしない。 */
     moveSheet(un&&fwd);
+    /* ★見た目を合わせる関数は、状態が変わる道のすべてから呼ぶ。
+       v106 の最初の版は順算の側でしか呼んでおらず、逆算に切り替えると
+       図の数値の切り替えが出たままだった。 */
+    syncRdSw();
 
     recalc();
   }
@@ -1321,6 +1379,23 @@
     angFire();
     e.focus();
   });
+
+  ['rdKindC','rdKindO','rdKindI'].forEach(function(id){
+    $(id).addEventListener('click',function(){
+      rdKind=(id==='rdKindC')?'c':(id==='rdKindO')?'o':'i';
+      syncRdSw();
+      recalc();
+    });
+  });
+  /* ★穴径が入っていないときはボタンを出さない。
+     中心間しか出せないので、押しても変わらないボタンになる。 */
+  function syncRdSw(){
+    var dia=holeDia(), on=(lay==='un'&&mode==='fwd'&&dia>0);
+    $('rdswBox').style.display = on? '' : 'none';
+    $('rdKindC').classList.toggle('on',rdKind==='c');
+    $('rdKindO').classList.toggle('on',rdKind==='o');
+    $('rdKindI').classList.toggle('on',rdKind==='i');
+  }
 
   $('copyPairs').addEventListener('click',function(){
     if(!lastPairs){toast('先に PCD と角度の並びを入れてください');return}
