@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#1F3341">
-<meta name="description" content="PCD(ピッチ円直径)と穴数から穴間ピッチを計算。実測ピッチからPCDの逆算も可能。計算は端末内で完結し、入力値はどこにも送信されません。">
+<meta name="description" content="PCD(ピッチ円直径)と穴数から穴間ピッチを計算。等配・不等配の両方に対応し、不等配は全ての組み合わせを一覧で表示。実測ピッチや隣り合う3穴の3辺からPCDの逆算も可能。計算は端末内で完結し、入力値はどこにも送信されません。">
 <title>PCD穴ピッチ | 検査計算ツール</title>
 <style>
   :root{
@@ -228,16 +228,26 @@
       <li><b>穴径</b>（キリ径）を入れると、下に<b>ノギスを当てたときの読み</b>（外−外・内−内）が中心間と並んで出ます。電卓で足し引きする必要はありません。</li>
       <li>穴径は<b>「キリ（バカ穴）」「M（ねじ下穴）」のボタン</b>からも選べます。<b>キリ</b>はボルトを通す穴（M8なら9キリ）、<b>M</b>はめねじの下穴（M8なら6.8）です。押したときだけ一覧が開くので画面は伸びません。穴数 n も入力欄の左の<b>「選」</b>から選べます。</li>
       <li>下に <b>ピッチ p</b> と <b>中心角 θ</b> が出ます。実測ピッチから PCD を出すときは「ピッチ → PCD」に切り替えます。</li>
-      <li>座標・偏心・不等配が要るときは <b>図面まるごと穴ピッチ（TOOL-30）</b>へ。</li>
+      <li><b>角度が等配でないとき</b>は、上段を<b>「不等配」</b>にします。<b>角度の並び</b>を1つの欄にスペース区切りで入れてください（例 <code>30 150 30 150</code>）。<b>「隣との角度」なら最後の1つは省略できます</b>（残りを自動で補います）。図面が真上からの角度で書いてあるときは<b>「真上からの角度」</b>に切り替えます。</li>
+      <li>不等配では、<b>組み合わせを全部並べた一覧</b>が下に出ます。<b>押す必要はありません</b>。中心角・中心間・外−外・内−内が横一列に並ぶので、そのまま拾えます。行を押すと、その組だけ図の中で赤く太くなります。</li>
+      <li>図には<b>隣どうしを実線</b>で、<b>飛ばした組を破線</b>で描きます。<b>破線は6穴まで</b>です。7穴以上は線だらけで穴の位置が読めなくなるため描きません（数字は一覧表で見てください）。</li>
+      <li><b>図面が無い現物から PCD を拾う</b>ときは、「不等配」＋「ピッチ → PCD」で、<b>隣り合う3つの穴の距離を3本</b>入れます。<b>3点を通る円は1つに決まる</b>ので、等配でなくても PCD が出ます。現場戻り品の確認に使えます。</li>
+      <li>座標・偏心・複数のPCDの重なりが要るときは <b>図面まるごと穴ピッチ（TOOL-30）</b>へ。</li>
     </ol>
     <div class="src">
       <b>計算のしかた</b><br>
-      円周上に等配された穴の、<b>弦（直線距離）</b>を出しています。<br>
+      円周上に並んだ穴の、<b>弦（直線距離）</b>を出しています。<br>
       ・穴間ピッチ … <code>p = PCD × sin( k × 180° / n )</code>　（n=穴数、k=穴とび。k=1 が隣どうし）<br>
       ・中心角 … <code>2k × 180° / n</code>　　・弧長 … <code>(PCD/2) × 中心角[rad]</code><br>
       ・逆算（ピッチ→PCD）… <code>PCD = p / sin( k × 180° / n )</code><br>
       ・半径で入れたときは <code>PCD = 2R</code> に直してから同じ式を使っています（内部は常にPCD）。<br>
       ・角度公差 ±Δ からピッチの許容範囲 … 中心角を ±Δ だけ振って上の式に入れ直しています。<br>
+      ・<b>不等配</b> … 入れた角度の並びから各穴の位置（真上0°・時計回り＋）を出し、
+        どの2穴も <code>弦 = PCD × sin( 中心角 / 2 )</code> で計算しています。
+        中心角は<b>短い方</b>（180°を超えたら 360°から引いた値）を使います。<br>
+      ・<b>不等配の逆算</b> … 隣り合う3穴の3辺 a・b・c から外接円を出しています。
+        <code>PCD = a·b·c ÷ (2 × 三角形の面積)</code>（面積はヘロンの式）。
+        3点が一直線に並ぶと円が決まらないので、そのときはその旨を出します。<br>
       ・<b>「キリ（バカ穴）」の出典</b> … JIS B 1001:1985 付表「ボルト穴径 dh」。1級(密)・2級(中)・3級(粗)を選べます（既定は2級）。
         <b>M12・M14・M16 は旧JIS(1968)では 14・16・18</b> で、1985年版で 13.5・15.5・17.5 に変わりました。旧い値の図面もあるので確かめてください。<br>
       ・<b>「M（ねじ下穴）」の出し方</b> … <b>並目</b>と<b>細目</b>を切り替えられます。いずれも <code>D − P</code> を
@@ -270,7 +280,16 @@
           <p>ピッチ円 φ100 に 6穴を等配。隣り合う穴のピッチは？</p>
           <p class="gset">PCD → ピッチ ／ PCD 100 ／ 穴数 6 ／ 穴とび 1</p>
           <p class="gread">読み方：p = 100 × sin(180°÷6) = <b>50.000mm</b>、中心角 θ = 60°。</p>
-          <button class="gbtn" type="button" data-ex='{"set":[{"click":"#mFwd"},{"id":"in1","v":100},{"id":"inN","v":6},{"id":"inK","v":1}]}' onclick="tryExample(this)">この例を試す</button>
+          <button class="gbtn" type="button" data-ex='{"set":[{"click":"#swEq"},{"click":"#swFwd"},{"id":"in1","v":100},{"id":"inN","v":6},{"id":"inK","v":1}]}' onclick="tryExample(this)">この例を試す</button>
+        </div>
+      </div>
+      <div class="gxin" style="margin-top:12px">
+        <div class="gtxt">
+          <p>ピッチ円 φ100 に 4穴。隣との角度が 30° と 150° の繰り返し（不等配）。各組のピッチは？</p>
+          <p class="gset">不等配 ／ 隣との角度 30 150 30 ／ PCD 100</p>
+          <p class="gread">読み方：30°の組が <b>25.882mm</b>、150°の組が <b>96.593mm</b>、
+            向かい合う組（180°）が <b>100.000mm</b>。最後の 150° は省いても自動で補います。</p>
+          <button class="gbtn" type="button" data-ex='{"set":[{"click":"#swUneq"},{"click":"#swFwd"},{"click":"#swAngRel"},{"id":"in1","v":100},{"id":"inAngs","v":"30 150 30"}]}' onclick="tryExample(this)">この例を試す</button>
         </div>
       </div>
     </div>
@@ -279,9 +298,13 @@
 
 
 
+  <div class="mode-lg" role="group" aria-label="穴の並び">
+    <button type="button" id="swEq" class="on">等配</button>
+    <button type="button" id="swUneq">不等配</button>
+  </div>
   <div class="mode-lg" role="group" aria-label="計算方向">
-    <button type="button" id="mFwd" class="on">PCD → ピッチ</button>
-    <button type="button" id="mRev">ピッチ → PCD</button>
+    <button type="button" id="swFwd" class="on">PCD → ピッチ</button>
+    <button type="button" id="swRev">ピッチ → PCD</button>
   </div>
 
   <!-- 図面シート -->
@@ -344,8 +367,8 @@
   <!-- 入力 -->
   <div class="inputs">
     <div class="dimsw" id="dimsw" role="group" aria-label="PCD(直径)で入れるか半径で入れるか">
-      <button type="button" id="pdD" class="on">PCD（直径）で</button>
-      <button type="button" id="pdR">半径で</button>
+      <button type="button" id="swDia" class="on">PCD（直径）で</button>
+      <button type="button" id="swRad">半径で</button>
     </div>
     <div class="row">
       <span class="badge">1</span>
@@ -353,6 +376,7 @@
       <input id="in1" type="text" inputmode="decimal" autocomplete="off" placeholder="―.―――">
       <span class="unit">mm</span>
     </div>
+    <div id="eqBox">
     <div class="row" style="grid-template-columns:26px 1fr 138px 22px">
       <span class="badge">2</span>
       <label for="inN">穴数 n<small>円周上の穴の総数</small></label>
@@ -373,6 +397,57 @@
       </div>
       <span></span>
     </div>
+    </div>
+
+    <div id="unBox" style="display:none">
+      <div class="dimsw" role="group" aria-label="角度の入れ方" style="margin-bottom:8px">
+        <button type="button" id="swAngRel" class="on">隣との角度</button>
+        <button type="button" id="swAngAbs">真上からの角度</button>
+      </div>
+      <div class="row">
+        <span class="badge">2</span>
+        <label for="inAngs" id="lbAngs">角度の並び<small id="lbAngsS">最後の1つは省略できます。例 30 150 30</small></label>
+        <input id="inAngs" type="text" inputmode="decimal" autocomplete="off" placeholder="30 150 30 150">
+        <span class="unit">°</span>
+      </div>
+      <div class="row">
+        <span class="badge">3</span>
+        <label for="inTh0">起点角 θ₀<small>穴1の位置。真上＝0</small></label>
+        <input id="inTh0" type="text" inputmode="decimal" autocomplete="off" placeholder="0">
+        <span class="unit">°</span>
+      </div>
+      <div class="dimsw" role="group" aria-label="回り方向" style="margin-top:8px">
+        <button type="button" id="swCw" class="on">時計回り</button>
+        <button type="button" id="swCcw">反時計</button>
+      </div>
+      <div class="hint" id="unMsg" style="margin-top:8px"></div>
+    </div>
+
+    <div id="un3Box" style="display:none">
+      <div class="hint" style="margin:0 0 10px">
+        隣り合う<b>3つの穴</b>の距離を3本とも測ってください。<b>3点を通る円は1つに決まる</b>ので、
+        角度が等配でなくても PCD が出ます。図面が無い現物から拾うときに使えます。
+      </div>
+      <div class="row">
+        <span class="badge">2</span>
+        <label for="inS12">穴1 − 穴2<small>隣り合う2穴</small></label>
+        <input id="inS12" type="text" inputmode="decimal" autocomplete="off" placeholder="―.―――">
+        <span class="unit">mm</span>
+      </div>
+      <div class="row">
+        <span class="badge">3</span>
+        <label for="inS23">穴2 − 穴3<small>その次の2穴</small></label>
+        <input id="inS23" type="text" inputmode="decimal" autocomplete="off" placeholder="―.―――">
+        <span class="unit">mm</span>
+      </div>
+      <div class="row">
+        <span class="badge">4</span>
+        <label for="inS13">穴1 − 穴3<small>両端どうし（またいだ距離）</small></label>
+        <input id="inS13" type="text" inputmode="decimal" autocomplete="off" placeholder="―.―――">
+        <span class="unit">mm</span>
+      </div>
+    </div>
+
     <div class="row">
       <span class="badge">⌀</span>
       <label for="inHole">穴径<small>キリ径。入れるとノギスの読みが出ます</small></label>
@@ -398,6 +473,18 @@
     <div class="dro-foot">
       <span class="formula" id="formulaTxt">p = PCD × sin(k × 180° ÷ n)</span>
       <button class="copy" id="copyBtn" type="button">コピー</button>
+    </div>
+  </div>
+
+  <div id="pairBox" style="display:none;margin-top:14px">
+    <div class="hint" style="margin:0 0 8px">
+      <b>穴間ピッチ 一覧</b>：組み合わせを全部並べています。<b>押す必要はありません</b>。
+      行を押すと、その組だけ図の中で赤く太くなります（どの線か確かめたいときだけ）。
+    </div>
+    <div id="pairWrap"></div>
+    <div class="dro-foot" style="margin-top:8px">
+      <span class="formula" id="pairStat">PCD と角度の並びを入れてください</span>
+      <button class="copy" id="copyPairs" type="button">一覧をコピー</button>
     </div>
   </div>
 
@@ -438,8 +525,9 @@
     公差の判定が要らず、値だけ早く知りたいときは
     <a href="../pitch-calc/" style="color:#5B707E">穴ピッチ電卓(TOOL-36)</a> が速いです。<br>
 
-    穴の座標(X・Y)が要るとき、中心をずらした別のPCDと重なるとき、角度が等配でないときは
+    穴の座標(X・Y)が要るとき、中心をずらした別のPCDと重なるときは
     <a href="../hole-map/" style="color:#5B707E">図面まるごと穴ピッチ(TOOL-30)</a> をどうぞ。<br>
+    角度が等配でないときは、上の<b>「不等配」</b>で足ります（v103）。<br>
     実測ピッチが図面と合わないとき、その原因(PCDの誤差か個々の穴のずれか)と組付きの可否は
     <a href="../pcd-diag/" style="color:#5B707E">PCDずれ診断(TOOL-35)</a> で調べられます。<br>
     このページは計算のみを行います。<br>
@@ -456,7 +544,16 @@
   var CX=170, CY=125, R=88;
   var mode='fwd';          // fwd: PCD→ピッチ / rev: ピッチ→PCD
   var pdim='d';            // d:PCD(直径)で入力 / r:半径で入力（内部は常にPCDで計算）
+  var lay='eq';            // eq:等配 / un:不等配（v103）
+  var angM='rel';          // rel:隣との角度 / abs:真上からの角度（v103）
+  var dir=1;               // 1:時計回り / -1:反時計（v103）
   var lastResult=null;
+  var lastPairs=null;      // 不等配の一覧（コピー用の文字列）
+  var lastPairList=null;   // 不等配の一覧（公差の換算で中心角を引くため）
+  var hlPair=-1;           // 図で強調している組。-1 は無し
+  /* 破線（飛ばした組）を図に描く上限。7穴以上は線だらけで穴の位置が
+     読めなくなるので描かない（数字は一覧表で見る）。ムギさん判断。 */
+  var SKIPMAX=6;
 
   function num(v){
     if(v==null)return NaN;
@@ -476,6 +573,113 @@
   function holePos(i,n){ // i:0始まり、穴1が真上、時計回り
     var a=(90 - i*360/n)*Math.PI/180;
     return {x:CX+R*Math.cos(a), y:CY-R*Math.sin(a), a:a};
+  }
+  /* 角度(真上0°・時計回り＋)を、図の描画角(数学の反時計回り)に直す */
+  function posOfDeg(th){
+    var a=(90 - th)*Math.PI/180;
+    return {x:CX+R*Math.cos(a), y:CY-R*Math.sin(a), a:a};
+  }
+  function norm360(d){ d=d%360; return (d<0)? d+360 : d; }
+
+  /* ---- 不等配：角度の並びを読む（v103）----
+     入れ方は2通り。図面まるごと穴ピッチ(hole-map)と同じ用語・同じ規則。
+       rel … 隣との角度。<最後の1つは省略できる>（残り 360°−合計 を補う）
+       abs … 真上からの角度。穴1ぶんも含めて全部書く
+     戻り値 {th:[各穴の絶対角], n:穴数, note:補足, err:エラー} */
+  function readAngs(){
+    var raw=String($('inAngs').value||'');
+    raw=raw.replace(/[０-９．，、]/g,function(c){
+      if(c==='．')return '.'; if(c==='，'||c==='、')return ' ';
+      return String.fromCharCode(c.charCodeAt(0)-0xFEE0);
+    });
+    var parts=raw.split(/[\s,]+/), list=[], i, v;
+    for(i=0;i<parts.length;i++){
+      if(parts[i]==='')continue;
+      v=Number(parts[i]);
+      if(!isFinite(v))return {err:'角度に数字でないものが混じっています（'+parts[i]+'）'};
+      list.push(v);
+    }
+    if(!list.length)return {err:''};
+    var th0=num($('inTh0').value); if(isNaN(th0))th0=0;
+    var th=[], note='';
+
+    if(angM==='abs'){
+      if(list.length<2)return {err:'穴が2つ以上要ります'};
+      for(i=0;i<list.length;i++) th.push(norm360(th0+dir*list[i]));
+      /* 真上からの角度は、同じ位置が2度出ていないかだけ見る */
+      var sorted=th.slice().sort(function(a,b){return a-b});
+      for(i=1;i<sorted.length;i++){
+        if(Math.abs(sorted[i]-sorted[i-1])<1e-9)
+          return {err:'同じ角度の穴が2つあります（'+sorted[i].toFixed(3)+'°）'};
+      }
+    }else{
+      var sum=0;
+      for(i=0;i<list.length;i++){
+        if(list[i]<=0)return {err:'隣との角度に 0 以下があります（'+list[i]+'°）'};
+        sum+=list[i];
+      }
+      if(sum>360+1e-6)
+        return {err:'隣との角度の合計が '+(Math.round(sum*1000)/1000)+'° で 360° を超えています'};
+      /* ★最後の1つを省略できる。360°ちょうどなら全部入っている。 */
+      var gaps=list.slice();
+      if(Math.abs(sum-360)<1e-6){
+        gaps.pop();                      /* 閉じ角まで入っている＝最後は穴1に戻る分 */
+        note='合計が360°ちょうどなので、最後の角度は穴1へ戻る分として扱いました。';
+      }else{
+        note='最後の角度 '+(Math.round((360-sum)*1000)/1000)+'° を自動で補いました。';
+      }
+      if(gaps.length<1)return {err:'穴が2つ以上要ります'};
+      var acc=th0;
+      th.push(norm360(acc));
+      for(i=0;i<gaps.length;i++){ acc+=dir*gaps[i]; th.push(norm360(acc)); }
+    }
+    if(th.length<2)return {err:'穴が2つ以上要ります'};
+    if(th.length>36)return {err:'穴が多すぎます（36穴まで）'};
+    return {th:th, n:th.length, note:note};
+  }
+
+  /* 全ペアの弦。d は PCD。隣どうし(a→bが連番、または最後→最初)には adj=true */
+  function pairsOf(th,d){
+    var n=th.length, out=[], i, j;
+    function mk(a,b,adj,ord){
+      var dth=Math.abs(th[b]-th[a]);
+      if(dth>180)dth=360-dth;             /* 弦は短い方の中心角で決まる */
+      return {a:a,b:b,th:dth,len:d*Math.sin(dth/2*Math.PI/180),adj:adj,ord:ord};
+    }
+    /* ① 隣どうし＝<円周を1周する順>。最後は 穴n → 穴1 に戻る組。
+       ★穴の番号順に並べると、閉じの組(穴1-穴n)が2番目に来てしまう。
+         ノギスは円周を回りながら当てるので、その順でないと
+         測り落としに気づけない。 */
+    for(i=0;i<n;i++){
+      if(n===2&&i===1)break;              /* 2穴なら組は1つだけ */
+      out.push(mk(i,(i+1)%n,true,i));
+    }
+    /* ② 飛ばした組。①で入れた分は除く。 */
+    for(i=0;i<n;i++)for(j=i+1;j<n;j++){
+      if(j===i+1)continue;
+      if(i===0&&j===n-1)continue;
+      out.push(mk(i,j,false,1000+i*100+j));
+    }
+    out.sort(function(p,q){return p.ord-q.ord});
+    return out;
+  }
+
+  /* ---- 不等配：3辺から外接円（v103）----
+     隣り合う3穴の3辺 a,b,c から外接円の直径を出す。
+       面積 S をヘロンで出し、外接円半径 R = abc / (4S)、PCD = 2R
+     3点が一直線に並ぶと S=0 になり円が決まらない（そのときはエラー）。
+     ★三角不等式を先に見る。破ると S の中身が負になり NaN が出る。 */
+  function circumPcd(a,b,c){
+    if(!(a>0&&b>0&&c>0))return {err:''};
+    if(a+b<=c+1e-12||b+c<=a+1e-12||c+a<=b+1e-12)
+      return {err:'この3辺では三角形になりません（いちばん長い辺が他の2辺の合計以上）'};
+    var s=(a+b+c)/2, q=s*(s-a)*(s-b)*(s-c);
+    if(!(q>0))return {err:'3つの穴が一直線に並んでいます。円が決まりません'};
+    var S=Math.sqrt(q), d=a*b*c/(2*S);
+    if(!isFinite(d)||d<=0)return {err:'計算できませんでした。3辺の値を確認してください'};
+    /* 3辺に対応する中心角。弦 = d·sin(θ/2) を逆に解く */
+    function thOf(x){ var r=x/d; if(r>1)r=1; return 2*Math.asin(r)*180/Math.PI; }
+    return {d:d, th12:thOf(a), th23:thOf(b), th13:thOf(c)};
   }
 
   function draw(n,k,resultText){
@@ -595,21 +799,190 @@
     $('aTxt').textContent=(nD<=12)? '角度は真上0°・時計回り＋' : '穴が多いため角度は省略';
   }
 
+  /* ---- 不等配の作図（v103）----
+     隣どうしは実線＋数字。飛ばした組は破線だけで数字は出さない。
+     ★組の数は穴数の2乗で増える（4穴6組・6穴15組・8穴28組）。図に数字を
+       全部載せると、穴の位置が数字で埋まって読めなくなる。数字は一覧表で見る。 */
+  function drawUneven(th,d,pairs){
+    var dyn=$('dyn');
+    while(dyn.firstChild)dyn.removeChild(dyn.firstChild);
+    var n=th.length, i, pos=[];
+    for(i=0;i<n;i++) pos.push(posOfDeg(th[i]));
+    /* 穴どうしが近いと丸が重なるので、いちばん狭い間隔から半径を決める */
+    var minGap=360;
+    for(i=0;i<n;i++){
+      var g2=Math.abs(th[(i+1)%n]-th[i]); if(g2>180)g2=360-g2;
+      if(g2<minGap)minGap=g2;
+    }
+    var hr=Math.max(3, Math.min(9, R*Math.sin(minGap/2*Math.PI/180)*0.55));
+
+    /* ① 中心から各穴への細い線（角度を目で追えるように） */
+    for(i=0;i<n;i++){
+      dyn.appendChild(el('line',{x1:CX,y1:CY,
+        x2:(CX+(pos[i].x-CX)*(R-hr)/R).toFixed(1),
+        y2:(CY+(pos[i].y-CY)*(R-hr)/R).toFixed(1),
+        stroke:'#DCE3E8','stroke-width':1}));
+    }
+
+    /* ② 飛ばした組の破線（6穴まで） */
+    var showSkip=(n<=SKIPMAX);
+    if(showSkip){
+      for(i=0;i<pairs.length;i++){
+        if(pairs[i].adj)continue;
+        dyn.appendChild(seg(pos[pairs[i].a],pos[pairs[i].b],hr,{
+          stroke:'#B8C4CC','stroke-width':1,'stroke-dasharray':'5 4'}));
+      }
+    }
+
+    /* ③ 隣どうしの実線と数字 */
+    for(i=0;i<pairs.length;i++){
+      if(!pairs[i].adj)continue;
+      var pa=pos[pairs[i].a], pb=pos[pairs[i].b];
+      dyn.appendChild(seg(pa,pb,hr,{stroke:'#D63426','stroke-width':1.6}));
+      if(n<=12) dyn.appendChild(chordLabel(pa,pb,hr,pairs[i].len.toFixed(3),'#D63426',11));
+    }
+
+    /* ④ 押された組を上から太く重ねる（どの線か確かめたいときだけ使う） */
+    if(hlPair>=0&&hlPair<pairs.length){
+      var q=pairs[hlPair];
+      dyn.appendChild(seg(pos[q.a],pos[q.b],hr,{stroke:'#D63426','stroke-width':3.2}));
+      if(!q.adj||n>12)
+        dyn.appendChild(chordLabel(pos[q.a],pos[q.b],hr,q.len.toFixed(3),'#D63426',12));
+    }
+
+    /* ⑤ 穴と番号・角度 */
+    for(i=0;i<n;i++){
+      dyn.appendChild(el('circle',{cx:pos[i].x.toFixed(1),cy:pos[i].y.toFixed(1),
+        r:hr.toFixed(1),fill:'#fff',stroke:'#1F3341','stroke-width':1.5}));
+      if(n<=16){
+        var rn=R+hr+9;
+        var tn=el('text',{x:(CX+rn*Math.cos(pos[i].a)).toFixed(1),
+          y:(CY-rn*Math.sin(pos[i].a)+3).toFixed(1),
+          'font-size':8.5,fill:'#5B707E','text-anchor':'middle'});
+        tn.textContent=String(i+1);
+        dyn.appendChild(tn);
+      }
+      if(n<=12){
+        var ra2=R+hr+21;
+        var ta=el('text',{x:(CX+ra2*Math.cos(pos[i].a)).toFixed(1),
+          y:(CY-ra2*Math.sin(pos[i].a)+3).toFixed(1),
+          'font-size':8,fill:'#8FA2AF','text-anchor':'middle',
+          stroke:'#fff','stroke-width':2.5,'paint-order':'stroke'});
+        ta.textContent=(Math.abs(th[i]-Math.round(th[i]))<1e-9?
+          String(Math.round(th[i])) : th[i].toFixed(1))+'\u00B0';
+        dyn.appendChild(ta);
+      }
+    }
+
+    /* ⑥ PCD 寸法線と凡例 */
+    var pl=$('pcdLine');
+    pl.setAttribute('stroke','#1F3341');
+    pl.setAttribute('marker-start','url(#ar)');
+    pl.setAttribute('marker-end','url(#ar)');
+    $('pcdBadge').style.display='';
+    $('pcdLabel').textContent=(d>0? 'PCD = '+d.toFixed(3) : 'PCD');
+    $('pcdLabel').setAttribute('fill','#1F3341');
+    $('pcdLabel').setAttribute('font-weight','400');
+    $('nTxt').textContent='穴数 n = '+n+'(不等配)';
+    $('kTxt').textContent=showSkip? '実線=隣どうし / 破線=飛ばした組'
+                                  : '実線=隣どうし / 飛ばした組は一覧表';
+    $('aTxt').textContent=(n<=12)? '角度は真上0°・時計回り＋' : '穴が多いため角度は省略';
+  }
+
+  /* 2つの穴を結ぶ線。穴の丸の縁で止める（丸の中を突き抜けさせない） */
+  function seg(pa,pb,hr,attrs){
+    var dx=pb.x-pa.x, dy=pb.y-pa.y, L=Math.sqrt(dx*dx+dy*dy)||1;
+    var ux=dx/L, uy=dy/L, k;
+    var a={x1:(pa.x+ux*hr).toFixed(1),y1:(pa.y+uy*hr).toFixed(1),
+           x2:(pb.x-ux*hr).toFixed(1),y2:(pb.y-uy*hr).toFixed(1)};
+    for(k in attrs)a[k]=attrs[k];
+    return el('line',a);
+  }
+  /* 弦の中点に、外向きにずらして数字を置く */
+  function chordLabel(pa,pb,hr,txt,col,size){
+    var mx=(pa.x+pb.x)/2, my=(pa.y+pb.y)/2;
+    var ox=mx-CX, oy=my-CY, ol=Math.sqrt(ox*ox+oy*oy)||1;
+    var lx=mx+ox/ol*14, ly=my+oy/ol*14;
+    var rot=Math.atan2(pb.y-pa.y,pb.x-pa.x)*180/Math.PI;
+    if(rot>90)rot-=180; if(rot<-90)rot+=180;
+    var g=el('g',{transform:'translate('+lx.toFixed(1)+','+ly.toFixed(1)+') rotate('+rot.toFixed(1)+')'});
+    var t=el('text',{x:0,y:4,'font-size':size,'font-weight':700,fill:col,
+      'text-anchor':'middle',stroke:'#fff','stroke-width':3.5,'paint-order':'stroke'});
+    t.textContent=txt;
+    g.appendChild(t);
+    return g;
+  }
+
+  /* ---- 不等配の一覧表（v103）----
+     ★最初から全部開く。1組ずつ押して見る操作をなくすため（ムギさん要望）。
+       押すのは「その線が図のどれか」を確かめたいときだけ。 */
+  function drawPairs(pairs,dia){
+    var h='<table class="tol"><tr><th>組</th><th>中心角</th><th>中心間</th>';
+    if(dia>0)h+='<th>外−外</th><th>内−内</th>';
+    h+='</tr>';
+    var i,p,lines=[];
+    for(i=0;i<pairs.length;i++){
+      p=pairs[i];
+      h+='<tr data-pi="'+i+'"'+(i===hlPair?' class="hit"':'')
+        +(p.adj?'':' style="color:#5B707E"')+'>'
+        +'<td>穴'+(p.a+1)+' – 穴'+(p.b+1)+(p.adj?'':' <span style="font-size:10px">とび</span>')+'</td>'
+        +'<td>'+p.th.toFixed(3)+'°</td>'
+        +'<td>'+p.len.toFixed(3)+'</td>';
+      if(dia>0){
+        h+='<td>'+(p.len+dia).toFixed(3)+'</td>'
+          +'<td>'+((p.len-dia>0)? (p.len-dia).toFixed(3) : '―')+'</td>';
+      }
+      h+='</tr>';
+      lines.push('穴'+(p.a+1)+'-穴'+(p.b+1)+' θ'+p.th.toFixed(3)+'° 中心間'+p.len.toFixed(3)
+        +(dia>0? (' 外−外'+(p.len+dia).toFixed(3)+((p.len-dia>0)?(' 内−内'+(p.len-dia).toFixed(3)):'')) : ''));
+    }
+    h+='</table>';
+    $('pairWrap').innerHTML=h;
+    lastPairs=lines.join('\n');
+  }
+  /* 行を押したら、その組だけ図で太くする。押し直すと戻る。 */
+  $('pairWrap').addEventListener('click',function(ev){
+    var t=ev.target;
+    while(t&&t!==this&&t.tagName!=='TR')t=t.parentNode;
+    if(!t||t.tagName!=='TR')return;
+    var pi=t.getAttribute('data-pi');
+    if(pi==null)return;
+    pi=Number(pi);
+    hlPair=(hlPair===pi)? -1 : pi;
+    recalc();
+  });
+
   /* v87: 記録の一覧に出す小さな図。文字は入れない（46px では読めない）。
      版を上げるのは<この図の描き方>を変えたときだけ。ツールの他の部分を
      直しても上げない。上げるとバッジが一斉に出て意味を失う。 */
   window.krThumbVer="pcd-pitch.1";
   window.krThumb=function(){
-    var n=intVal($('inN').value), i;
-    if(isNaN(n)||n<2) return "";
-    var nD=Math.min(Math.max(n,2),36);
-    var hr=Math.max(2.2, Math.min(6, 34*Math.sin(Math.PI/nD)*0.62));
+    var i, th=[], hr;
+    if(lay==='un'){
+      /* 不等配は入れた角度の並びをそのまま置く。等配の描き方は変えない
+         （＝krThumbVer は据え置き。上げると既存の記録に一斉にバッジが出る）。 */
+      var r=readAngs();
+      if(!r||!r.th||r.th.length<2) return "";
+      th=r.th;
+      var mg=360;
+      for(i=0;i<th.length;i++){
+        var g2=Math.abs(th[(i+1)%th.length]-th[i]); if(g2>180)g2=360-g2;
+        if(g2<mg)mg=g2;
+      }
+      hr=Math.max(2.2, Math.min(6, 34*Math.sin(mg/2*Math.PI/180)*0.62));
+    }else{
+      var n=intVal($('inN').value);
+      if(isNaN(n)||n<2) return "";
+      var nD=Math.min(Math.max(n,2),36);
+      for(i=0;i<nD;i++) th.push(i*360/nD);
+      hr=Math.max(2.2, Math.min(6, 34*Math.sin(Math.PI/nD)*0.62));
+    }
     var o='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">';
     o+='<line x1="14" y1="50" x2="86" y2="50" stroke="#C9D3DA" stroke-width="1"/>';
     o+='<line x1="50" y1="14" x2="50" y2="86" stroke="#C9D3DA" stroke-width="1"/>';
     o+='<circle cx="50" cy="50" r="34" fill="none" stroke="#8FA2AF" stroke-width="1.2" stroke-dasharray="6 2 1.5 2"/>';
-    for(i=0;i<nD;i++){
-      var a2=(90-i*360/nD)*Math.PI/180;
+    for(i=0;i<th.length;i++){
+      var a2=(90-th[i])*Math.PI/180;
       o+='<circle cx="'+(50+34*Math.cos(a2)).toFixed(1)+'" cy="'+(50-34*Math.sin(a2)).toFixed(1)
         +'" r="'+hr.toFixed(1)+'" fill="#fff" stroke="#1F3341" stroke-width="1.3"/>';
     }
@@ -617,6 +990,10 @@
   };
 
   function recalc(){
+    if(lay==='un'){ recalcUneven(); return; }
+    hlPair=-1;
+    lastPairList=null;
+    $('pairBox').style.display='none';
     var v1=num($('in1').value);
     if(mode==='fwd'&&pdim==='r') v1=v1*2;      /* 半径で入れたら直径に直す */
     var n=intVal($('inN').value);
@@ -640,6 +1017,91 @@
     $('thOut').textContent = ok ? ('中心角 θ = '+th.toFixed(3)+'°') : '中心角 θ = ―';
     draw(nOk?n:8, kOk?k:1, ok?lastResult:'―');
     readCalc((ok&&mode==='fwd') ? result : NaN);
+    tolCalc();
+  }
+
+  /* ---- 不等配の計算（v103）----
+     fwd … PCD ＋ 角度の並び → 全ペアの弦
+     rev … 隣り合う3穴の3辺 → PCD（3点を通る円は1つに決まる） */
+  function recalcUneven(){
+    var dia=holeDia();
+    if(mode==='rev'){
+      $('pairBox').style.display='none';
+      var a=num($('inS12').value), b=num($('inS23').value), c=num($('inS13').value);
+      if(!(a>0&&b>0&&c>0)){
+        lastResult=null;
+        $('out').textContent='―.―――';
+        $('thOut').textContent='中心角 θ = ―';
+        $('unMsg').textContent='';
+        drawUneven([0,120,240],0,pairsOf([0,120,240],0));
+        readCalc(NaN); tolCalc();
+        return;
+      }
+      var cr=circumPcd(a,b,c);
+      if(cr.err!==undefined&&cr.err!==''){
+        lastResult=null;
+        $('out').textContent='―.―――';
+        $('thOut').textContent=cr.err;
+        readCalc(NaN); tolCalc();
+        return;
+      }
+      var dOut=(pdim==='r')? cr.d/2 : cr.d;
+      lastResult=dOut.toFixed(3);
+      $('out').textContent=lastResult;
+      $('thOut').textContent='中心角 穴1-2 = '+cr.th12.toFixed(3)+'° ／ 穴2-3 = '+cr.th23.toFixed(3)
+        +'° ／ 穴1-3 = '+cr.th13.toFixed(3)+'°';
+      /* 出た PCD の上に、測った3穴をそのまま置いて見せる */
+      var th3=[0, cr.th12, cr.th12+cr.th23];
+      drawUneven(th3, cr.d, pairsOf(th3, cr.d));
+      readCalc(NaN); tolCalc();
+      return;
+    }
+
+    /* fwd */
+    var v1=num($('in1').value);
+    if(pdim==='r') v1=v1*2;
+    var r=readAngs();
+    if(r.err!==undefined&&r.err!==''){
+      lastResult=null; lastPairs=null;
+      $('out').textContent='―.―――';
+      $('thOut').textContent='中心角 θ = ―';
+      $('unMsg').textContent=r.err;
+      $('pairBox').style.display='none';
+      readCalc(NaN); tolCalc();
+      return;
+    }
+    if(!r.th||!(v1>0)){
+      lastResult=null; lastPairs=null;
+      $('out').textContent='―.―――';
+      $('thOut').textContent='中心角 θ = ―';
+      $('unMsg').textContent=r.note||'';
+      $('pairBox').style.display='none';
+      var demo=[0,30,180,210];
+      drawUneven(demo,0,pairsOf(demo,0));
+      readCalc(NaN); tolCalc();
+      return;
+    }
+    $('unMsg').textContent=r.note||'';
+    var pairs=pairsOf(r.th,v1);
+    lastPairList=pairs;
+    if(hlPair>=pairs.length) hlPair=-1;
+    /* いちばん狭い隣どうしを代表の答えにする（現場で最初に測る組） */
+    var minAdj=null, i;
+    for(i=0;i<pairs.length;i++){
+      if(!pairs[i].adj)continue;
+      if(minAdj===null||pairs[i].len<pairs[minAdj].len)minAdj=i;
+    }
+    lastResult=pairs[minAdj].len.toFixed(3);
+    $('out').textContent=lastResult;
+    $('thOut').textContent='いちばん狭い組は 穴'+(pairs[minAdj].a+1)+'–穴'+(pairs[minAdj].b+1)
+      +'（中心角 '+pairs[minAdj].th.toFixed(3)+'°）。ほかの組は下の一覧に出ています';
+    drawUneven(r.th,v1,pairs);
+    drawPairs(pairs,dia);
+    $('pairBox').style.display='';
+    $('pairStat').textContent = (r.th.length<=SKIPMAX)
+      ? ('穴'+r.th.length+'・'+pairs.length+'組。実線=隣どうし / 破線=飛ばした組')
+      : ('穴'+r.th.length+'・'+pairs.length+'組。図には隣どうしだけ描いています');
+    readCalc(NaN);
     tolCalc();
   }
 
@@ -676,26 +1138,93 @@
 
   function setMode(m){
     mode=m;
-    var fwd=(m==='fwd');
-    $('mFwd').classList.toggle('on',fwd);
-    $('mRev').classList.toggle('on',!fwd);
-    var rad=(pdim==='r');
+    syncUI();
+  }
+  /* ★見た目を合わせるのはここ1か所だけ。どのボタンからでも必ずここを通す。
+     v100 で「電卓を開く道」を2つ作って文字が食い違った失敗の裏返し。 */
+  /* 使っていない欄を読み取り専用にする（記録に混ぜないため） */
+  function lock(id,on){
+    var e=$(id);
+    if(!e)return;
+    e.readOnly=!!on;
+  }
+  function syncUI(){
+    var fwd=(mode==='fwd'), rad=(pdim==='r'), un=(lay==='un');
+    $('swEq').classList.toggle('on',!un);
+    $('swUneq').classList.toggle('on',un);
+    $('swFwd').classList.toggle('on',fwd);
+    $('swRev').classList.toggle('on',!fwd);
+    $('swDia').classList.toggle('on',!rad);
+    $('swRad').classList.toggle('on',rad);
+    $('swAngRel').classList.toggle('on',angM==='rel');
+    $('swAngAbs').classList.toggle('on',angM!=='rel');
+    $('swCw').classList.toggle('on',dir===1);
+    $('swCcw').classList.toggle('on',dir!==1);
+
+    /* 入力欄の出し分け。等配・不等配 × 向き の4通り。 */
+    $('eqBox').style.display  = (!un)? '' : 'none';
+    $('unBox').style.display  = (un&&fwd)? '' : 'none';
+    $('un3Box').style.display = (un&&!fwd)? '' : 'none';
+    /* 不等配の逆算は3辺で受けるので、上の「PCD／実測ピッチ」欄は出さない */
+    $('in1').parentNode.style.display = (un&&!fwd)? 'none' : '';
+    $('dimsw').style.display = (un&&fwd)? 'none' : '';
+
     $('lbl1').childNodes[0].textContent = fwd?(rad?'半径 R':'PCD'):'実測ピッチ p';
     $('lbl1s').textContent = fwd?(rad?'ピッチ円の半径':'ピッチ円直径'):'穴の中心間距離';
     $('droLbl').textContent = fwd?'p':(rad?'R':'PCD');
-    $('dimsw').style.display = fwd?'':'';
-    $('pdD').classList.toggle('on',!rad);
-    $('pdR').classList.toggle('on',rad);
-    $('pdD').textContent = fwd? 'PCD（直径）で' : '答えをPCDで';
-    $('pdR').textContent = fwd? '半径で' : '答えを半径で';
-    $('formulaTxt').textContent = fwd?'p = PCD × sin(k × 180° ÷ n)':'PCD = p ÷ sin(k × 180° ÷ n)';
+    $('swDia').textContent = fwd? 'PCD（直径）で' : '答えをPCDで';
+    $('swRad').textContent = fwd? '半径で' : '答えを半径で';
+    $('lbAngs').childNodes[0].textContent = (angM==='rel')? '角度の並び' : '角度の並び';
+    $('lbAngsS').textContent = (angM==='rel')
+      ? '隣どうしの角度。最後の1つは省略できます。例 30 150 30'
+      : '穴1から順に、真上からの角度。例 0 30 180 210';
+    $('inAngs').setAttribute('placeholder',(angM==='rel')? '30 150 30 150' : '0 30 180 210');
+    $('formulaTxt').textContent = un
+      ? (fwd? '弦 = PCD × sin(中心角 ÷ 2)' : 'PCD = a·b·c ÷ (2 × 三角形の面積)')
+      : (fwd? 'p = PCD × sin(k × 180° ÷ n)' : 'PCD = p ÷ sin(k × 180° ÷ n)');
+
+    /* ★いま出していない欄は readOnly にする。
+       記録スニペットは readOnly の欄を拾わないので、
+       使っていない欄の値が記録と見出しに混ざらなくなる。
+       （不等配の記録の見出しに「とび k = 1」が出ていた） */
+    lock('in1',   un&&!fwd);
+    lock('inN',   un);
+    lock('inK',   un);
+    lock('inAngs',!un||!fwd);
+    lock('inTh0', !un||!fwd);
+    lock('inS12', !un||fwd);
+    lock('inS23', !un||fwd);
+    lock('inS13', !un||fwd);
+
     recalc();
   }
 
-  $('pdD').addEventListener('click',function(){ pdim='d'; setMode(mode); });
-  $('pdR').addEventListener('click',function(){ pdim='r'; setMode(mode); });
-  $('mFwd').addEventListener('click',function(){setMode('fwd')});
-  $('mRev').addEventListener('click',function(){setMode('rev')});
+  $('swDia').addEventListener('click',function(){ pdim='d'; syncUI(); });
+  $('swRad').addEventListener('click',function(){ pdim='r'; syncUI(); });
+  $('swFwd').addEventListener('click',function(){ mode='fwd'; hlPair=-1; syncUI(); });
+  $('swRev').addEventListener('click',function(){ mode='rev'; hlPair=-1; syncUI(); });
+  $('swEq').addEventListener('click',function(){ lay='eq'; hlPair=-1; syncUI(); });
+  $('swUneq').addEventListener('click',function(){ lay='un'; hlPair=-1; syncUI(); });
+  $('swAngRel').addEventListener('click',function(){ angM='rel'; hlPair=-1; syncUI(); });
+  $('swAngAbs').addEventListener('click',function(){ angM='abs'; hlPair=-1; syncUI(); });
+  $('swCw').addEventListener('click',function(){ dir=1; hlPair=-1; syncUI(); });
+  $('swCcw').addEventListener('click',function(){ dir=-1; hlPair=-1; syncUI(); });
+
+  ['inAngs','inTh0','inS12','inS23','inS13'].forEach(function(id){
+    $(id).addEventListener('input',function(){ hlPair=-1; recalc(); });
+  });
+
+  $('copyPairs').addEventListener('click',function(){
+    if(!lastPairs){toast('先に PCD と角度の並びを入れてください');return}
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(lastPairs).then(function(){toast('コピーしました')},function(){toast('コピーできませんでした')});
+    }else{
+      var ta=document.createElement('textarea');
+      ta.value=lastPairs;document.body.appendChild(ta);ta.select();
+      try{document.execCommand('copy');toast('コピーしました')}catch(e){toast('コピーできませんでした')}
+      document.body.removeChild(ta);
+    }
+  });
 
   ['in1','inN','inK','inHole'].forEach(function(id){$(id).addEventListener('input',recalc)});
 
@@ -729,15 +1258,29 @@
     }
     if(mode!=='fwd'){clr('角度公差の換算は「PCD→ピッチ」側で使います');return;}
     if(!(t>0)){clr('±公差(°)を入れると許容範囲が出ます');return;}
-    if(!(v1>0&&nOk&&kOk)){clr('先に上の PCD・穴数・とびを入れてください');return;}
+    var th;
+    if(lay==='un'){
+      /* 不等配は組ごとに中心角が違う。一覧で押した組について出す。 */
+      if(pdim==='r') v1=v1*2;
+      if(!(v1>0)){clr('先に PCD と角度の並びを入れてください');return;}
+      if(hlPair<0||!lastPairList||hlPair>=lastPairList.length){
+        clr('一覧の行を押すと、その組の許容範囲が出ます');return;
+      }
+      th=lastPairList[hlPair].th;
+    }else{
+      if(!(v1>0&&nOk&&kOk)){clr('先に上の PCD・穴数・とびを入れてください');return;}
+      th=k2*360/n2;
+    }
     var dt=t;
-    var th=k2*360/n2, thMin=th-dt, thMax=th+dt;
+    var thMin=th-dt, thMax=th+dt;
     if(thMin<=0||thMax>=360){clr('公差が大きすぎます(θ±の範囲が 0°〜360° を出ます)');return;}
     var pA=v1*Math.sin(thMin/2*RAD2), pB=v1*Math.sin(thMax/2*RAD2);
     var pLo=Math.min(pA,pB), pHi=(thMin<180&&thMax>180)? v1 : Math.max(pA,pB);
     var s=(v1/2)*dt*RAD2;
     $('tolOut').textContent=pLo.toFixed(3)+' 〜 '+pHi.toFixed(3);
-    $('tolSub').textContent='θ = '+th.toFixed(3)+'° ± '+(Math.round(dt*1000)/1000)+'°'
+    var who=(lay==='un'&&hlPair>=0&&lastPairList&&lastPairList[hlPair])
+      ? ('穴'+(lastPairList[hlPair].a+1)+'–穴'+(lastPairList[hlPair].b+1)+'：') : '';
+    $('tolSub').textContent=who+'θ = '+th.toFixed(3)+'° ± '+(Math.round(dt*1000)/1000)+'°'
       +' ／ 円周方向 ±'+s.toFixed(3)+' mm(PCD上の弧)';
     var dh=holeDia();
     $('tolRd').textContent = (dh>0)
@@ -782,7 +1325,7 @@
     }
   });
 
-  recalc();
+  syncUI();
 })();
 </script>
 

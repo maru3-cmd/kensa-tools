@@ -251,7 +251,7 @@
 
   <div class="cover">
     <div class="cover-inner">
-      <div class="h1row"><h1>検査ミニポータル</h1><button type="button" class="verBtn" id="verBtn" aria-expanded="false" aria-controls="chglog">v101 ｜ 更新内容</button></div>
+      <div class="h1row"><h1>検査ミニポータル</h1><button type="button" class="verBtn" id="verBtn" aria-expanded="false" aria-controls="chglog">v103 ｜ 更新内容</button></div>
       <div class="sub">INSPECTION MINI TOOLS</div>
       <div class="desc">
         現場のための計算・記録ツール集。すべての計算はこの端末の中で行われ、入力値がネットに送信されることはありません。
@@ -259,6 +259,8 @@
       <div class="chglog" id="chglog" hidden>
         <h3>更新内容（新しい順）</h3>
         <ul>
+          <li><span class="vtag">v103</span><b>PCD穴ピッチが、不等配にも対応しました。</b>上の段で<b>「不等配」</b>を選び、<b>角度の並び</b>を1つの欄にスペース区切りで入れます（例 <code>30 150 30 150</code>）。<b>「隣との角度」なら最後の1つは省略できます</b>。図面が真上からの角度で書いてあるときは切り替えられます。<b>組み合わせを全部並べた一覧</b>が下に出るので、<b>1組ずつ押す必要はありません</b>。中心角・中心間・外−外・内−内が横一列に並びます。図には<b>隣どうしを実線</b>、<b>飛ばした組を破線</b>で描きます（破線は6穴まで。それ以上は線だらけになるので一覧表で見てください）。行を押すと、その組だけ図で赤く太くなり、角度公差の許容範囲もその組で出ます。<b>図面が無い現物から PCD を拾う</b>ときは、「不等配」＋「ピッチ → PCD」で<b>隣り合う3つの穴の距離を3本</b>入れてください。3点を通る円は1つに決まるので、等配でなくても PCD が出ます。</li>
+          <li><span class="vtag">v102</span><b>公差判定・公差表で、f・k・m・d が φ500 まで使えるようになりました。</b>これまで <b>f と k と m は φ50 まで</b>、<b>d は φ200 まで</b>しか出せず、大きい寸法で「範囲外」になっていました。f7・f8・k7・k8・m6・d9 のどれも、軸・穴の両方で φ500 まで出ます。<b>s だけは今までどおり φ50 までです</b>（規格が φ50 を超えると寸法区分をさらに細かく割るため。画面の下にも理由を書いてあります）。<b>あわせて、穴 M6 の φ250〜315 だけにある規格の例外を入れました</b>（規則どおり計算すると −11 になりますが、規格は −9 です）。</li>
           <li><span class="vtag">v101</span><b>トップ画面でも電卓が使えるようになりました。</b>ツールを開かなくても、トップの<b>電卓ボタン</b>を押せばそのまま計算できます。かっこも＝もツールの中と同じです。これで、検査で使う計算はこのスマホだけで足りるはずです。置き場所の設定（右下・左下・右上・左上・下のバー・出さない）はトップでも効きます。<b>あわせて、内部の指定の書き間違いを1件直しました</b>（v72から残っていたもので、見た目や動きは変わりません）。</li>
           <li><span class="vtag">v100</span><b>電卓の不具合3件を直し、計算モードが一目で分かるようにしました。</b>①<b>欄をどこも選ばずに電卓ボタンから開いたとき、（ ）が出ていませんでした</b>。「次へ▼」「▲▼」の文字のままなのに、押すと ＝ ( ) として働く状態でした。文字が正しく変わるようにしました。②<b>その状態で「計算」を押すと、どこにも入力できず電卓としても使えない状態</b>になっていました。欄を選んでいないときは、押すとキーボードごと閉じるようにしました（電卓ボタンでまた開けます）。欄を選んでいるときは、これまでどおり数字キーに戻ります。③<b>入力モードを切り替えたときに ＝ ( ) の文字が残る</b>ことがあったので直しました。設定の変更もその場で反映されます。④<b>計算モードのあいだは、キーボード全体が濃い紺色</b>になります。色だけでなく、見出しの「電卓」、「計算」ボタンの反転、式の帯、＝と（ ）の並びでも分かるようにしています。</li>
           <li><span class="vtag">v99</span><b>電卓に「＝」キーと かっこ を足しました。</b>計算モードのあいだだけ、<b>「次へ」が「＝」</b>に、<b>「▲▼」が「（ ）」</b>に変わります（ふだんの数字キーのときは元どおりです）。<b>「＝」は計算するだけ</b>です。答えがそのまま式に残るので、<b>その値から続けて計算できます</b>（例：100÷4＝25 → ×3 → 75）。欄に入れたいときは、これまでどおり<b>いちばん下の「＝ この欄に入れる」</b>を押してください。押すと欄に入って数字キーに戻ります。<b>かっこ</b>は入れ子にもできます（例：2×(3+(4-1)) ＝ 12）。かっこの有無で答えが変わる式もきちんと計算します（100-20-30＝50、100-(20-30)＝110）。式がおかしいときは、<b>「かっこが閉じていません」「0では割れません」「式が途中です」</b>と理由が出て、＝が押せなくなります。</li>
@@ -416,20 +418,29 @@
     </div>
   <div class="tool-card">
   <a class="tool" href="pcd-pitch/">
-    <span class="icon"><svg viewBox="0 0 44 44">
-      <circle cx="22" cy="22" r="14" fill="none" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="6 2 1.5 2"/>
-      <circle cx="22" cy="8" r="2.6" fill="#fff" stroke="#1F3341" stroke-width="1.4"/>
-      <circle cx="34.1" cy="15" r="2.6" fill="#fff" stroke="#1F3341" stroke-width="1.4"/>
-      <circle cx="34.1" cy="29" r="2.6" fill="#fff" stroke="#1F3341" stroke-width="1.4"/>
-      <circle cx="22" cy="36" r="2.6" fill="#fff" stroke="#1F3341" stroke-width="1.4"/>
-      <circle cx="9.9" cy="29" r="2.6" fill="#fff" stroke="#1F3341" stroke-width="1.4"/>
-      <circle cx="9.9" cy="15" r="2.6" fill="#fff" stroke="#1F3341" stroke-width="1.4"/>
-      <line x1="24.5" y1="9.5" x2="31.7" y2="13.6" stroke="#D63426" stroke-width="1.8"/>
+    <span class="icon"><svg viewBox="0 0 44 44" aria-label="左が等配、右が不等配">
+      <circle cx="12" cy="22" r="10" fill="none" stroke="#8FA2AF" stroke-width="0.9" stroke-dasharray="4 1.5 1 1.5"/>
+      <circle cx="12" cy="12" r="2" fill="#fff" stroke="#1F3341" stroke-width="1.1"/>
+      <circle cx="20.66" cy="17" r="2" fill="#fff" stroke="#1F3341" stroke-width="1.1"/>
+      <circle cx="20.66" cy="27" r="2" fill="#fff" stroke="#1F3341" stroke-width="1.1"/>
+      <circle cx="12" cy="32" r="2" fill="#fff" stroke="#1F3341" stroke-width="1.1"/>
+      <circle cx="3.34" cy="27" r="2" fill="#fff" stroke="#1F3341" stroke-width="1.1"/>
+      <circle cx="3.34" cy="17" r="2" fill="#fff" stroke="#1F3341" stroke-width="1.1"/>
+      <line x1="13.7" y1="13" x2="18.9" y2="16" stroke="#D63426" stroke-width="1.5"/>
+      <circle cx="32" cy="22" r="10" fill="none" stroke="#8FA2AF" stroke-width="0.9" stroke-dasharray="4 1.5 1 1.5"/>
+      <line x1="32" y1="22" x2="32" y2="13" stroke="#DCE3E8" stroke-width="0.8"/>
+      <line x1="32" y1="22" x2="36.6" y2="14" stroke="#DCE3E8" stroke-width="0.8"/>
+      <circle cx="32" cy="12" r="2" fill="#fff" stroke="#1F3341" stroke-width="1.1"/>
+      <circle cx="37" cy="13.34" r="2" fill="#fff" stroke="#1F3341" stroke-width="1.1"/>
+      <circle cx="32" cy="32" r="2" fill="#fff" stroke="#1F3341" stroke-width="1.1"/>
+      <circle cx="27" cy="30.66" r="2" fill="#fff" stroke="#1F3341" stroke-width="1.1"/>
+      <line x1="33.9" y1="12.5" x2="35.1" y2="12.8" stroke="#D63426" stroke-width="1.5"/>
+      <line x1="36.4" y1="15.3" x2="32.6" y2="30" stroke="#D63426" stroke-width="1.2"/>
     </svg></span>
     <span>
       <span class="no">TOOL-02</span>
-      <div class="nm">PCD穴ピッチ</div>
-      <div class="ds">PCDと穴数から穴間ピッチ。キリ径を入れるとノギスの読み（外−外・内−内）も。実測ピッチからPCDの逆算、角度±公差→ピッチ許容範囲の換算も</div>
+      <div class="nm">PCD穴ピッチ<span style="font-size:11px;font-weight:400;color:#5B707E">　等配・不等配</span></div>
+      <div class="ds">PCDと穴数から穴間ピッチ。<b>不等配</b>は角度の並びを入れると全組み合わせを一覧に。キリ径を入れるとノギスの読み（外−外・内−内）も。実測ピッチ、または隣り合う3穴の3辺からPCDの逆算、角度±公差→ピッチ許容範囲の換算も</div>
     </span>
     <span class="chev">›</span>
   </a>
@@ -1075,7 +1086,7 @@
     'arc-part/':'円弧 えんこ ざぐり 座ぐり さぐり 仮想中心 遠い中心 離れた中心 中心が別 端から 角から 端面 部材 長方形 板 回転 傾き 斜め 軌跡 R 半径 内R 外R 開始角 終了角 翻訳 変換 読み替え 長穴 円弧上の穴 データム',
     'hole-map/':'総合 複合 合成 まとめて 点つなぎ 点つなぎピッチ 前の穴から 直角 振り出し 穴位置ビルダー ビルダー 相対角度 チェーン寸法 穴配置 PCD PCD複合 任意穴 単独穴 軸配置 中心線 左右 振り分け 端面 ワーク外形 原点 座標 図面まるごと 図面まるごと穴ピッチ 穴配置総合 二重 多重 同心 偏心 芯ズレ 中心違い 別PCD 起点角 位相 不等配 不等分割 等配 割り出し ボルト穴 フランジ',
     'resin-guide/':'樹脂ガイド 樹脂 プラスチック 材質 見分け 識別 種類 判別 搬送 コンベア UHMW-PE ポリエチレン PE HDPE PP ポリプロピレン POM ジュラコン デルリン ナイロン MC901 MCナイロン PA PTFE テフロン フッ素 PET エステル PC ポリカ 塩ビ PVC PEEK PVDF PPS ベークライト フェノール アクリル PMMA ABS 密度 比重 浮く 沈む 線膨張 熱膨張 膨張係数 吸水 吸湿 燃焼試験 炎 におい 色 摺動 ウェアストリップ ガイドレール ローラー スプロケット',
-    'pcd-pitch/':'PCD ピッチ円 ボルト穴 等配 弦 穴とび 角度公差 ±0.2 許容範囲 許容値 度公差'
+    'pcd-pitch/':'PCD ピッチ円 ボルト穴 等配 弦 穴とび 角度公差 ±0.2 許容範囲 許容値 度公差 不等配 不等分割 不等間隔 ばらばら 角度の並び 隣との角度 起点角 回り方向 総当たり 一覧 3辺 三辺 外接円 現物合わせ 図面なし 現場戻り 戻り品'
   };
   var FAVKEY='kensa-fav';
   var CHIPKEY='kensa-chip';   // 選んだチップ(次に開いたときも覚える)
