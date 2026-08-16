@@ -1396,6 +1396,18 @@
     hlPair=-1;
     e.dispatchEvent(new Event('input',{bubbles:true}));
   }
+  /* ★ボタンの行まで見えるようにスクロールし直す。
+     共通キーボードは focus を受けると<入力欄>を中央へ持ってくるが、
+     欄の下にあるボタンまでは面倒を見ない。キーボードが特大だと
+     そのボタンがかぶる。ここで行ごと中央へ寄せ直す。
+     ★共通キーボードには手を触れない。あとから上書きする形にする。
+     ★smooth で出すこと。即時にすると、先に走っている smooth の
+       アニメーションに引き戻される。 */
+  function angScroll(){
+    var row=$('angSep')?$('angSep').parentNode:null;
+    if(!row||!row.scrollIntoView)return;
+    try{ row.scrollIntoView({block:'center',behavior:'smooth'}); }catch(e){}
+  }
   $('angSep').addEventListener('click',function(){
     var e=$('inAngs'), v=String(e.value||'');
     /* 末尾が空（まだ数字を打っていない）なら区切りを足さない。
@@ -1404,6 +1416,7 @@
     e.value=v.replace(/\s+$/,'')+' ';
     angFire();
     e.focus();
+    angScroll();
   });
   $('angDel').addEventListener('click',function(){
     var e=$('inAngs'), v=String(e.value||'').replace(/\s+$/,'');
@@ -1412,6 +1425,7 @@
     e.value=p;
     angFire();
     e.focus();
+    angScroll();
   });
 
   ['rdKindC','rdKindO','rdKindI'].forEach(function(id){
