@@ -261,7 +261,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>PCD穴ピッチ<small>ピッチ円上の穴間距離</small></h1>
+    <h1 id="pgTitle">PCD穴ピッチ<small>ピッチ円上の穴間距離</small></h1>
   </header>
 
   <div class="topclear"><a class="backlink" href="../index.html">≡ ツール一覧</a><button type="button" aria-label="入力をすべて消去して最初から始める" onclick="armClear(this)">すべて消去</button></div>
@@ -1277,6 +1277,18 @@
   }
   /* ★見た目を合わせるのはここ1か所だけ。どのボタンからでも必ずここを通す。
      v100 で「電卓を開く道」を2つ作って文字が食い違った失敗の裏返し。 */
+  /* 開いたときのモードをアドレスで受け取る（v108）。
+     ポータルに「等配」「不等配」の2枚のカードを置き、中身は1ファイルのまま。
+       ?m=eq → 等配 ／ ?m=un → 不等配
+     指定が無ければ従来どおり等配で開く。
+     ★記録の呼び出し（?rec=）は sw からモードを戻すので、そちらが勝つ。
+       ここは<何も指定が無いときの開き方>だけを決める。 */
+  function layFromUrl(){
+    var q=String(location.search||'');
+    if(/[?&]m=un\b/.test(q)) return 'un';
+    if(/[?&]m=eq\b/.test(q)) return 'eq';
+    return null;
+  }
   /* 使っていない欄を読み取り専用にする（記録に混ぜないため） */
   function lock(id,on){
     var e=$(id);
@@ -1295,6 +1307,13 @@
   }
   function syncUI(){
     var fwd=(mode==='fwd'), rad=(pdim==='r'), un=(lay==='un');
+    /* 見出しとタイトル。ポータルの「最近使った」はアドレスごとに別々に
+       残るので、名前も別々にしないと区別が付かない。 */
+    var pt=$('pgTitle');
+    if(pt&&pt.firstChild&&pt.firstChild.nodeType===3){
+      pt.firstChild.nodeValue = un? 'PCD穴ピッチ（不等配）' : 'PCD穴ピッチ（等配）';
+    }
+    try{ document.title=(un?'PCD穴ピッチ（不等配）':'PCD穴ピッチ（等配）')+' | 検査計算ツール'; }catch(e){}
     $('swEq').classList.toggle('on',!un);
     $('swUneq').classList.toggle('on',un);
     $('swFwd').classList.toggle('on',fwd);
@@ -1523,6 +1542,11 @@
     }
   });
 
+  /* ?m= があればそれで開く。無ければ等配（従来どおり）。
+     ★?rec= の復元は共有ブロックが後から sw を当てるので、ここで
+       等配にしても記録が不等配なら不等配に戻る。 */
+  var layUrl=layFromUrl();
+  if(layUrl) lay=layUrl;
   syncUI();
 })();
 </script>
