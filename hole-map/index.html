@@ -257,6 +257,7 @@
       <li>部品は「<b>1. なにを置く？</b>（PCDの穴／1つの穴／中心線で左右に振る）→ <b>2. どこから測る？</b>（基準）→ <b>3. どう置く？と数値</b>」の順に入れて「この部品を追加」。すべての部品が<b>ひとつの原点 (0, 0)</b> の上に載ります。</li>
       <li>追加した部品は上の一覧に「<b>A：PCD100 に 6穴 等配…</b>」のように日本語で残り、<b>編集・削除</b>できます。入力中は図に<b>プレビュー（破線の赤丸・寸法線・角度）</b>がその場で描かれます。</li>
       <li>角度は<b>真上0°・時計回り＋</b>。図面まるごとを1枚で入れると、<b>全穴の座標</b>と<b>総当たりの穴間ピッチ</b>が出ます。行をタップで図と連動します。</li>
+      <li><b>穴径を入れると、図に出る距離を「中心間／外−外／内−内」から選べます</b>（表の上のボタン）。<b>はじめは外−外</b>です。ノギスを当てたまま図が読めます。穴が重なって内−内が測れない組は「―」になります。穴径を入れていないときは中心間しか出せないので、ボタンは出ません。</li>
       <li><b>同じ穴パターンが PCD の各点にあるとき</b>は、「中心線で左右に振る」の基準で<b>「PCD ◯ の各点」</b>を選びます。1点ぶん入れるだけで全点に複製され、<b>別の点どうしの穴の距離</b>まで一気に出ます。既定の「隣り合う点だけ」フィルタで、隣の点との距離だけを拾えます（PCDの基準穴は除外）。</li>
       <li><b>穴径</b>を入れると、穴間ピッチと並べて<b>ノギスの読み（外−外・内−内）</b>が出ます。穴径は<b>部品ごとに1つ</b>で、PCDの部品ならその円の全穴に効きます。同じキリで揃っているなら<b>「この穴径を全部品にまとめて入れる」</b>が使えます。記録表の実測値は、<b>外−外・内−内・中心間のどれで測ったかを自動で見分けます</b>（読みの差は穴径ぶんあるので取り違えません）。</li>
       <li><b>「1つの穴」は原点以外からでも置けます</b>。基準で<b>「指定した点から」</b>を選ぶと、起点の X・Y を決めて、そこから距離と角度（または X・Y）で穴を置けます。</li>
@@ -555,45 +556,21 @@
 </div>
 
 <div class="card">
-  <h2>穴の座標<span class="tag" id="hCount">0 穴</span></h2>
-  <details id="posDtl">
-  <summary style="font-size:12px;font-weight:700;color:#5B707E;cursor:pointer;padding:2px 0 8px">▼ 座標を表示する（加工用・検査では通常不要）</summary>
-  <div class="banner">加工の<b>ワーク原点</b>に合わせて座標を出せます。原点を変えても<b>穴間ピッチは変わりません</b>（相対距離のため）。検査の判定には影響しません。</div>
-  <div class="row noprint">
-    <div style="flex:1.1"><label class="f">読み替え原点</label>
-      <select id="orgKind" onchange="orgSet('kind',this)">
-        <option value="common">原点 (0, 0) のまま</option>
-        <option value="part">部品の基準点</option>
-        <option value="hole">穴を原点に</option>
-        <option value="xy">指定した点</option>
-      </select>
-    </div>
-    <div id="orgPick"></div>
-  </div>
-  <div class="tblwrap">
-    <table>
-      <thead><tr><th>穴</th><th>由来</th><th>X</th><th>Y</th><th>原点から</th></tr></thead>
-      <tbody id="posBody"></tbody>
-    </table>
-  </div>
-  <div class="hint" id="orgNow" style="font-weight:700;color:#42565F"></div>
-  <div class="hint">X は右が＋、Y は上が＋（真上が 0°の側）。値は図面から計算した理論値です。<b>加工に使う場合も図面が正</b>で、この画面は控えとして扱ってください。</div>
-  <div class="btnrow noprint" style="margin-top:10px">
-    <button class="btn sm" onclick="copyPos()">座標をコピー</button>
-  </div>
-  </details>
-</div>
-
-<div class="card">
   <h2>穴間ピッチ<span class="tag" id="pCount">0 組</span></h2>
   <div class="chips" id="fltChips">
     <button aria-pressed="true"  onclick="setFilter('all',this)">すべて</button>
     <button aria-pressed="false" onclick="setFilter('same',this)">同じ部品の中</button>
     <button aria-pressed="false" onclick="setFilter('cross',this)">部品をまたぐ</button>
-    <button aria-pressed="false" onclick="setFilter('adj',this)">隣どうしだけ</button>
+    <button aria-pressed="false" id="fltAdj" onclick="setFilter('adj',this)">隣どうしだけ</button>
     <button aria-pressed="false" id="fltGadj" style="display:none" onclick="setFilter('gadj',this)">隣り合う点だけ</button>
     <button aria-pressed="false" id="fltGcross" style="display:none" onclick="setFilter('gcross',this)">点をまたぐ（全部）</button>
     <button aria-pressed="false" id="fltGsame" style="display:none" onclick="setFilter('gsame',this)">同じ点の中</button>
+  </div>
+  <!-- ★ID を sw で始めない。見せ方の切り替えであって入力値ではないので保存しない。 -->
+  <div class="chips" id="rdChips" style="display:none">
+    <button aria-pressed="false" id="rdKindC" onclick="setRdKind('c',this)">中心間</button>
+    <button aria-pressed="true"  id="rdKindO" onclick="setRdKind('o',this)">外−外</button>
+    <button aria-pressed="false" id="rdKindI" onclick="setRdKind('i',this)">内−内</button>
   </div>
   <div class="chips" id="srtChips">
     <button aria-pressed="true"  onclick="setSort('order',this)">番号順</button>
@@ -628,6 +605,36 @@
     <button class="btn primary" onclick="addRec()">記録表に追加</button>
     <button class="btn sm" onclick="copyCSV()">一覧をコピー</button>
   </div>
+</div>
+
+<div class="card">
+  <h2>穴の座標<span class="tag" id="hCount">0 穴</span></h2>
+  <details id="posDtl">
+  <summary style="font-size:12px;font-weight:700;color:#5B707E;cursor:pointer;padding:2px 0 8px">▼ 座標を表示する（加工用・検査では通常不要）</summary>
+  <div class="banner">加工の<b>ワーク原点</b>に合わせて座標を出せます。原点を変えても<b>穴間ピッチは変わりません</b>（相対距離のため）。検査の判定には影響しません。</div>
+  <div class="row noprint">
+    <div style="flex:1.1"><label class="f">読み替え原点</label>
+      <select id="orgKind" onchange="orgSet('kind',this)">
+        <option value="common">原点 (0, 0) のまま</option>
+        <option value="part">部品の基準点</option>
+        <option value="hole">穴を原点に</option>
+        <option value="xy">指定した点</option>
+      </select>
+    </div>
+    <div id="orgPick"></div>
+  </div>
+  <div class="tblwrap">
+    <table>
+      <thead><tr><th>穴</th><th>由来</th><th>X</th><th>Y</th><th>原点から</th></tr></thead>
+      <tbody id="posBody"></tbody>
+    </table>
+  </div>
+  <div class="hint" id="orgNow" style="font-weight:700;color:#42565F"></div>
+  <div class="hint">X は右が＋、Y は上が＋（真上が 0°の側）。値は図面から計算した理論値です。<b>加工に使う場合も図面が正</b>で、この画面は控えとして扱ってください。</div>
+  <div class="btnrow noprint" style="margin-top:10px">
+    <button class="btn sm" onclick="copyPos()">座標をコピー</button>
+  </div>
+  </details>
 </div>
 
 <details class="card recbox">
@@ -1574,6 +1581,18 @@ function readKind(theo,dm,m){
 }
 
 /* ═══ ペア ═══ */
+/* 「隣どうし」の組が1つでも作れるか。
+   ★判定は<同じ部品の中で穴の番号が隣>。単独の穴は1部品＝1穴なので、
+     単独の穴しか置いていないと1組も作れない。 */
+function hasAdj(){
+  var i, j, a, b;
+  for(i=0;i<H.length;i++) for(j=i+1;j<H.length;j++){
+    a=H[i]; b=H[j];
+    if(a.pi===b.pi && a.adjable && b.adjable &&
+       (Math.abs(a.hi-b.hi)===1 || Math.abs(a.hi-b.hi)===a.nh-1)) return true;
+  }
+  return false;
+}
 function pairs(){
   var out=[], i, j, a, b, adj;
   for(i=0;i<H.length;i++) for(j=i+1;j<H.length;j++){
@@ -1598,6 +1617,8 @@ function pairs(){
   if(S.sort==="desc") out.sort(function(p,q){return q.d-p.d;});
   return out;
 }
+/* 絞り込みを外したら何組になるか（案内に出すため） */
+function pairsAll(){ var n=H.length; return n*(n-1)/2; }
 function byKey(k){ for(var i=0;i<H.length;i++) if(H[i].key===k) return H[i]; return null; }
 function setFilter(v,b){ S.filter=v; mark("fltChips",b); renderPairs(); persist(); }
 function syncFilterChips(){
@@ -1693,6 +1714,21 @@ function renderPos(){
   tb.innerHTML=h;
 }
 var ROWCAP=500;   /* 総当たりは穴数の2乗。端末が固まらないよう表示行を制限する */
+/* 図に出す距離。c:中心間 / o:外−外 / i:内−内（v112）
+   ★現場でノギスを当てるのは外−外が多いので、それを既定にする。
+   ★見せ方であって入力値ではないので S に持たせない＝保存しない。
+     開くたびに外−外から始まる。 */
+var rdKind="o";
+function setRdKind(v,b){ rdKind=v; mark("rdChips",b); draw(); renderDRO(); }
+function rdName(){ return (rdKind==="o")?"外−外":(rdKind==="i")?"内−内":"中心間"; }
+/* 選んだ組の距離を、いまの見せ方に直す。測れない組は null。
+   ★穴径は穴ごとに違いうるので 中心間 ± (d1+d2)/2。既存の dmOf を使う。 */
+function shownDist(a,b){
+  var d=Math.hypot(b.x-a.x,b.y-a.y), dm=dmOf(a,b);
+  if(!numOK(dm)||rdKind==="c") return d;
+  if(rdKind==="o") return d+dm;
+  return (d-dm>0)? (d-dm) : null;
+}
 function renderPairs(){
   /* 複製穴（grp が key と異なる＝点にまとめられている穴）があるか */
   var hasRep=false, r; for(r=0;r<H.length;r++){ if(H[r].grp!==H[r].key){ hasRep=true; break; } }
@@ -1702,6 +1738,20 @@ function renderPairs(){
   if(gs) gs.style.display=hasRep?"":"none";
   /* 複製が無いのに点フィルタが選ばれていたら all に戻す */
   if(!hasRep && (S.filter==="gcross"||S.filter==="gsame"||S.filter==="gadj")){ S.filter="all"; syncFilterChips(); }
+  /* ★「隣どうしだけ」も同じ扱いにする。単独の穴しか置いていないと
+       「隣」の組が1つも作れないので、押しても 0 組になる。
+       絞り込みの選択は端末に保存されるため、以前 PCD で選んでいると
+       単独の穴を置いたときに何も出ない状態が残ってしまう。 */
+  var okAdj=hasAdj(), fa=g("fltAdj");
+  if(fa) fa.style.display=okAdj?"":"none";
+  if(!okAdj && S.filter==="adj"){ S.filter="all"; syncFilterChips(); }
+  /* ★穴径が1つも入っていなければ中心間しか出せない。切り替えは出さない。 */
+  var rc=g("rdChips");
+  if(rc){
+    var on=anyHd();
+    rc.style.display=on?"":"none";
+    if(!on) rdKind="o";
+  }
   var L=pairs(), tb=g("pairBody"), h="", over=0;
   g("pCount").textContent=L.length.toLocaleString()+" 組";
   if(L.length>ROWCAP){ over=L.length-ROWCAP; L=L.slice(0,ROWCAP); }
@@ -1722,7 +1772,17 @@ function renderPairs(){
   if(over) h+='<tr><td colspan="'+ncol+'" style="text-align:center;color:#B97A1E;font-family:inherit;padding:10px;background:#FDF6E7">'
     +'残り '+over.toLocaleString()+' 組は表示していません。上のフィルタで絞ってください（「隣どうしだけ」が実用的です）。'
     +'コピーと記録表は全'+(over+ROWCAP).toLocaleString()+'組が対象です。</td></tr>';
-  if(!h) h='<tr><td colspan="'+ncol+'" style="text-align:center;color:#8FA2AF;font-family:inherit;padding:12px">穴が足りません</td></tr>';
+  if(!h){
+    /* ★穴が足りないのか、絞り込みで消えているのかを書き分ける。
+       穴が2つあるのに「穴が足りません」と出ると、穴を足そうとして
+       直らず、原因を探せない行き止まりになる。 */
+    var msg;
+    if(H.length<2) msg="穴が2つ以上になると、穴どうしのピッチが出ます";
+    else if(S.filter!=="all") msg="いまの絞り込みでは該当する組がありません。「すべて」に戻すと "
+      +pairsAll()+" 組あります";
+    else msg="穴が足りません";
+    h='<tr><td colspan="'+ncol+'" style="text-align:center;color:#8FA2AF;font-family:inherit;padding:12px">'+msg+'</td></tr>';
+  }
   tb.innerHTML=h;
 }
 document.addEventListener("click",function(e){
@@ -2040,7 +2100,13 @@ function draw(pv){
     if(a&&b){
       var pa=M(a.x,a.y), pb=M(b.x,b.y);
       h+='<line x1="'+pa[0].toFixed(1)+'" y1="'+pa[1].toFixed(1)+'" x2="'+pb[0].toFixed(1)+'" y2="'+pb[1].toFixed(1)+'" stroke="#D63426" stroke-width="2"/>';
-      h+='<text x="'+((pa[0]+pb[0])/2).toFixed(1)+'" y="'+((pa[1]+pb[1])/2-5).toFixed(1)+'" font-size="10" fill="#D63426" text-anchor="middle" font-family="monospace" stroke="#fff" stroke-width="3" paint-order="stroke">'+f3(Math.hypot(b.x-a.x,b.y-a.y))+'</text>';
+      /* ★いまの見せ方（中心間／外−外／内−内）で出す。
+         測れない組は「―」。0 や負の数を出さない。 */
+      var sv=shownDist(a,b);
+      h+='<text x="'+((pa[0]+pb[0])/2).toFixed(1)+'" y="'+((pa[1]+pb[1])/2-5).toFixed(1)+'" font-size="10" fill="#D63426" text-anchor="middle" font-family="monospace" stroke="#fff" stroke-width="3" paint-order="stroke">'+(sv===null?"―":f3(sv))+'</text>';
+      if(anyHd()){
+        h+='<text x="'+((pa[0]+pb[0])/2).toFixed(1)+'" y="'+((pa[1]+pb[1])/2+7).toFixed(1)+'" font-size="7.5" fill="#8FA2AF" text-anchor="middle" font-family="monospace" stroke="#fff" stroke-width="2.5" paint-order="stroke">'+rdName()+'</text>';
+      }
     }
   }
   /* ── 入力中プレビュー（v25）：追加フォームの内容をその場に描く（表示のみ） ── */
