@@ -185,7 +185,7 @@
      キーボードの裏に落ちる。上に貼り付けておけば、打っている間も見える。 */
   .drowrap{position:sticky;top:0;z-index:30;padding-top:6px;background:var(--bg)}
   /* 図を畳むための帯 */
-  .figbar{display:flex;align-items:center;gap:9px;margin:0 0 6px}
+  .figbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 9px;margin:0 0 6px}
   .figbar button{
     height:34px;padding:0 12px;border-radius:8px;flex:none;
     border:1.5px solid #C9D3DA;background:var(--sheet);color:#5B707E;
@@ -193,6 +193,25 @@
   }
   .figbar button:active{background:#E8EDF0}
   .figbarnote{font-size:11px;color:#8FA2AF;line-height:1.4}
+  /* ★答えを小さく（版115）。貼り付けた答えが約250pxあり、特大キーボードと
+     合わせると入力欄の居場所が無くなる。押すと L の1行（＋穴径があれば3値の1行）
+     だけにする。数字は 24px。離れて読める太さは残す。 */
+  .drowrap.cmp .dro{margin-top:6px;padding:8px 12px 8px}
+  .drowrap.cmp .dro-val{font-size:24px;text-shadow:none}
+  .drowrap.cmp .dro-label,.drowrap.cmp .dro-unit{font-size:12px}
+  .drowrap.cmp #subBox,.drowrap.cmp #rdNote,.drowrap.cmp .rdsw,.drowrap.cmp .dro-foot{display:none}
+  .drowrap.cmp .rd{margin-top:5px;padding-top:5px;gap:2px}
+  .drowrap.cmp .rd div{flex-direction:row;align-items:baseline;justify-content:center;gap:4px}
+  .drowrap.cmp .rd span{font-size:9.5px}
+  .drowrap.cmp .rd b{font-size:15px}
+  /* 紙には全部載せる。小さくしていても印刷では元に戻す。 */
+  @media print{
+    .drowrap.cmp .dro{margin-top:16px;padding:16px 18px 14px}
+    .drowrap.cmp .dro-val{font-size:38px}
+    .drowrap.cmp #subBox,.drowrap.cmp #rdNote,.drowrap.cmp .dro-foot{display:flex}
+    .drowrap.cmp .rd div{flex-direction:column}
+    .drowrap.cmp .rd b{font-size:19px}
+  }
   /* 図の中の数値の切り替え */
   .rdsw{display:flex;gap:6px;margin:8px 0 2px}
   .rdsw button{
@@ -334,7 +353,8 @@
   <!-- 図面シート -->
   <div class="figbar">
     <button type="button" id="figTgl" aria-expanded="true" aria-controls="sheetBox">図を隠す</button>
-    <span class="figbarnote">連続で計算するときは、図を隠すと画面が広く使えます</span>
+    <button type="button" id="droTgl" aria-pressed="false" aria-controls="droWrap">答えを小さく</button>
+    <span class="figbarnote">連続で計算するときは、図を隠す・答えを小さくで画面が広く使えます</span>
   </div>
   <div class="sheet" id="sheetBox">
     <div class="sheet-inner">
@@ -731,6 +751,27 @@
   })();
   $('figTgl').addEventListener('click',function(){
     figSet($('sheetBox').style.display==='none', true);
+  });
+
+  /* ── 答えを小さく（版115）──
+     ★貼り付けた答えが大きすぎて入力欄が入れにくい（特大キーボードで顕著）。
+       押すと1行表示。状態は端末に覚える。ID は sw で始めない（見せ方）。 */
+  var DROKEY="pitch-radius-dro";
+  function droSet(cmp,save){
+    var b=$('droTgl'), w=$('droWrap');
+    if(!b||!w)return;
+    if(cmp) w.classList.add('cmp'); else w.classList.remove('cmp');
+    b.textContent=cmp?'答えを大きく':'答えを小さく';
+    b.setAttribute('aria-pressed',cmp?'true':'false');
+    if(save){ try{ localStorage.setItem(DROKEY, cmp?'1':'0'); }catch(e){} }
+  }
+  (function(){
+    var v='0';
+    try{ v=localStorage.getItem(DROKEY); }catch(e){}
+    droSet(v==='1', false);
+  })();
+  $('droTgl').addEventListener('click',function(){
+    droSet(!$('droWrap').classList.contains('cmp'), true);
   });
 
   /* ── 図に出す数値（v114）──
