@@ -214,6 +214,15 @@
     text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
   .backlink:active{background:#EEF2F4}
   @media print{.backlink{display:none}}
+  /* 図に出す数値の切り替え（v117 で図の中へ。TOOL-01 と同じ見た目） */
+  .figpick{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:10px 0 0}
+  .figpicklab{font-size:11px;font-weight:700;color:#8FA2AF;flex:none}
+  .figpick button{
+    flex:1;min-width:70px;height:32px;border-radius:8px;
+    border:1.5px solid #C9D3DA;background:#fff;color:#5B707E;
+    font-size:12px;font-weight:700;cursor:pointer;
+  }
+  .figpick button.on{background:#1F3341;color:#fff;border-color:#1F3341}
   .dimsw{display:flex;gap:6px;padding:0 2px;margin:0 0 8px}
   .dimsw button{flex:1;min-height:38px;padding:8px 6px;font:inherit;font-size:12px;font-weight:700;
     border:1px solid #C9D3DA;background:#fff;color:#5B707E;border-radius:9px;cursor:pointer}
@@ -279,9 +288,9 @@
       <li>下に <b>ピッチ p</b> と <b>中心角 θ</b> が出ます。実測ピッチから PCD を出すときは「ピッチ → PCD」に切り替えます。</li>
       <li><b>角度が等配でないとき</b>は、上段を<b>「不等配」</b>にします。角度は<b>1つずつ入れて、そのつど「＋ 次の穴へ」を押します</b>（30 →「次の穴へ」→ 150 →「次の穴へ」→ 30）。<b>数字キーパッドにスペースが無いので、区切りはボタンで入れます。</b>打ち間違えたら<b>「← 1つ消す」</b>で最後の1つが消えます。いま何穴ぶん入っているかは、ボタンの右に出ています。</li>
       <li><b>「隣との角度」なら最後の1つは省略できます</b>（残りを自動で補います）。図面が真上からの角度で書いてあるときは<b>「真上からの角度」</b>に切り替えます。</li>
-      <li>不等配では、<b>組み合わせを全部並べた一覧</b>が下に出ます。<b>押す必要はありません</b>。中心角・中心間・外−外・内−内が横一列に並ぶので、そのまま拾えます。行を押すと、その組だけ図の中で赤く太くなります。</li>
+      <li>不等配では、<b>組み合わせを全部並べた一覧</b>が下に出ます。<b>押す必要はありません</b>。中心角・中心間・外−外・内−内が横一列に並ぶので、そのまま拾えます。行を押すと、その組だけ図の中で赤く太くなります。<b>不等配では大きな数字の箱は出しません</b>（同じ数が一覧に並ぶためです）。</li>
       <li>図には<b>隣どうしを実線</b>で、<b>飛ばした組を破線</b>で描きます。<b>破線は6穴まで</b>です。7穴以上は線だらけで穴の位置が読めなくなるため描きません（数字は一覧表で見てください）。</li>
-      <li><b>穴径を入れると、図に出る数値を「中心間／外−外／内−内」から選べます</b>（一覧の上のボタン）。<b>はじめは外−外</b>です。ノギスを当てたまま図が読めます。穴が重なって内−内が測れない組は「―」になります。穴径を入れていないときは中心間しか出せないので、ボタンは出ません。</li>
+      <li><b>穴径を入れると、図に出る数値を「中心間／外−外／内−内」から選べます</b>（図の中のボタン。等配・不等配のどちらでも使えます）。<b>はじめは外−外</b>です。ノギスを当てたまま図が読めます。穴が重なって内−内が測れない組は「―」になります。穴径を入れていないときは中心間しか出せないので、ボタンは出ません。</li>
       <li><b>図面が無い現物から PCD を拾う</b>ときは、「不等配」＋「ピッチ → PCD」で、<b>隣り合う3つの穴の距離を3本</b>入れます。<b>3点を通る円は1つに決まる</b>ので、等配でなくても PCD が出ます。現場戻り品の確認に使えます。</li>
       <li>座標・偏心・複数のPCDの重なりが要るときは <b>図面まるごと穴ピッチ（TOOL-30）</b>へ。</li>
     </ol>
@@ -413,6 +422,16 @@
         <div><b>方式</b> 弦長計算</div>
         <div>TOOL-02</div>
       </div>
+      <!-- ★図の見せ方を決めるボタンなので図の中に置く（v117）。
+           図は不等配のとき一覧の下へ移るが、中に入れておけば付いてくる。
+           これで<等配でも>外−外・内−内を図で見られる。
+           ID を sw で始めない（記録が button[id^="sw"] をモードとして保存するため）。 -->
+      <div class="figpick" id="rdswBox" role="group" aria-label="図に出す数値" style="display:none">
+        <span class="figpicklab">図に出す数値</span>
+        <button type="button" id="rdKindC">中心間</button>
+        <button type="button" id="rdKindO" class="on">外−外</button>
+        <button type="button" id="rdKindI">内−内</button>
+      </div>
     </div>
   </div>
 
@@ -513,8 +532,8 @@
     </div>
   </div>
 
-  <!-- 結果 -->
-  <div class="dro">
+  <!-- 結果（★不等配では出さない。一覧に同じ数が全部並ぶため・v117） -->
+  <div class="dro" id="droBox">
     <div class="dro-line">
       <span class="dro-label" id="droLbl">p</span>
       <span class="dro-val" id="out">―.―――</span>
@@ -534,19 +553,17 @@
   </div>
 
   <div id="pairBox" style="display:none;margin-top:14px">
-    <div class="hint" style="margin:0 0 8px">
-      <b>穴間ピッチ 一覧</b>：組み合わせを全部並べています。<b>数字を見るのに押す必要はありません</b>。
-      行を押すと、その組が<b>すぐ下の図</b>で赤く太くなり、<b>上の大きな数字</b>と
-      <b>角度公差の判定</b>もその組に切り替わります。
-      図に出す数値は、下のボタンで<b>中心間／外−外／内−内</b>を選べます。
-    </div>
-    <!-- ★ID を sw で始めない。記録は button[id^="sw"] をモードとして保存するが、
-         図に出す数値の選び方は<見せ方>であって入力値ではないので保存しない。 -->
-    <div class="dimsw" id="rdswBox" role="group" aria-label="図に出す数値" style="margin-bottom:8px;display:none">
-      <button type="button" id="rdKindC">中心間</button>
-      <button type="button" id="rdKindO" class="on">外−外</button>
-      <button type="button" id="rdKindI">内−内</button>
-    </div>
+    <!-- ★説明は折りたたむ（v117）。入力欄・一覧・図を近づけるため。
+         初めての人は開いて読める。毎日使う人の邪魔をしない。 -->
+    <details class="fold" id="pairFold" style="margin:0 0 8px">
+      <summary><b>穴間ピッチ 一覧</b><span class="foldhint">見かた</span></summary>
+      <div class="foldbody">
+        組み合わせを全部並べています。<b>数字を見るのに押す必要はありません</b>。
+        行を押すと、その組が<b>すぐ下の図</b>で赤く太くなり、
+        <b>角度公差の判定</b>もその組に切り替わります。
+        図に出す数値は、<b>図の中のボタン</b>で中心間／外−外／内−内を選べます。
+      </div>
+    </details>
     <div id="pairWrap"></div>
     <div class="dro-foot" style="margin-top:8px">
       <span class="formula" id="pairStat">PCD と角度の並びを入れてください</span>
@@ -779,7 +796,9 @@
     return {d:d, th12:thOf(a), th23:thOf(b), th13:thOf(c)};
   }
 
-  function draw(n,k,resultText){
+  /* chordName/chordTxt … 図の弦に出す名前と数字（v117）。
+     穴径が入っていれば「外−外 = 48.340」のように出す。渡されなければ「p = …」。 */
+  function draw(n,k,resultText,chordName,chordTxt){
     var dyn=$('dyn');
     while(dyn.firstChild)dyn.removeChild(dyn.firstChild);
 
@@ -859,7 +878,7 @@
       var g=el('g',{transform:'translate('+lx.toFixed(1)+','+ly.toFixed(1)+') rotate('+rot.toFixed(1)+')'});
       if(isFwd){
         var t=el('text',{x:0,y:4,'font-size':13,'font-weight':700,fill:'#D63426','text-anchor':'middle',stroke:'#fff','stroke-width':4,'paint-order':'stroke'});
-        t.textContent='p = '+resultText;
+        t.textContent=(chordName||'p')+' = '+((chordTxt!=null)? chordTxt : resultText);
         g.appendChild(t);
       }else{
         g.appendChild(el('circle',{cx:-14,cy:0,r:8.5,fill:'#1F3341',stroke:'#fff','stroke-width':2}));
@@ -893,7 +912,8 @@
 
     // 凡例
     $('nTxt').textContent='穴数 n = '+(isNaN(n)?'―':n);
-    $('kTxt').textContent='とび k = '+kD+(kD===1?'(隣り)':'');
+    $('kTxt').textContent='とび k = '+kD+(kD===1?'(隣り)':'')
+      +((isFwd&&holeDia()>0)? ' ／ 数値は'+rdName() : '');
     $('aTxt').textContent=(nD<=12)? '角度は真上0°・時計回り＋' : '穴が多いため角度は省略';
   }
 
@@ -1123,7 +1143,6 @@
     hlPair=-1;
     lastPairList=null;
     $('pairBox').style.display='none';
-    $('rdswBox').style.display='none';
     var v1=num($('in1').value);
     if(mode==='fwd'&&pdim==='r') v1=v1*2;      /* 半径で入れたら直径に直す */
     var n=intVal($('inN').value);
@@ -1145,7 +1164,16 @@
     lastResult = ok ? result.toFixed(3) : null;
     $('out').textContent = ok ? lastResult : '―.―――';
     $('thOut').textContent = ok ? ('中心角 θ = '+th.toFixed(3)+'°') : '中心角 θ = ―';
-    draw(nOk?n:6, kOk?k:1, ok?lastResult:'―');   /* v104: 初期の図は6穴（8穴は見にくい） */
+    /* ★等配でも図に外−外／内−内を出す（v117）。
+       内−内が測れない（穴どうしが重なる）ときは「―」。0 や負の数を出さない。 */
+    var dia=holeDia(), cName=null, cTxt=null;
+    if(ok&&mode==='fwd'&&dia>0){
+      var sv=shownLen(result,dia);
+      cName=rdName();
+      cTxt=(sv===null)? '―' : sv.toFixed(3);
+    }
+    draw(nOk?n:6, kOk?k:1, ok?lastResult:'―', cName, cTxt);   /* v104: 初期の図は6穴（8穴は見にくい） */
+    syncRdSw();
     readCalc((ok&&mode==='fwd') ? result : NaN);
     tolCalc();
   }
@@ -1327,6 +1355,12 @@
 
     /* 入力欄の出し分け。等配・不等配 × 向き の4通り。 */
     $('eqBox').style.display  = (!un)? '' : 'none';
+    /* ★不等配（PCD→ピッチ）では答えの箱を出さない（v117）。
+       一覧に 組／中心角／中心間／外−外／内−内 が全部並んでいて、
+       すぐ下に図もある。同じ数を2か所に出さない（TOOL-01 v116 と同じ）。
+       ★ただし不等配の<逆算>（3辺→PCD）では一覧が出ない。
+         箱を消すと答えの置き場所が無くなるので、そこでは出す。 */
+    $('droBox').style.display = (un&&fwd)? 'none' : '';
     $('unBox').style.display  = (un&&fwd)? '' : 'none';
     $('un3Box').style.display = (un&&!fwd)? '' : 'none';
     /* 不等配の逆算は3辺で受けるので、上の「PCD／実測ピッチ」欄は出さない */
@@ -1438,7 +1472,9 @@
   /* ★穴径が入っていないときはボタンを出さない。
      中心間しか出せないので、押しても変わらないボタンになる。 */
   function syncRdSw(){
-    var dia=holeDia(), on=(lay==='un'&&mode==='fwd'&&dia>0);
+    /* ★等配でも出す（v117）。図が等配・不等配のどちらでも同じ働きをするため。
+       穴径が無いときは中心間しか出せないので、押しても変わらないボタンは出さない。 */
+    var dia=holeDia(), on=(mode==='fwd'&&dia>0);
     $('rdswBox').style.display = on? '' : 'none';
     $('rdKindC').classList.toggle('on',rdKind==='c');
     $('rdKindO').classList.toggle('on',rdKind==='o');
