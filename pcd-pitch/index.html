@@ -214,7 +214,21 @@
     text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
   .backlink:active{background:#EEF2F4}
   @media print{.backlink{display:none}}
+  /* 角度から割り出した穴数の知らせ（v118）。割り切れないときは赤で止める。 */
+  .degmsg{margin:2px 0 8px 34px;padding:7px 10px;border-radius:8px;
+    background:#F4F7F9;border:1px solid #D5DDE2;color:#3A5060;
+    font-size:12px;font-weight:700;line-height:1.6}
+  .degmsg.ng{background:#FDF3F2;border-color:#E7C3BE;color:#9E2B20}
   /* 図に出す数値の切り替え（v117 で図の中へ。TOOL-01 と同じ見た目） */
+  /* 穴とび k（v119 で図の中へ）。図の下に置くので、入力欄の行と同じ形で並べる。 */
+  .figk{display:flex;align-items:center;gap:8px;margin:10px 0 0}
+  .figk label{font-size:13px;font-weight:600;flex:1;min-width:0}
+  .figk label small{display:block;font-size:10.5px;font-weight:400;color:#8FA2AF}
+  .figk .step-wrap{flex:none;width:150px}
+  .figk .step-wrap input{
+    width:100%;min-width:0;font:inherit;font-size:16px;font-weight:700;
+    padding:7px 8px;border:1px solid #C9D3DA;border-radius:8px;background:#fff;color:var(--ink);
+  }
   .figpick{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:10px 0 0}
   .figpicklab{font-size:11px;font-weight:700;color:#8FA2AF;flex:none}
   .figpick button{
@@ -286,6 +300,11 @@
       <li><b>穴径</b>（キリ径）を入れると、下に<b>ノギスを当てたときの読み</b>（外−外・内−内）が中心間と並んで出ます。電卓で足し引きする必要はありません。</li>
       <li>穴径は<b>「キリ（バカ穴）」「M（ねじ下穴）」のボタン</b>からも選べます。<b>キリ</b>はボルトを通す穴（M8なら9キリ）、<b>M</b>はめねじの下穴（M8なら6.8）です。押したときだけ一覧が開くので画面は伸びません。穴数 n も入力欄の左の<b>「選」</b>から選べます。</li>
       <li>下に <b>ピッチ p</b> と <b>中心角 θ</b> が出ます。実測ピッチから PCD を出すときは「ピッチ → PCD」に切り替えます。</li>
+      <li><b>図面に穴数ではなく角度が書いてあるとき</b>は、<b>「角度で入れる」</b>に切り替えて、
+        <b>隣どうしの角度</b>（図面に1つだけ書いてある角度）をそのまま入れます。
+        <b>360° ÷ その角度＝穴数</b>として計算します（30°→12穴、45°→8穴）。
+        <b>割り切れないときは計算しません</b>。近い穴数を知らせるので、図面と見比べて選んでください
+        （50°なら7穴51.429°か8穴45°）。角度がそろっていない図面は「不等配」です。</li>
       <li><b>角度が等配でないとき</b>は、上段を<b>「不等配」</b>にします。角度は<b>1つずつ入れて、そのつど「＋ 次の穴へ」を押します</b>（30 →「次の穴へ」→ 150 →「次の穴へ」→ 30）。<b>数字キーパッドにスペースが無いので、区切りはボタンで入れます。</b>打ち間違えたら<b>「← 1つ消す」</b>で最後の1つが消えます。いま何穴ぶん入っているかは、ボタンの右に出ています。</li>
       <li><b>「隣との角度」なら最後の1つは省略できます</b>（残りを自動で補います）。図面が真上からの角度で書いてあるときは<b>「真上からの角度」</b>に切り替えます。</li>
       <li>不等配では、<b>組み合わせを全部並べた一覧</b>が下に出ます。<b>押す必要はありません</b>。中心角・中心間・外−外・内−内が横一列に並ぶので、そのまま拾えます。行を押すと、その組だけ図の中で赤く太くなります。<b>不等配では大きな数字の箱は出しません</b>（同じ数が一覧に並ぶためです）。</li>
@@ -340,7 +359,7 @@
           <p>ピッチ円 φ100 に 6穴を等配。隣り合う穴のピッチは？</p>
           <p class="gset">PCD → ピッチ ／ PCD 100 ／ 穴数 6 ／ 穴とび 1</p>
           <p class="gread">読み方：p = 100 × sin(180°÷6) = <b>50.000mm</b>、中心角 θ = 60°。</p>
-          <button class="gbtn" type="button" data-ex='{"set":[{"click":"#swEq"},{"click":"#swFwd"},{"id":"in1","v":100},{"id":"inN","v":6},{"id":"inK","v":1}]}' onclick="tryExample(this)">この例を試す</button>
+          <button class="gbtn" type="button" data-ex='{"set":[{"click":"#swEq"},{"click":"#swFwd"},{"click":"#swByN"},{"id":"in1","v":100},{"id":"inN","v":6},{"id":"inK","v":1}]}' onclick="tryExample(this)">この例を試す</button>
         </div>
       </div>
       <div class="gxin" style="margin-top:12px">
@@ -422,6 +441,18 @@
         <div><b>方式</b> 弦長計算</div>
         <div>TOOL-02</div>
       </div>
+      <!-- ★とび k は「図のどの組を測るか」を決めるので図の中に置く（v119）。
+           入力欄まで戻らなくても、図を見たまま押して寸法が読める。
+           不等配では使わない（一覧が全ペアを出す）ので出さない。 -->
+      <div class="figk" id="kBox">
+        <span class="badge">3</span>
+        <label for="inK">穴とび k<small>1=隣りの穴どうし</small></label>
+        <div class="step-wrap">
+          <button class="step" type="button" id="kMinus" aria-label="とびを減らす">−</button>
+          <input id="inK" type="text" inputmode="numeric" autocomplete="off" value="1">
+          <button class="step" type="button" id="kPlus" aria-label="とびを増やす">＋</button>
+        </div>
+      </div>
       <!-- ★図の見せ方を決めるボタンなので図の中に置く（v117）。
            図は不等配のとき一覧の下へ移るが、中に入れておけば付いてくる。
            これで<等配でも>外−外・内−内を図で見られる。
@@ -448,7 +479,13 @@
       <span class="unit">mm</span>
     </div>
     <div id="eqBox">
-    <div class="row" style="grid-template-columns:26px 1fr 138px 22px">
+    <!-- ★入力値の<意味>が変わる切り替えなので ID を sw で始める（記録に残す）。
+         図面には穴数より先に角度が書いてあることが多い、という現場の声から。 -->
+    <div class="dimsw" id="nSw" role="group" aria-label="穴数の入れ方" style="margin-bottom:8px">
+      <button type="button" id="swByN" class="on">穴数で入れる</button>
+      <button type="button" id="swByDeg">角度で入れる</button>
+    </div>
+    <div class="row" id="rowN" style="grid-template-columns:26px 1fr 138px 22px">
       <span class="badge">2</span>
       <label for="inN">穴数 n<small>円周上の穴の総数</small></label>
       <div class="step-wrap">
@@ -458,16 +495,13 @@
       <span class="unit">穴</span>
     </div>
     <div class="chips nchips" id="nChipsP" role="group" aria-label="穴数を選ぶ（2〜12）" style="margin:2px 0 6px 34px"><button type="button" data-n="2">2</button><button type="button" data-n="3">3</button><button type="button" data-n="4">4</button><button type="button" data-n="5">5</button><button type="button" data-n="6">6</button><button type="button" data-n="7">7</button><button type="button" data-n="8">8</button><button type="button" data-n="9">9</button><button type="button" data-n="10">10</button><button type="button" data-n="11">11</button><button type="button" data-n="12">12</button></div>
-    <div class="row" style="grid-template-columns:26px 1fr 150px 0px">
-      <span class="badge">3</span>
-      <label for="inK">穴とび k<small>1=隣りの穴どうし</small></label>
-      <div class="step-wrap">
-        <button class="step" type="button" id="kMinus" aria-label="とびを減らす">−</button>
-        <input id="inK" type="text" inputmode="numeric" autocomplete="off" value="1">
-        <button class="step" type="button" id="kPlus" aria-label="とびを増やす">＋</button>
-      </div>
-      <span></span>
+    <div class="row" id="rowDeg" style="display:none">
+      <span class="badge">2</span>
+      <label for="inDeg">隣どうしの角度<small>図面に1つだけ書いてある角度</small></label>
+      <input id="inDeg" type="text" inputmode="decimal" autocomplete="off" placeholder="例 30" style="text-align:right">
+      <span class="unit">°</span>
     </div>
+    <div class="degmsg" id="degMsg" style="display:none"></div>
     </div>
 
     <div id="unBox" style="display:none">
@@ -650,6 +684,7 @@
      ★現場では外−外で当てることが多い（ムギさん）。穴径が入っていれば
        そちらを既定にする。穴径が無ければ中心間しか出せない。 */
   var rdKind='o';
+  var byDeg=false;         /* 等配の入れ方。false:穴数 / true:角度（v118） */
   /* 穴の塗りの濃さ（v107・ムギさんのご要望で半透明に）。
      輪郭線には効かないので、穴の位置ははっきり分かる。
      ★サムネイル（krThumb）はここを使わない。46px では薄いと見えないため、
@@ -1138,6 +1173,34 @@
     return o+'</svg>';
   };
 
+  /* 見せる角度の書き方。0 を並べない（51.4286° / 30°）。 */
+  function degTxt(x){
+    var s=x.toFixed(4);
+    if(s.indexOf('.')>=0) s=s.replace(/0+$/,'').replace(/\.$/,'');
+    return s;
+  }
+  /* ---- 角度 → 穴数（v118）----
+     等配は 360° を等分するので n = 360 ÷ 角度。
+     ★割り切れないときは n を返さない。丸めて計算すると、図面と違う穴数の
+       答えが黙って出てしまう。近い穴数を知らせて、選ぶのは人にまかせる。 */
+  function degInfo(){
+    var t=num($('inDeg').value);
+    if(!(t>0)) return {n:NaN,msg:'',ng:false};
+    if(t>180)  return {n:NaN,msg:'180°より大きい角度では等配になりません（2穴でも180°です）。',ng:true};
+    var q=360/t, r=Math.round(q);
+    if(r<2)    return {n:NaN,msg:'180°より大きい角度では等配になりません（2穴でも180°です）。',ng:true};
+    if(Math.abs(q-r)<=0.01){
+      var ex=360/r, m='360° ÷ '+degTxt(t)+'° = '+r+'穴';
+      if(Math.abs(ex-t)>0.0002) m+='（正確には '+degTxt(ex)+'° です。'+r+'穴として計算します）';
+      return {n:r,msg:m,ng:false};
+    }
+    var lo=Math.floor(q), hi=Math.ceil(q);
+    return {n:NaN,ng:true,
+      msg:'360° ÷ '+degTxt(t)+'° = '+q.toFixed(3)+'。割り切れないので等配になりません。'
+        +'近いのは '+lo+'穴（'+degTxt(360/lo)+'°）と '+hi+'穴（'+degTxt(360/hi)+'°）です。'
+        +'角度がそろっていない図面なら「不等配」へ。'};
+  }
+
   function recalc(){
     if(lay==='un'){ recalcUneven(); return; }
     hlPair=-1;
@@ -1145,7 +1208,20 @@
     $('pairBox').style.display='none';
     var v1=num($('in1').value);
     if(mode==='fwd'&&pdim==='r') v1=v1*2;      /* 半径で入れたら直径に直す */
-    var n=intVal($('inN').value);
+    /* ★角度で入れているときは、そこから穴数を出す（v118）。
+       出した穴数は穴数欄にも書き戻す。図・公差・記録の呼び出しなど、
+       この先の道はすべて「穴数」で動いているので、入口だけを増やす。 */
+    var n;
+    if(byDeg){
+      var di=degInfo();
+      $('degMsg').textContent=di.msg;
+      $('degMsg').className=di.ng? 'degmsg ng' : 'degmsg';
+      $('degMsg').style.display=di.msg? '' : 'none';
+      n=di.n;
+      $('inN').value=isNaN(n)? '' : String(n);
+    }else{
+      n=intVal($('inN').value);
+    }
     var k=intVal($('inK').value);
     if(isNaN(k))k=1;
 
@@ -1335,6 +1411,19 @@
   }
   function syncUI(){
     var fwd=(mode==='fwd'), rad=(pdim==='r'), un=(lay==='un');
+    /* 穴数で入れるか、角度で入れるか（v118・等配のみ） */
+    $('swByN').classList.toggle('on',!byDeg);
+    $('swByDeg').classList.toggle('on',byDeg);
+    $('nSw').style.display   = un? 'none' : '';
+    $('kBox').style.display  = un? 'none' : '';
+    $('rowN').style.display  = (!un&&byDeg)? 'none' : '';
+    $('rowDeg').style.display= (!un&&byDeg)? '' : 'none';
+    /* 早見ボタンの一覧は「hide」クラスで開け閉めしているので、
+       角度で入れるあいだだけ style で伏せ、戻すときは style を空に戻す。 */
+    $('nChipsP').style.display = (!un&&byDeg)? 'none' : '';
+    /* ★角度の知らせは、角度で入れているときだけ。不等配へ移ったら消す
+       （残っていると、いま使っていない入れ方の話が画面に残る）。 */
+    if(un||!byDeg) $('degMsg').style.display='none';
     /* 見出しとタイトル。ポータルの「最近使った」はアドレスごとに別々に
        残るので、名前も別々にしないと区別が付かない。 */
     var pt=$('pgTitle');
@@ -1387,7 +1476,10 @@
        使っていない欄の値が記録と見出しに混ざらなくなる。
        （不等配の記録の見出しに「とび k = 1」が出ていた） */
     lock('in1',   un&&!fwd);
-    lock('inN',   un);
+    /* ★使っていない欄は readOnly にして記録に載せない（意味の違う数字を残さない）。
+       角度で入れているときの穴数は<計算で出た値>なので保存しない。 */
+    lock('inN',   un||byDeg);
+    lock('inDeg', un||!byDeg);
     lock('inK',   un);
     lock('inAngs',!un||!fwd);
     lock('inTh0', !un||!fwd);
@@ -1412,6 +1504,8 @@
   $('swRev').addEventListener('click',function(){ mode='rev'; hlPair=-1; syncUI(); });
   $('swEq').addEventListener('click',function(){ lay='eq'; hlPair=-1; syncUI(); });
   $('swUneq').addEventListener('click',function(){ lay='un'; hlPair=-1; syncUI(); });
+  $('swByN').addEventListener('click',function(){ if(!byDeg)return; byDeg=false; syncUI(); });
+  $('swByDeg').addEventListener('click',function(){ if(byDeg)return; byDeg=true; syncUI(); });
   $('swAngRel').addEventListener('click',function(){ angM='rel'; hlPair=-1; syncUI(); });
   $('swAngAbs').addEventListener('click',function(){ angM='abs'; hlPair=-1; syncUI(); });
   $('swCw').addEventListener('click',function(){ dir=1; hlPair=-1; syncUI(); });
@@ -1493,7 +1587,7 @@
     }
   });
 
-  ['in1','inN','inK','inHole'].forEach(function(id){$(id).addEventListener('input',recalc)});
+  ['in1','inN','inDeg','inK','inHole'].forEach(function(id){$(id).addEventListener('input',recalc)});
 
   function bump(d){
     var n=intVal($('inN').value);
