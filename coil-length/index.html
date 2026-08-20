@@ -4,29 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#1F3341">
-<meta name="description" content="平歯車・はすば歯車のオーバーピン(玉)径Mを計算。実測Mから歯厚を逆算し、図面の上下限で合否を判定します。計算は端末内で完結します。">
-<title>オーバーピン径 | 検査計算ツール</title>
+<meta name="description" content="とぐろ巻きのパッキンを巻いたまま、巻き数と最大外径・最小内径から全長を計算します。図面の必要長さとの過不足も判定。計算は端末内で完結します。">
+<title>巻きパッキンの長さ | 検査計算ツール</title>
 <style>
   :root{
-    --paper:#F2F4F5;
-    --sheet:#FFFFFF;
-    --ink:#1F3341;
-    --line:#8FA2AF;
-    --red:#D63426;
-    --dro-bg:#15181A;
-    --dro-red:#FF5A48;
-    --dro-dim:#9FB0B8;
+    --paper:#F2F4F5;--sheet:#FFFFFF;--ink:#1F3341;--line:#8FA2AF;--red:#D63426;
+    --dro-bg:#15181A;--dro-red:#FF5A48;--dro-dim:#9FB0B8;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html{-webkit-text-size-adjust:100%}
-  body{
-    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI",sans-serif;
-    background:var(--paper);color:var(--ink);
-    min-height:100dvh;display:flex;flex-direction:column;align-items:center;
-    padding:0 12px calc(16px + env(safe-area-inset-bottom));
-  }
+  body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI",sans-serif;background:var(--paper);color:var(--ink);min-height:100dvh;display:flex;flex-direction:column;align-items:center;padding:0 12px calc(16px + env(safe-area-inset-bottom))}
   .wrap{width:100%;max-width:480px}
-
   header{display:flex;align-items:baseline;justify-content:space-between;padding:14px 2px 10px}
   header h1{font-size:16px;font-weight:700;letter-spacing:.04em}
   header h1 small{display:block;font-size:11px;font-weight:400;color:#5B707E;letter-spacing:.08em;margin-top:2px}
@@ -40,116 +28,37 @@
   .titleblock div:last-child{border-right:none;margin-left:auto}
   .titleblock b{font-weight:700}
 
-  .inputs{margin-top:14px;display:flex;flex-direction:column;gap:10px}
-  .row{
-    display:grid;grid-template-columns:26px 1fr 120px 34px;
-    align-items:center;gap:8px;
-    background:var(--sheet);border:1px solid #D5DDE2;border-radius:10px;
-    padding:10px 12px;
-  }
-  .badge{
-    width:22px;height:22px;border-radius:50%;
-    background:var(--ink);color:#fff;font-size:12px;font-weight:700;
-    display:flex;align-items:center;justify-content:center;
-  }
+  .hint{margin-top:10px;font-size:11px;color:#5B707E;line-height:1.7;padding:0 2px}
+  .hint b{color:var(--ink)}
+
+  .inputs{margin-top:10px;display:flex;flex-direction:column;gap:9px}
+  .row{display:grid;grid-template-columns:30px 1fr 130px 40px;align-items:center;gap:8px;background:var(--sheet);border:1px solid #D5DDE2;border-radius:10px;padding:10px 12px}
+  .row.computed{border-color:#F0C4BF;background:#FFFCFC}
+  .badge{width:26px;height:26px;border-radius:7px;background:var(--ink);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .row.computed .badge{background:var(--red)}
   .row label{font-size:13px;font-weight:600}
   .row label small{display:block;font-size:10px;font-weight:400;color:#5B707E}
-  .row input{
-    width:100%;font-size:20px;font-weight:600;text-align:right;
-    font-variant-numeric:tabular-nums;
-    border:none;border-bottom:2px solid var(--ink);
-    background:transparent;color:var(--ink);
-    padding:2px 4px;border-radius:0;outline:none;
-  }
+  .row input{width:100%;font-size:20px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums;border:none;border-bottom:2px solid var(--ink);background:transparent;color:var(--ink);padding:2px 4px;outline:none}
   .row input:focus{border-bottom-color:var(--red)}
+  .row.computed input{color:var(--red);border-bottom-color:#F0C4BF}
   .unit{font-size:12px;color:#5B707E}
+  .clearBtn{margin-top:10px;width:100%;font-size:12px;font-weight:700;padding:10px 4px;border:1.5px solid #C9D3DA;border-radius:9px;background:var(--sheet);color:#5B707E}
+  .clearBtn:active{border-color:var(--red);color:var(--red)}
 
-  .dro{
-    margin-top:16px;background:var(--dro-bg);border-radius:12px;
-    padding:16px 18px 12px;box-shadow:inset 0 2px 8px rgba(0,0,0,.5);
-  }
-  .dro-line{display:flex;align-items:baseline;gap:10px;justify-content:flex-end}
-  .dro-label{color:#7d8a91;font-size:14px;font-weight:700;letter-spacing:.1em}
-  .dro-val{
-    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
-    font-variant-numeric:tabular-nums;
-    font-size:38px;font-weight:600;color:var(--dro-red);
-    text-shadow:0 0 10px rgba(255,90,72,.35);letter-spacing:.02em;
-  }
-  .dro-unit{color:#7d8a91;font-size:14px;font-weight:600}
-  .dro-grid{
-    display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;
-    border-top:1px solid #2a3034;margin-top:12px;padding-top:10px;
-  }
+  .dro{margin-top:14px;background:var(--dro-bg);border-radius:12px;padding:14px 16px 12px;box-shadow:inset 0 2px 8px rgba(0,0,0,.5)}
+  .dro-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}
   .cellv{display:flex;flex-direction:column;align-items:flex-end;padding:4px 8px;border-radius:8px}
   .cellv:active{background:#1e2327}
   .cellv .k{color:#7d8a91;font-size:11px;font-weight:700;letter-spacing:.06em;align-self:flex-start}
-  .cellv .v{
-    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
-    font-variant-numeric:tabular-nums;
-    font-size:18px;font-weight:600;color:var(--dro-dim);letter-spacing:.01em;
-  }
+  .cellv .v{font-family:ui-monospace,Consolas,monospace;font-variant-numeric:tabular-nums;font-size:17px;font-weight:600;color:var(--dro-dim)}
   .cellv .s{color:#5d6a71;font-size:10px}
-  .dro-foot{
-    display:flex;align-items:center;justify-content:space-between;
-    margin-top:10px;border-top:1px solid #2a3034;padding-top:9px;gap:8px;
-  }
+  .dro-foot{display:flex;align-items:center;justify-content:space-between;margin-top:10px;border-top:1px solid #2a3034;padding-top:9px;gap:8px}
   .statusTxt{color:#5d6a71;font-size:11px;letter-spacing:.02em;line-height:1.6}
   .statusTxt.err{color:#FF8A7E}
-  .statusTxt.warn{color:#E8B34B}
-  /* 歯すじの切り替え（v121）。★入力値の意味が変わるので ID は sw で始める。 */
-  .dimsw{display:flex;gap:6px;margin:0 0 9px}
-  .dimsw button{flex:1;min-height:38px;border-radius:9px;border:1.5px solid #C9D3DA;
-    background:var(--sheet);color:#5B707E;font-size:12.5px;font-weight:700;cursor:pointer}
-  .dimsw button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
-  .swlab{font-size:11px;font-weight:700;color:#5B707E;letter-spacing:.04em;margin:14px 2px 6px}
-  .row.opt{border-style:dashed}
-  /* 手持ちのピンゲージ（v122）。刻みと範囲を1行に収める。 */
-  .pinset{display:flex;align-items:center;gap:6px;flex-wrap:wrap;
-    background:var(--sheet);border:1px dashed #C9D3DA;border-radius:10px;padding:10px 12px}
-  .pinset .pl{font-size:12px;font-weight:600;flex:1 0 100%}
-  .pinset .pl small{display:block;font-size:10px;font-weight:400;color:#5B707E}
-  .pinset input{width:66px;font-size:16px;font-weight:600;text-align:right;
-    border:none;border-bottom:2px solid var(--ink);background:transparent;color:var(--ink);padding:2px 4px;outline:none}
-  .pinset span{font-size:11px;color:#5B707E}
-  .pinhit{margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
-    background:#F4F7F9;border:1px solid #D5DDE2;border-radius:9px;padding:9px 11px;
-    font-size:12px;font-weight:700;color:#3A5060;line-height:1.6}
-  .pinhit.ng{background:#FDF3F2;border-color:#E7C3BE;color:#9E2B20}
-  .pinopt{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:7px;
-    font-size:12px;font-weight:700;color:#3A5060;line-height:1.6}
-  .pinopt .ot{flex:1 1 auto;min-width:0}
-  .pinopt .best{color:#B23B2E}
-  .pinuse{font:inherit;font-size:11.5px;font-weight:700;padding:7px 12px;
-    border:1px solid var(--ink);border-radius:7px;background:#fff;color:var(--ink);cursor:pointer;flex:none}
-  .pinuse:active{transform:translateY(1px)}
-  /* 合否（v121）。★Δ の数字だけでは合否は分からない。図面の上下限で決める。 */
-  .jdg{margin-top:10px;border-radius:9px;padding:9px 11px;
-    font-size:13px;font-weight:700;line-height:1.6;background:#252b2f;color:#c9d2d7}
-  .jdg.ok{background:#12301F;color:#7FE0A6}
-  .jdg.ng{background:#3A1714;color:#FF8A7E}
-  /* くわしい数値は畳む（v116 の学び：答えの箱には要る数字だけ） */
-  .more{margin-top:10px;border-top:1px solid #2a3034;padding-top:8px}
-  .more>summary{list-style:none;cursor:pointer;font-size:11.5px;font-weight:700;color:#7d8a91}
-  .more>summary::-webkit-details-marker{display:none}
-  .more>summary::before{content:"＋ ";color:#7d8a91}
-  .more[open]>summary::before{content:"− "}
-  .copy{
-    font-size:12px;font-weight:700;color:#c9d2d7;background:#252b2f;
-    border:1px solid #3a4247;border-radius:7px;padding:6px 14px;flex:none;
-  }
+  .copy{font-size:12px;font-weight:700;color:#c9d2d7;background:#252b2f;border:1px solid #3a4247;border-radius:7px;padding:6px 14px;flex:none}
   .copy:active{background:#31383d}
 
-  footer{margin-top:18px;font-size:11px;color:#5B707E;line-height:1.7;text-align:center;letter-spacing:.03em}
-
-  .toast{
-    position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);
-    background:var(--ink);color:#fff;font-size:13px;
-    padding:9px 20px;border-radius:20px;opacity:0;pointer-events:none;
-    transition:opacity .25s,transform .25s;
-  }
-  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-  @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+  footer{margin-top:16px;font-size:11px;color:#5B707E;line-height:1.7;text-align:center;letter-spacing:.03em}
   /* ── 使い方ガイド（全ツール共通） ── */
   .guide{background:#FFFFFF;border:1px solid #D5DDE2;border-radius:12px;margin:0 0 12px;overflow:hidden}
   .guide>summary{list-style:none;cursor:pointer;padding:12px 14px;font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.04em;display:flex;align-items:center;gap:7px}
@@ -177,7 +86,6 @@
   .topclear button{font-size:12px;font-weight:700;color:#B23B2E;background:#FBECEA;border:1px solid #E7B7B0;border-radius:9px;padding:7px 14px;cursor:pointer}
   .topclear button:active{background:#F6DAD5}
   .topclear button.arm{background:#B23B2E;color:#fff;border-color:#B23B2E}
-  .clearBtn{width:100%;font-size:13px;font-weight:700;padding:12px 4px;border:1.5px solid #C9D3DA;border-radius:10px;background:var(--sheet);color:#5B707E;letter-spacing:.05em;margin-bottom:6px;cursor:pointer}
   .clearBtn.arm{border-color:var(--red);color:var(--red);background:#FCF0EF}
   /* 一覧へ戻る導線：スマホで押しやすいよう、消去ボタンと同じ高さの左端に置く */
   .topclear,.topClear{justify-content:space-between !important;align-items:center;gap:8px}
@@ -191,12 +99,39 @@
     border-radius:8px;font-size:11.5px;line-height:1.75;color:#3D515F}
   .src b{color:#1F3341}
   .src code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#fff;border:1px solid #E3E9EC;border-radius:4px;padding:0 3px}
+
+  /* ── ここから TOOL-37 の指定 ── */
+  .dimsw{display:flex;gap:6px}
+  .dimsw button{flex:1;min-height:38px;border-radius:9px;border:1.5px solid #C9D3DA;
+    background:var(--sheet);color:#5B707E;font-size:12.5px;font-weight:700;cursor:pointer}
+  .dimsw button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .swlab{font-size:11px;font-weight:700;color:#5B707E;letter-spacing:.04em;margin:14px 2px 6px}
+  /* 巻き数の ± （0.5刻み）。端数を押して合わせられるようにする。 */
+  .stepw{display:flex;align-items:center;gap:6px}
+  .stepw input{width:100%;text-align:center}
+  .step{width:34px;height:34px;flex:none;border-radius:8px;
+    border:1.5px solid var(--ink);background:var(--sheet);color:var(--ink);
+    font-size:18px;font-weight:700;line-height:1}
+  .step:active{background:var(--ink);color:#fff}
+  .row.opt{border-style:dashed}
+  /* 答えの箱。★v116 の学びに合わせて、要る数字だけを低く並べる。 */
+  .dro-line{display:flex;align-items:baseline;gap:6px}
+  .dro-label{font-size:12px;font-weight:700;color:var(--dro-dim);margin-right:auto}
+  .dro-val{font-family:ui-monospace,Consolas,monospace;font-variant-numeric:tabular-nums;
+    font-size:32px;font-weight:700;color:var(--dro-red);letter-spacing:.02em}
+  .dro-unit{font-size:12px;color:var(--dro-dim)}
+  .dro-sub{display:flex;justify-content:flex-end;margin-top:2px;
+    color:#9FB0B8;font-size:11.5px;font-variant-numeric:tabular-nums}
+  .jdg{margin-top:10px;border-radius:9px;padding:9px 11px;
+    font-size:13px;font-weight:700;line-height:1.6;background:#252b2f;color:#c9d2d7}
+  .jdg.ok{background:#12301F;color:#7FE0A6}
+  .jdg.ng{background:#3A1714;color:#FF8A7E}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <h1>オーバーピン径<small>ピン(玉)を挟んで 歯厚を見る</small></h1>
+    <h1>巻きパッキンの長さ<small>とぐろ巻きのまま 全長を出す</small></h1>
   </header>
 
   <div class="topclear"><a class="backlink" href="../index.html">≡ ツール一覧</a><button type="button" aria-label="入力をすべて消去して最初から始める" onclick="armClear(this)">すべて消去</button></div>
@@ -204,75 +139,38 @@
 <details class="guide noprint">
   <summary>使い方と例を見る</summary>
   <div class="gb">
-    <h4>この測り方の仕組み</h4>
-    <div class="src">
-      <b>歯厚はノギスでは測れません。</b>歯面はインボリュート曲線で、当てる基準の平面がなく、
-      「どの直径で測るか」で厚みが変わってしまうからです。<br>
-      そこで<b>歯溝にピン（玉）を落とします</b>。ピンは2枚の歯面に挟まれて、必ず決まった深さで止まります。<br>
-      ・歯が<b>厚い</b>（＝溝が狭い）→ ピンは<b>浅く</b>止まる → M は<b>大きく</b>なる<br>
-      ・歯が<b>薄い</b>（削り込んだ）→ ピンは<b>深く</b>沈む → M は<b>小さく</b>なる<br>
-      向かい合う歯溝の2本を外からマイクロメータで挟んだ寸法が <b>M</b> です。
-      つまり <b>M は歯厚の代わり</b>で、見ているのは<b>歯をどれだけ削ったか（バックラッシの作り込み）</b>です。<br>
-      <b>しかも拡大されます。</b>歯厚の差は M では <b>2倍あまり</b>に拡大されて見えます（正確には <code>dc/(d·cosβ·tanφ)</code> 倍。圧力角20°の並の歯車で 2.2〜2.4倍）。
-      読み取りにくい歯厚の差を、読み取りやすい寸法に変えているわけです（倍率は「くわしい数値」に出ます）。
-    </div>
-    <h4>ピンの選び方</h4>
-    <div class="src">
-      <b>ねらいは「歯面の基準円あたりに当てる」ことです。</b>
-      そこが歯厚の決まっている場所で、圧力角のずれや歯形の誤差の影響がいちばん小さいからです。<br>
-      ・<b>最適ピン径</b> … <code>dp = mn(π/2 − 2·xn·tan αn) / cos αn</code><br>
-      　中身は「歯溝の幅 ÷ cos 圧力角」です。<b>転位が 0・圧力角20°なら 1.6716·mn</b>（よく言う「1.68m」はこれ）。<br>
-      　<b>転位が付くと変わります</b>。歯が厚い（＝溝が狭い）ほど、最適なピンは細くなります。
-      　1.68m を転位歯車にそのまま使わないでください。<br>
-      ・<b>細すぎると</b> … 歯元の丸みに乗る／頭が歯先から出ずマイクロが歯に当たる<br>
-      ・<b>太すぎると</b> … 歯先のかどに乗る（面取りや修整が入っている所なので値が当てにならない）<br>
-      画面の<b>「使える範囲」</b>は、この3つを満たす径です（歯先から直径で 0.1·mn の余裕を見ています）。<br>
-      ・<b>手持ちは2系統</b>を入れられます。<b>①ピンゲージ</b>（同じ径が1本ずつ）は<b>径の違う2本の組</b>で、<b>②テストピース</b>（同じ径が複数ある）は<b>同じ径を2本</b>で選びます。どちらも「使える範囲」に入っているものだけを勧めます。刻みが粗いと1本も入らないことがあり、そのときは<b>無いと言います</b>（範囲の外の径は勧めません）。<br>
-      <b>どの径を使っても計算は合います。</b>ただし<b>図面の M は特定のピン径での値</b>です。
-      違う径で測るなら<b>図面の上下限を換算</b>しなければ合否が狂います。
-      「図面のピン径」を入れれば、このツールが換算します。<br>
-      <b>2本の径が違ってもかまいません。</b>ピンゲージが1本ずつしかないときは
-      「2本の径が違う」に切り替えてください。中心間の距離を余弦定理で出すので、近似ではありません。
-      （差は小さいほうが無難です。当たる高さが左右で変わるためです。）<br>
-      ピン径は<b>呼びではなく実測値</b>を。ピン径の誤差はそのまま1:1で M に乗ります。
-    </div>
     <h4>使い方</h4>
     <ol>
-      <li><b>モジュール</b>・<b>歯数</b>・<b>ピン径</b>を入れます（圧力角は既定20°、転位は既定0）。<b>はすば歯車</b>のときは上のボタンで切り替え、<b>ねじれ角 β</b> を足します。</li>
-      <li>歯数が偶数なら向かい合う2本、奇数なら半ピッチずれた式を自動で選びます。</li>
-      <li><b>実測 M</b> を入れると、<b>そこから歯厚を逆算</b>します。「M が0.033小さい」ではなく「<b>歯厚が0.015薄い</b>」の形で読めます。</li>
-      <li><b>図面の M 上下限</b>を入れると合否が出ます。<b>理論値との差 Δ では合否は決まりません</b>：理論 M は歯厚が理論どおり（バックラッシ0）の値で、実物は<b>わざと薄く</b>作るので、Δ が負なのが普通です。</li>
-      <li>ピン径は<b>呼びではなく実測値</b>を。ピン径の誤差はそのまま1:1で M に乗ります。</li>
-      <li><b>ピンが1本ずつしかないとき</b>は「2本の径が違う」に切り替えて、2本目の径も入れます。<b>図面と違うピン径で測るときは「図面のピン径」も入れてください</b>（上下限を換算します）。</li>
+      <li><b>巻き数</b>・<b>最大外径</b>・<b>最小内径</b>の3つを入れると全長が出ます。<b>厚みは要りません</b>。</li>
+      <li>巻き数は<b>0.5刻み</b>で±できます。端数の見当は、下に出る<b>「1巻き 平均」</b>を見て付けてください。</li>
+      <li><b>厚み（実測）</b>を入れると、巻き数と径から出した厚みと突き合わせて点検します。食い違えば、巻き数の数え違いか、巻きのゆるみ・つぶれです。</li>
+      <li><b>図面の必要長さ</b>を入れると、過不足を<b>「m」と「巻きぶん」の両方</b>で出します。判定は<b>「必要長さ以上でOK」</b>と<b>「±の公差」</b>から選べます。</li>
     </ol>
     <div class="src">
       <b>計算のしかた</b><br>
-      ・正面圧力角 <code>tan αt = tan αn / cos β</code>（平歯車は β=0 なので αt=α）<br>
-      ・基準円 <code>d = mn·z / cos β</code>、基礎円 <code>db = d·cos αt</code><br>
-      ・ピン(玉)中心の圧力角 φ … <code>inv φ = inv αt + dp/(mn·z·cos αn) − π/(2z) + 2·xn·tan αn / z</code><br>
-      　<code>inv α = tan α − α</code>。inv は解析的に解けないのでニュートン法で収束させています。<br>
-      ・中心円 <code>dc = db / cos φ</code>、<b>偶数歯</b> <code>M = dc + dp</code>／<b>奇数歯</b> <code>M = dc·cos(90°/z) + dp</code><br>
-      ・<b>逆算</b>は同じ道を戻ります … 実測M → dc → φ → inv φ → 転位相当 → 歯厚 <code>s = mn(π/2 + 2x·tan αn)</code><br>
-      ・接触点の確認 … <code>tan φk = tan φ − dp/(2·rb)</code> で接触半径を出し、歯先・歯元から外れていないかを見ます（外れると測定値が意味を持ちません）。<br>
-      <b>はすば歯車は玉(ボール)で測る前提です。</b>丸ピンでは歯すじが斜めのため接触が変わります。接触の確認は相当平歯車での見当です。<br>
-      <b>歯厚の許容差は精度等級（JIS B 1702 系）からは決まりません。合否は図面の上下限で判断してください。</b>
+      ・全長 … <code>L = π × 巻き数 × (外径 + 内径) ÷ 2</code><br>
+      これは近似ではありません。各巻きの中心径をぜんぶ足すと、ちょうど <code>巻き数 × (外径+内径)/2</code> になります。<br>
+      ・厚み(計算) … <code>(外径 − 内径) ÷ (巻き数 × 2)</code><br>
+      ・1巻きの長さ … <code>π × その巻きの径</code>（外周 <code>πD</code>／内周 <code>πd</code>）<br>
+      <b>いちばん効く誤差は巻き数の端数です。</b>半巻き数え違えると、平均1巻きの半分ぶん（上の例なら約24cm）ずれます。外径・内径の測り誤差は、<code>(外径+内径)</code> に対する割合でしか効きません。
     </div>
     <div class="gx">
-      <h4>例 ── m2・z20・ピン径3.5</h4>
+      <h4>例 ── 50巻き・外径200・内径100</h4>
       <div class="gxin">
-        <div class="gfig"><svg viewBox="0 0 120 120" role="img" aria-label="歯車を2本のピンで挟んで測るオーバーピン径Mの図">
-          <circle cx="60" cy="60" r="30" fill="none" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="4 2"/>
-          <circle cx="24" cy="60" r="6" fill="#FBECEA" stroke="#D63426" stroke-width="1.3"/>
-          <circle cx="96" cy="60" r="6" fill="#FBECEA" stroke="#D63426" stroke-width="1.3"/>
-          <line x1="18" y1="60" x2="102" y2="60" stroke="#D63426" stroke-width="1.2" stroke-dasharray="3 2"/>
-          <text x="60" y="50" font-size="9" fill="#D63426" text-anchor="middle">M</text>
-          <text x="60" y="92" font-size="7" fill="#5B707E" text-anchor="middle">ピン2本を挟む</text>
+        <div class="gfig"><svg viewBox="0 0 120 120" role="img" aria-label="とぐろ巻きのパッキンの例">
+          <circle cx="60" cy="55" r="42" fill="#FBFCFC" stroke="#1F3341" stroke-width="1.5"/>
+          <circle cx="60" cy="55" r="33" fill="none" stroke="#C9D3DA" stroke-width="1"/>
+          <circle cx="60" cy="55" r="25" fill="none" stroke="#C9D3DA" stroke-width="1"/>
+          <circle cx="60" cy="55" r="16" fill="none" stroke="#C9D3DA" stroke-width="1"/>
+          <circle cx="60" cy="55" r="21" fill="none" stroke="#D63426" stroke-width="1.4"/>
+          <line x1="18" y1="107" x2="102" y2="107" stroke="#1F3341" stroke-width="1"/>
+          <text x="60" y="103" font-size="8" fill="#1F3341" text-anchor="middle">外径 200</text>
         </svg></div>
         <div class="gtxt">
-          <p>モジュール2・歯数20の平歯車を、ピン径3.5で挟むと測定値は？</p>
-          <p class="gset">m 2 ／ z 20 ／ α 20 ／ x 0 ／ ピン径 3.5</p>
-          <p class="gread">読み方：歯数20は偶数なので M = ピン中心円＋ピン径 ≈ <b>44.929mm</b>（推奨ピン径の目安 1.68m=3.36）。ここで実測 44.897 なら、歯厚は理論より <b>0.014mm 薄い</b>と出ます。</p>
-          <button class="gbtn" type="button" data-ex='{"set":[{"click":"#swSpur"},{"id":"fM","v":2},{"id":"fZ","v":20},{"id":"fDp","v":3.5},{"id":"fMe","v":44.897}]}' onclick="tryExample(this)">この例を試す</button>
+          <p>巻きを崩さずに、巻き数を数えて外径と内径を測ります。</p>
+          <p class="gset">巻き数 50 ／ 外径 200 ／ 内径 100</p>
+          <p class="gread">読み方：全長 <b>23.562 m</b>、1巻き平均 471.239mm、厚み(計算) 1.000mm。</p>
+          <button class="gbtn" type="button" data-ex='{"set":[{"click":"#swJgMin"},{"click":"#swUm"},{"id":"inTurn","v":50},{"id":"inD","v":200},{"id":"inI","v":100},{"id":"inT","v":""},{"id":"inReq","v":""}]}' onclick="tryExample(this)">この例を試す</button>
         </div>
       </div>
     </div>
@@ -281,192 +179,100 @@
 
 
 
-  <!-- 図面シート -->
   <div class="sheet">
     <div class="sheet-inner">
-      <svg viewBox="0 0 340 250" role="img" aria-label="歯車の反対側の歯溝に入れた2本のピンを挟んで測るオーバーピン径Mの模式図">
+      <svg id="dwg" viewBox="0 0 340 250" role="img" aria-label="とぐろ巻きのパッキンの外径・内径・巻き数の関係図">
         <defs>
-          <marker id="ar" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
-            <path d="M0,0 L8,3 L0,6 z" fill="#1F3341"/>
-          </marker>
-          <marker id="arRed" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
-            <path d="M0,0 L8,3 L0,6 z" fill="#D63426"/>
-          </marker>
+          <marker id="ar" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L8,3 L0,6 z" fill="#1F3341"/></marker>
         </defs>
-
-        <!-- 上側の歯列(歯先が上) -->
-        <path d="M 55 128 L 85 88 L 115 128 L 145 88 L 175 128 L 205 88 L 235 128"
-              fill="none" stroke="#1F3341" stroke-width="1.8"/>
-        <!-- 下側の歯列(反対側・歯先が下) -->
-        <path d="M 95 156 L 125 196 L 155 156 L 185 196 L 215 156 L 245 196 L 275 156"
-              fill="none" stroke="#1F3341" stroke-width="1.8"/>
-        <line x1="40" y1="142" x2="300" y2="142" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="12 3 2 3"/>
-
-        <!-- ピン(歯溝に着座) -->
-        <circle cx="115" cy="101.3" r="16" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
-        <circle cx="215" cy="182.7" r="16" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
-        <text x="92" y="94" font-size="11" fill="#1F3341" text-anchor="end" stroke="#fff" stroke-width="3" paint-order="stroke">ピン dp</text>
-
-        <!-- M寸法(赤) -->
-        <line x1="115" y1="85.3" x2="292" y2="85.3" stroke="#C9D3DA" stroke-width="1" stroke-dasharray="4 3"/>
-        <line x1="215" y1="198.7" x2="292" y2="198.7" stroke="#C9D3DA" stroke-width="1" stroke-dasharray="4 3"/>
-        <line x1="288" y1="85.3" x2="288" y2="198.7" stroke="#D63426" stroke-width="1.6"
-              marker-start="url(#arRed)" marker-end="url(#arRed)"/>
-        <text id="svgM" x="296" y="146" font-size="13" font-weight="700" fill="#D63426"
-              stroke="#fff" stroke-width="3.5" paint-order="stroke" text-anchor="middle" transform="rotate(-90 296 146)">M = ―</text>
-
-        <!-- 凡例 -->
-        <text id="oddEvenTxt" x="40" y="224" font-size="12" fill="#1F3341"
-              stroke="#fff" stroke-width="3.5" paint-order="stroke">偶数歯: ピンは正対 / 奇数歯: 半ピッチずれ(自動補正)</text>
-        <text x="40" y="26" font-size="11" fill="#5B707E">反対側の歯溝にピンを入れ、マイクロメータで挟んでMを測る</text>
+        <rect x="0" y="0" width="340" height="250" fill="#FFFFFF"/>
+        <!-- ★中身はすべて計算して描く。図と数字を1か所から作り、食い違わせない。 -->
+        <g id="dyn"></g>
       </svg>
       <div class="titleblock">
-        <div><b>品名</b> オーバーピン径</div>
-        <div><b>方式</b> インボリュート</div>
-        <div>TOOL-15</div>
+        <div><b>品名</b> 巻きパッキン</div>
+        <div><b>方式</b> 巻き数×平均径</div>
+        <div>TOOL-37</div>
       </div>
     </div>
   </div>
 
-  <!-- 入力 -->
-  <!-- ★歯すじの切り替え（v121）。モジュールと転位の<意味>が変わる
-       （平歯車は m と x、はすばは 歯直角 mn と xn）ので ID を sw で始め、
-       記録にモードとして残す。 -->
-  <div class="dimsw" id="teethSw" role="group" aria-label="歯すじ">
-    <button type="button" id="swSpur" class="on">平歯車</button>
-    <button type="button" id="swHelix">はすば歯車</button>
+  <div class="hint">
+    巻きを<b>崩さずに</b>、巻き数と外径・内径から全長を出します。<b>厚みは長さの計算には要りません</b>（入れると点検に使います）。
   </div>
+
   <div class="inputs">
-    <div class="row">
+    <div class="row" style="grid-template-columns:30px 1fr 152px 22px">
       <span class="badge">1</span>
-      <label for="fM"><span id="labM">モジュール m</span><small id="subM">歯直角モジュール mn（はすばのとき）</small></label>
-      <input id="fM" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
-      <span class="unit">mm</span>
-    </div>
-    <div class="row" id="rowB" style="display:none">
-      <span class="badge">β</span>
-      <label for="fB">ねじれ角 β<small>基準円上。はすばのみ</small></label>
-      <input id="fB" type="text" inputmode="decimal" autocomplete="off" placeholder="例 15">
-      <span class="unit">°</span>
+      <label for="inTurn">巻き数<small>0.5刻み。端数は「1巻き 平均」で見当を</small></label>
+      <div class="stepw">
+        <button class="step" type="button" id="nMinus" aria-label="巻き数を0.5減らす">−</button>
+        <input id="inTurn" type="text" inputmode="decimal" autocomplete="off" placeholder="例 50">
+        <button class="step" type="button" id="nPlus" aria-label="巻き数を0.5増やす">＋</button>
+      </div>
+      <span></span>
     </div>
     <div class="row">
       <span class="badge">2</span>
-      <label for="fZ">歯数 z<small>偶数/奇数は自動判別</small></label>
-      <input id="fZ" type="text" inputmode="numeric" autocomplete="off" placeholder="―">
-      <span class="unit">枚</span>
+      <label for="inD">最大外径<small>いちばん外の巻きの外側</small></label>
+      <input id="inD" type="text" inputmode="decimal" autocomplete="off" placeholder="例 200">
+      <span class="unit">mm</span>
     </div>
     <div class="row">
       <span class="badge">3</span>
-      <label for="fA"><span id="labA">圧力角 α</span><small id="subA">通常は20°</small></label>
-      <input id="fA" type="text" inputmode="decimal" autocomplete="off" value="20">
-      <span class="unit">°</span>
+      <label for="inI">最小内径<small>いちばん内の巻きの内側</small></label>
+      <input id="inI" type="text" inputmode="decimal" autocomplete="off" placeholder="例 100">
+      <span class="unit">mm</span>
     </div>
-    <div class="row">
+    <div class="row opt">
+      <span class="badge">t</span>
+      <label for="inT">厚み（実測）<small>任意。数え違い・ゆるみの点検に使います</small></label>
+      <input id="inT" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+    </div>
+  </div>
+
+  <div class="swlab">図面の必要長さと比べる（任意）</div>
+  <!-- ★入力値の意味が変わる切り替えは ID を sw で始める（記録にモードとして残す・v118） -->
+  <div class="dimsw" id="jgSw" role="group" aria-label="判定のしかた">
+    <button type="button" id="swJgMin" class="on">必要長さ以上でOK</button>
+    <button type="button" id="swJgTol">±の公差で見る</button>
+  </div>
+  <div class="inputs" style="margin-top:9px">
+    <div class="row opt">
       <span class="badge">4</span>
-      <label for="fX"><span id="labX">転位係数 x</span><small id="subX">標準歯車は 0</small></label>
-      <input id="fX" type="text" inputmode="decimal" autocomplete="off" value="0">
-      <span class="unit"></span>
+      <label for="inReq">図面の必要長さ<small>下のボタンで単位を選べます</small></label>
+      <input id="inReq" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit" id="reqU">m</span>
     </div>
-    <div class="row">
-      <span class="badge">5</span>
-      <label for="fDp"><span id="labDp">ピン径 dp</span><small id="subDp">実測値を入れてください。誤差はそのまま M に乗ります</small></label>
-      <input id="fDp" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
-      <span class="unit">mm</span>
+    <div class="dimsw" id="uSw" role="group" aria-label="必要長さの単位">
+      <button type="button" id="swUm" class="on">m で入れる</button>
+      <button type="button" id="swUmm">mm で入れる</button>
     </div>
-    <!-- ★2本の径が違ってもよい（v122）。ピンゲージが1本ずつしかない現場向け。
-         ID を sw で始める：入力の<意味>が変わる（2本目を使うかどうか）ので記録に残す。 -->
-    <div class="dimsw" id="pairSw" role="group" aria-label="2本のピンの径">
-      <button type="button" id="swSame" class="on">2本とも同じ径</button>
-      <button type="button" id="swDiff">2本の径が違う</button>
-    </div>
-    <div class="row" id="rowDp2" style="display:none">
-      <span class="badge">5'</span>
-      <label for="fDp2"><span id="labDp2">もう1本のピン径</span><small>反対側の歯溝に入れるほう</small></label>
-      <input id="fDp2" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
-      <span class="unit">mm</span>
-    </div>
-    <div class="row">
-      <span class="badge">6</span>
-      <label for="fMe">実測 M<small>入れると歯厚を逆算します</small></label>
-      <input id="fMe" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
-      <span class="unit">mm</span>
+    <div class="row opt" id="rowTol" style="display:none">
+      <span class="badge">±</span>
+      <label for="inTol">公差<small>この幅に入っていれば合格</small></label>
+      <input id="inTol" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit" id="tolU">m</span>
     </div>
   </div>
 
-  <div class="swlab">ピンの選び方</div>
-  <div class="pinset">
-    <span class="pl">① ピンゲージ<small>同じ径は1本ずつ → 径の違う2本の組で選びます</small></span>
-    <input id="fStep" type="text" inputmode="decimal" autocomplete="off" value="0.025">
-    <span>mm刻み ／</span>
-    <input id="fPmin" type="text" inputmode="decimal" autocomplete="off" value="1">
-    <span>〜</span>
-    <input id="fPmax" type="text" inputmode="decimal" autocomplete="off" value="6">
-    <span>mm</span>
-  </div>
-  <div class="pinset" style="margin-top:8px">
-    <span class="pl">② テストピース<small>同じ径が複数ある → 同じ径を2本で選びます</small></span>
-    <input id="fStep2" type="text" inputmode="decimal" autocomplete="off" value="1">
-    <span>mm刻み ／</span>
-    <input id="fPmin2" type="text" inputmode="decimal" autocomplete="off" value="4">
-    <span>〜</span>
-    <input id="fPmax2" type="text" inputmode="decimal" autocomplete="off" value="20">
-    <span>mm</span>
-  </div>
-  <div class="pinhit" id="pinHit">
-    <span id="pinTxt">m・z を入れると、使えるピン径をお知らせします</span>
-    <div class="pinopt" id="pinOpt1" style="display:none"><span class="ot" id="pinTxt1"></span></div>
-    <div class="pinopt" id="pinOpt2" style="display:none"><span class="ot" id="pinTxt2"></span></div>
-  </div>
-
-  <div class="swlab">図面の M 上下限で合否を見る（任意）</div>
-  <div class="inputs">
-    <div class="row opt">
-      <span class="badge">φ</span>
-      <label for="fDpD">図面のピン径<small>図面が M を指定しているピンの径。空なら「いま使うピンと同じ」とみなします</small></label>
-      <input id="fDpD" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
-      <span class="unit">mm</span>
-    </div>
-    <div class="row opt">
-      <span class="badge">上</span>
-      <label for="fHi">M 上限<small>図面の許容最大</small></label>
-      <input id="fHi" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
-      <span class="unit">mm</span>
-    </div>
-    <div class="row opt">
-      <span class="badge">下</span>
-      <label for="fLo">M 下限<small>図面の許容最小</small></label>
-      <input id="fLo" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
-      <span class="unit">mm</span>
-    </div>
-  </div>
-
-  <!-- 結果（v121 で作り直し。要る数字を前に、技術者向けの数値は畳む） -->
   <div class="dro">
     <div class="dro-line">
-      <span class="dro-label" id="droLbl">M（理論・この歯厚なら）</span>
-      <span class="dro-val" id="out">―.―――</span>
-      <span class="dro-unit">mm</span>
+      <span class="dro-label">全長</span>
+      <span class="dro-val" id="outM">―.―――</span>
+      <span class="dro-unit">m</span>
     </div>
+    <div class="dro-sub" id="subMm">― mm</div>
     <div class="jdg" id="jdg" style="display:none"></div>
     <div class="dro-grid" style="margin-top:10px">
-      <div class="cellv" id="cS"><span class="k">実測から出た歯厚</span><span class="v" id="vS">―</span><span class="s" id="vSs">実測Mを入れると出ます</span></div>
-      <div class="cellv" id="cDs"><span class="k">理論より</span><span class="v" id="vDs">―</span><span class="s" id="vDss">mm（歯厚の差）</span></div>
-      <div class="cellv" id="cRec"><span class="k" id="kRec">最適ピン径(歯面の基準円に当たる)</span><span class="v" id="vRec">―</span><span class="s">mm</span></div>
-      <div class="cellv" id="cDelta"><span class="k">実測M − 理論M</span><span class="v" id="vDelta">―</span><span class="s">mm</span></div>
+      <div class="cellv"><span class="k">1巻き 平均</span><span class="v" id="vMean">―</span><span class="s">mm</span></div>
+      <div class="cellv"><span class="k">1巻き 外周 / 内周</span><span class="v" id="vOI">―</span><span class="s">mm</span></div>
+      <div class="cellv"><span class="k">厚み(計算)</span><span class="v" id="vT">―</span><span class="s">mm</span></div>
+      <div class="cellv"><span class="k">実測との差</span><span class="v" id="vTd">―</span><span class="s" id="vTdS">厚みを入れると出ます</span></div>
     </div>
-    <details class="more" id="moreBox">
-      <summary>くわしい数値</summary>
-      <div class="dro-grid" style="margin-top:8px">
-        <div class="cellv" id="cDc"><span class="k" id="kDc">ピン中心円 dc</span><span class="v" id="vDc">―</span><span class="s">mm</span></div>
-        <div class="cellv" id="cPhi"><span class="k">中心の圧力角 φ</span><span class="v" id="vPhi">―</span><span class="s">°</span></div>
-        <div class="cellv" id="cDa"><span class="k">歯先円 da</span><span class="v" id="vDa">―</span><span class="s">mm</span></div>
-        <div class="cellv" id="cForm"><span class="k">適用式</span><span class="v" id="vForm">―</span><span class="s"></span></div>
-        <div class="cellv" id="cXe"><span class="k">実測から出た転位相当 x</span><span class="v" id="vXe">―</span><span class="s"></span></div>
-        <div class="cellv" id="cAmp"><span class="k">歯厚→M の拡大率</span><span class="v" id="vAmp">―</span><span class="s">倍</span></div>
-      </div>
-    </details>
     <div class="dro-foot">
-      <span class="statusTxt" id="statusTxt">m・z・ピン径を入力してください</span>
+      <span class="statusTxt" id="statusTxt">巻き数・最大外径・最小内径 を入れてください</span>
     </div>
   </div>
 
@@ -474,417 +280,211 @@
 
   <footer>
     このページは計算のみを行います。入力値の送信・保存は一切ありません(端末内で完結)。<br>
-    対応: 外歯の平歯車・はすば歯車(標準/転位)。内歯車は非対応です。<br>
-    はすば歯車は<b>玉(ボール)</b>で測る前提で計算しています。丸ピンでは歯すじが斜めのため接触が変わります。
+    巻きがゆるくて層のあいだに隙間があると、その隙間ぶんも厚みに含まれます。<br>
+    厚み(計算)と実測が合わないときは、巻き数の数え違いを先に疑ってください。
   </footer>
 </div>
 
 <script>
 (function(){
+  "use strict";
   var $=function(id){return document.getElementById(id)};
-  var lastM=null;
+  var NS="http://www.w3.org/2000/svg";
 
-  function num(v){
-    if(v==null)return NaN;
-    v=String(v).replace(/[０-９．−]/g,function(c){
-      if(c==='−')return '-';
-      return String.fromCharCode(c.charCodeAt(0)-0xFEE0);
-    }).replace(/。/g,'.').replace(/[,，、\s]/g,'').trim();
-    if(v==='')return NaN;
-    return Number(v);
+  /* 全角・区切りを落として数にする（全ツール共通の作法） */
+  function zen(v){return String(v).replace(/[０-９．]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0)}).replace(/。/g,'.')}
+  function num(v){if(v==null)return NaN;v=zen(v).replace(/[,，、\s]/g,'').replace(/^\s+|\s+$/g,'');if(v==='')return NaN;return Number(v)}
+  function ok3(x){return typeof x==='number'&&isFinite(x)}
+  function f3(x){return ok3(x)? x.toFixed(3):'―'}
+
+  var jg='min';      /* min:必要長さ以上でOK / tol:±公差 */
+  var unit='m';      /* 必要長さと公差の単位 */
+
+  /* ---- 作図 ----
+     ★数字と図を1か所から作る。図だけ古い値のまま、を起こさないため。 */
+  function mk(tag,at){
+    var e=document.createElementNS(NS,tag),k;
+    for(k in at){ if(Object.prototype.hasOwnProperty.call(at,k)) e.setAttribute(k,at[k]); }
+    return e;
   }
-  function intVal(v){
-    var x=num(v);
-    return (isFinite(x)&&x===Math.floor(x))?x:NaN;
+  function tx(x,y,str,at){
+    var e=mk("text",at||{});
+    e.setAttribute("x",x); e.setAttribute("y",y);
+    if(!e.getAttribute("font-size")) e.setAttribute("font-size","11");
+    if(!e.getAttribute("fill")) e.setAttribute("fill","#1F3341");
+    e.textContent=str;
+    return e;
+  }
+  function dimLine(g,y,cx,half,label){
+    /* 寸法線。半径が小さくても矢印が潰れないよう、短いときは線だけにする */
+    var x1=cx-half, x2=cx+half;
+    g.appendChild(mk("line",{x1:x1,y1:y,x2:x2,y2:y,stroke:"#1F3341","stroke-width":1,
+      "marker-start":(half>12?"url(#ar)":""),"marker-end":(half>12?"url(#ar)":"")}));
+    g.appendChild(tx(cx,y-5,label,{"font-size":"11","text-anchor":"middle"}));
+  }
+  function ext(g,x,y1,y2){
+    g.appendChild(mk("line",{x1:x,y1:y1,x2:x,y2:y2,stroke:"#8FA2AF","stroke-width":.8,"stroke-dasharray":"3 2"}));
   }
 
-  // インボリュート逆関数: tanφ − φ = q を解く(ニュートン法)
-  function invInverse(q){
-    if(q<=0)return NaN;
-    var phi=Math.pow(3*q,1/3);   // 初期値
-    for(var i=0;i<50;i++){
-      var t=Math.tan(phi);
-      var f=t-phi-q;
-      var df=t*t;                // d/dφ(tanφ−φ)=tan²φ
-      if(df<1e-12)break;
-      var d=f/df;
-      phi-=d;
-      if(Math.abs(d)<1e-13)break;
+  var CX=170, CY=100, R=72;
+  function draw(D,d,N,L,mean){
+    var g=$('dyn'), i, r, rings, ri, ok=(ok3(D)&&ok3(d)&&D>d&&d>=0&&ok3(N)&&N>0);
+    while(g.firstChild) g.removeChild(g.firstChild);
+    ri = ok ? Math.max(R*(d/D), 7) : R*0.42;
+
+    /* 巻き。実際の巻き数ぶん描くと真っ黒になるので、本数は省いて描く。 */
+    rings = ok ? Math.min(Math.max(Math.round(N)-1,0),6) : 3;
+    g.appendChild(mk("circle",{cx:CX,cy:CY,r:R,fill:"#FBFCFC",stroke:"#1F3341","stroke-width":1.6}));
+    for(i=1;i<=rings;i++){
+      r=ri+(R-ri)*(i/(rings+1));
+      g.appendChild(mk("circle",{cx:CX,cy:CY,r:r,fill:"none",stroke:"#C9D3DA","stroke-width":1}));
     }
-    return phi;
+    g.appendChild(mk("circle",{cx:CX,cy:CY,r:ri,fill:"#FFFFFF",stroke:"#1F3341","stroke-width":1.6}));
+    /* 中心の印 */
+    g.appendChild(mk("line",{x1:CX-8,y1:CY,x2:CX+8,y2:CY,stroke:"#8FA2AF","stroke-width":.8}));
+    g.appendChild(mk("line",{x1:CX,y1:CY-8,x2:CX,y2:CY+8,stroke:"#8FA2AF","stroke-width":.8}));
+
+    /* 寸法（下に2段。内径が小さくても重ならない） */
+    ext(g,CX-ri,CY,200); ext(g,CX+ri,CY,200);
+    dimLine(g,196,CX,ri,'内径 '+(ok?f3(d):'―'));
+    ext(g,CX-R,CY,226); ext(g,CX+R,CY,226);
+    dimLine(g,222,CX,R,'外径 '+(ok?f3(D):'―'));
+
+    /* 数字 */
+    g.appendChild(tx(12,20,'巻き数 = '+(ok3(N)&&N>0? String(N):'―'),{"font-size":"11","font-weight":"700"}));
+    g.appendChild(tx(12,36,'厚み(計算) = '+(ok? f3((D-d)/(2*N)):'―'),{"font-size":"10.5","fill":"#5B707E"}));
+    g.appendChild(tx(328,20,'全長 '+(ok? (L/1000).toFixed(3):'―')+' m',
+      {"font-size":"15","font-weight":"700","fill":"#D63426","text-anchor":"end"}));
+    g.appendChild(tx(328,36,'1巻き平均 '+(ok? f3(mean):'―')+' mm',
+      {"font-size":"10.5","fill":"#5B707E","text-anchor":"end"}));
+    if(ok&&Math.round(N)-1>6){
+      g.appendChild(tx(170,242,'図の輪は本数を省いて描いています',
+        {"font-size":"10","fill":"#8FA2AF","text-anchor":"middle"}));
+    }
   }
 
-  /* ── 歯すじ（v121）──
-     平歯車 … m（モジュール）・x（転位係数）
-     はすば … mn（歯直角モジュール）・xn・β（ねじれ角）。★玉で測る前提。
-     ★切り替えると入力の<意味>が変わるので、ID を sw で始めて記録に残す。 */
-  var helix=false;
-  var twoDia=false;   /* 2本の径が違う（v122。ピンゲージが1本ずつしかない現場向け） */
+  /* ---- 単位 ---- */
+  function toMm(v){ return unit==='m'? v*1000 : v; }
+  function unitTxt(){ return unit; }
 
-  function syncTeeth(){
-    $('swSpur').classList.toggle('on',!helix);
-    $('swHelix').classList.toggle('on',helix);
-    $('rowB').style.display=helix?'':'none';
-    $('labM').textContent=helix?'歯直角モジュール mn':'モジュール m';
-    $('subM').textContent=helix?'歯に直角な向きのモジュール':'標準の呼び';
-    $('labA').textContent=helix?'歯直角圧力角 αn':'圧力角 α';
-    $('labX').textContent=helix?'歯直角転位係数 xn':'転位係数 x';
-    $('labDp').textContent=(helix?'玉径 dp':'ピン径 dp')+(twoDia?' ①':'');
-    $('labDp2').textContent=helix?'もう1個の玉径 ②':'もう1本のピン径 ②';
-    $('kRec').textContent=(helix?'最適 玉径':'最適ピン径')+'(歯面の基準円に当たる)';
-    $('kDc').textContent=helix?'玉中心円 dc':'ピン中心円 dc';
-    $('droLbl').textContent=helix?'M（理論・玉で測ったとき）':'M（理論・この歯厚なら）';
-    $('swSame').textContent=helix?'2個とも同じ径':'2本とも同じ径';
-    $('swDiff').textContent=helix?'2個の径が違う':'2本の径が違う';
-    $('rowDp2').style.display=twoDia?'':'none';
+  /* ---- 判定の文 ----
+     ★EPS … 表示は m の小数3桁（＝1mm）まで。それより細かい差で合否を分けない。
+       分けると「−0.000 m 足りないので NG」という、読んで意味の分からない
+       判定が出る。パッキンは切って使うもので、測り方の誤差（巻き数の端数）は
+       これより二桁も大きい。 */
+  var EPS=0.5;   /* mm */
+  function judge(L,mean){
+    var box=$('jdg'), req=num($('inReq').value), tol=num($('inTol').value);
+    var reqMm, diff, turns, s2, tolMm, pass1;
+    box.className='jdg';
+    if(!(ok3(L)&&L>0)||!(ok3(req)&&req>0)){ box.style.display='none'; box.textContent=''; return; }
+    box.style.display='';
+    reqMm=toMm(req);
+    diff=L-reqMm;
+    turns=(ok3(mean)&&mean>0)? diff/mean : NaN;
+    if(Math.abs(diff)<EPS){
+      s2='ぴったり（差は 1mm 未満）';
+    }else{
+      s2=(diff>=0?'+':'−')+Math.abs(diff/1000).toFixed(3)+' m';
+      if(ok3(turns)) s2+='（約 '+Math.abs(turns).toFixed(1)+' 巻きぶん'+(diff>=0?'多い':'足りない')+'）';
+    }
+    if(jg==='min'){
+      /* ★「以上でOK」。ぴったりは合格。 */
+      pass1=(diff>=-EPS);
+      box.className='jdg '+(pass1?'ok':'ng');
+      box.textContent=(pass1?'OK ':'NG ')+'必要 '+f3(reqMm/1000)+' m に対して '+s2;
+      return;
+    }
+    if(!(ok3(tol)&&tol>=0)){
+      box.textContent='±の公差を入れると合否が出ます（必要 '+f3(reqMm/1000)+' m に対して '+s2+'）';
+      return;
+    }
+    tolMm=toMm(tol);
+    pass1=(Math.abs(diff)<=tolMm+EPS);
+    box.className='jdg '+(pass1?'ok':'ng');
+    box.textContent=(pass1?'OK ':'NG ')
+      +'必要 '+f3(reqMm/1000)+' m ±'+f3(tolMm/1000)+' m に対して '+s2;
+  }
+
+  /* ---- 本体 ---- */
+  function recalc(){
+    var N=num($('inTurn').value), D=num($('inD').value), d=num($('inI').value), t=num($('inT').value);
+    var L=NaN, mean=NaN, tCalc=NaN, msg='', cls='';
+
+    if(ok3(N)&&N>0&&ok3(D)&&D>0&&ok3(d)&&d>=0&&D>d){
+      mean=Math.PI*(D+d)/2;
+      L=N*mean;
+      tCalc=(D-d)/(2*N);
+    }else{
+      if(ok3(D)&&ok3(d)&&d>=D){ msg='最小内径は最大外径より小さい値です'; cls='err'; }
+      else if(ok3(N)&&N<=0){ msg='巻き数は0より大きい値です'; cls='err'; }
+      else msg='巻き数・最大外径・最小内径 を入れてください';
+    }
+
+    $('outM').textContent = ok3(L)? (L/1000).toFixed(3) : '―.―――';
+    $('subMm').textContent = ok3(L)? f3(L)+' mm' : '― mm';
+    $('vMean').textContent = f3(mean);
+    $('vOI').textContent = (ok3(D)&&ok3(d)&&D>d)? (Math.PI*D).toFixed(1)+' / '+(Math.PI*d).toFixed(1) : '―';
+    $('vT').textContent = f3(tCalc);
+
+    /* ★厚みは点検に使う。長さの計算には使わない。 */
+    if(ok3(tCalc)&&ok3(t)&&t>0){
+      var pc=(tCalc-t)/t*100;
+      $('vTd').textContent=(pc>=0?'+':'−')+Math.abs(pc).toFixed(1);
+      $('vTdS').textContent='%（計算−実測）';
+      if(Math.abs(pc)>10){
+        msg='厚みが実測と '+Math.abs(pc).toFixed(1)+'% 違います。巻き数の数え違いか、巻きのゆるみ・つぶれを確かめてください';
+        cls='err';
+      }else if(!msg){
+        msg='厚みは実測とほぼ合っています（差 '+Math.abs(pc).toFixed(1)+'%）';
+      }
+    }else{
+      $('vTd').textContent='―';
+      $('vTdS').textContent='厚みを入れると出ます';
+    }
+
+    if(!msg&&ok3(L)) msg='巻き数を半巻き間違えると 約 '+(mean/2).toFixed(0)+' mm ずれます';
+    $('statusTxt').textContent=msg;
+    $('statusTxt').className='statusTxt'+(cls?' '+cls:'');
+
+    judge(L,mean);
+    draw(D,d,N,L,mean);
+  }
+
+  /* ---- 巻き数の ±（0.5刻み） ---- */
+  function bump(dv){
+    var v=num($('inTurn').value);
+    if(!ok3(v)) v=(dv>0?0.5:1);
+    else v=v+dv;
+    v=Math.round(v*2)/2;
+    if(v<0.5) v=0.5;
+    $('inTurn').value=(v===Math.floor(v))? String(v) : v.toFixed(1);
     recalc();
   }
-  $('swSpur').addEventListener('click',function(){ if(!helix)return; helix=false; syncTeeth(); });
-  $('swHelix').addEventListener('click',function(){ if(helix)return; helix=true; syncTeeth(); });
-  $('swSame').addEventListener('click',function(){ if(!twoDia)return; twoDia=false; syncTeeth(); });
-  $('swDiff').addEventListener('click',function(){ if(twoDia)return; twoDia=true; syncTeeth(); });
+  $('nMinus').addEventListener('click',function(){bump(-0.5)});
+  $('nPlus').addEventListener('click',function(){bump(0.5)});
 
-  function read(){
-    var mn=num($('fM').value);
-    var z=intVal($('fZ').value);
-    var an=num($('fA').value);
-    var xRaw=$('fX').value.replace(/^\s+|\s+$/g,'');
-    var xn=(xRaw==='')?0:num($('fX').value);
-    var bRaw=$('fB').value.replace(/^\s+|\s+$/g,'');
-    var b=helix? ((bRaw==='')?NaN:num($('fB').value)) : 0;
-    var dp1=num($('fDp').value);
-    var dp2=twoDia? num($('fDp2').value) : dp1;
-    return {mn:mn,z:z,an:an,xn:xn,b:b,dp:dp1,dp2:dp2};
+  /* ---- 切り替え ---- */
+  function syncSw(){
+    $('swJgMin').classList.toggle('on',jg==='min');
+    $('swJgTol').classList.toggle('on',jg==='tol');
+    $('rowTol').style.display=(jg==='tol')?'':'none';
+    $('swUm').classList.toggle('on',unit==='m');
+    $('swUmm').classList.toggle('on',unit==='mm');
+    $('reqU').textContent=unitTxt();
+    $('tolU').textContent=unitTxt();
+    recalc();
   }
+  $('swJgMin').addEventListener('click',function(){ if(jg==='min')return; jg='min'; syncSw(); });
+  $('swJgTol').addEventListener('click',function(){ if(jg==='tol')return; jg='tol'; syncSw(); });
+  $('swUm').addEventListener('click',function(){ if(unit==='m')return; unit='m'; syncSw(); });
+  $('swUmm').addEventListener('click',function(){ if(unit==='mm')return; unit='mm'; syncSw(); });
 
-  /* 歯車の寸法。★平歯車は β=0 として同じ式を通る（別々の式を持たない）。 */
-  function geo(v){
-    var bR=v.b*Math.PI/180, anR=v.an*Math.PI/180;
-    var at=Math.atan(Math.tan(anR)/Math.cos(bR));
-    var d=v.mn*v.z/Math.cos(bR);
-    var db=d*Math.cos(at);
-    return {bR:bR,anR:anR,at:at,d:d,db:db,da:d+2*v.mn*(1+v.xn),
-            inva:Math.tan(at)-at};
-  }
+  ['inTurn','inD','inI','inT','inReq','inTol'].forEach(function(id){
+    $(id).addEventListener('input',recalc);
+  });
 
-  /* ピン(玉)中心の圧力角と中心円。dp ごとに出す（2本の径が違ってもよいように）。 */
-  function centerOf(v,g,xn,dp){
-    var q=g.inva + dp/(v.mn*v.z*Math.cos(g.anR)) - Math.PI/(2*v.z) + 2*xn*Math.tan(g.anR)/v.z;
-    if(!(q>0)) return null;
-    var phi=invInverse(q);
-    if(!isFinite(phi)) return null;
-    return {phi:phi, dc:g.db/Math.cos(phi)};
-  }
-  /* ★M の式（v122で2本の径が違う場合まで広げた）。近似ではない。
-       2つのピン中心は、偶数歯なら向かい合い（なす角 180°）、
-       奇数歯なら半ピッチずれる（なす角 180° − 180°/z）。
-       中心間距離を余弦定理で出し、両端のピンの半径を足す。
-       径が同じなら、これまでの dc+dp ／ dc·cos(90°/z)+dp とぴったり一致する。 */
-  function Mof(v,g,xn,dp1,dp2){
-    var c1=centerOf(v,g,xn,dp1), c2=(dp2===dp1)? c1 : centerOf(v,g,xn,dp2);
-    if(!c1||!c2) return null;
-    var r1=c1.dc/2, r2=c2.dc/2, cd;
-    if(v.z%2===0) cd=r1+r2;
-    else cd=Math.sqrt(r1*r1+r2*r2+2*r1*r2*Math.cos(Math.PI/v.z));
-    return {M:cd+(dp1+dp2)/2, c1:c1, c2:c2, cd:cd};
-  }
-  /* ★逆算（v121→v122）：実測 M から歯厚を出す。
-     径の違う2本でも通るよう、x について挟み撃ちで解く（M は x に対して単調増加）。
-     ★式を2本持たない。径が同じ場合もこの道を通る。 */
-  function xFromM(v,g,meas,dp1,dp2){
-    /* ★挟み撃ちの下限は、invφ が 0 より大きくなる x（ピンが沈み切る手前）。
-       −3 のような決め打ちだと、そこで式が成り立たず「解けません」になる。 */
-    var xm=function(dp){
-      var c=g.inva + dp/(v.mn*v.z*Math.cos(g.anR)) - Math.PI/(2*v.z);
-      return -c*v.z/(2*Math.tan(g.anR));
-    };
-    var lo=Math.max(xm(dp1),xm(dp2))+1e-6, hi=lo+8, i, mid, r;
-    var rl=Mof(v,g,lo,dp1,dp2), rh=Mof(v,g,hi,dp1,dp2);
-    if(!rl||!rh) return null;
-    if(meas<rl.M||meas>rh.M) return null;
-    for(i=0;i<200;i++){
-      mid=(lo+hi)/2;
-      r=Mof(v,g,mid,dp1,dp2);
-      if(!r) return null;
-      if(r.M<meas) lo=mid; else hi=mid;
-      if(hi-lo<1e-12) break;
-    }
-    return (lo+hi)/2;
-  }
-  function sOf(v,g,xn){ return v.mn*(Math.PI/2+2*xn*Math.tan(g.anR)); }
-
-  /* ── ピンが歯面に当たっているか（1本ぶん） ──
-     ★当たっていなければ、その測定値は意味を持たない。
-       ・基礎円より下（歯元の丸み）に当たる → 細すぎ
-       ・歯先のかどに当たる                 → 太すぎ
-       ・頭が歯先から出ない                 → マイクロが歯に当たる（細すぎ） */
-  function pinCheck(v,g,xn,dp){
-    var c=centerOf(v,g,xn,dp);
-    if(!c) return {ok:false,why:'細すぎ（歯溝の奥に沈みます）'};
-    var rb=g.db/2, tk=Math.tan(c.phi)-dp/(2*rb);
-    /* ★歯先ぎりぎりは避ける。歯先には面取りや修整が入っていることが多く、
-       そこに当たった値は当てにならない。直径で 0.1·mn の余裕を見る。 */
-    var marg=0.1*v.mn;
-    if(tk<=0) return {ok:false,why:'細すぎ（基礎円より下に当たります）'};
-    if(2*(rb/Math.cos(Math.atan(tk)))>g.da-marg) return {ok:false,why:'太すぎ（歯先のかどに当たります）'};
-    if(c.dc/2+dp/2<=g.da/2+marg/2) return {ok:false,why:'細すぎ（頭が歯先から出ません）'};
-    return {ok:true,c:c};
-  }
-  /* 使える径の範囲。★式で解かず、細かく振って確かめる（条件が3つあるため）。 */
-  function pinRange(v,g){
-    var st=v.mn/400, dp, lo=null, hi=null;
-    for(dp=st;dp<=v.mn*4;dp+=st){
-      if(pinCheck(v,g,v.xn,dp).ok){ if(lo===null) lo=dp; hi=dp; }
-    }
-    return (lo===null)? null : {lo:lo,hi:hi};
-  }
-  /* ★最適ピン径 … 歯面の<基準円>に当たる径。
-       歯溝の幅 e = mn(π/2 − 2·xn·tanαn) を、圧力角ぶん開いた分で割る。
-       dp = e / cos αn。転位が 0 で αn=20° なら 1.6716·mn（よく言う 1.68m）。
-       ★1.68m は「標準歯車のとき」の話。転位が付けば最適径は変わる。 */
-  function bestPin(v,g){ return v.mn*(Math.PI/2-2*v.xn*Math.tan(g.anR))/Math.cos(g.anR); }
-
-  /* 手持ちの箱（刻み・下限・上限）にある径のうち、<使えるもの>を
-     最適に近い順に並べる。★刻みが粗いと1本も入らないことがある。 */
-  function ownList(v,g,best,stId,loId,hiId){
-    var st=num($(stId).value), lo=num($(loId).value), hi=num($(hiId).value);
-    if(!(st>0)||!(lo>0)||!(hi>=lo)) return null;
-    var cand=[], k, dp, n=Math.floor(lo/st+1e-9);
-    for(k=0;k<4000;k++){
-      dp=Math.round((n+k)*st*1e6)/1e6;
-      if(dp>hi+1e-9) break;
-      if(dp<lo-1e-9) continue;
-      if(pinCheck(v,g,v.xn,dp).ok) cand.push(dp);
-    }
-    cand.sort(function(a,b){ return Math.abs(a-best)-Math.abs(b-best); });
-    return {step:st, lo:lo, hi:hi, cand:cand};
-  }
-
-  function clearOut(msg,err){
-    $('out').textContent='―.―――';
-    $('svgM').textContent='M = ―';
-    ['vDc','vPhi','vDa','vForm','vDelta','vS','vDs','vXe','vAmp'].forEach(function(id){$(id).textContent='―'});
-    $('jdg').style.display='none';
-    $('statusTxt').textContent=msg;
-    $('statusTxt').className='statusTxt'+(err?' err':'');
-  }
-
-  /* ── 合否 ──
-     ★理論値との差 Δ では合否は決まらない。理論 M は「歯厚が理論どおり
-       （バックラッシ0）」の値で、実物は<わざと薄く>作るので Δ は普通は負。
-     ★図面が別のピン径で M を指定しているときは、<いま使うピンでの M>に
-       換算してから比べる。換算しないと、正しく測っても合否が狂う。 */
-  function judge(v,g,meas){
-    var box=$('jdg'), hi=num($('fHi').value), lo=num($('fLo').value), dpD=num($('fDpD').value);
-    var hasHi=isFinite(hi), hasLo=isFinite(lo), note='', t;
-    box.className='jdg';
-    if(!(hasHi||hasLo)){ box.style.display='none'; box.textContent=''; return; }
-    box.style.display='';
-    if(hasHi&&hasLo&&hi<lo){ box.textContent='上限と下限が逆です'; return; }
-
-    /* 図面のピン径が、いま使うピンと違えば換算する */
-    if(isFinite(dpD)&&dpD>0&&g&&v.dp>0&&(dpD!==v.dp||v.dp2!==v.dp)){
-      var cv=function(mv){
-        var x=xFromM(v,g,mv,dpD,dpD);
-        if(x===null) return null;
-        var r=Mof(v,g,x,v.dp,v.dp2);
-        return r? r.M : null;
-      };
-      var nh=hasHi? cv(hi):null, nl=hasLo? cv(lo):null;
-      if((hasHi&&nh===null)||(hasLo&&nl===null)){
-        box.textContent='図面のピン径 φ'+dpD.toFixed(3)+' からの換算ができません（値を確かめてください）';
-        return;
-      }
-      if(hasHi) hi=nh;
-      if(hasLo) lo=nl;
-      note='／図面 φ'+dpD.toFixed(3)+' の値を、いま使うピンでの値に換算しています';
-    }
-
-    if(!isFinite(meas)){
-      box.textContent='実測 M を入れると合否が出ます（'
-        +(hasLo?lo.toFixed(3):'―')+' 〜 '+(hasHi?hi.toFixed(3):'―')+'）'+note;
-      return;
-    }
-    var over=hasHi&&meas>hi+1e-9, under=hasLo&&meas<lo-1e-9;
-    t=(over||under)? 'NG ' : 'OK ';
-    t+='実測 '+meas.toFixed(3)+' ／ 許容 '+(hasLo?lo.toFixed(3):'―')+' 〜 '+(hasHi?hi.toFixed(3):'―');
-    if(over) t+='（上限より +'+(meas-hi).toFixed(3)+' 大きい＝歯が厚い）';
-    else if(under) t+='（下限より −'+(lo-meas).toFixed(3)+' 小さい＝歯が薄い）';
-    else{
-      if(hasLo) t+='（下限まで +'+(meas-lo).toFixed(3)+'）';
-      if(hasHi) t+='（上限まで −'+(hi-meas).toFixed(3)+'）';
-    }
-    box.className='jdg '+((over||under)?'ng':'ok');
-    box.textContent=t+note;
-  }
-
-  /* ── ピンの選び方の案内（v123：手持ちが2系統）──
-     ★文字は span に入れる。#pinHit に textContent を入れると
-       中のボタンごと消える（子要素が飛ぶ・v122 の失敗）。 */
-  function pinAdvice(v,g){
-    var box=$('pinHit'), txt=$('pinTxt'), best, range, msg;
-    var o1=$('pinOpt1'), o2=$('pinOpt2');
-    box.className='pinhit';
-    o1.style.display='none'; o2.style.display='none';
-    if(!g||!(v.mn>0)||isNaN(v.z)||v.z<4){
-      txt.textContent='m・z を入れると、使えるピン径をお知らせします';
-      return;
-    }
-    best=bestPin(v,g);
-    range=pinRange(v,g);
-    $('vRec').textContent=best.toFixed(3);
-    msg='最適 φ'+best.toFixed(3);
-    if(range) msg+=' ／ 使える範囲 φ'+range.lo.toFixed(2)+'〜φ'+range.hi.toFixed(2);
-    txt.textContent=msg;
-
-    /* ① ピンゲージ … 同じ径は1本ずつ。★必ず<径の違う2本>の組になる。 */
-    var g1=ownList(v,g,best,'fStep','fPmin','fPmax'), t1=$('pinTxt1'), b1=$('pinUse1');
-    o1.style.display='';
-    if(g1&&g1.cand.length>=2){
-      var a=g1.cand[0], b=g1.cand[1];
-      t1.textContent='① ピンゲージ … φ'+a.toFixed(3)+' と φ'+b.toFixed(3)+' の2本（径違い）';
-      b1.style.display='';
-      b1.setAttribute('data-a',a.toFixed(3));
-      b1.setAttribute('data-b',b.toFixed(3));
-    }else if(g1&&g1.cand.length===1){
-      t1.textContent='① ピンゲージ … 使えるのは φ'+g1.cand[0].toFixed(3)+' の1本だけです（同じ径が2本ないと測れません）';
-      b1.style.display='none';
-    }else{
-      t1.textContent='① ピンゲージ … この刻みと範囲には使える径がありません';
-      b1.style.display='none';
-    }
-
-    /* ② テストピース … 同じ径が複数ある。★同径2本で済む。 */
-    var g2=ownList(v,g,best,'fStep2','fPmin2','fPmax2'), t2=$('pinTxt2'), b2=$('pinUse2');
-    o2.style.display='';
-    if(g2&&g2.cand.length>=1){
-      var c=g2.cand[0];
-      t2.textContent='② テストピース … φ'+c.toFixed(3)+' を2本（同じ径）';
-      b2.style.display='';
-      b2.setAttribute('data-a',c.toFixed(3));
-    }else{
-      t2.textContent='② テストピース … この刻みと範囲には使える径がありません';
-      b2.style.display='none';
-    }
-
-    /* ★どちらも無ければ、色でも分かるようにする。 */
-    if((!g1||g1.cand.length<2)&&(!g2||g2.cand.length<1)) box.className='pinhit ng';
-  }
-
-  function recalc(){
-    var v=read(), meas=num($('fMe').value);
-    lastM=null;
-
-    var base=v.mn>0&&!isNaN(v.z)&&v.z>=4&&!isNaN(v.an)&&v.an>0&&v.an<45&&!isNaN(v.xn);
-    if(helix&&!(isFinite(v.b)&&v.b>=0&&v.b<60)) base=false;
-    var g=base? geo(v) : null;
-    pinAdvice(base? v:{mn:v.mn,z:v.z}, g);
-    if(!base) $('vRec').textContent=(v.mn>0)?(1.6716*v.mn).toFixed(3):'―';
-
-    var pn=helix?'玉':'ピン';
-    if(!base||!(v.dp>0)||!(v.dp2>0)){
-      var msg='m・z・'+pn+'径を入力してください';
-      if(helix&&!(isFinite(v.b)&&v.b>=0&&v.b<60)) msg='ねじれ角 β を 0°〜60° の間で入力してください';
-      else if(base&&twoDia&&v.dp>0&&!(v.dp2>0)) msg='2本目の'+pn+'径を入力してください';
-      else if(base&&!(v.dp>0)) msg=pn+'径を入力してください';
-      else if(!isNaN(v.z)&&v.z<4) msg='歯数 z は 4 以上で入力してください';
-      else if(v.mn>0&&!isNaN(v.z)&&!(v.an>0&&v.an<45)) msg='圧力角は 0°〜45° の間で入力してください';
-      clearOut(msg,false);
-      judge(v,g,meas);
-      return;
-    }
-
-    var r=Mof(v,g,v.xn,v.dp,v.dp2);
-    if(!r){
-      clearOut(pn+'が小さすぎて歯溝の奥に沈みます。太いものにしてください',true);
-      $('vDa').textContent=g.da.toFixed(3);
-      judge(v,g,meas);
-      return;
-    }
-    var M=r.M, even=(v.z%2===0), phi=r.c1.phi;
-
-    /* 接触チェック（2本とも見る） */
-    var warns=[], ck1=pinCheck(v,g,v.xn,v.dp), ck2=(v.dp2===v.dp)? ck1 : pinCheck(v,g,v.xn,v.dp2);
-    if(!ck1.ok) warns.push((twoDia?'①':'')+pn+'が'+ck1.why);
-    if(!ck2.ok) warns.push((twoDia?'②':'')+pn+'が'+ck2.why);
-
-    lastM=M;
-    $('out').textContent=M.toFixed(3);
-    $('svgM').textContent='M = '+M.toFixed(3);
-    $('vDc').textContent=(v.dp2===v.dp)? r.c1.dc.toFixed(3) : (r.c1.dc.toFixed(3)+' / '+r.c2.dc.toFixed(3));
-    $('vPhi').textContent=(v.dp2===v.dp)? (phi*180/Math.PI).toFixed(4)
-      : ((r.c1.phi*180/Math.PI).toFixed(3)+' / '+(r.c2.phi*180/Math.PI).toFixed(3));
-    $('vDa').textContent=g.da.toFixed(3);
-    $('vForm').textContent=(v.dp2!==v.dp)? (even?'偶数歯・径違い: (dc①+dc②)/2 + (dp①+dp②)/2':'奇数歯・径違い: 余弦定理')
-      : (even?'偶数歯: dc+dp':'奇数歯: dc·cos(90°/z)+dp');
-    var amp=(even?1:Math.cos(Math.PI/(2*v.z)))*r.c1.dc/(g.d*Math.cos(g.bR)*Math.tan(phi));
-    $('vAmp').textContent=amp.toFixed(2);
-    $('oddEvenTxt').textContent=(even
-      ?'偶数歯('+v.z+'枚): 正対 → M = dc + dp'
-      :'奇数歯('+v.z+'枚): 半ピッチずれ → M = dc×cos(90°/'+v.z+') + dp')
-      +(helix?'／はすばは玉で測ります':'');
-
-    /* 実測から歯厚を逆算 */
-    var xe=isFinite(meas)? xFromM(v,g,meas,v.dp,v.dp2) : null;
-    if(xe!==null){
-      var s=sOf(v,g,xe), s0=sOf(v,g,v.xn), ds=s-s0;
-      $('vS').textContent=s.toFixed(4);
-      $('vSs').textContent=(helix?'mm（歯直角・基準円上）':'mm（基準円上の円弧歯厚）');
-      $('vDs').textContent=(ds>=0?'+':'−')+Math.abs(ds).toFixed(4);
-      $('vDss').textContent='mm（'+(ds>=0?'厚い':'薄い')+'／'+(Math.abs(ds)*1000).toFixed(0)+'µm）';
-      $('vXe').textContent=(xe>=0?'+':'−')+Math.abs(xe).toFixed(4);
-    }else{
-      $('vS').textContent='―';
-      $('vSs').textContent=isFinite(meas)?'実測 M が範囲の外です':'実測Mを入れると出ます';
-      $('vDs').textContent='―';
-      $('vDss').textContent='mm（歯厚の差）';
-      $('vXe').textContent='―';
-    }
-    $('vDelta').textContent=isFinite(meas)? ((meas-M>0?'+':'')+(meas-M).toFixed(3)) : '―';
-
-    var st;
-    if(warns.length){ st='⚠ '+warns.join(' / '); $('statusTxt').className='statusTxt warn'; }
-    else{
-      st=pn+'接触OK(インボリュート面内)／歯厚の差は M では約'+amp.toFixed(1)+'倍に見えます';
-      if(twoDia) st+='／径の違う2本で計算しています';
-      if(helix) st+='／はすばの接触は相当平歯車での見当です';
-      $('statusTxt').className='statusTxt';
-    }
-    $('statusTxt').textContent=st;
-    judge(v,g,meas);
-  }
-
-  /* 「この2本を使う」ボタン。★押したら径だけでなく<2本の径が同じか違うか>も
-     一緒に合わせる。片方だけ合っている状態を作らない。 */
-  function mkUse(id,into,label,pair){
-    var b=document.createElement('button');
-    b.type='button'; b.className='pinuse'; b.id=id; b.textContent=label; b.style.display='none';
-    b.addEventListener('click',function(){
-      var a=b.getAttribute('data-a');
-      if(!a) return;
-      if(pair){
-        var c=b.getAttribute('data-b');
-        if(!c) return;
-        if(!twoDia){ twoDia=true; syncTeeth(); }
-        $('fDp').value=a; $('fDp2').value=c;
-      }else{
-        if(twoDia){ twoDia=false; syncTeeth(); }
-        $('fDp').value=a; $('fDp2').value='';
-      }
-      recalc();
-    });
-    $(into).appendChild(b);
-  }
-  mkUse('pinUse1','pinOpt1','この2本を使う',true);
-  mkUse('pinUse2','pinOpt2','この径を使う',false);
-
-  ['fM','fB','fZ','fA','fX','fDp','fDp2','fMe','fHi','fLo','fDpD',
-   'fStep','fPmin','fPmax','fStep2','fPmin2','fPmax2']
-    .forEach(function(id){$(id).addEventListener('input',recalc)});
-
-
-
-  syncTeeth();
+  syncSw();
 })();
 </script>
 
