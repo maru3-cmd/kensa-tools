@@ -107,18 +107,8 @@
   }
   .statusTxt{color:#5d6a71;font-size:11px;letter-spacing:.02em}
   .statusTxt.err{color:#FF8A7E}
-  .taphint{color:#5d6a71;font-size:11px;flex:none}
 
   footer{margin-top:18px;font-size:11px;color:#5B707E;line-height:1.7;text-align:center;letter-spacing:.03em}
-
-  .toast{
-    position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);
-    background:var(--ink);color:#fff;font-size:13px;
-    padding:9px 20px;border-radius:20px;opacity:0;pointer-events:none;
-    transition:opacity .25s,transform .25s;
-  }
-  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-  @media (prefers-reduced-motion:reduce){.toast{transition:none}}
   /* ── 使い方ガイド（全ツール共通） ── */
   .guide{background:#FFFFFF;border:1px solid #D5DDE2;border-radius:12px;margin:0 0 12px;overflow:hidden}
   .guide>summary{list-style:none;cursor:pointer;padding:12px 14px;font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.04em;display:flex;align-items:center;gap:7px}
@@ -154,8 +144,6 @@
   .htbl th:first-child,.htbl td:first-child{text-align:center}
   .htbl td{padding:6px;border-bottom:1px solid #E3E9EC;text-align:right;font-family:ui-monospace,Menlo,monospace;white-space:nowrap}
   .htbl td.warn{color:#B23B2E;font-weight:700}
-  .acopy{margin-top:10px;font:inherit;font-size:12px;font-weight:700;padding:9px 14px;border:1.5px solid #1F3341;border-radius:9px;background:#fff;color:#1F3341;cursor:pointer}
-  .acopy:active{background:#1F3341;color:#fff}
   /* 一括消去ボタン（v37 / 全ツール共通の見た目） */
   .topclear{display:flex;justify-content:flex-end;margin:2px 2px 10px}
   .topclear button{font-size:12px;font-weight:700;color:#B23B2E;background:#FBECEA;border:1px solid #E7B7B0;border-radius:9px;padding:7px 14px;cursor:pointer}
@@ -389,7 +377,7 @@
     <div class="dro-sub" id="subTxt">φ(直径)= ― | 中心角 = ―</div>
     <div class="dro-foot">
       <span class="statusTxt" id="statusTxt">入力待ち(2つ入力してください)</span>
-      <span class="taphint">値をタップでコピー</span>
+      
     </div>
   </div>
 
@@ -451,7 +439,7 @@
     <div class="dro-sub" id="tolSplit"></div>
     <div class="dro-foot">
       <span class="statusTxt" id="statusSplit">入力待ち(半径と隙間を入れてください)</span>
-      <span class="taphint">値をタップでコピー</span>
+      
     </div>
   </div>
   </section>
@@ -513,7 +501,7 @@
     <div class="dro-sub" id="aSub">中心角 = ― | 穴の半径 = ―</div>
     <div class="dro-foot">
       <span class="statusTxt" id="aStatus">R と開き角を入れてください</span>
-      <span class="taphint">値をタップでコピー</span>
+      
     </div>
   </div>
 
@@ -523,7 +511,6 @@
       <tbody id="aBody"></tbody>
     </table>
   </div>
-  <button type="button" class="acopy noprint" id="aCopy" style="display:none">穴の表をコピー</button>
   <div class="hint" id="aNote" style="display:none">周長・弦は<b>「穴の並ぶ半径」の円弧上</b>の値です（左端＝その円弧の端 0°）。⚠は開き角の外にある穴、隣の⚠は並び順が逆の穴です。</div>
   </section>
 
@@ -534,8 +521,6 @@
     入力値の送信・保存は一切ありません(端末内で完結)。
   </footer>
 </div>
-
-<div class="toast" id="toast">コピーしました</div>
 
 <script>
 /* 半径／直径の切替はタブ1とタブ2の両方から参照するので、共有スコープに置く */
@@ -718,28 +703,7 @@ function CD_K(){ return CD_DIM==='d' ? 2 : 1; }
   $('fH').addEventListener('input',onEdit('H'));
   $('fR').addEventListener('input',onEdit('R'));
 
-  var toastTimer=null;
-  function toast(msg){
-    var t=$('toast');t.textContent=msg;t.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer=setTimeout(function(){t.classList.remove('show')},1600);
-  }
-  ['C','H','R'].forEach(function(f){
-    $('c'+f).addEventListener('click',function(){
-      var val=results[f];
-      if(val==null){toast('まだ値がありません');return}
-      var s=(val*kR(f)).toFixed(3);
-      if(navigator.clipboard&&navigator.clipboard.writeText){
-        navigator.clipboard.writeText(s).then(function(){toast(JP[f]+' をコピーしました')},function(){toast('コピーできませんでした')});
-      }else{
-        var ta=document.createElement('textarea');
-        ta.value=s;document.body.appendChild(ta);ta.select();
-        try{document.execCommand('copy');toast(JP[f]+' をコピーしました')}catch(e){toast('コピーできませんでした')}
-        document.body.removeChild(ta);
-      }
-    });
-  });
-})();
+  })();
 </script>
 
 <script>
@@ -916,12 +880,6 @@ function CD_K(){ return CD_DIM==='d' ? 2 : 1; }
   function fmt(x){ return x.toFixed(3); }
   function fa(x){ return String(Math.round(x*1000)/1000); }   /* 角度の表示 */
 
-  /* ── トースト（既存 #toast を利用） ── */
-  var tt=null;
-  function toastA(msg){
-    var t=$('toast'); t.textContent=msg; t.classList.add('show');
-    clearTimeout(tt); tt=setTimeout(function(){ t.classList.remove('show'); },1600);
-  }
 
   function setSt(msg,isErr){
     var s=$('aStatus'); s.textContent=msg;
@@ -930,7 +888,7 @@ function CD_K(){ return CD_DIM==='d' ? 2 : 1; }
   function clearOut(){
     ['vAL','vAC','vAH'].forEach(function(id){ var e=$(id); e.textContent='―'; e.className='v dim'; });
     $('aSub').textContent='中心角 = ― | 穴の半径 = ―';
-    $('aTbl').style.display='none'; $('aCopy').style.display='none'; $('aNote').style.display='none';
+    $('aTbl').style.display='none'; $('aNote').style.display='none';
     $('aBody').innerHTML=''; lastRows=null;
     $('figArc').innerHTML='';
   }
@@ -1003,10 +961,10 @@ function CD_K(){ return CD_DIM==='d' ? 2 : 1; }
     lastHead={L:L,C:C,H:H};
 
     var list=parseList($('fAAngs').value);
-    if(list===null){ $('aTbl').style.display='none'; $('aCopy').style.display='none'; $('aNote').style.display='none'; lastRows=null;
+    if(list===null){ $('aTbl').style.display='none'; $('aNote').style.display='none'; lastRows=null;
       setSt('穴の角度は「15 45 75」のように度の小数で入れてください',true); drawArc(R,th,rh,[]); return; }
     if(!list.length){
-      $('aTbl').style.display='none'; $('aCopy').style.display='none'; $('aNote').style.display='none'; lastRows=null;
+      $('aTbl').style.display='none'; $('aNote').style.display='none'; lastRows=null;
       setSt('周長・弦を計算しました(穴の角度を入れると割り出し表が出ます)',false);
       drawArc(R,th,rh,[]); return;
     }
@@ -1035,7 +993,7 @@ function CD_K(){ return CD_DIM==='d' ? 2 : 1; }
         +'<td'+(r0.warn2?' class="warn"':'')+'>'+(r0.dCd===null?'―':fmt(r0.dCd))+'</td></tr>';
     }
     $('aBody').innerHTML=h;
-    $('aTbl').style.display=''; $('aCopy').style.display=''; $('aNote').style.display='';
+    $('aTbl').style.display=''; $('aNote').style.display='';
     lastRows=rows;
     setSt('計算しました（穴 '+rows.length+' 個'+(warnAny?'・⚠あり':'')+'）',false);
     drawArc(R,th,rh,rows.map(function(r){return r.aL;}));
@@ -1053,41 +1011,7 @@ function CD_K(){ return CD_DIM==='d' ? 2 : 1; }
     calcArc();
   });
 
-  /* 値タップでコピー */
-  [['cAL','vAL','周長'],['cAC','vAC','弦'],['cAH','vAH','矢高']].forEach(function(cf){
-    $(cf[0]).addEventListener('click',function(){
-      var v=$(cf[1]).textContent;
-      if(v==='―'){ toastA('まだ値がありません'); return; }
-      if(navigator.clipboard&&navigator.clipboard.writeText){
-        navigator.clipboard.writeText(v).then(function(){toastA(cf[2]+' をコピーしました')},function(){toastA('コピーできませんでした')});
-      }else{
-        var ta=document.createElement('textarea');
-        ta.value=v; document.body.appendChild(ta); ta.select();
-        try{ document.execCommand('copy'); toastA(cf[2]+' をコピーしました'); }catch(e){ toastA('コピーできませんでした'); }
-        document.body.removeChild(ta);
-      }
-    });
-  });
 
-  /* 表をコピー（TSV） */
-  $('aCopy').addEventListener('click',function(){
-    if(!lastRows){ toastA('まだ表がありません'); return; }
-    var out=['穴\t左端から角度°\t左端から周長\t左端から弦\t隣から周長\t隣から弦'];
-    for(var i=0;i<lastRows.length;i++){
-      var r0=lastRows[i];
-      out.push(r0.n+'\t'+fa(r0.aL)+'\t'+fmt(r0.s)+'\t'+fmt(r0.cd)+'\t'+(r0.dArc===null?'':fmt(r0.dArc))+'\t'+(r0.dCd===null?'':fmt(r0.dCd)));
-    }
-    if(lastHead) out.push('周長\t'+fmt(lastHead.L)+'\t弦\t'+fmt(lastHead.C)+'\t矢高\t'+fmt(lastHead.H));
-    var s=out.join('\n');
-    if(navigator.clipboard&&navigator.clipboard.writeText){
-      navigator.clipboard.writeText(s).then(function(){toastA('穴の表をコピーしました（'+lastRows.length+' 行）')},function(){toastA('コピーできませんでした')});
-    }else if(document.execCommand){
-      var ta=document.createElement('textarea');
-      ta.value=s; document.body.appendChild(ta); ta.select();
-      try{ document.execCommand('copy'); toastA('穴の表をコピーしました（'+lastRows.length+' 行）'); }catch(e){ toastA('コピーできませんでした'); }
-      document.body.removeChild(ta);
-    }else{ toastA('この端末ではコピーできません'); }
-  });
 })();
 </script>
 

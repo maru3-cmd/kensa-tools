@@ -141,11 +141,6 @@
   }
   .statusTxt{color:#5d6a71;font-size:11px;letter-spacing:.02em}
   .statusTxt.err{color:#FF8A7E}
-  .copy{
-    font-size:12px;font-weight:700;color:#c9d2d7;background:#252b2f;
-    border:1px solid #3a4247;border-radius:7px;padding:6px 14px;flex:none;
-  }
-  .copy:active{background:#31383d}
 
   details.dtl{
     background:var(--sheet);border:1px solid #D5DDE2;border-radius:12px;
@@ -338,7 +333,6 @@
     </div>
     <div class="dro-foot">
       <span class="statusTxt" id="statusTxt">直線1の長さから入力してください</span>
-      <button class="copy" type="button" id="copyBtn">全結果コピー</button>
     </div>
   </div>
 
@@ -373,7 +367,6 @@
     <!-- v94: 段ボールの左下の角に、始点と終点を合わせられる向きを教える -->
     <div id="alignBox"></div>
     <div id="farBox"></div>
-    <button class="copy" type="button" id="copyLayout" style="margin-top:10px">この座標をコピー</button>
   </details>
 
   <button class="clearBtn" type="button" onclick="armClear(this)">すべて消去</button>
@@ -1088,49 +1081,7 @@
     clearTimeout(toastTimer);
     toastTimer=setTimeout(function(){t.classList.remove('show')},1600);
   }
-  $('copyBtn').addEventListener('click',function(){
-    var m=lastModel;
-    if(!m){toast('まだ結果がありません');return}
-    var lines=['[曲げガイド計算]'];
-    var i;
-    for(i=0;i<=m.n;i++){
-      lines.push('直線'+(i+1)+': '+(m.mode==='act'?'実長(入力)':'交点寸法(入力)')+fmt(m.L[i])+
-        ' / 交点寸法'+fmt(m.Lapex[i])+' / 実直線長'+fmt(Math.max(m.act[i],0)));
-      if(i<m.n)lines.push('曲げ'+(i+1)+': θ='+(m.A[i]>0?'+':'')+m.A[i]+'° R='+m.R[i]+' 弧長'+fmt(m.arcs[i].len));
-    }
-    lines.push('展開長(切断長): '+fmt(m.dev));
-    lines.push('端点間距離: '+fmt(m.dist));
-    var mv=lastView||m;
-    lines.push('向き: '+turnLabel());
-    lines.push('外形: X='+fmt(mv.maxX-mv.minX)+' × Y='+fmt(mv.maxY-mv.minY));
-    var pts=['始端(0, 0)'];
-    for(i=0;i<m.n;i++)pts.push('交点'+(i+1)+'('+fmt(mv.nodes[i+1].x)+', '+fmt(mv.nodes[i+1].y)+')');
-    pts.push('終端('+fmt(mv.end.x)+', '+fmt(mv.end.y)+')');
-    lines.push('座標: '+pts.join(' '));
-    var s=lines.join('\n');
-    if(navigator.clipboard&&navigator.clipboard.writeText){
-      navigator.clipboard.writeText(s).then(function(){toast('コピーしました')},function(){toast('コピーできませんでした')});
-    }else{
-      var ta=document.createElement('textarea');
-      ta.value=s;document.body.appendChild(ta);ta.select();
-      try{document.execCommand('copy');toast('コピーしました')}catch(e){toast('コピーできませんでした')}
-      document.body.removeChild(ta);
-    }
-  });
 
-  $('copyLayout').addEventListener('click',function(){
-    if(!lastLayout){toast('まだ座標がありません');return}
-    var head='[段ボールに写す座標] 原点='+(oriMode==='ll'?'図の左下':'始端')+' 単位mm\n';
-    var s=head+lastLayout;
-    if(navigator.clipboard&&navigator.clipboard.writeText){
-      navigator.clipboard.writeText(s).then(function(){toast('コピーしました')},function(){toast('コピーできませんでした')});
-    }else{
-      var ta=document.createElement('textarea');
-      ta.value=s;document.body.appendChild(ta);ta.select();
-      try{document.execCommand('copy');toast('コピーしました')}catch(e){toast('コピーできませんでした')}
-      document.body.removeChild(ta);
-    }
-  });
 
   restoreSaved();
   paintMode();            /* 保存から戻した設定をボタンにも反映する */

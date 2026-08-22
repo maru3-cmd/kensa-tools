@@ -536,7 +536,6 @@
     </div>
     <div class="btnrow noprint" style="margin-top:10px">
       <button class="btn primary" onclick="addToList()">記録表に追加</button>
-      <button class="btn sm" onclick="copyCSV()">距離表をコピー</button>
     </div>
   </div>
 
@@ -1202,15 +1201,6 @@ function renderList(){
   tb.innerHTML=h;
   var nm=document.getElementById("recName").value||"—", dt=document.getElementById("recDate").value||"—", by=document.getElementById("recBy").value||"—";
   document.getElementById("recHead").textContent = "部品名："+nm+"　／　検査日："+dt+"　／　検査者："+by+"　／　公差 ±"+(isFinite(tol)?tol:"—")+" mm";
-}
-function copyCSV(){
-  var rows=[["pair","distance","dX","dY","dZ"]];
-  pairs().forEach(function(p){ rows.push([p.a.label+"-"+p.b.label, f(p.d), f(p.b.x-p.a.x), f(p.b.y-p.a.y), f(p.b.z-p.a.z)]); });
-  var txt = rows.map(function(r){return r.join(",");}).join("\n");
-  if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(txt).then(function(){ toast("距離表をコピーしました（"+(rows.length-1)+" 行）"); },function(){ fallback(txt); });
-  } else fallback(txt);
-  function fallback(t){ var ta=document.createElement("textarea"); ta.value=t; document.body.appendChild(ta); ta.select(); try{document.execCommand("copy"); toast("コピーしました");}catch(e){toast("コピーできませんでした");} document.body.removeChild(ta); }
 }
 
 /* ═══════════ 保存 ═══════════ */

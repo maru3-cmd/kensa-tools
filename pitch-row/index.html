@@ -264,7 +264,6 @@
     </table>
   </div>
   <div class="hint">基準の穴を切り替えれば「穴3から穴7まで」のような任意の2穴間もすぐ読めます。</div>
-  <button class="btn sm" type="button" style="margin-top:8px" onclick="copyPositions()">位置の一覧をコピー（コンベックス読み用）</button>
   <details>
     <summary>全穴間マトリクス（総当たり）</summary>
     <div class="tblwrap" style="margin-top:8px"><table class="mat" id="matTbl"></table></div>
@@ -555,23 +554,6 @@ function prep(){
 /* ─ 保存 ─ */
 var KEY="pitchrow_v1";
 var IDS=["nomP","tol","recName","recDate","edge0"];
-function copyPositions(){
-  var A=ordered();
-  if(!A.length){ toast("コピーする一覧がありません"); return; }
-  var origin=(S.mode==="pit" && !numOK(parseFloat(g("edge0").value)))? "穴1" : "端";
-  var lines=["穴\t"+origin+"から\t基準穴から"];
-  A.forEach(function(o,i){
-    var rel=o.pos-A[S.base].pos;
-    lines.push("穴"+(i+1)+"\t"+nf(o.pos)+"\t"+((i===S.base)?"0.0":((rel>0?"+":"")+nf(rel))));
-  });
-  var txt=lines.join("\n");
-  try{ if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt); toast("コピーしました"); return; } }catch(e){}
-  try{
-    var ta=document.createElement("textarea"); ta.value=txt; ta.style.position="fixed"; ta.style.opacity="0";
-    document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta);
-    toast("コピーしました");
-  }catch(e2){ toast("コピーできませんでした"); }
-}
 function snapshot(){
   var o={pos:S.pos, base:S.base, mode:S.mode, v:{}};
   IDS.forEach(function(i){ o.v[i]=g(i).value; });

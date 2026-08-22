@@ -104,18 +104,8 @@
   }
   .statusTxt{color:#5d6a71;font-size:11px;letter-spacing:.02em}
   .statusTxt.err{color:#FF8A7E}
-  .taphint{color:#5d6a71;font-size:11px;flex:none}
 
   footer{margin-top:18px;font-size:11px;color:#5B707E;line-height:1.7;text-align:center;letter-spacing:.03em}
-
-  .toast{
-    position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);
-    background:var(--ink);color:#fff;font-size:13px;
-    padding:9px 20px;border-radius:20px;opacity:0;pointer-events:none;
-    transition:opacity .25s,transform .25s;
-  }
-  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-  @media (prefers-reduced-motion:reduce){.toast{transition:none}}
   /* ── 使い方ガイド（全ツール共通） ── */
   .guide{background:#FFFFFF;border:1px solid #D5DDE2;border-radius:12px;margin:0 0 12px;overflow:hidden}
   .guide>summary{list-style:none;cursor:pointer;padding:12px 14px;font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.04em;display:flex;align-items:center;gap:7px}
@@ -394,7 +384,7 @@
     </div>
     <div class="dro-foot">
       <span class="statusTxt" id="statusTxt">m・z を入力してください</span>
-      <span class="taphint">値をタップでコピー</span>
+      
     </div>
   </div>
 
@@ -503,8 +493,6 @@
     W = m·cosα·[π(k−0.5) + z·invα] + 2·x·m·sinα
   </footer>
 </div>
-
-<div class="toast" id="toast">コピーしました</div>
 
 <script>
 (function(){
@@ -635,33 +623,6 @@
     recalc();
   });
 
-  var toastTimer=null;
-  function toast(msg){
-    var t=$('toast');t.textContent=msg;t.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer=setTimeout(function(){t.classList.remove('show')},1600);
-  }
-  [['cD','d',3],['cDb','db',3],['cDa','da',3],['cInv','inv',6],['cK2','k',0],['cDelta','delta',3]].forEach(function(a){
-    $(a[0]).addEventListener('click',function(){
-      var v=vals[a[1]];
-      if(v==null){toast('まだ値がありません');return}
-      copyText(a[2]===0?String(v):v.toFixed(a[2]));
-    });
-  });
-  document.querySelector('.dro-line').addEventListener('click',function(){
-    if(vals.W==null){toast('まだ値がありません');return}
-    copyText(vals.W.toFixed(3));
-  });
-  function copyText(s){
-    if(navigator.clipboard&&navigator.clipboard.writeText){
-      navigator.clipboard.writeText(s).then(function(){toast('コピーしました')},function(){toast('コピーできませんでした')});
-    }else{
-      var ta=document.createElement('textarea');
-      ta.value=s;document.body.appendChild(ta);ta.select();
-      try{document.execCommand('copy');toast('コピーしました')}catch(e){toast('コピーできませんでした')}
-      document.body.removeChild(ta);
-    }
-  }
 
   /* ═══ 図面合否判定・歯厚減少量の換算（v38 / 既存 recalc は一切変更していません） ═══ */
   var jMode='lim';

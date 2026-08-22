@@ -167,11 +167,6 @@
   }
   .statusTxt{color:#5d6a71;font-size:11px;letter-spacing:.02em}
   .statusTxt.err{color:#FF8A7E}
-  .copyRec{
-    font-size:12px;font-weight:700;color:#c9d2d7;background:#252b2f;
-    border:1px solid #3a4247;border-radius:7px;padding:6px 14px;flex:none;
-  }
-  .copyRec:active{background:#31383d}
 
   .revline{
     display:flex;justify-content:space-between;align-items:baseline;
@@ -324,7 +319,6 @@
     </div>
     <div class="dro-foot">
       <span class="statusTxt" id="stat"></span>
-      <button class="copyRec" id="copyBtn" type="button">記録をコピー</button>
     </div>
   </div>
 
@@ -611,15 +605,6 @@ function setSide(i,side){ S.pulleys[i].side=side; renderPls(); calc(); }
 function addPl(){ if(S.pulleys.length>=MAXPL) return; S.pulleys.push(newPl("","","","out")); renderPls(); calc(); }
 function delPl(i){ if(S.pulleys.length<=MINPL) return; S.pulleys.splice(i,1); renderPls(); calc(); }
 
-function copyRec(){
-  var r=beltCompute(); if(!r||r.err){ toast("先に数値を入れてください"); return; }
-  var lines=["ベルト周長（図面）"+f2(r.L)+" mm"], i;
-  for(i=0;i<S.pulleys.length;i++){ var p=S.pulleys[i]; lines.push("P"+(i+1)+" X"+f1(pf(p.x))+" Y"+f1(pf(p.y))+" φ"+f1(pf(p.d))+" "+(p.side==="in"?"内":"外")); }
-  if(S.isTooth&&ok(pf(S.pitch))) lines.push("歯ピッチ"+f1(pf(S.pitch))+" → 歯数≒"+Math.round(r.L/pf(S.pitch)));
-  if(ok(pf(S.spec))) lines.push("仕様 "+f2(pf(S.spec))+" / 差 "+f2(r.L-pf(S.spec))+" mm");
-  copyText(lines.join("\n"));
-}
-function copyText(t){ if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(function(){toast("コピーしました");},function(){fb(t);}); else fb(t); function fb(x){ try{var ta=document.createElement("textarea");ta.value=x;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();document.execCommand("copy");document.body.removeChild(ta);toast("コピーしました");}catch(e){toast("コピーできませんでした");} } }
 
 function doClearAll(){
   S={ pulleys:[ newPl(0,0,100,"out"), newPl(300,0,100,"out") ], isTooth:false, pitch:"", spec:"" };
@@ -653,8 +638,7 @@ function init(){
   try{ calc(); }catch(e){}
   /* 以降のバインドは個別に防御 */
   bindEl("addBtn","click",addPl);
-  bindEl("copyBtn","click",copyRec);
-  bindEl("clearBtn","click",function(){armClear(g("clearBtn"))});
+    bindEl("clearBtn","click",function(){armClear(g("clearBtn"))});
   bindEl("clearTop","click",function(){armClear(g("clearTop"))});
   bindEl("exBtn","click",tryExample);
   bindEl("isTooth","change",function(){ S.isTooth=this.checked; var tb=g("toothBox"); if(tb) tb.style.display=this.checked?"":"none"; calc(); persist(); });

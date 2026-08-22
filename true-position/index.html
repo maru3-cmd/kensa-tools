@@ -145,21 +145,8 @@
   }
   .statusTxt{color:#5d6a71;font-size:11px;letter-spacing:.02em}
   .statusTxt.err{color:#FF8A7E}
-  .copy{
-    font-size:12px;font-weight:700;color:#c9d2d7;background:#252b2f;
-    border:1px solid #3a4247;border-radius:7px;padding:6px 14px;flex:none;
-  }
-  .copy:active{background:#31383d}
 
   footer{margin-top:16px;font-size:11px;color:#5B707E;line-height:1.7;text-align:center;letter-spacing:.03em}
-
-  .toast{
-    position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);
-    background:var(--ink);color:#fff;font-size:13px;
-    padding:9px 20px;border-radius:20px;opacity:0;pointer-events:none;
-    transition:opacity .25s,transform .25s;
-  }
-  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   @media (prefers-reduced-motion:reduce){.toast{transition:none;} .instTgl .sw,.instTgl .sw::after{transition:none}}
   /* ── 使い方ガイド（全ツール共通） ── */
   .guide{background:#FFFFFF;border:1px solid #D5DDE2;border-radius:12px;margin:0 0 12px;overflow:hidden}
@@ -353,7 +340,6 @@
     </div>
     <div class="dro-foot">
       <span class="statusTxt" id="statusTxt">位置度 = 2 × √(ΔX² + ΔY²)</span>
-      <button class="copy" type="button" id="copyBtn">結果コピー</button>
     </div>
   </div>
 
@@ -364,8 +350,6 @@
     データム系(基準の取り方)は図面の指示に従って測定してください。
   </footer>
 </div>
-
-<div class="toast" id="toast">コピーしました</div>
 
 <script>
 (function(){
@@ -527,23 +511,6 @@
   $('mHole').addEventListener('click',function(){setHole(true)});
   $('mShaft').addEventListener('click',function(){setHole(false)});
 
-  var toastTimer=null;
-  function toast(msg){
-    var t=$('toast');t.textContent=msg;t.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer=setTimeout(function(){t.classList.remove('show')},1600);
-  }
-  $('copyBtn').addEventListener('click',function(){
-    if(!lastText){toast('まだ結果がありません');return}
-    if(navigator.clipboard&&navigator.clipboard.writeText){
-      navigator.clipboard.writeText(lastText).then(function(){toast('コピーしました')},function(){toast('コピーできませんでした')});
-    }else{
-      var ta=document.createElement('textarea');
-      ta.value=lastText;document.body.appendChild(ta);ta.select();
-      try{document.execCommand('copy');toast('コピーしました')}catch(e){toast('コピーできませんでした')}
-      document.body.removeChild(ta);
-    }
-  });
 
   recalc();
 })();

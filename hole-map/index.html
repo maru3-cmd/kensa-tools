@@ -603,8 +603,7 @@
   </div>
   <div class="btnrow noprint" style="margin-top:10px">
     <button class="btn primary" onclick="addRec()">記録表に追加</button>
-    <button class="btn sm" onclick="copyCSV()">一覧をコピー</button>
-  </div>
+    </div>
 </div>
 
 <div class="card">
@@ -632,8 +631,7 @@
   <div class="hint" id="orgNow" style="font-weight:700;color:#42565F"></div>
   <div class="hint">X は右が＋、Y は上が＋（真上が 0°の側）。値は図面から計算した理論値です。<b>加工に使う場合も図面が正</b>で、この画面は控えとして扱ってください。</div>
   <div class="btnrow noprint" style="margin-top:10px">
-    <button class="btn sm" onclick="copyPos()">座標をコピー</button>
-  </div>
+    </div>
   </details>
 </div>
 
@@ -2200,30 +2198,6 @@ function renderRec(){
   if(!S.rec.length) h='<tr><td colspan="6" style="text-align:center;color:#8FA2AF;font-family:inherit;padding:12px">ペアを選んで「記録表に追加」</td></tr>';
   tb.innerHTML=h;
   g("recHead").textContent="部品名："+(g("recName").value||"—")+"　／　検査日："+(g("recDate").value||"—")+"　／　検査者："+(g("recBy").value||"—")+"　／　公差 ±"+(isFinite(tol)?tol:"—")+" mm　／　読み替え原点："+origin().lb;
-}
-function toClip(rows, what, note){
-  var txt2=rows.map(function(r){return r.join(",");}).join("\n");
-  if(navigator.clipboard&&navigator.clipboard.writeText)
-    navigator.clipboard.writeText(txt2).then(function(){ toast(what+"をコピーしました（"+(rows.length-1)+" 行）"+(note?" ／ "+note:"")); },function(){ toast("コピーできませんでした"); });
-  else toast("この端末ではコピーできません");
-}
-function copyPos(){
-  if(!H.length){ toast("先に部品を追加してください。"); return; }
-  var O=origin(), rows=[["hole","X","Y","source"]];
-  H.forEach(function(p){ rows.push([p.key, f3(p.x-O.x), f3(p.y-O.y), p.src]); });
-  toClip(rows, "座標", "読み替え原点＝"+O.lb);
-}
-function copyCSV(){
-  var useCal=anyHd();
-  var rows=[useCal? ["pair","center","outer","inner","dX","dY"] : ["pair","pitch","dX","dY"]];
-  pairs().forEach(function(p){
-    var dm=useCal? dmOf(p.a,p.b) : NaN;
-    var r=[p.a.key+"-"+p.b.key, f3(p.d)];
-    if(useCal) r.push(numOK(dm)?f3(p.d+dm):"", numOK(dm)?f3(p.d-dm):"");
-    r.push(f3(p.b.x-p.a.x), f3(p.b.y-p.a.y));
-    rows.push(r);
-  });
-  toClip(rows, "一覧", useCal? "ノギスの読み付き" : "");
 }
 
 /* ═══ 保存 ═══ */

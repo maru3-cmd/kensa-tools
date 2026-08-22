@@ -143,22 +143,8 @@
     margin-top:10px;border-top:1px solid #2a3034;padding-top:9px;gap:8px;
   }
   .formula{color:#5d6a71;font-size:11px;letter-spacing:.02em}
-  .copy{
-    font-size:12px;font-weight:700;color:#c9d2d7;background:#252b2f;
-    border:1px solid #3a4247;border-radius:7px;padding:6px 14px;flex:none;
-  }
-  .copy:active{background:#31383d}
 
   footer{margin-top:18px;font-size:11px;color:#5B707E;line-height:1.7;text-align:center;letter-spacing:.03em}
-
-  .toast{
-    position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);
-    background:var(--ink);color:#fff;font-size:13px;
-    padding:9px 20px;border-radius:20px;opacity:0;pointer-events:none;
-    transition:opacity .25s,transform .25s;
-  }
-  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-  @media (prefers-reduced-motion:reduce){.toast{transition:none}}
   /* ── 折りたためる解説（v106）──
      ★見出しは常に見えるようにする。閉じたときに何の欄か分からなくなる
        折りたたみにしない。畳むのは中身だけ。 */
@@ -568,7 +554,7 @@
 
   <!-- 結果（★不等配では出さない。一覧に同じ数が全部並ぶため・v117） -->
   <div class="dro" id="droBox">
-    <div class="dro-line">
+    <div class="dro-line" id="lineL">
       <span class="dro-label" id="droLbl">p</span>
       <span class="dro-val" id="out">―.―――</span>
       <span class="dro-unit">mm</span>
@@ -579,11 +565,7 @@
       <div><span>外−外</span><b id="rdO" class="hi">―</b></div>
       <div><span>内−内</span><b id="rdI">―</b></div>
     </div>
-    <div class="dro-sub" id="rdNote"></div>
-    <div class="dro-foot">
-      <span class="formula" id="formulaTxt">p = PCD × sin(k × 180° ÷ n)</span>
-      <button class="copy" id="copyBtn" type="button">コピー</button>
-    </div>
+    <div class="dro-sub" id="rdNote" style="display:none"></div>
   </div>
 
   <div id="pairBox" style="display:none;margin-top:14px">
@@ -601,7 +583,6 @@
     <div id="pairWrap"></div>
     <div class="dro-foot" style="margin-top:8px">
       <span class="formula" id="pairStat">PCD と角度の並びを入れてください</span>
-      <button class="copy" id="copyPairs" type="button">一覧をコピー</button>
     </div>
     <!-- 不等配のとき、上の図面シートをここへ移す（図は1つだけ。複製しない） -->
     <div id="sheetSlot"></div>
@@ -660,8 +641,6 @@
     入力値の送信・保存は一切ありません(端末内で完結)。
   </footer>
 </div>
-
-<div class="toast" id="toast">コピーしました</div>
 
 <script>
 (function(){
@@ -1348,30 +1327,37 @@
      外−外＝中心間＋穴径、内−内＝中心間−穴径。穴径が違う2穴なら (d1+d2)/2 だが
      このツールは等配＝同じキリなので穴径そのものを足し引きする。            */
   function holeDia(){ var d=num($('inHole').value); return (d>0)? d : NaN; }
-  var lastReading=null;
+  /* 断り書きだけを出す器（v125・TOOL-01 v116 と同じ）。
+     ★読めば分かる算数の説明（外−外＝中心間＋穴径）は出さない。
+       見落とすと誤答になる断り書きだけを出し、無いときは行ごと消す。 */
+  function setNote(html){
+    var n=$('rdNote');
+    n.textContent=html||'';
+    n.style.display=html?'':'none';
+  }
   function readCalc(p){
-    var d=holeDia(), box=$('rdBox'), note=$('rdNote');
-    lastReading=null;
+    var d=holeDia(), box=$('rdBox');
     box.className='rd off';
+    var on=(mode==='fwd'&&d>0&&p>0);
+    /* ★答えは1か所（v125）。3値の「中心間」＝上の大きな p。
+       3値が出ているあいだは上の行を隠す。逆算(PCD)のときは3値が出ないので残る。 */
+    var line=$('lineL');
+    if(line) line.style.display=on?'none':'';
     if(mode!=='fwd'){
-      note.textContent = (d>0)
-        ? ('逆算に入れるのは中心間の値です。外−外で測ったなら '+d.toFixed(3)+' mm を引いてください。')
-        : '';
+      /* ★これは断り書き（消さない）。外−外の値をそのまま入れると PCD が狂う。 */
+      setNote((d>0)? ('逆算に入れるのは中心間の値です。外−外で測ったなら '+d.toFixed(3)+' mm を引いてください。') : '');
       return;
     }
-    if(!(d>0)){ note.textContent = (p>0)? '穴径を入れると、ノギスを当てたときの読みも出ます。' : ''; return; }
-    if(!(p>0)){ note.textContent=''; return; }
+    if(!on){ setNote(''); return; }
     box.className='rd';
     $('rdC').textContent=p.toFixed(3);
     $('rdO').textContent=(p+d).toFixed(3);
     if(p-d>0){
       $('rdI').textContent=(p-d).toFixed(3);
-      note.textContent='穴径 φ'+d.toFixed(3)+'。外−外＝中心間＋穴径、内−内＝中心間−穴径';
-      lastReading='中心間 '+p.toFixed(3)+' / 外−外 '+(p+d).toFixed(3)+' / 内−内 '+(p-d).toFixed(3);
+      setNote('');
     }else{
       $('rdI').textContent='―';
-      note.textContent='穴どうしが重なります（中心間 '+p.toFixed(3)+' ≦ 穴径 '+d.toFixed(3)+'）。内−内は測れません。';
-      lastReading='中心間 '+p.toFixed(3)+' / 外−外 '+(p+d).toFixed(3);
+      setNote('穴どうしが重なります（中心間 '+p.toFixed(3)+' ≦ 穴径 '+d.toFixed(3)+'）。内−内は測れません。');
     }
   }
 
@@ -1467,9 +1453,6 @@
       ? '隣どうしの角度。最後の1つは省略できます。例 30 150 30'
       : '穴1から順に、真上からの角度。例 0 30 180 210';
     $('inAngs').setAttribute('placeholder',(angM==='rel')? '30 150 30 150' : '0 30 180 210');
-    $('formulaTxt').textContent = un
-      ? (fwd? '弦 = PCD × sin(中心角 ÷ 2)' : 'PCD = a·b·c ÷ (2 × 三角形の面積)')
-      : (fwd? 'p = PCD × sin(k × 180° ÷ n)' : 'PCD = p ÷ sin(k × 180° ÷ n)');
 
     /* ★いま出していない欄は readOnly にする。
        記録スニペットは readOnly の欄を拾わないので、
@@ -1575,17 +1558,6 @@
     $('rdKindI').classList.toggle('on',rdKind==='i');
   }
 
-  $('copyPairs').addEventListener('click',function(){
-    if(!lastPairs){toast('先に PCD と角度の並びを入れてください');return}
-    if(navigator.clipboard&&navigator.clipboard.writeText){
-      navigator.clipboard.writeText(lastPairs).then(function(){toast('コピーしました')},function(){toast('コピーできませんでした')});
-    }else{
-      var ta=document.createElement('textarea');
-      ta.value=lastPairs;document.body.appendChild(ta);ta.select();
-      try{document.execCommand('copy');toast('コピーしました')}catch(e){toast('コピーできませんでした')}
-      document.body.removeChild(ta);
-    }
-  });
 
   ['in1','inN','inDeg','inK','inHole'].forEach(function(id){$(id).addEventListener('input',recalc)});
 
@@ -1668,23 +1640,6 @@
   }
   ['inTol','inMeasP'].forEach(function(id){$(id).addEventListener('input',tolCalc)});
 
-  var toastTimer=null;
-  function toast(msg){
-    var t=$('toast');t.textContent=msg;t.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer=setTimeout(function(){t.classList.remove('show')},1600);
-  }
-  $('copyBtn').addEventListener('click',function(){
-    if(lastResult==null){toast('先に値を入力してください');return}
-    if(navigator.clipboard&&navigator.clipboard.writeText){
-      navigator.clipboard.writeText(lastReading||lastResult).then(function(){toast('コピーしました')},function(){toast('コピーできませんでした')});
-    }else{
-      var ta=document.createElement('textarea');
-      ta.value=lastReading||lastResult;document.body.appendChild(ta);ta.select();
-      try{document.execCommand('copy');toast('コピーしました')}catch(e){toast('コピーできませんでした')}
-      document.body.removeChild(ta);
-    }
-  });
 
   /* ?m= があればそれで開く。無ければ等配（従来どおり）。
      ★?rec= の復元は共有ブロックが後から sw を当てるので、ここで

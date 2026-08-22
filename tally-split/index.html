@@ -167,11 +167,6 @@
   }
   .statusTxt{color:#5d6a71;font-size:11px;letter-spacing:.02em}
   .statusTxt.err{color:#FF8A7E}
-  .copyRec{
-    font-size:12px;font-weight:700;color:#c9d2d7;background:#252b2f;
-    border:1px solid #3a4247;border-radius:7px;padding:6px 14px;flex:none;
-  }
-  .copyRec:active{background:#31383d}
 
   .revline{
     display:flex;justify-content:space-between;align-items:baseline;
@@ -334,7 +329,6 @@
     <div class="devline none" id="restMsg">各荷札の確定個数を入れてください</div>
     <div class="dro-foot">
       <span class="statusTxt" id="sumTxt">数えた 0 ／ 確定 0</span>
-      <button class="copyRec" id="copyBtn" type="button">記録をコピー</button>
     </div>
   </div>
 
@@ -625,25 +619,12 @@ function refreshFormula(i){
 }
 
 /* ── コピー ── */
-function copyRec(){
-  var lines=[], i, totC=0, totT=0;
-  if(isSet(S.tot)) lines.push("総数 "+num(S.tot));
-  for(i=0;i<NF;i++){
-    if(!used(i)) continue;
-    var c=counted(i), t=target(i); totC+=c; totT+=t; var mk=(isSet(S.tags[i].target)&&c===t&&hasCount(i))?" ✓":(c>t?" 超過":"");
-    var detail=modeText(i);
-    lines.push("荷札"+(i+1)+" 確定"+(isSet(S.tags[i].target)?t:"—")+" "+detail+" 計"+c+mk);
-  }
-  lines.push("―― 数えた計 "+totC+" ／ 確定計 "+totT);
-  copyText(lines.join("\n"));
-}
 function modeText(i){
   var t=S.tags[i];
   if(t.mode==="grid") return "仕切り["+num(t.gr.rows)+"×"+num(t.gr.cols)+"×"+num(t.gr.full)+"段+"+num(t.gr.rem)+"]";
   if(t.mode==="set") return "組["+num(t.se.size)+"×"+num(t.se.count)+"+"+num(t.se.rem)+"]";
   return "かんたん["+t.steps.join(",")+"]";
 }
-function copyText(t){ if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(function(){toast("コピーしました");},function(){fb(t);}); else fb(t); function fb(x){ try{var ta=document.createElement("textarea");ta.value=x;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();document.execCommand("copy");document.body.removeChild(ta);toast("コピーしました");}catch(e){toast("コピーできませんでした");} } }
 
 /* ── 消去 ── */
 function doClearAll(){
@@ -687,7 +668,6 @@ function init(){
   try{ calc(); }catch(e){}
   var b;
   b=g("totIn"); if(b) b.addEventListener("input",function(){ var v=this.value.replace(/[^\d]/g,""); if(this.value!==v)this.value=v; S.tot=v; calc(); persist(); });
-  b=g("copyBtn"); if(b) b.addEventListener("click",copyRec);
   b=g("clearBtn"); if(b) b.addEventListener("click",function(){armClear(this)});
   b=g("clearTop"); if(b) b.addEventListener("click",function(){armClear(this)});
   b=g("exBtn"); if(b) b.addEventListener("click",tryExample);

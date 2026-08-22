@@ -167,11 +167,6 @@
   }
   .statusTxt{color:#5d6a71;font-size:11px;letter-spacing:.02em}
   .statusTxt.err{color:#FF8A7E}
-  .copyRec{
-    font-size:12px;font-weight:700;color:#c9d2d7;background:#252b2f;
-    border:1px solid #3a4247;border-radius:7px;padding:6px 14px;flex:none;
-  }
-  .copyRec:active{background:#31383d}
 
   .revline{
     display:flex;justify-content:space-between;align-items:baseline;
@@ -356,7 +351,6 @@
     </div>
     <div class="dro-foot">
       <span class="statusTxt" id="statusTxt">サンプル(何個で何g)を設定してください</span>
-      <button class="copyRec" type="button" id="copyRec">記録をコピー</button>
     </div>
   </div>
 
@@ -593,26 +587,6 @@
   // すべて消去(2度押し)
   
   // 記録コピー
-  $('copyRec').addEventListener('click',function(){
-    var u=unitW(), tare=tareG();
-    var lines=['[数取り記録] '+state.date];
-    if(u)lines.push('単重: '+u.toFixed(4)+' g/個('+state.n+'個 = '+state.g+' g)');
-    if(tare>0)lines.push('風袋: '+fmtG(tare)+' g');
-    var sum=0;
-    state.batches.forEach(function(b,i){
-      var net=b.g-tare;sum+=net;
-      var pcs=(u&&net>0)?(' → '+Math.round(net/u).toLocaleString('ja-JP')+'個'):'';
-      lines.push((i+1)+': '+fmtG(b.g)+' g'+(tare>0?'(正味 '+fmtG(net)+' g)':'')+pcs);
-    });
-    if(state.batches.length){
-      lines.push('合計(正味): '+fmtG(sum)+' g');
-      if(u&&sum>0){
-        var raw=sum/u, r=Math.round(raw);
-        lines.push('総個数: '+r.toLocaleString('ja-JP')+' 個(ズレ '+((raw-r)>=0?'+':'')+(raw-r).toFixed(2)+' 個分)');
-      }
-    }
-    copyText(lines.join('\n'));
-  });
 
   var toastTimer=null;
   function toast(msg){
@@ -620,28 +594,7 @@
     clearTimeout(toastTimer);
     toastTimer=setTimeout(function(){t.classList.remove('show')},1600);
   }
-  function copyText(s){
-    if(navigator.clipboard&&navigator.clipboard.writeText){
-      navigator.clipboard.writeText(s).then(function(){toast('コピーしました')},function(){toast('コピーできませんでした')});
-    }else{
-      var ta=document.createElement('textarea');
-      ta.value=s;document.body.appendChild(ta);ta.select();
-      try{document.execCommand('copy');toast('コピーしました')}catch(e){toast('コピーできませんでした')}
-      document.body.removeChild(ta);
-    }
-  }
 
-  // 合計・総個数タップでコピー
-  document.querySelector('.dro-line').addEventListener('click',function(){
-    var t=$('outPcs').textContent;
-    if(t==='―'){toast('まだ値がありません');return}
-    copyText(t.replace(/,/g,''));
-  });
-  $('cSum').addEventListener('click',function(){
-    var t=$('vSum').textContent;
-    if(t==='―'){toast('まだ値がありません');return}
-    copyText(t);
-  });
 
   load();
   render();

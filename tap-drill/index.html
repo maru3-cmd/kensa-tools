@@ -145,11 +145,6 @@
     margin-top:10px;border-top:1px solid #2a3034;padding-top:9px;gap:8px;
   }
   .statusTxt{color:#5d6a71;font-size:11px;letter-spacing:.02em;line-height:1.6}
-  .copy{
-    font-size:12px;font-weight:700;color:#c9d2d7;background:#252b2f;
-    border:1px solid #3a4247;border-radius:7px;padding:6px 14px;flex:none;
-  }
-  .copy:active{background:#31383d}
 
   .tbl-btn{
     margin-top:14px;width:100%;
@@ -371,7 +366,6 @@
     </div>
     <div class="dro-foot">
       <span class="statusTxt" id="statusTxt">ねじと下穴を入力してください</span>
-      <button class="copy" type="button" id="copyBtn">結果コピー</button>
     </div>
   </div>
 
@@ -716,17 +710,6 @@
     clearTimeout(toastTimer);
     toastTimer=setTimeout(function(){t.classList.remove('show')},1600);
   }
-  $('copyBtn').addEventListener('click',function(){
-    if(!lastCopy){toast('まだ結果がありません');return}
-    if(navigator.clipboard&&navigator.clipboard.writeText){
-      navigator.clipboard.writeText(lastCopy).then(function(){toast('コピーしました')},function(){toast('コピーできませんでした')});
-    }else{
-      var ta=document.createElement('textarea');
-      ta.value=lastCopy;document.body.appendChild(ta);ta.select();
-      try{document.execCommand('copy');toast('コピーしました')}catch(e){toast('コピーできませんでした')}
-      document.body.removeChild(ta);
-    }
-  });
 
   buildSizes();
   buildPitches();

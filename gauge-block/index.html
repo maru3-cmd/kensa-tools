@@ -136,22 +136,9 @@
     margin-top:10px;border-top:1px solid #2a3034;padding-top:9px;gap:8px;
   }
   .statusTxt{color:#5d6a71;font-size:11px;letter-spacing:.02em;line-height:1.6}
-  .copy{
-    font-size:12px;font-weight:700;color:#c9d2d7;background:#252b2f;
-    border:1px solid #3a4247;border-radius:7px;padding:6px 14px;flex:none;
-  }
-  .copy:active{background:#31383d}
 
   footer{margin-top:16px;font-size:11px;color:#5B707E;line-height:1.7;text-align:center;letter-spacing:.03em}
-
-  .toast{
-    position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);
-    background:var(--ink);color:#fff;font-size:13px;
-    padding:9px 20px;border-radius:20px;opacity:0;pointer-events:none;
-    transition:opacity .25s,transform .25s;
-  }
-  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-  @media (prefers-reduced-motion:reduce){.toast{transition:none;} .instTgl .sw,.instTgl .sw::after{transition:none}}
+  @media (prefers-reduced-motion:reduce){.instTgl .sw,.instTgl .sw::after{transition:none}}
   /* ── 使い方ガイド（全ツール共通） ── */
   .guide{background:#FFFFFF;border:1px solid #D5DDE2;border-radius:12px;margin:0 0 12px;overflow:hidden}
   .guide>summary{list-style:none;cursor:pointer;padding:12px 14px;font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.04em;display:flex;align-items:center;gap:7px}
@@ -250,6 +237,21 @@
   .fold .foldbody{padding:10px 13px 12px;font-size:11.5px;line-height:1.75;color:#3A5060}
 
   /* ── ブロックゲージ専用 ── */
+  /* 公差で … 下限側と上限側を並べて出す（v126） */
+  .twoside{display:flex;gap:8px}
+  .side{flex:1;min-width:0;background:#1b1f22;border-radius:10px;padding:9px 10px}
+  .side .sl{font-size:11px;font-weight:700;color:#7d8a91;letter-spacing:.08em}
+  .side .sv{display:block;font-family:ui-monospace,Menlo,monospace;font-variant-numeric:tabular-nums;
+    font-size:21px;font-weight:700;color:var(--dro-red);line-height:1.25}
+  .side .sn{font-size:10.5px;color:#7d8a91}
+  .side .sb{font-size:11px;color:#c9d2d7;font-family:ui-monospace,Menlo,monospace;
+    word-break:break-all;line-height:1.5;margin-top:3px}
+  .side .sd{font-size:10.5px;color:#E8B34B;margin-top:2px}
+  .stackLab{font-size:11px;font-weight:700;color:#5B707E;letter-spacing:.08em;margin:0 0 6px}
+  .sideSw{display:flex;gap:6px;margin:0 0 8px}
+  .sideSw button{flex:1;height:34px;border-radius:8px;border:1.5px solid #C9D3DA;
+    background:var(--sheet);color:#5B707E;font-size:12px;font-weight:700;cursor:pointer}
+  .sideSw button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
   .stack{background:var(--sheet);border:2px solid var(--ink);border-radius:10px;padding:12px 10px;margin-top:12px}
   .stack svg{display:block;width:100%;height:auto}
   .gbchip{display:inline-block;font-family:ui-monospace,Menlo,monospace;font-size:12px;font-weight:700;
@@ -272,6 +274,7 @@
     <h4>使い方</h4>
     <ol>
       <li>入れ方を上で選びます。<b>寸法で</b>… 作りたい寸法をそのまま入れます。<b>公差で</b>… 図面のまま<b>基準寸法</b>と<b>上下の許容差</b>を入れます（例 50 に −0.09 / −0.06）。</li>
+      <li><b>公差では、下限側と上限側の2つの積みを出します</b>。止まり・通りのように<b>2つ作って挟んで</b>確かめるためです。図も2つ出ます。片側がぴったり作れないときは、その側だけ<b>いちばん近い組</b>を差つきで出します（もう片方はそのまま出ます）。</li>
       <li>下に<b>組み合わせが枚数の少ない順</b>に出ます。<b>行を押すと、その組の積み重ねが図に出ます</b>。</li>
       <li><b>枚数は少ないほど確かです。</b>密着させる面が増えるほど、すき間と誤差が積み上がります。4枚以内で探しています。</li>
       <li>ぴったり作れない寸法もあります（このセットの最小刻みは 0.001mm、小数第4位は 5 だけ）。そのときは<b>いちばん近い組み合わせを差つきで</b>出します。</li>
@@ -303,7 +306,7 @@
         <div class="gtxt">
           <p>図面が φ50 −0.09/−0.06 のとき、その範囲に入る組み合わせは？</p>
           <p class="gset">公差で ／ 基準 50 ／ 上の許容差 −0.06 ／ 下の許容差 −0.09</p>
-          <p class="gread">読み方：<b>49.910 〜 49.940</b> に入る組が出ます。<b>まん中（49.925）に近いもの</b>から並びます。</p>
+          <p class="gread">読み方：ねらう寸法は <b>下限 49.910</b> と <b>上限 49.940</b> の2つ。それぞれ3枚（25 + 23.5 + 1.41 ／ 25 + 23.5 + 1.44）で作れます。2つ積んで挟んで確かめます。</p>
           <button class="gbtn" type="button" data-ex='{"set":[{"click":"#swTol"},{"id":"inBase","v":"50"},{"id":"inUp","v":"-0.06"},{"id":"inLo","v":"-0.09"}]}' onclick="tryExample(this)">この例を試す</button>
         </div>
       </div>
@@ -347,32 +350,59 @@
     <div class="hint" id="rangeTxt" style="margin:0 2px">基準寸法と上下の許容差を入れてください</div>
   </div>
 
-  <div class="dro">
+  <div class="dro" id="droVal">
     <div class="dro-line">
       <span class="dro-label" id="droLbl">合計</span>
       <span class="dro-val" id="out">―.―――</span>
       <span class="dro-unit">mm</span>
     </div>
     <div class="dro-sub" id="subOut">寸法を入れてください</div>
-    <div class="dro-foot">
-      <span class="formula" id="formulaTxt">同じ寸法のゲージは1枚まで／4枚以内で探します</span>
-      <button class="copy" id="copyBtn" type="button">コピー</button>
+  </div>
+
+  <!-- ★公差で … 下限側と上限側を2つ出す（v126）。
+       現場は止まり・通りのように2つ積んで挟むので、ねらう値が2つある。 -->
+  <div class="dro" id="droTol" style="display:none">
+    <div class="twoside">
+      <div class="side">
+        <span class="sl">下限側</span>
+        <span class="sv" id="outLo">―.―――</span>
+        <span class="sn" id="numLo">mm</span>
+        <div class="sb" id="subLo">―</div>
+        <div class="sd" id="difLo" style="display:none"></div>
+      </div>
+      <div class="side">
+        <span class="sl">上限側</span>
+        <span class="sv" id="outHi">―.―――</span>
+        <span class="sn" id="numHi">mm</span>
+        <div class="sb" id="subHi">―</div>
+        <div class="sd" id="difHi" style="display:none"></div>
+      </div>
     </div>
   </div>
 
   <div class="stack" id="stackBox" style="display:none">
+    <div class="stackLab" id="stackLab" style="display:none">下限側</div>
     <svg id="stackFig" viewBox="0 0 300 150" role="img" aria-label="選んだ組み合わせの積み重ね"></svg>
+  </div>
+  <div class="stack" id="stackBox2" style="display:none">
+    <div class="stackLab">上限側</div>
+    <svg id="stackFig2" viewBox="0 0 300 150" role="img" aria-label="上限側の積み重ね"></svg>
   </div>
 
   <div id="listBox" style="margin-top:14px;display:none">
+    <!-- ★どちらの側の組を選び直すか。見せ方の切り替えなので ID は sw で始めない。 -->
+    <div class="sideSw" id="sideSw" role="group" aria-label="組を選び直す側" style="display:none">
+      <button type="button" id="pkLo" class="on">下限側の組</button>
+      <button type="button" id="pkHi">上限側の組</button>
+    </div>
     <div class="hint" style="margin:0 0 8px">
       <b>組み合わせ</b>：<b>枚数の少ない順</b>に並べています。<b>行を押すと、その組が上の図に出ます</b>。
       枚数が少ないほど、密着面が減って確かです。
+      公差で入れているときは、<b>上のボタンで下限側／上限側を選んでから</b>押してください。
     </div>
     <div id="listWrap"></div>
     <div class="dro-foot" style="margin-top:8px">
       <span class="formula" id="listStat"></span>
-      <button class="copy" id="copyList" type="button">一覧をコピー</button>
     </div>
   </div>
 
@@ -385,8 +415,6 @@
     ここで出るのは<b>呼び寸法での組み合わせ</b>です。実際の寸法は検査成績書の値で確かめてください。
   </footer>
 </div>
-
-<div class="toast" id="toast">コピーしました</div>
 
 <script>
 (function(){
@@ -413,7 +441,10 @@
   var CAP=40;        /* 出す件数の上限。全部出すと端末が固まる */
 
   var mode='val';    /* val: 寸法で / tol: 公差で */
-  var hit=-1;        /* 図に出している組。-1 は無し */
+  var hit=-1;        /* 図に出している組。-1 は無し（寸法で／公差での下限側） */
+  var hitHi=-1;      /* 公差で … 上限側で図に出している組（v126） */
+  var side='lo';     /* 一覧で選び直す側。見せ方なので記録しない（v126） */
+  var solsHi=null;   /* 上限側の候補 */
   var lastList=null; /* コピー用 */
   var lastSols=null;
 
@@ -485,11 +516,11 @@
      ★下から順に、大きいものを下に積む。実際に置く順と同じにする。
        高さは寸法に比例させるが、薄いゲージが線になって消えないよう
        下限を設ける（見た目の比率より「何枚あるか」が読めることを優先）。 */
-  function drawStack(sol){
-    var fig=$('stackFig');
+  function drawStack(sol,figId,boxId){
+    var fig=$(figId||'stackFig');
     while(fig.firstChild)fig.removeChild(fig.firstChild);
-    if(!sol){ $('stackBox').style.display='none'; return; }
-    $('stackBox').style.display='';
+    if(!sol){ $(boxId||'stackBox').style.display='none'; return; }
+    $(boxId||'stackBox').style.display='';
     var ps=sol.ps.slice().sort(function(a,b){return b.v-a.v});  /* 大きいものが下 */
     var W=300, PAD=10, LW=118, x0=PAD+52;
     var tot=0,i;
@@ -529,7 +560,7 @@
   }
 
   /* ── 一覧 ── */
-  function drawList(sols,tgt,lo,hi){
+  function drawList(sols,tgt,lo,hi,mark){
     var h='<table class="tol"><tr><th>枚</th><th>組み合わせ</th><th>合計</th><th>'
       +(lo===hi?'差':'まん中から')+'</th></tr>', i, lines=[];
     var mid=(lo+hi)/2;
@@ -539,8 +570,8 @@
         .map(function(p){return p.lb}).join(' + ');
       var d=s.sum-(lo===hi?tgt:mid);
       var ds=(d===0)?'0':((d>0?'+':'')+(d/U).toFixed(4));
-      h+='<tr data-pi="'+i+'"'+(i===hit?' class="hit"':'')+'>'
-        +'<td>'+(i===hit?'<span class="mk">▶</span> ':'')+s.ps.length+'</td>'
+      h+='<tr data-pi="'+i+'"'+(i===mark?' class="hit"':'')+'>'
+        +'<td>'+(i===mark?'<span class="mk">▶</span> ':'')+s.ps.length+'</td>'
         +'<td style="text-align:left;font-family:ui-monospace,Menlo,monospace">'+lb+'</td>'
         +'<td>'+mm4(s.sum)+'</td><td>'+ds+'</td></tr>';
       lines.push(s.ps.length+'枚 '+lb+' = '+mm4(s.sum));
@@ -556,11 +587,49 @@
     var pi=t.getAttribute('data-pi');
     if(pi==null)return;
     pi=Number(pi);
-    hit=(hit===pi)?0:pi;
+    /* ★公差では、いま選び直している側の組だけを差し替える。 */
+    if(mode==='tol'&&side==='hi') hitHi=(hitHi===pi)?0:pi;
+    else hit=(hit===pi)?0:pi;
     recalc();
   });
+  $('pkLo').addEventListener('click',function(){ if(side==='lo')return; side='lo'; recalc(); });
+  $('pkHi').addEventListener('click',function(){ if(side==='hi')return; side='hi'; recalc(); });
 
   /* ── 本体 ── */
+  /* 片側ぶんを解く。ぴったりが無ければ「いちばん近い組」1つを返す。
+     ★片側が作れなくても、もう片方は出す。まとめて「作れません」にしない。 */
+  function solveOne(t){
+    var out=solve(t,t);
+    if(out.length){
+      out.sort(function(a,b){
+        if(a.ps.length!==b.ps.length)return a.ps.length-b.ps.length;
+        return a.sum-b.sum;
+      });
+      return {sols:out, exact:true};
+    }
+    var nb=nearest(t);
+    return nb? {sols:[nb], exact:false} : null;
+  }
+  function showSide(r,t,vId,sbId,dfId,nmId){
+    if(!r){
+      $(vId).textContent='―.―――'; $(sbId).textContent='このセットでは作れません';
+      $(dfId).style.display='none'; $(nmId).textContent='mm';
+      return null;
+    }
+    var s=r.sols[r.idx];
+    $(vId).textContent=mm4(s.sum);
+    $(nmId).textContent='mm ／ '+s.ps.length+'枚';
+    $(sbId).textContent=s.ps.slice().sort(function(a,b){return b.v-a.v})
+      .map(function(p){return p.lb}).join(' + ');
+    if(r.exact){ $(dfId).style.display='none'; $(dfId).textContent=''; }
+    else{
+      var d=(s.sum-t)/U;
+      $(dfId).style.display='';
+      $(dfId).textContent='ぴったりは4枚以内で作れません（'+((d>0?'+':'')+d.toFixed(4))+' mm ちがい）';
+    }
+    return s;
+  }
+
   function recalc(){
     var lo,hi,tgt,exact;
     if(mode==='val'){
@@ -572,12 +641,53 @@
       if(isNaN(b)||b<=0){ clear('基準寸法を入れてください'); $('rangeTxt').textContent='基準寸法と上下の許容差を入れてください'; return; }
       if(isNaN(up)||isNaN(lw)){ clear('上下の許容差を入れてください'); $('rangeTxt').textContent='基準寸法と上下の許容差を入れてください'; return; }
       if(lw>up){ var t0=up; up=lw; lw=t0; }   /* 入れ違いは黙って直す */
-      lo=b+lw; hi=b+up; tgt=Math.round((lo+hi)/2);
+      lo=b+lw; hi=b+up;
       if(lo<=0){ clear('範囲が 0 以下になっています'); return; }
-      $('rangeTxt').textContent='ねらう範囲　'+mm4(lo)+' 〜 '+mm4(hi)
-        +'　（まん中 '+mm4(tgt)+'）';
-      exact=(lo===hi);
+      $('rangeTxt').textContent='ねらう寸法　下限 '+mm4(lo)+' ／ 上限 '+mm4(hi)
+        +(lo===hi?'':'　（幅 '+((hi-lo)/U).toFixed(4)+' mm）');
     }
+
+    /* ── 公差で … 下限側と上限側を2つ出す（v126）── */
+    if(mode==='tol'){
+      var rLo=solveOne(lo), rHi=(hi===lo)? null : solveOne(hi);
+      if(!rLo&&!rHi){ clear('このセットでは作れません'); return; }
+      if(rLo){ if(hit<0||hit>=rLo.sols.length) hit=0; rLo.idx=hit; }
+      if(rHi){ if(hitHi<0||hitHi>=rHi.sols.length) hitHi=0; rHi.idx=hitHi; }
+      lastSols=rLo? rLo.sols : null;
+      solsHi=rHi? rHi.sols : null;
+      var sLo=showSide(rLo,lo,'outLo','subLo','difLo','numLo');
+      if(hi===lo){
+        /* 上下の許容差が同じ＝ねらいは1つ。同じ数を2回出さない。 */
+        $('outHi').textContent='―.―――';
+        $('subHi').textContent='上下の許容差が同じなので、ねらう寸法は1つです';
+        $('difHi').style.display='none'; $('numHi').textContent='';
+      }
+      /* ★上限側が作れないときも showSide に通す（欄を空のままにしない）。 */
+      var sHi=(hi===lo)? null : showSide(rHi,hi,'outHi','subHi','difHi','numHi');
+      drawStack(sLo,'stackFig','stackBox');
+      $('stackLab').style.display=(hi===lo)?'none':'';
+      drawStack(sHi,'stackFig2','stackBox2');
+
+      /* 一覧は、いま選び直している側のもの */
+      var cur=(side==='hi'&&rHi)? rHi : rLo;
+      var curT=(side==='hi'&&rHi)? hi : lo;
+      var curHit=(side==='hi'&&rHi)? hitHi : hit;
+      $('sideSw').style.display=(hi===lo)?'none':'';
+      $('pkLo').classList.toggle('on',side!=='hi'||!rHi);
+      $('pkHi').classList.toggle('on',side==='hi'&&!!rHi);
+      if(cur){
+        drawList(cur.sols,curT,curT,curT,curHit);
+        $('listBox').style.display='';
+        $('listStat').textContent=(side==='hi'?'上限側 ':'下限側 ')
+          +(cur.exact? ((cur.sols.length>=CAP?'上位':'')+cur.sols.length+'通り（最少 '+cur.sols[0].ps.length+'枚）')
+                     : 'ぴったりの組み合わせは4枚以内にありません');
+      }else{
+        $('listBox').style.display='none';
+      }
+      return;
+    }
+
+    /* ── 寸法で … 今までどおり1つ ── */
     var sols=solve(lo,hi);
     if(!sols.length){
       /* ★作れないときは、いちばん近い組を差つきで出す。
@@ -590,8 +700,8 @@
       var d=nb.sum-tgt;
       $('subOut').textContent='ぴったりは4枚以内で作れません。いちばん近いのは '
         +nb.ps.length+'枚で '+((d>0?'+':'')+(d/U).toFixed(4))+' mm ちがい';
-      drawStack(nb);
-      drawList([nb],tgt,lo,hi);
+      drawStack(nb,'stackFig','stackBox');
+      drawList([nb],tgt,lo,hi,0);
       $('listBox').style.display='';
       $('listStat').textContent='ぴったりの組み合わせは4枚以内にありません';
       return;
@@ -610,20 +720,26 @@
     $('out').textContent=mm4(s.sum);
     var lbl=s.ps.slice().sort(function(a,b){return b.v-a.v})
       .map(function(p){return p.lb}).join(' + ');
-    $('subOut').textContent=lbl+(exact?'':('　／ ねらい '+mm4(lo)+'〜'+mm4(hi)));
-    drawStack(s);
-    drawList(sols,tgt,lo,hi);
+    $('subOut').textContent=lbl;
+    drawStack(s,'stackFig','stackBox');
+    drawList(sols,tgt,lo,hi,hit);
     $('listBox').style.display='';
     $('listStat').textContent=(sols.length>=CAP?'上位':'')+sols.length
       +'通り（最少 '+sols[0].ps.length+'枚）';
   }
   function clear(msg){
-    hit=-1; lastList=null; lastSols=null;
+    hit=-1; hitHi=-1; lastList=null; lastSols=null; solsHi=null;
     $('droLbl').textContent='合計';
     $('out').textContent='―.―――';
     $('subOut').textContent=msg;
+    $('outLo').textContent='―.―――'; $('outHi').textContent='―.―――';
+    /* ★公差では欄が2つある。片方だけ言葉が入って片方が空、を作らない。 */
+    $('subLo').textContent=msg; $('subHi').textContent=msg;
+    $('numLo').textContent='mm'; $('numHi').textContent='mm';
+    $('difLo').style.display='none'; $('difHi').style.display='none';
     $('listBox').style.display='none';
-    drawStack(null);
+    drawStack(null,'stackFig','stackBox');
+    drawStack(null,'stackFig2','stackBox2');
   }
 
   function syncUI(){
@@ -632,42 +748,26 @@
     $('swTol').classList.toggle('on',!v);
     $('boxVal').style.display=v?'':'none';
     $('boxTol').style.display=v?'none':'';
+    $('droVal').style.display=v?'':'none';
+    $('droTol').style.display=v?'none':'';
+    if(v){ $('stackBox2').style.display='none'; $('stackLab').style.display='none'; }
     /* ★使っていない欄は読み取り専用にする。記録と見出しに混ぜないため（v103の学び）。 */
     $('inV').readOnly=!v;
     $('inBase').readOnly=v; $('inUp').readOnly=v; $('inLo').readOnly=v;
-    hit=-1;
+    hit=-1; hitHi=-1; side='lo';
     recalc();
   }
   $('swVal').addEventListener('click',function(){mode='val';syncUI()});
   $('swTol').addEventListener('click',function(){mode='tol';syncUI()});
   ['inV','inBase','inUp','inLo'].forEach(function(id){
-    $(id).addEventListener('input',function(){hit=-1;recalc()});
+    $(id).addEventListener('input',function(){hit=-1;hitHi=-1;recalc()});
   });
 
-  function copyTo(txt){
-    if(navigator.clipboard&&navigator.clipboard.writeText){
-      navigator.clipboard.writeText(txt).then(function(){toast('コピーしました')},function(){toast('コピーできませんでした')});
-    }else{
-      var ta=document.createElement('textarea');
-      ta.value=txt;document.body.appendChild(ta);ta.select();
-      try{document.execCommand('copy');toast('コピーしました')}catch(e){toast('コピーできませんでした')}
-      document.body.removeChild(ta);
-    }
-  }
-  $('copyBtn').addEventListener('click',function(){
-    if(!lastSols||!lastSols[hit<0?0:hit]){toast('先に寸法を入れてください');return}
-    var s=lastSols[hit<0?0:hit];
-    copyTo(s.ps.slice().sort(function(a,b){return b.v-a.v}).map(function(p){return p.lb}).join(' + ')
-      +' = '+mm4(s.sum));
-  });
-  $('copyList').addEventListener('click',function(){
-    if(!lastList){toast('先に寸法を入れてください');return}
-    copyTo(lastList);
-  });
 
   /* 記録のサムネイル：積んだ枚数が分かる小さな絵 */
   window.krThumbVer="gauge-block.1";
   window.krThumb=function(){
+    /* 公差では下限側の組を絵にする（2つあるが、絵は1つでよい） */
     if(!lastSols||!lastSols[hit<0?0:hit])return "";
     var ps=lastSols[hit<0?0:hit].ps.slice().sort(function(a,b){return b.v-a.v});
     var o='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">';
