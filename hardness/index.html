@@ -40,9 +40,15 @@
   .titleblock div:last-child{border-right:none;margin-left:auto}
   .titleblock b{font-weight:700}
 
-  .chips{display:flex;gap:6px;margin-top:12px}
+  /* ★折り返しは必須（v132）。flex-wrap が無いと、SNCM220・SUS420J2 など
+     <折り返せない英数字>の材質チップ13個が一列に並び、ページの最小幅が
+     約870px（画面の約2倍）になる。ページが横に広がると、left:0/right:0 の
+     自前キーボードもその幅になり、右半分が画面の外へ出て打てなくなる。
+     .chip は flex:1（基準0）のままだと全部が1行に入る扱いになり折り返さない。
+     基準を中身の幅（auto）にして、入らない分を次の行へ落とす。 */
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
   .chip{
-    flex:1;font-size:14px;font-weight:700;padding:10px 4px;
+    flex:1 1 auto;font-size:14px;font-weight:700;padding:10px 4px;
     border:1.5px solid var(--ink);border-radius:8px;
     background:var(--sheet);color:var(--ink);
   }
@@ -77,7 +83,8 @@
     padding:14px 16px 12px;box-shadow:inset 0 2px 8px rgba(0,0,0,.5);
   }
   .dro-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
-  .cellv{display:flex;flex-direction:column;align-items:flex-end;padding:6px 8px;border-radius:8px}
+  .cellv{display:flex;flex-direction:column;align-items:flex-end;padding:6px 8px;border-radius:8px;
+    min-width:0;overflow-wrap:anywhere}   /* 長い値でも3列を押し広げない */
   .cellv:active{background:#1e2327}
   .cellv .k{color:#7d8a91;font-size:12px;font-weight:700;letter-spacing:.1em;align-self:flex-start}
   .cellv .v{
@@ -107,6 +114,7 @@
   .row.opt{border-style:dashed}
   .swlab{font-size:11px;font-weight:700;color:#5B707E;letter-spacing:.04em;margin:14px 2px 6px}
   /* 多段測定の表（v131） */
+  #mTbl{overflow-x:auto}   /* 表が広くなってもページは横に伸ばさない（v132） */
   .mtbl{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
   .mtbl th,.mtbl td{border:1px solid #D5DDE2;padding:5px 6px;text-align:right;
     font-variant-numeric:tabular-nums}
@@ -152,7 +160,7 @@
     background:var(--sheet);color:var(--ink);letter-spacing:.05em;
   }
   .tbl-btn:active{background:var(--ink);color:#fff}
-  .tblWrap{margin-top:10px;display:none}
+  .tblWrap{margin-top:10px;display:none;overflow-x:auto}
   .tblWrap.show{display:block}
   table.tol{
     width:100%;border-collapse:collapse;background:var(--sheet);
