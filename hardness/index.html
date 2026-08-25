@@ -99,6 +99,52 @@
   .statusTxt{color:#5d6a71;font-size:11px;letter-spacing:.02em}
   .statusTxt.err{color:#FF8A7E}
 
+  /* 入れ方の切り替え（v128）。★入力の意味が変わるので ID は sw で始める。 */
+  .dimsw{display:flex;gap:6px;margin:0 0 10px}
+  .dimsw button{flex:1;min-height:38px;border-radius:9px;border:1.5px solid #C9D3DA;
+    background:var(--sheet);color:#5B707E;font-size:12.5px;font-weight:700;cursor:pointer}
+  .dimsw button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .row.opt{border-style:dashed}
+  .swlab{font-size:11px;font-weight:700;color:#5B707E;letter-spacing:.04em;margin:14px 2px 6px}
+  /* 多段測定の表（v131） */
+  .mtbl{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+  .mtbl th,.mtbl td{border:1px solid #D5DDE2;padding:5px 6px;text-align:right;
+    font-variant-numeric:tabular-nums}
+  .mtbl th{background:#EFF2F4;color:#3A5060;font-weight:700;text-align:center;font-size:11px}
+  .mtbl td.st{text-align:center;font-weight:700}
+  .mtbl tr.base td{background:#F0F7F2}
+  .mtbl tr.dev td{background:#FDF3F2;color:#9E2B20}
+  .mrow{display:flex;gap:6px;align-items:center;margin-top:6px}
+  .mrow span{font-size:11px;color:#5B707E;flex:none;width:26px}
+  .mrow input{flex:1;min-width:0;font-size:16px;font-weight:600;text-align:right;
+    border:none;border-bottom:2px solid var(--ink);background:transparent;color:var(--ink);padding:4px 6px;outline:none}
+  .mres{margin-top:10px;border-radius:9px;padding:9px 11px;font-size:12.5px;font-weight:700;
+    line-height:1.7;background:#F4F7F9;border:1px solid #D5DDE2;color:#3A5060}
+  .mres.ng{background:#FDF3F2;border-color:#E7C3BE;color:#9E2B20}
+  .mres b{color:#1F3341}
+  /* 生材か焼入れかの帯（v128） */
+  .band{margin-top:10px;border-radius:9px;padding:9px 11px;font-size:13px;font-weight:700;
+    line-height:1.6;background:#252b2f;color:#c9d2d7}
+  .band.raw{background:#1B2A33;color:#8FC7E8}
+  .band.qt{background:#20301F;color:#A8DC8A}
+  .band.hard{background:#3A2A14;color:#E8B34B}
+  .band.coat{background:#301B2E;color:#E39AD8}
+  .band.pass{background:#12301F;color:#7FE0A6}
+  .band.fail{background:#3A1714;color:#FF8A7E}
+  .band.warn{background:#3A2A14;color:#E8B34B}
+  .band small{display:block;font-size:11px;font-weight:400;opacity:.85;margin-top:2px}
+  /* 表面処理の早見（v129） */
+  .tx{margin:0 0 10px;background:var(--sheet);border:1px dashed #C9D3DA;border-radius:10px;padding:10px 12px}
+  .tx .txt{font-size:12px;font-weight:700;color:#3A5060;line-height:1.7}
+  .tx .txt b{color:#1F3341}
+  .tx .ng{color:#9E2B20}
+  .tx .ok{color:#1F6B3A}
+  /* 圧痕の深さ・使える荷重（v128） */
+  .depth{margin-top:10px;border-top:1px solid #2a3034;padding-top:9px;
+    font-size:12px;color:#c9d2d7;line-height:1.7}
+  .depth b{color:#fff}
+  .depth .ng{color:#FF8A7E}
+  .depth .ok{color:#7FE0A6}
   .tbl-btn{
     margin-top:14px;width:100%;
     font-size:13px;font-weight:700;padding:11px 4px;
@@ -174,16 +220,37 @@
   <div class="gb">
     <h4>使い方</h4>
     <ol>
-      <li>上のチップで<b>入力する硬さの種類</b>（HRC / HV / HB）を選びます。</li>
-      <li>値を入れると、残り2つの硬さと<b>引張強さの目安</b>が出ます。</li>
-      <li>目盛の中間値は補間します。鋼の換算表（HRC20〜68）に基づきます。</li>
+      <li><b>①材質</b>と<b>②熱処理・表面処理</b>を選びます（材質が分からなければ「不明」で構いません。幅を広くとって判定します）。<b>期待される硬さ</b>と<b>測り方（機器・試験力）</b>が出ます。</li>
+      <li><b>組み合わせが成立しないとき</b>は、測る前に止めます（SS400 に高周波焼入れ、SUS304 に調質など）。図面の指示を確かめてください。</li>
+      <li><b>③測った値</b>を入れると、<b>推定 合格／不合格</b>が出ます。不合格のときは「<b>S45C の調質相当</b>」「<b>生材の可能性があります</b>」のように、いま何に相当する硬さかを出します。</li>
+      <li>期待される硬さの下に、<b>推奨設定</b>（圧子・試験力・保持時間）と、どの機器にも共通する置き方（圧痕の間隔・端からの距離・測る点数）が出ます。</li>
+      <li><b>膜厚が分からないとき</b>は「多段で膜厚を見る」を使います。同じ場所を<b>試験力を変えて2〜4回</b>測り、試験力と対角長を入れると、硬さがずれ始めた境目から<b>膜厚のおよそ</b>が出ます（断面測定の代わりではなく目安です）。</li>
+      <li>上のボタンで入れ方を選びます。<b>硬さの値から</b>… HRC / HV / HB / <b>HRB</b> のどれかを選んで値を入れます。<b>対角長から</b>… マイクロビッカースの<b>試験力と対角長</b>を入れます。</li>
+      <li>値を入れると、残りの硬さと<b>引張強さの目安</b>、それに<b>生材か焼きが入っているかの見立て</b>が出ます。</li>
+      <li><b>対角長から</b>のときは、<b>圧痕の深さ</b>と、<b>その試験力で必要な層の厚さ</b>も出ます。メッキ膜厚や化合物層の厚さを入れると、<b>下地を拾っていないか</b>を見て、<b>使える試験力の上限</b>までお知らせします。</li>
     </ol>
+    <div class="src">
+      <b>薄い層を測るときの考え方</b>（硬質クロムメッキ・窒化・軟窒化など）<br>
+      ・硬さ … <code>HV = 1.8544 × F(kgf) ÷ d(mm)²</code>（d は対角長。2本入れれば平均を使います）<br>
+      ・圧痕の深さ … <code>h = d ÷ 7</code>（圧子の角度136°から出る比）<br>
+      ・<b>層の厚さは対角長の1.5倍以上</b>必要です（JIS Z 2244）。これを割ると<b>下地を拾って、実際より軟らかく出ます</b>。<br>
+      　「メッキが無いのでは」「焼きが入っていないのでは」という見立ての多くは、ここが原因です。<br>
+      ・逆に、層の厚さから<b>使える試験力の上限</b>が決まります … <code>F ≦ HV ×(t ÷ 1.5)² ÷ 1.8544</code><br>
+      　例：硬質クロムメッキ 膜厚20µm・HV900 なら <b>85gf まで</b>。常用なら 50gf。100gf では下地を拾います。<br>
+      ・<b>手持ちの最小試験力</b>を入れておくと、出せない試験力は勧めません（既定 50gf）。<br>
+      ・その最小でも足りない薄い層は、<b>断面を切って測る</b>ほかありません。<br>
+      　<b>最小 50gf のとき、表面から測るのに要る層の厚さ</b>… 硬質クロムメッキ(HV900) 約15µm ／ 窒化(HV950) 約15µm ／ 軟窒化(HV600) 約19µm。<br>
+      　つまり<b>10µm 前後の層は表面からは測れません</b>。「メッキが無い」のではなく「表面からは測れていない」ことがあります。<br>
+      ・<b>表面処理のボタン</b>を押すと、その処理の硬さ・層の厚さの目安と、<b>どの機器で測るか</b>、手持ちの最小試験力で届くかが出ます。
+    </div>
     <div class="src">
       <b>出典</b><br>
       換算値は <b>ASTM E140</b>（金属材料の硬さ換算表）と <b>SAE J417</b> の、<b>鋼（非オーステナイト系）</b>向け代表値から引いています。表の行の間は<b>直線補間</b>しています。<br>
       ・引張強さも同じ系統の対応値で、あくまで<b>目安</b>です（材質・熱処理で変わります）。<br>
       ・硬さ換算はそもそも<b>近似</b>で、規格上も「換算値は試験値の代わりにはならない」とされています。<br>
-      測定そのものの規格は <b>JIS Z 2245</b>（ロックウェル）・<b>JIS Z 2244</b>（ビッカース）・<b>JIS Z 2243</b>（ブリネル）です。<b>受渡し・合否は図面が指定した試験方法の実測で判断</b>してください。
+      測定そのものの規格は <b>JIS Z 2245</b>（ロックウェル）・<b>JIS Z 2244</b>（ビッカース）・<b>JIS Z 2243</b>（ブリネル）です。<b>受渡し・合否は図面が指定した試験方法の実測で判断</b>してください。<br>
+      ・<b>HRB域（HV107〜240）</b>は生材〜調質のところです。ここは<b>目安</b>で、HRC の換算は規格に無いので出していません（HB ≒ HV とみなしています）。<br>
+      ・<b>生材か焼入れかの見立て</b>も、代表的な鋼種の一般値による<b>目安</b>です。材料指定や熱処理指示の代わりにはなりません。
     </div>
     <div class="gx">
       <h4>例 ── HRC 50 を換算</h4>
@@ -231,15 +298,96 @@
     </div>
   </div>
 
-  <div class="chips" id="scChips"></div>
+  <!-- ★まず材質と熱処理（v130）。ここが決まると、期待される硬さと
+       測り方（機器・試験力）が決まり、実測値に対して合否が言えるようになる。
+       材質が分からないこともあるので「不明」を必ず置く。 -->
+  <div class="swlab">① 材質（分からなければ「不明」）</div>
+  <div class="chips" id="matChips"></div>
+  <div class="swlab">② 熱処理・表面処理</div>
+  <div class="chips" id="tzChips"></div>
+  <div class="tx" id="txBox" style="display:none"><span class="txt" id="txTxt"></span></div>
 
-  <div class="inputs">
-    <div class="row">
-      <span class="badge">1</span>
-      <label for="fV" id="inLbl">HRC<small id="inRange">対応範囲: 20 〜 68</small></label>
-      <input id="fV" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
-      <span class="unit" id="inUnit"></span>
+  <div class="swlab">③ 測った値を入れる</div>
+  <!-- ★入れ方の切り替え（v128）。硬さの値そのものを入れるか、
+       マイクロビッカースの対角長から出すか。入力の意味が変わるので sw で始める。 -->
+  <div class="dimsw" id="modeSw" role="group" aria-label="入れ方">
+    <button type="button" id="swVal" class="on">硬さの値から</button>
+    <button type="button" id="swDiag">対角長から</button>
+    <button type="button" id="swMulti">多段で膜厚を見る</button>
+  </div>
+
+  <div id="boxVal">
+    <div class="chips" id="scChips"></div>
+    <div class="inputs">
+      <div class="row">
+        <span class="badge">1</span>
+        <label for="fV" id="inLbl">HRC<small id="inRange">対応範囲: 20 〜 68</small></label>
+        <input id="fV" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+        <span class="unit" id="inUnit"></span>
+      </div>
     </div>
+  </div>
+
+  <div id="boxDiag" style="display:none">
+    <div class="inputs" style="margin-bottom:10px">
+      <div class="row opt">
+        <span class="badge">下</span>
+        <label for="fFmin">手持ちの最小試験力<small>この機械で出せるいちばん小さい試験力</small></label>
+        <input id="fFmin" type="text" inputmode="decimal" autocomplete="off" value="50">
+        <span class="unit">gf</span>
+      </div>
+    </div>
+    <div class="chips" id="loadChips"></div>
+    <div class="inputs">
+      <div class="row">
+        <span class="badge">1</span>
+        <label for="fF">試験力<small>上のボタンで選べます（gf でも kgf でも）</small></label>
+        <input id="fF" type="text" inputmode="decimal" autocomplete="off" placeholder="例 100">
+        <span class="unit">gf</span>
+      </div>
+      <div class="row">
+        <span class="badge">2</span>
+        <label for="fD1">対角長 d1<small>圧痕の対角線。2本の平均を使います</small></label>
+        <input id="fD1" type="text" inputmode="decimal" autocomplete="off" placeholder="例 30.2">
+        <span class="unit">µm</span>
+      </div>
+      <div class="row">
+        <span class="badge">3</span>
+        <label for="fD2">対角長 d2<small>省くと d1 だけで計算します</small></label>
+        <input id="fD2" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+        <span class="unit">µm</span>
+      </div>
+      <div class="row opt">
+        <span class="badge">t</span>
+        <label for="fT">層の厚さ<small>任意。メッキ膜厚・化合物層など。入れると下地を拾っていないか見ます</small></label>
+        <input id="fT" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+        <span class="unit">µm</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="boxMulti" style="display:none">
+    <div class="tx">
+      <span class="txt">
+        同じ場所を<b>試験力を変えて2〜4回</b>測り、それぞれの<b>試験力と対角長</b>を入れてください。<br>
+        小さい試験力では層だけを見ています。大きくすると下地に引っ張られて硬さがずれます。
+        <b>その境目から膜厚のおよそが分かります</b>（断面測定の代わりではなく<b>目安</b>です）。
+      </span>
+    </div>
+    <div class="mrow"><span>①</span>
+      <input id="mF1" type="text" inputmode="decimal" autocomplete="off" placeholder="試験力 gf">
+      <input id="mD1" type="text" inputmode="decimal" autocomplete="off" placeholder="対角長 µm"></div>
+    <div class="mrow"><span>②</span>
+      <input id="mF2" type="text" inputmode="decimal" autocomplete="off" placeholder="試験力 gf">
+      <input id="mD2" type="text" inputmode="decimal" autocomplete="off" placeholder="対角長 µm"></div>
+    <div class="mrow"><span>③</span>
+      <input id="mF3" type="text" inputmode="decimal" autocomplete="off" placeholder="試験力 gf">
+      <input id="mD3" type="text" inputmode="decimal" autocomplete="off" placeholder="対角長 µm"></div>
+    <div class="mrow"><span>④</span>
+      <input id="mF4" type="text" inputmode="decimal" autocomplete="off" placeholder="試験力 gf">
+      <input id="mD4" type="text" inputmode="decimal" autocomplete="off" placeholder="対角長 µm"></div>
+    <div id="mTbl"></div>
+    <div class="mres" id="mRes" style="display:none"></div>
   </div>
 
   <!-- 結果 -->
@@ -250,6 +398,10 @@
       <div class="cellv" id="cB"><span class="k">HB</span><span class="v dim" id="vB">―</span></div>
     </div>
     <div class="dro-sub">引張強さの目安(≈3.2×HB): <b id="vTs">―</b> MPa</div>
+    <!-- ★生材か焼入れかの帯（v128）。値だけでは現場は判断できない。 -->
+    <div class="band" id="band" style="display:none"></div>
+    <!-- ★圧痕の深さと使える荷重（v128）。薄い層で下地を拾う事故を防ぐ。 -->
+    <div class="depth" id="depth" style="display:none"></div>
     <div class="dro-foot">
       <span class="statusTxt" id="statusTxt">入力の硬さ種類を選んで値を入力</span>
     </div>
@@ -264,7 +416,9 @@
     このページは計算のみを行います。入力値の送信・保存は一切ありません(端末内で完結)。<br>
     換算は鋼を対象とした規格系(SAE J417 / ASTM E140)の代表値で、硬さ換算はそもそも近似です。<br>
     受渡し・合否判定は図面指定の試験方法で行い、運用前に手元の換算表と数点照合してください。<br>
-    HRC20未満(軟らかい材料・HRB域)は未対応です。
+    HRB域(生材〜調質・HV107〜240)も扱いますが、こちらは<b>目安</b>です。<br>
+    生材／焼入れの見立ては代表的な鋼種の一般値による<b>目安</b>で、材料指定の代わりにはなりません。<br>
+    対角長からの硬さは <b>HV = 1.8544 × F(kgf) ÷ d(mm)²</b>、圧痕深さは <b>d ÷ 7</b>(圧子136°)です。
   </footer>
 </div>
 
@@ -286,11 +440,44 @@
     [28,286,271],[27,279,264],[26,272,258],[25,266,253],[24,260,247],
     [23,254,243],[22,248,237],[21,243,231],[20,238,226]
   ];
+  /* ★HRB域（生材〜調質）を足す（v128）。SS400 の生材は HRB70 前後で、
+     これまでの表（HRC20＝HV238 が下限）では扱えなかった。
+     刻みは 5 ごとの代表値だけ持ち、あいだは直線補間する。
+     ★この域では HB ≒ HV（HB300以下ではほぼ等しい）なので同じ値を使う。
+       細かい差を作り込むより、目安であることをはっきりさせる。 */
+  var TB=[
+    [100,240],[95,210],[90,185],[85,165],[80,150],
+    [75,137],[70,125],[65,116],[60,107]
+  ];
   var SCALES=[
     {id:0,n:'HRC',min:20,max:68,dec:1},
     {id:1,n:'HV', min:238,max:940,dec:0},
-    {id:2,n:'HB', min:226,max:615,dec:0}
+    {id:2,n:'HB', min:226,max:615,dec:0},
+    {id:3,n:'HRB',min:60,max:100,dec:1}
   ];
+  /* HRB → HV（直線補間）／HV → HRB（逆引き） */
+  function hrbToHv(b){
+    if(b>TB[0][0]||b<TB[TB.length-1][0])return null;
+    for(var i=0;i<TB.length-1;i++){
+      var hi=TB[i], lo=TB[i+1];
+      if(b<=hi[0]&&b>=lo[0]){
+        var t=(hi[0]===lo[0])?0:(b-lo[0])/(hi[0]-lo[0]);
+        return lo[1]+t*(hi[1]-lo[1]);
+      }
+    }
+    return null;
+  }
+  function hvToHrb(v){
+    if(v>TB[0][1]||v<TB[TB.length-1][1])return null;
+    for(var i=0;i<TB.length-1;i++){
+      var hi=TB[i], lo=TB[i+1];
+      if(v<=hi[1]&&v>=lo[1]){
+        var t=(hi[1]===lo[1])?0:(v-lo[1])/(hi[1]-lo[1]);
+        return lo[0]+t*(hi[0]-lo[0]);
+      }
+    }
+    return null;
+  }
   var sc=0;         // 入力スケール
   var lastRes=null;
 
@@ -306,8 +493,24 @@
     return e;
   }
 
-  // 補間変換: 入力スケールidxの値 → {c,v,b(or null)}
+  // 補間変換: 入力スケールidxの値 → {c,v,b(or null),rb(or null)}
   function convert(idx,val){
+    /* ★HRB域（v128）。HRC の表には載らない軟らかい側。
+       HRC は出さない（規格の換算が無い域なので、無理に出さない）。 */
+    if(idx===3){
+      var hv=hrbToHv(val);
+      return (hv==null)? null : {c:null,v:hv,b:hv,rb:val,low:true};
+    }
+    if((idx===1&&val<T[T.length-1][1])||(idx===2&&val<226)){
+      var rb=hvToHrb(val);
+      return (rb==null)? null : {c:null,v:val,b:val,rb:rb,low:true};
+    }
+    /* ★換算表の上（HV940超・v128）。窒化 HV900〜1100、硬質クロムメッキ
+       HV800〜1000 はここに入る。<測れている値を「範囲外」で捨てない>。
+       HRC・HB は換算が無いので出さない。 */
+    if(idx===1&&val>T[0][1]&&val<=3000){
+      return {c:null,v:val,b:null,rb:null,high:true};
+    }
     var rows=(idx===2)?T.filter(function(r){return r[2]!=null}):T;
     var top=rows[0][idx], bot=rows[rows.length-1][idx];
     if(val>top||val<bot)return null;
@@ -318,10 +521,56 @@
         var c=lo[0]+t*(hi[0]-lo[0]);
         var v=lo[1]+t*(hi[1]-lo[1]);
         var b=(hi[2]!=null&&lo[2]!=null)?(lo[2]+t*(hi[2]-lo[2])):null;
-        return {c:c,v:v,b:b};
+        return {c:c,v:v,b:b,rb:hvToHrb(v),low:false};
       }
     }
     return null;
+  }
+
+  /* ── 生材か焼入れかの見立て（v128）──
+     ★値だけでは現場は判断できない。「これは生材の硬さ」「これは焼きが入っている」
+       まで言い切る。ただし<目安>であることを必ず添える。
+     ★帯は HV でそろえる（換算のいちばん芯になる尺度のため）。 */
+  var BANDS=[
+    {hi:115, k:'raw',  t:'かなり軟らかい',
+     s:'焼なましの低炭素鋼・銅合金・アルミ合金の域。鋼の生材としても軟らかいほうです'},
+    {hi:170, k:'raw',  t:'生材の硬さ（一般構造用鋼）',
+     s:'SS400・SPHC など。熱処理はされていないとみてよい域です'},
+    {hi:210, k:'raw',  t:'生材の硬さ（機械構造用炭素鋼）',
+     s:'S45C の圧延まま・焼ならし材の域。まだ焼きは入っていません'},
+    {hi:270, k:'qt',   t:'調質の硬さ',
+     s:'S45C の焼入焼戻し（HRC20〜28）あたり。ねばり重視の熱処理です'},
+    {hi:350, k:'qt',   t:'調質の硬さ（合金鋼）',
+     s:'SCM435 などの調質（HRC28〜36）。軸・歯車の芯部によくある硬さです'},
+    {hi:450, k:'qt',   t:'焼入れとしては軟らかい',
+     s:'高温で焼戻したか、炭素の少ない材料。表面処理層なら下地を拾っている疑いもあります'},
+    {hi:600, k:'hard', t:'焼きが入っています（高周波焼入れの域）',
+     s:'HRC45〜55。高周波・炎焼入れの一般的な仕上がりです'},
+    {hi:800, k:'hard', t:'焼きが入っています（浸炭・高硬度）',
+     s:'HRC55〜64。浸炭焼入れや工具鋼の域です'},
+    {hi:1100,k:'coat', t:'表面処理層の硬さです',
+     s:'窒化（HV900〜1100）・硬質クロムメッキ（HV800〜1000）の域。素地ではありません'},
+    {hi:1e9, k:'coat', t:'超硬・セラミック・特殊皮膜の域',
+     s:'鋼の熱処理では出ない硬さです。試験力や測り方も確かめてください'}
+  ];
+  function bandOf(hv){
+    for(var i=0;i<BANDS.length;i++) if(hv<BANDS[i].hi) return BANDS[i];
+    return BANDS[BANDS.length-1];
+  }
+
+  /* ── 対角長からの硬さ（v128）──
+     HV = 1.8544 × F(kgf) ÷ d(mm)²  ／  圧痕深さ h = d ÷ 7（圧子136°）
+     ★層の厚さは対角長の1.5倍以上（JIS Z 2244）。これを割ると下地を拾う。
+       ここから<使える試験力の上限>も出せる： F ≤ HV×(t/1.5)² ÷ 1.8544 */
+  function hvFromDiag(Fgf,dum){
+    if(!(Fgf>0)||!(dum>0))return null;
+    var F=Fgf/1000, d=dum/1000;       /* kgf, mm */
+    return 1.8544*F/(d*d);
+  }
+  function maxLoad(hv,tum){           /* 層厚 t(µm) で使える最大試験力(gf) */
+    if(!(hv>0)||!(tum>0))return null;
+    var d=(tum/1000)/1.5;
+    return hv*d*d/1.8544*1000;
   }
 
   /* ---- ノモグラム ---- */
@@ -387,15 +636,439 @@
       b.addEventListener('click',function(){
         sc=i;buildChips();
         $('inLbl').childNodes[0].textContent=s.n;
-        var rows=(i===2)?T.filter(function(r){return r[2]!=null}):T;
-        $('inRange').textContent='対応範囲: '+rows[rows.length-1][i]+' 〜 '+rows[0][i];
+        if(i===3){
+          $('inRange').textContent='対応範囲: 60 〜 100（生材〜調質）';
+        }else if(i===1){
+          $('inRange').textContent='対応範囲: 107 〜 940';
+        }else if(i===2){
+          $('inRange').textContent='対応範囲: 107 〜 615';
+        }else{
+          $('inRange').textContent='対応範囲: 20 〜 68';
+        }
         recalc();
       });
       box.appendChild(b);
     });
   }
 
+  /* ── 材質 × 熱処理（v130）──
+     ★ここが決まって初めて<期待される硬さ>が言え、合否が言える。
+     数字はいずれも代表的な一般値（HV）。図面・熱処理指示が優先。
+     null は「その材質にその処理は一般に成立しない」。理由を必ず持たせる。 */
+  var PROC=[
+    {k:'raw', n:'なし（生材）'},
+    {k:'nrm', n:'焼ならし'},
+    {k:'qt',  n:'調質'},
+    {k:'qc',  n:'焼入れのみ'},
+    {k:'hq',  n:'高周波焼入れ'},
+    {k:'cb',  n:'浸炭焼入れ'},
+    {k:'nit', n:'窒化'},
+    {k:'sn',  n:'軟窒化(イソナイト)'},
+    {k:'cr',  n:'硬質クロムメッキ'}
+  ];
+  /* 層の厚さの目安(µm)と測り方。処理で決まる（材質では変わらない） */
+  /* dev: 使う機器 ／ set: ★推奨設定（圧子・試験力・保持時間） ／ note: 気をつけること
+     ★「マイクロビッカース」だけでは設定できない。圧子と試験力と保持時間まで書く。 */
+  var PINFO={
+    raw:{t:0,   dev:'HRB / ブリネル / ショア',
+         set:'HRB … 鋼球 φ1.5875mm・試験力 100kgf（初試験力 10kgf）／ブリネル … 球 φ10mm・3000kgf・保持10〜15秒（小物は φ5/750kgf）',
+         note:'全体が同じ硬さです。HRC では軟らかすぎて読めません'},
+    nrm:{t:0,   dev:'HRB / ブリネル',
+         set:'HRB … 鋼球 φ1.5875mm・100kgf（初試験力 10kgf）',
+         note:'全体が同じ硬さです'},
+    qt: {t:0,   dev:'ロックウェルC / HRB',
+         set:'HRC … ダイヤ円錐120°・試験力 150kgf（初試験力 10kgf）・保持 4〜6秒。HV で測るなら HV10 か HV30',
+         note:'全体が同じ硬さです。芯まで同じ硬さになります'},
+    qc: {t:0,   dev:'ロックウェルC',
+         set:'HRC … ダイヤ円錐120°・150kgf（初試験力 10kgf）・保持 4〜6秒',
+         note:'全体が同じ硬さです'},
+    hq: {t:2000,dev:'ロックウェルC（表面からそのまま）',
+         set:'HRC … ダイヤ円錐120°・150kgf・保持 4〜6秒。<b>有効硬化層深さ</b>を出すなら断面で HV0.3（300gf）・0.1mm 間隔',
+         note:'硬化層が mm 単位あるので表面から測れます'},
+    cb: {t:800, dev:'ロックウェルC（薄ければ HR15N）',
+         set:'HRC … 150kgf。有効硬化層 0.8mm 未満なら <b>HR15N</b>（ダイヤ円錐・15kgf・初試験力 3kgf）。層深さは断面 HV0.3',
+         note:'有効硬化層が <b>0.8mm 未満</b>だと HRC は下地に沈みます'},
+    nit:{t:12,  dev:'マイクロビッカース（多くは断面）',
+         set:'HV0.05〜HV0.1（50〜100gf）・保持 10〜15秒。断面で測るなら樹脂埋め＋鏡面研磨',
+         note:'化合物層（白層）が薄く、表面からでは拡散層や素地と混ざります'},
+    sn: {t:15,  dev:'マイクロビッカース（多くは断面）',
+         set:'HV0.05〜HV0.1（50〜100gf）・保持 10〜15秒',
+         note:'化合物層 10〜20µm。表面から測れるかは試験力しだいです'},
+    cr: {t:20,  dev:'マイクロビッカース',
+         set:'HV0.05〜HV0.1（50〜100gf）・保持 10〜15秒。膜が薄ければ断面で',
+         note:'膜厚の幅が広い処理です。厚めなら表面から、薄ければ断面で'}
+  };
+  /* どの機器にも共通する置き方（v131） */
+  var COMMON='試験面は平らに、荷重の向きと直角に。圧痕どうしは<b>圧痕径の3倍以上</b>、端からは<b>2.5倍以上</b>離す。'
+    +'<b>3〜5点</b>測って中央の値を採ります。';
+  var PTHIN={nit:[5,20], sn:[10,20], cr:[5,50]};   /* 薄い層の厚さの目安 */
+
+  /* 材質ごとの期待硬さ(HV)。x は成立しない組み合わせとその理由。 */
+  function X(r){ return {x:r}; }
+  var MAT=[
+    {n:'不明', any:true},
+    {n:'SS400', raw:[110,160], nrm:[110,170],
+     qt:X('炭素が少なく（0.2%以下）焼きが入りません'),
+     qc:X('炭素が少なく焼きが入りません'),
+     hq:X('炭素が少なく高周波では硬化しません'),
+     cb:[600,750], nit:X('窒化用鋼ではありません'), sn:[400,550], cr:[800,1000]},
+    {n:'S45C', raw:[170,210], nrm:[180,230], qt:[200,270], qc:[600,700], hq:[550,650],
+     cb:X('炭素が多く、肌焼き（浸炭）には向きません'),
+     nit:X('窒化用鋼ではありません（軟窒化なら可）'), sn:[500,650], cr:[800,1000]},
+    {n:'S50C', raw:[180,220], nrm:[190,240], qt:[210,280], qc:[620,720], hq:[570,670],
+     cb:X('炭素が多く、肌焼きには向きません'), nit:X('窒化用鋼ではありません'), sn:[500,650], cr:[800,1000]},
+    {n:'SCM435', raw:[200,250], nrm:[200,260], qt:[230,330], qc:[600,700], hq:[550,650],
+     cb:X('炭素が多く、肌焼きには向きません'), nit:[600,750], sn:[500,700], cr:[800,1000]},
+    {n:'SCM415', raw:[140,200], nrm:[150,210], qt:[200,260],
+     qc:X('炭素が少なく、単独の焼入れでは硬くなりません'),
+     hq:X('炭素が少なく高周波では硬化しません'),
+     cb:[650,800], nit:X('窒化用鋼ではありません'), sn:[450,600], cr:[800,1000]},
+    {n:'SNCM220', raw:[150,210], nrm:[160,220], qt:[210,270],
+     qc:X('炭素が少なく、単独の焼入れでは硬くなりません'),
+     hq:X('炭素が少なく高周波では硬化しません'),
+     cb:[650,800], nit:X('窒化用鋼ではありません'), sn:[450,600], cr:[800,1000]},
+    {n:'SUJ2', raw:[180,220], nrm:[190,230], qt:[650,750], qc:[700,800],
+     hq:X('軸受鋼は全体焼入れが普通です'), cb:X('もともと高炭素で浸炭は不要'),
+     nit:X('一般には行いません'), sn:[600,750], cr:[800,1000]},
+    {n:'SK95(SK4)', raw:[180,230], nrm:[190,240], qt:[600,700], qc:[700,850], hq:[600,750],
+     cb:X('もともと高炭素で浸炭は不要'), nit:X('一般には行いません'), sn:[600,750], cr:[800,1000]},
+    {n:'SACM645', raw:[200,250], nrm:[210,260], qt:[250,320], qc:[600,700],
+     hq:X('窒化して使う鋼です'), cb:X('窒化用鋼で、浸炭はしません'),
+     nit:[900,1100], sn:[700,900], cr:[800,1000]},
+    {n:'SUS304', raw:[150,200], nrm:[150,200],
+     qt:X('オーステナイト系ステンレスは焼入れで硬化しません'),
+     qc:X('オーステナイト系ステンレスは焼入れで硬化しません'),
+     hq:X('焼入れで硬化しません'), cb:X('一般には行いません'),
+     nit:X('一般には行いません（低温窒化を除く）'), sn:X('一般には行いません'), cr:[800,1000]},
+    {n:'SUS420J2', raw:[200,250], nrm:[200,260], qt:[450,550], qc:[500,600],
+     hq:[450,550], cb:X('もともと高炭素で浸炭は不要'), nit:[900,1100], sn:[600,800], cr:[800,1000]},
+    {n:'FC250(鋳鉄)', raw:[190,250], nrm:[190,250],
+     qt:X('鋳鉄は一般に調質しません'), qc:X('一般には行いません'),
+     hq:[400,500], cb:X('一般には行いません'), nit:X('一般には行いません'),
+     sn:[400,550], cr:[800,1000]}
+  ];
+  /* 材質不明のときの、その処理で見かける幅（各材質の最小〜最大） */
+  function anyRange(k){
+    var lo=null, hi=null, i, r;
+    for(i=1;i<MAT.length;i++){
+      r=MAT[i][k];
+      if(!r||r.x) continue;
+      if(lo===null||r[0]<lo) lo=r[0];
+      if(hi===null||r[1]>hi) hi=r[1];
+    }
+    return (lo===null)? null : [lo,hi];
+  }
+  var mat=0, tz=-1;      /* 選んでいる材質／処理。tz=-1 は未選択 */
+  function expected(){
+    if(tz<0) return null;
+    var k=PROC[tz].k;
+    if(MAT[mat].any){ var r=anyRange(k); return r? {r:r,any:true} : null; }
+    var e=MAT[mat][k];
+    if(!e) return null;
+    if(e.x) return {ng:e.x};
+    return {r:e};
+  }
+  /* 材質の中で、その硬さが<どの状態に相当するか>を探す（不合格のときの見立て） */
+  function stateOf(hv){
+    if(MAT[mat].any) return null;
+    var i, k, r, best=null;
+    for(i=0;i<PROC.length;i++){
+      k=PROC[i].k; r=MAT[mat][k];
+      if(!r||r.x) continue;
+      if(hv>=r[0]-10&&hv<=r[1]+10) best=PROC[i].n;
+    }
+    return best;
+  }
+
+  function buildMat(){
+    var box=$('matChips'); box.innerHTML='';
+    MAT.forEach(function(m,i){
+      var b=document.createElement('button');
+      b.type='button'; b.className='chip'+(i===mat?' on':'');
+      b.textContent=m.n;
+      b.addEventListener('click',function(){ mat=i; buildMat(); recalc(); });
+      box.appendChild(b);
+    });
+  }
+  function buildTz(){
+    var box=$('tzChips'); box.innerHTML='';
+    PROC.forEach(function(z,i){
+      var b=document.createElement('button');
+      b.type='button'; b.className='chip'+(i===tz?' on':'');
+      b.textContent=z.n;
+      b.addEventListener('click',function(){ tz=(tz===i)?-1:i; buildTz(); recalc(); });
+      box.appendChild(b);
+    });
+  }
+  /* この硬さ・この試験力のとき、表面から測るのに要る層の厚さ(µm) */
+  function needT(hv,Fgf){
+    if(!(hv>0)||!(Fgf>0))return null;
+    return Math.sqrt(1.8544*(Fgf/1000)/hv)*1000*1.5;
+  }
+  /* ② 測り方の案内（材質×処理が決まったら出す） */
+  function showTz(){
+    var box=$('txBox'), t=$('txTxt'), e=expected(), s;
+    if(tz<0){ box.style.display='none'; t.innerHTML=''; return; }
+    box.style.display='';
+    var k=PROC[tz].k, pi=PINFO[k];
+    if(e&&e.ng){
+      /* ★成り立たない組み合わせは、測る前に止める。 */
+      t.innerHTML='<b>'+MAT[mat].n+' ＋ '+PROC[tz].n+'</b><br>'
+        +'<span class="ng">この組み合わせは一般に成立しません：'+e.ng+'</span><br>'
+        +'図面の材質・熱処理指示をもう一度確かめてください。';
+      return;
+    }
+    s='<b>'+MAT[mat].n+' ＋ '+PROC[tz].n+'</b>';
+    if(e&&e.r){
+      s+='<br>期待される硬さ <b>HV'+e.r[0]+'〜'+e.r[1]+'</b>'+(e.any?'（材質不明なので幅を広くとっています）':'');
+    }
+    s+='<br>測り方：<b>'+pi.dev+'</b>'
+      +'<br>推奨設定：'+pi.set
+      +'<br>'+pi.note
+      +'<br><span style="font-weight:400">'+COMMON+'</span>';
+    if(PTHIN[k]){
+      /* ★安全側で見る。硬さが低いほど圧痕は大きくなり、要る層厚も増える。
+         期待範囲の<下の端>で計算しておけば、足りると言ったら本当に足りる。 */
+      var fmin=num($('fFmin').value), hv=e&&e.r?e.r[0]:null, nt=needT(hv,fmin);
+      var th=PTHIN[k];
+      s+='<br>層の厚さの目安 <b>'+th[0]+'〜'+th[1]+' µm</b>';
+      if(nt!=null){
+        s+='／手持ちの最小 '+fmin+'gf では <b>'+nt.toFixed(1)+' µm 以上</b>の層が要ります。';
+        if(nt>th[1]) s+='<span class="ng">この層では<b>ふつう届きません。断面で測ってください</b></span>';
+        else if(nt>th[0]) s+='<span class="ng">薄い側（'+th[0]+'µm 付近）では届きません。</span>厚い側なら表面から';
+        else s+='<span class="ok">この層なら表面から測れます</span>';
+      }
+    }
+    t.innerHTML=s;
+  }
+  /* ③ 推定合否（v130）
+     ★合否は<材質と処理を選んだときだけ>言う。選んでいなければ帯の見立てだけ。 */
+  function showBand(hv){
+    var b=$('band'), e=expected();
+    if(!(hv>0)){ b.style.display='none'; b.textContent=''; return; }
+    b.style.display='';
+    if(e&&e.ng){
+      b.className='band warn';
+      b.innerHTML='この材質と処理の組み合わせは成立しません<small>'+e.ng+'　／　合否は出せません</small>';
+      return;
+    }
+    if(e&&e.r){
+      var lo=e.r[0], hi=e.r[1], x=bandOf(hv), st=stateOf(hv), s;
+      if(hv>=lo&&hv<=hi){
+        b.className='band pass';
+        b.innerHTML='<b>推定 合格</b>　HV'+Math.round(hv)+'（期待 HV'+lo+'〜'+hi+'）'
+          +'<small>'+MAT[mat].n+' の '+PROC[tz].n+' として、ありうる硬さです'
+          +(e.any?'（材質不明のため幅は広めです）':'')+'　／　目安です。受渡し判定は図面指定の方法で</small>';
+        return;
+      }
+      b.className='band fail';
+      s='<b>推定 不合格（'+(hv<lo?'軟らかい':'硬い')+'）</b>　HV'+Math.round(hv)+'（期待 HV'+lo+'〜'+hi+'）<small>';
+      if(hv<lo){
+        if(st) s+='この硬さは <b>'+MAT[mat].n+' の「'+st+'」相当</b>です。';
+        else s+='この硬さは '+x.t+'。';
+        if(!MAT[mat].any&&MAT[mat].raw&&hv<=MAT[mat].raw[1]+10) s+='<b>生材の可能性があります</b>（処理が入っていない、または効いていない）。';
+        if(PTHIN[PROC[tz].k]) s+='薄い層を大きな試験力で押して、<b>下地を拾っている</b>おそれもあります。試験力を下げるか断面で測ってください。';
+        else s+='焼入れ不足・焼戻し過多・材質違いのいずれかを疑ってください。';
+      }else{
+        s+='この硬さは '+x.t+'。材質違い、または別の処理が入っている可能性があります。';
+      }
+      s+='　／　目安です。受渡し判定は図面指定の方法で</small>';
+      b.innerHTML=s;
+      return;
+    }
+    /* 材質・処理が未選択のときは、これまでどおり見立てだけ */
+    var y=bandOf(hv);
+    b.className='band '+y.k;
+    b.innerHTML='見立て：'+y.t+'<small>'+y.s+'　／　材質と処理を選ぶと<b>推定合否</b>まで出ます</small>';
+  }
+
+
+  /* ── 多段の試験力から膜厚の目安（v131）──
+     ★層より深く押すと、硬さが下地へ引っ張られる。
+       ・硬さが揃っている（＝層だけを見ている）最後の点 → 層は 1.5×d より<厚い>
+       ・ずれ始めた点                                   → 層は 1.5×d より<薄い>
+       この挟み撃ちで膜厚のおよそが出る。断面測定の代わりではない。
+     ★ずれの向きは上下どちらもありうる（硬い膜／軟らかい膜）。絶対値で見る。 */
+  var DEV=8;      /* ずれとみなす割合(%)。測定のばらつき（3〜5%）より少し外 */
+  function multiRows(){
+    var out=[], i, F, dd;
+    for(i=1;i<=4;i++){
+      F=num($('mF'+i).value); dd=num($('mD'+i).value);
+      if(F>0&&dd>0) out.push({f:F,d:dd,hv:hvFromDiag(F,dd),h:dd/7,need:dd*1.5});
+    }
+    out.sort(function(a,b){ return a.f-b.f; });   /* 小さい試験力から */
+    return out;
+  }
+  function multiCalc(){
+    var r=multiRows(), tb=$('mTbl'), box=$('mRes'), i, h='', s, base, firstDev=-1;
+    if(!r.length){
+      tb.innerHTML=''; box.style.display='none';
+      return null;
+    }
+    base=r[0].hv;
+    for(i=1;i<r.length;i++){
+      if(Math.abs(r[i].hv-base)/base*100>DEV){ firstDev=i; break; }
+    }
+    h='<table class="mtbl"><tr><th>試験力</th><th>対角長</th><th>HV</th><th>深さ</th><th>要る層厚</th><th></th></tr>';
+    for(i=0;i<r.length;i++){
+      var dev=(firstDev>=0&&i>=firstDev);
+      h+='<tr class="'+(dev?'dev':'base')+'"><td>'+r[i].f+' gf</td><td>'+r[i].d.toFixed(1)+'</td>'
+        +'<td>'+Math.round(r[i].hv)+'</td><td>'+r[i].h.toFixed(2)+'</td><td>'+r[i].need.toFixed(1)+'</td>'
+        +'<td class="st">'+(dev?'ずれ':'そろい')+'</td></tr>';
+    }
+    h+='</table>';
+    tb.innerHTML=h;
+
+    box.style.display='';
+    box.className='mres';
+    if(r.length<2){
+      box.innerHTML='もう1点、<b>試験力を変えて</b>測ってください（2点そろうと膜厚の見当がつきます）。';
+      return base;
+    }
+    if(firstDev<0){
+      /* 全部そろっている＝いちばん大きい試験力でも層の中 */
+      box.innerHTML='どの試験力でも硬さが揃っています（差 '+DEV+'% 以内）。'
+        +'<br>層の硬さは <b>HV'+Math.round(base)+'</b> ぐらい。'
+        +'<br>膜厚は少なくとも <b>'+r[r.length-1].need.toFixed(1)+' µm 以上</b>あります'
+        +'（いちばん大きい '+r[r.length-1].f+'gf でも下地に届いていないため）。'
+        +'<br>もっと大きい試験力で測ると、上限も分かります。';
+      return base;
+    }
+    if(firstDev===0){ box.innerHTML='計算できません'; return base; }
+    var lo=r[firstDev-1].need, hi=r[firstDev].need, dir=(r[firstDev].hv<base)?'下地のほうが軟らかい':'下地のほうが硬い';
+    box.innerHTML='層の硬さは <b>HV'+Math.round(base)+'</b>（'+r[0].f+'gf の値）。'
+      +'<br>'+r[firstDev].f+'gf で硬さが <b>HV'+Math.round(r[firstDev].hv)+'</b> へ動きました（'+dir+'）。'
+      +'<br><b>膜厚はおよそ '+lo.toFixed(1)+'〜'+hi.toFixed(1)+' µm</b>'
+      +'<br><span style="font-weight:400">'+r[firstDev-1].f+'gf では層の中（要る層厚 '+lo.toFixed(1)+'µm）、'
+      +r[firstDev].f+'gf では届いていない（同 '+hi.toFixed(1)+'µm）ため、この間にあります。'
+      +'あくまで<b>目安</b>です。確かめるには断面で測ってください。</span>';
+    return base;
+  }
+
+  /* 試験力の早見（マイクロビッカースの常用） */
+  var LOADS=[10,25,50,100,200,300,500,1000];
+  function buildLoads(){
+    /* ★手持ちに無い試験力は出さない（押せても機械が出せない） */
+    var box=$('loadChips'), fmin=num($('fFmin').value); box.innerHTML='';
+    LOADS.forEach(function(g){
+      if(fmin>0&&g<fmin) return;
+      var b=document.createElement('button');
+      b.type='button'; b.className='chip';
+      b.textContent=(g>=1000)?('HV'+(g/1000)):('HV'+(g/1000).toFixed(g>=100?1:3).replace(/0+$/,'').replace(/\.$/,''))+'（'+g+'gf）';
+      b.addEventListener('click',function(){ $('fF').value=String(g); recalc(); });
+      box.appendChild(b);
+    });
+  }
+
+  var mode='val';   /* val: 硬さの値から / diag: 対角長から / multi: 多段で膜厚 */
+  function syncMode(){
+    $('swVal').classList.toggle('on',mode==='val');
+    $('swDiag').classList.toggle('on',mode==='diag');
+    $('swMulti').classList.toggle('on',mode==='multi');
+    $('boxVal').style.display=(mode==='val')?'':'none';
+    $('boxDiag').style.display=(mode==='diag')?'':'none';
+    $('boxMulti').style.display=(mode==='multi')?'':'none';
+    recalc();
+  }
+  $('swVal').addEventListener('click',function(){ if(mode==='val')return; mode='val'; syncMode(); });
+  $('swDiag').addEventListener('click',function(){ if(mode==='diag')return; mode='diag'; syncMode(); });
+  $('swMulti').addEventListener('click',function(){ if(mode==='multi')return; mode='multi'; syncMode(); });
+  ['fF','fD1','fD2','fT'].forEach(function(id){ $(id).addEventListener('input',recalc); });
+  ['mF1','mD1','mF2','mD2','mF3','mD3','mF4','mD4'].forEach(function(id){ $(id).addEventListener('input',recalc); });
+  $('fFmin').addEventListener('input',function(){ buildLoads(); recalc(); });
+
+  /* 圧痕の深さと、層を突き抜けていないか（v128） */
+  function showDepth(hv,dum,tum){
+    var box=$('depth');
+    if(!(hv>0)||!(dum>0)){ box.style.display='none'; box.innerHTML=''; return; }
+    var h=dum/7, need=dum*1.5, h2;
+    var s='圧痕の深さ <b>'+h.toFixed(2)+' µm</b>（対角長 '+dum.toFixed(1)+' µm ÷ 7）'
+      +'／この試験力で必要な層の厚さ <b>'+need.toFixed(1)+' µm 以上</b>';
+    if(tum>0){
+      var ok=(tum>=need);
+      s+='<br><span class="'+(ok?'ok':'ng')+'">層の厚さ '+tum.toFixed(1)+' µm → '
+        +(ok?'このまま測れます（層の中で収まっています）'
+            :'足りません。下地を拾って<b>実際より軟らかく</b>出ます')+'</span>';
+      var fm=maxLoad(hv,tum);
+      if(fm!=null){
+        s+='<br>この層厚で使える試験力は <b>'+(fm>=1000?(fm/1000).toFixed(2)+' kgf':Math.floor(fm)+' gf')+'まで</b>';
+        /* ★手持ちの最小より下は勧めない。出せない試験力を勧めても仕方がない。 */
+        var fmin=num($('fFmin').value), pick=null, i;
+        for(i=LOADS.length-1;i>=0;i--){ if(LOADS[i]<=fm&&(!(fmin>0)||LOADS[i]>=fmin)){ pick=LOADS[i]; break; } }
+        s+=pick? '（手持ちなら <b>'+pick+'gf</b>）'
+               : '<span class="ng">（手持ちの最小 '+(fmin>0?fmin:'—')+'gf でも足りません。<b>断面で測ってください</b>）</span>';
+      }
+    }else{
+      /* ★測る前に分かるのが大事。手持ちの最小試験力で、
+         表面から測れる層の厚さの下限を先に出す。 */
+      var fmin2=num($('fFmin').value), nt2=needT(hv,fmin2);
+      s+='<br>層の厚さを入れると、下地を拾っていないかを見ます';
+      if(nt2!=null) s+='<br>この硬さなら、手持ちの最小 '+fmin2+'gf でも <b>'+nt2.toFixed(1)+' µm 以上</b>の層が要ります';
+    }
+    box.style.display=''; box.innerHTML=s;
+  }
+
   function recalc(){
+    /* ── 対角長から（v128）── */
+    showTz();
+    /* ── 多段で膜厚を見る（v131）。層の硬さ（そろっている値）を答えにする ── */
+    if(mode==='multi'){
+      var hvm=multiCalc();
+      if(hvm==null||!(hvm>0)){
+        ['vC','vV','vB'].forEach(function(id){$(id).textContent='―';$(id).className='v dim'});
+        $('vTs').textContent='―';
+        drawMark(null); showBand(0); showDepth(0,0,0);
+        $('statusTxt').textContent='試験力と対角長を、試験力を変えて2点以上入れてください';
+        $('statusTxt').className='statusTxt';
+        lastRes=null;
+        if($('tblWrap').classList.contains('show'))buildTable(null);
+        return;
+      }
+      var rm=convert(1,hvm);
+      $('vV').textContent=String(Math.round(hvm));
+      $('vC').textContent=(rm&&rm.c!=null)?rm.c.toFixed(1):'―';
+      $('vB').textContent=(rm&&rm.b!=null)?String(Math.round(rm.b)):'―';
+      ['vC','vV','vB'].forEach(function(id,i){ $(id).className='v '+(i===1?'dim':'led'); });
+      $('vTs').textContent=(rm&&rm.b!=null)?String(Math.round(rm.b*3.2/10)*10):'―(HB範囲外)';
+      lastRes=rm;
+      drawMark(rm&&rm.c!=null?rm:null);
+      showBand(hvm);
+      showDepth(0,0,0);
+      $('statusTxt').textContent='いちばん小さい試験力の値を<層の硬さ>とみなしています';
+      $('statusTxt').className='statusTxt';
+      if($('tblWrap').classList.contains('show'))buildTable(rm);
+      return;
+    }
+    if(mode==='diag'){
+      var Fg=num($('fF').value), d1=num($('fD1').value), d2=num($('fD2').value), tt=num($('fT').value);
+      var dm=(d1>0&&d2>0)?(d1+d2)/2:(d1>0?d1:(d2>0?d2:NaN));
+      var hv=hvFromDiag(Fg,dm);
+      if(hv==null){
+        ['vC','vV','vB'].forEach(function(id){$(id).textContent='―';$(id).className='v dim'});
+        $('vTs').textContent='―';
+        drawMark(null); showBand(0); showDepth(0,0,0);
+        $('statusTxt').textContent='試験力と対角長を入れてください';
+        $('statusTxt').className='statusTxt';
+        lastRes=null;
+        if($('tblWrap').classList.contains('show'))buildTable(null);
+        return;
+      }
+      var r2=convert(1,hv);
+      $('vV').textContent=String(Math.round(hv));
+      $('vC').textContent=(r2&&r2.c!=null)?r2.c.toFixed(1):'―';
+      $('vB').textContent=(r2&&r2.b!=null)?String(Math.round(r2.b)):'―';
+      ['vC','vV','vB'].forEach(function(id,i){ $(id).className='v '+(i===1?'dim':'led'); });
+      $('vTs').textContent=(r2&&r2.b!=null)?String(Math.round(r2.b*3.2/10)*10):'―(HB範囲外)';
+      lastRes=r2;
+      drawMark(r2&&r2.c!=null?r2:null);
+      showBand(hv);
+      showDepth(hv,dm,tt);
+      $('statusTxt').textContent='HV = 1.8544 × '+(Fg/1000).toFixed(3)+'kgf ÷ ('+dm.toFixed(1)+'µm)²'
+        +((d1>0&&d2>0)?'（d1・d2 の平均）':'（対角長1本）');
+      $('statusTxt').className='statusTxt';
+      if($('tblWrap').classList.contains('show'))buildTable(r2);
+      return;
+    }
     var val=num($('fV').value);
     lastRes=null;
     var res=isNaN(val)?null:convert(sc,val);
@@ -411,21 +1084,28 @@
         $('statusTxt').textContent=SCALES[sc].n+' は '+rows[rows.length-1][sc]+' 〜 '+rows[0][sc]+' の範囲で入力してください';
         $('statusTxt').className='statusTxt err';
       }
+      showBand(0); showDepth(0,0,0);
       if($('tblWrap').classList.contains('show'))buildTable(null);
       return;
     }
     lastRes=res;
-    var outs=[[res.c.toFixed(1),0],[String(Math.round(res.v)),1],[res.b!=null?String(Math.round(res.b)):'―',2]];
-    $('vC').textContent=outs[0][0];
-    $('vV').textContent=outs[1][0];
-    $('vB').textContent=outs[2][0];
+    $('vC').textContent=(res.c!=null)?res.c.toFixed(1):'―';
+    $('vV').textContent=String(Math.round(res.v));
+    $('vB').textContent=(res.b!=null)?String(Math.round(res.b)):'―';
     ['vC','vV','vB'].forEach(function(id,i){
       $(id).className='v '+(i===sc?'dim':'led');
     });
     $('vTs').textContent=res.b!=null?String(Math.round(res.b*3.2/10)*10):'―(HB範囲外)';
-    $('statusTxt').textContent=(res.b==null)?'この硬さ域ではHB試験は一般に非適用です(圧子が持たない領域)':'表の中間値は直線補間しています';
+    /* ★HRC を出せない軟らかい域では、そう言う（無理に換算しない）。 */
+    $('statusTxt').textContent=res.low
+      ? 'この域は HRB で測るところです。HRC の換算は規格に無いので出していません（HB ≒ HV とみなしています）'
+      : (res.high
+        ? '換算表の上（HV940超）です。窒化・硬質クロムメッキ・超硬の域で、HRC・HB の換算はありません'
+        : ((res.b==null)?'この硬さ域ではHB試験は一般に非適用です(圧子が持たない領域)':'表の中間値は直線補間しています'));
     $('statusTxt').className='statusTxt';
-    drawMark(res);
+    drawMark(res.c!=null?res:null);
+    showBand(res.v);
+    showDepth(0,0,0);
     if($('tblWrap').classList.contains('show'))buildTable(res);
   }
 
@@ -451,6 +1131,9 @@
 
   buildAxes();
   buildChips();
+  buildLoads();
+  buildMat();
+  buildTz();
   recalc();
 })();
 </script>
