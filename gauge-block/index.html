@@ -274,7 +274,7 @@
     <h4>使い方</h4>
     <ol>
       <li>入れ方を上で選びます。<b>寸法で</b>… 作りたい寸法をそのまま入れます。<b>公差で</b>… 図面のまま<b>基準寸法</b>と<b>上下の許容差</b>を入れます（例 50 に −0.09 / −0.06）。</li>
-      <li><b>公差では、下限側と上限側の2つの積みを出します</b>。止まり・通りのように<b>2つ作って挟んで</b>確かめるためです。図も2つ出ます。片側がぴったり作れないときは、その側だけ<b>いちばん近い組</b>を差つきで出します（もう片方はそのまま出ます）。</li>
+      <li><b>公差では、下限側と上限側の2つの積みを出します</b>。比較測定器やダイヤルゲージの治具を<b>下限・上限に合わせる基準寸法</b>として使うためです（積んだブロックゲージ自体は止まり・通りゲージではありません。受渡しの検査は図面と検査要領、専用ゲージに従ってください）。図も2つ出ます。片側がぴったり作れないときは、その側だけ<b>いちばん近い組</b>を差つきで出します（もう片方はそのまま出ます）。</li>
       <li>下に<b>組み合わせが枚数の少ない順</b>に出ます。<b>行を押すと、その組の積み重ねが図に出ます</b>。</li>
       <li><b>枚数は少ないほど確かです。</b>密着させる面が増えるほど、すき間と誤差が積み上がります。4枚以内で探しています。</li>
       <li>ぴったり作れない寸法もあります（このセットの最小刻みは 0.001mm、小数第4位は 5 だけ）。そのときは<b>いちばん近い組み合わせを差つきで</b>出します。</li>
@@ -306,7 +306,7 @@
         <div class="gtxt">
           <p>図面が φ50 −0.09/−0.06 のとき、その範囲に入る組み合わせは？</p>
           <p class="gset">公差で ／ 基準 50 ／ 上の許容差 −0.06 ／ 下の許容差 −0.09</p>
-          <p class="gread">読み方：ねらう寸法は <b>下限 49.910</b> と <b>上限 49.940</b> の2つ。それぞれ3枚（25 + 23.5 + 1.41 ／ 25 + 23.5 + 1.44）で作れます。2つ積んで挟んで確かめます。</p>
+          <p class="gread">読み方：ねらう寸法は <b>下限 49.910</b> と <b>上限 49.940</b> の2つ。それぞれ3枚（25 + 23.5 + 1.41 ／ 25 + 23.5 + 1.44）で作れます。この2つを基準に、測定器を下限・上限へ合わせます。</p>
           <button class="gbtn" type="button" data-ex='{"set":[{"click":"#swTol"},{"id":"inBase","v":"50"},{"id":"inUp","v":"-0.06"},{"id":"inLo","v":"-0.09"}]}' onclick="tryExample(this)">この例を試す</button>
         </div>
       </div>
@@ -489,20 +489,40 @@
 
   /* ぴったり作れないときに、いちばん近い組を探す。
      ★「作れません」で終わらせない。0.3µm 足りないと分かれば現場で判断できる。 */
+  var NEAR_MAX=200;   /* 0.020mm（内部単位は0.1µm）。これを超える差は「近い」と言わない */
   function nearest(t){
+    /* ★枝刈りは「今いちばん近い組との差」を基準にする（v134・外部監査 A-02）。
+       以前は t+50（＝5µm）を超える枝を無条件に捨てていた。そのため
+       0.494mm のように、セット最小 0.500mm が +6µm で最寄りになる場合に、
+       本当は作れるのに「このセットでは作れません」と出ていた。
+       ブロックは正の値しか無いので、
+         ・今の最良差より行き過ぎた枝は、足すほど差が開くので見なくてよい
+         ・残りを全部いちばん厚いブロックで埋めても届かない枝も見なくてよい
+       という2つだけで、全候補から本当の最寄りを選べる（SETは厚い順）。 */
     var best=null, n=SET.length, k;
+    function tryBest(picked,sum){
+      var d=Math.abs(sum-t);
+      if(!best||d<best.d||(d===best.d&&picked.length<best.ps.length))
+        best={ps:picked.slice(),sum:sum,d:d};
+    }
+    /* まず厚い順の欲張り解で目安をつける（大きい目標でも枝刈りが効くように） */
+    (function seed(){
+      var picked=[], sum=0, i;
+      for(i=0;i<n&&picked.length<MAXN;i++){
+        if(sum+SET[i].v<=t){ picked.push(SET[i]); sum+=SET[i].v; }
+      }
+      if(picked.length)tryBest(picked,sum);
+    })();
     for(k=1;k<=MAXN;k++){
       var picked=[];
       (function dfs(start,sum,left){
-        if(left===0){
-          var d=Math.abs(sum-t);
-          if(!best||d<best.d||(d===best.d&&picked.length<best.ps.length))
-            best={ps:picked.slice(),sum:sum,d:d};
-          return;
-        }
+        if(left===0){ tryBest(picked,sum); return; }
         for(var i=start;i<n;i++){
           var v=SET[i].v;
-          if(sum+v>t+50)continue;   /* 5µm 以上行き過ぎる枝は見ない */
+          /* ここから先は薄くなる一方。全部使っても最良差に届かないなら打ち切り */
+          if(best&&sum+v*left<t-best.d)break;
+          /* 行き過ぎ。次の(薄い)ブロックを見る */
+          if(best&&sum+v>t+best.d)continue;
           picked.push(SET[i]);
           dfs(i+1,sum+v,left-1);
           picked.pop();
@@ -607,7 +627,13 @@
       });
       return {sols:out, exact:true};
     }
+    /* ★近いと言えるのは 0.020mm まで（v134）。
+       このセットは 0.001mm 刻みなので、作れる範囲なら差は普通ミクロン以下。
+       差が 0.020mm を超えるのは、セット最小(0.5mm)より小さい目標か、
+       4枚で届かない大きい目標のときで、それは「近い組」ではなく
+       「このセットでは作れない」。0.494→+0.006 は出し、0.4→+0.1 は出さない。 */
     var nb=nearest(t);
+    if(nb&&nb.d>NEAR_MAX)nb=null;
     return nb? {sols:[nb], exact:false} : null;
   }
   function showSide(r,t,vId,sbId,dfId,nmId){
@@ -693,6 +719,7 @@
       /* ★作れないときは、いちばん近い組を差つきで出す。
          「作れません」で終わらせない。 */
       var nb=nearest(tgt);
+      if(nb&&nb.d>NEAR_MAX)nb=null;   /* 0.020mm を超える差は「近い組」ではない（v134） */
       if(!nb){ clear('このセットでは作れません'); return; }
       hit=0; lastSols=[nb];
       $('droLbl').textContent='最も近い';

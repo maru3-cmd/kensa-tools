@@ -56,6 +56,7 @@
   figure svg{width:100%;height:auto;display:block;background:#FBFCFC;border:1px solid #E3E9EC;border-radius:6px}
   figcaption{font-size:9.5px;color:#7A8C97;text-align:center;margin-top:3px;letter-spacing:.06em}
 
+  .gapMsg{margin-bottom:8px;padding:8px 10px;border-radius:8px;background:#FFF4E5;border:1px solid #E8B34B;color:#7A4E00;font-size:12px;font-weight:700;line-height:1.6}
   .vt{width:100%;border-collapse:collapse;font-size:12px}
   .vt td{padding:3px 3px;border-bottom:1px solid #EEF2F4}
   .vt td:first-child{width:34px;text-align:center;font-family:ui-monospace,Menlo,monospace;color:#5B707E}
@@ -219,6 +220,7 @@
     <button type="button" id="mPos" style="flex:1;min-height:38px;font:inherit;font-size:12px;font-weight:700;border:1px solid #1F3341;background:#1F3341;color:#fff;border-radius:9px;cursor:pointer" onclick="setMode('pos')">端からの位置を入れる</button>
     <button type="button" id="mPit" style="flex:1;min-height:38px;font:inherit;font-size:12px;font-weight:700;border:1px solid #C9D3DA;background:#fff;color:#5B707E;border-radius:9px;cursor:pointer" onclick="setMode('pit')">穴間ピッチを入れる</button>
   </div>
+  <div class="gapMsg" id="gapMsg" style="display:none"></div>
   <div class="row" id="edge0Row" style="display:none;margin-bottom:6px">
     <div><label class="f">端から1穴目まで（空欄なら穴1を0に）</label><input type="text" inputmode="decimal" autocomplete="off" id="edge0" placeholder="―" oninput="calc();persist()"></div>
     <div></div>
@@ -347,9 +349,27 @@ function derivedPositions(){
   if(S.mode!=="pit"){ return S.pos.slice(); }
   var e0=parseFloat(g("edge0").value);
   var cur=numOK(e0)? e0 : 0;
-  var out=[cur];
-  S.pos.forEach(function(p){ if(numOK(p)){ cur+=p; out.push(cur); } });
+  var out=[cur], i;
+  /* ★途中の空欄で止める（v136・外部監査 B-10）。
+     以前は空欄を飛ばして後ろのピッチを足していたので、
+     たとえば 20 / (空) / 30 と入れると穴3のピッチが穴2のものとして扱われ、
+     穴番号がひとつずつ詰まった<別の並び>を計算していた。
+     入れ忘れに気づけないまま、それらしい答えが出るのがいちばん危ない。 */
+  for(i=0;i<S.pos.length;i++){
+    if(!numOK(S.pos[i])) break;
+    cur+=S.pos[i]; out.push(cur);
+  }
   return out;
+}
+/* 途中に空欄があるか（先に空欄、その後ろに数字がある形） */
+function pitGapCount(){
+  if(S.mode!=="pit") return 0;
+  var i, seen=false, n=0;
+  for(i=0;i<S.pos.length;i++){
+    if(!numOK(S.pos[i])){ seen=true; }
+    else if(seen){ n++; }
+  }
+  return n;
 }
 function setMode(m){
   if(S.mode===m) return;
@@ -378,8 +398,11 @@ function clearAll(){ S.pos=[NaN]; S.base=0; renderRows(); calc(); persist(); foc
    最後の値を打ち終えてもEnterまで古い数が残っていた(v64で入力のたびに更新) */
 function updateCnt(){
   var pit=(S.mode==="pit");
+  /* ★ピッチ入れのときは、途中の空欄で止めた<実際に計算している穴数>を出す（v136）。
+     全部数えると、計算に入っていない穴まで数に入り、表と食い違う。 */
+  if(pit){ g("cnt").textContent=(derivedPositions().length>1? derivedPositions().length : 0)+" 穴"; return; }
   var c=0; S.pos.forEach(function(v){ if(numOK(v)) c++; });
-  g("cnt").textContent=(pit? (c? c+1:0) : c)+" 穴";
+  g("cnt").textContent=c+" 穴";
 }
 function renderRows(){
   var tb=g("vtBody"), h="";
@@ -426,6 +449,13 @@ function ordered(){
 function calc(){
   syncMode();
   var A=ordered(), nA=A.length;
+  /* 空欄より後ろは計算に入れていない、と画面に出す（v136） */
+  var gapEl=g("gapMsg");
+  if(gapEl){
+    var gn=pitGapCount();
+    gapEl.style.display=gn? "" : "none";
+    gapEl.innerHTML=gn? "途中に<b>空欄</b>があります。そこから先の "+gn+" 個は計算に入れていません。<b>飛ばして詰めることはしません</b>ので、抜けている欄を埋めてください。" : "";
+  }
 
   /* 基準穴セレクタ */
   var bh=g("baseHole"), cur=parseInt(bh.value,10);

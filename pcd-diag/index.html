@@ -220,12 +220,13 @@
       <li>キー溝や位置決めピンがあって<b>部品を回せない</b>ときは「回転できない」を選びます。回せるかどうかで結論が変わることがあります。</li>
       <li><b>測る前の準備</b>を開くと、ノギスが届くかどうかが分かります。<b>測っている最中は閉じてください</b>（答えを見ながら読むと、人によって値が変わってしまいます）。</li>
       <li>穴径を入れます。ばらつきが小さければ「共通」だけで構いません。<b>ボール盤で径がばらつく</b>ときは穴ごとに入れてください。</li>
-      <li>実測した距離を入れます。<b>外−外／内−内／中心間のどれで測っても構いません。</b>入れた数字から自動で見分けます（札を押せば手で直せます）。</li>
-      <li>下に<b>実効PCD</b>と各穴のずれ、そして<b>ボルトが通るか</b>が出ます。</li>
+      <li>実測した距離を入れます。<b>外−外／内−内／中心間のどれで測っても構いません。</b>入れた数字から<b>候補</b>を選んで表示します（ちがっていれば札を押して直してください）。</li>
+      <li>下に<b>実効PCD</b>が出ます。<b>しっかり</b>と<b>座標</b>では、各穴のずれと<b>ボルトが通るか</b>も出ます。</li>
     </ol>
     <h4>3つの入れ方</h4>
     <ol>
-      <li><b>かんたん</b>… 隣どうしのピッチを一周ぶん。速いですが、穴が円の内外にずれている分は見えません。</li>
+      <li><b>かんたん</b>… 隣どうしのピッチを一周ぶん。速いですが、出せるのは<b>等価PCD</b>と<b>隣り合う間隔</b>までです。
+        穴ひとつずつのずれ・位置度・組付きは出せません（穴N個の位置を決めるには 2N−3 組の測定が要るのに、隣接ピッチはN組しかないためです。3穴だけは例外で確定します）。</li>
       <li><b>しっかり</b>… 2つ跨ぎ・対辺も測って位置を確定させます。<b>こちらが本来の使い方です。</b></li>
       <li><b>座標</b>… 三次元測定機や「図面まるごと穴ピッチ(30)」の X・Y をそのまま。</li>
     </ol>
@@ -246,8 +247,10 @@
       ・<b>組付き判定</b> … 部品はのび縮みしないので<b>倍率なし</b>で、ずらし・回しだけを動かします。
         穴ごとのすきま半径 <code>cᵢ =(穴径ᵢ − ボルト径)÷2</code> に対し
         <code>max( ずれᵢ − cᵢ )</code> を最小にする位置を探し、<b>0以下なら通ります</b>。<br>
-      <b>穴が大きく開いていれば、その穴の逃げは増えます。</b>これは幾何公差の最大実体（Ⓜ）のボーナス公差と同じ考え方です。<br>
-      <b>出典</b>：JIS B 0021（幾何公差の図示方法）の最大実体公差方式の考え方。円に内接する多角形の辺長から外接円半径が一つに決まることは初等幾何の性質によります。
+      <b>穴が大きく開いていれば、その穴の逃げは増えます。</b>考え方は最大実体（Ⓜ）に似ていますが、
+      ここでやっているのは<b>理想の剛体・真円・この姿勢での幾何的な組付きチェック</b>であって、
+      規格の最大実体公差方式（MMR）の評価そのものではありません。図面にⓂの指示があるときは、その規格に従ってください。<br>
+      <b>出典</b>：円に内接する多角形の辺長から外接円半径が一つに決まることは初等幾何の性質によります。
     </div>
     <div class="gx">
       <h4>例 ── PCD100 に 6穴、隣が 0.8mm ずれている</h4>
@@ -951,7 +954,17 @@ function recalc(){
             pts2.push({x:R*Math.sin(ang), y:R*Math.cos(ang)});
             ang+=2*Math.asin(Math.min(1,P[i]/(2*R)));
           }
-          res={pts:pts2, method:"easy", R:R, radialOK:false};
+          /* ★identified=false … 穴の位置は<確定していない>（v135・外部監査 A-03）。
+             N点の位置を決めるには、平行移動と回転を除いて 2N−3 個の独立した
+             測定が要る。隣り合うピッチ N 個だけでは、4穴以上で足りない
+             （3穴だけは 3=2·3−3 なので例外）。
+             足りないぶんは「全穴が同じ円の上にある」と仮定して埋めているので、
+             ここから出した個別の穴ずれ・位置度・組付きは<仮定の産物>になる。
+             出してよいのは、仮定に依らない
+               ・等価PCD（同一円上とみなしたときの外接円直径）
+               ・隣り合う間隔そのもの（測った値と図面の差）
+             の2つだけ。 */
+          res={pts:pts2, method:"easy", R:R, radialOK:(S.n<=3), identified:(S.n<=3), adj:P.slice()};
         } else {
           res={err:"入れたピッチでは円が閉じません。桁の間違いか、測り方の取り違えがないか確かめてください。"};
         }
@@ -977,6 +990,17 @@ function recalc(){
   if(!res || res.err || !res.pts){
     clearOut(res&&res.err? res.err : null, res);
     draw(Q,null,null);
+    persist();
+    return;
+  }
+
+  /* ★図面の値が無ければ、比べようがない（v135）。
+     座標モードは測った座標だけで res が作れてしまうため、ここに来る。
+     null のまま渡すと fitRobust の q.length で例外になり、
+     以後どこを触っても画面が更新されなくなっていた。 */
+  if(!Q){
+    clearOut("図面のPCDを入れてください。図面の値が無いと、ずれを比べられません。");
+    draw(null,null,null);
     persist();
     return;
   }
@@ -1040,6 +1064,8 @@ function render(){
     ? "Σ 2·asin(p ÷ 2R) = 360° を満たす R を求めています"
     : (S.mode==="full" ? "測った距離に最も合う穴位置を求めています" : "入れた座標をそのまま使っています");
 
+  var idOK=(L.res.identified!==false);   /* 穴の位置が確定しているか（v135） */
+
   /* 一番ずれている穴 */
   var worst=0, wi=0, sum=0;
   for(i=0;i<S.n;i++){ sum+=L.devs[i].tot; if(L.devs[i].tot>worst){ worst=L.devs[i].tot; wi=i; } }
@@ -1066,13 +1092,63 @@ function render(){
     txt="<b>PCDのずれと個々の穴のずれが重なっています。</b>実効PCD "+nf(L.pcdEff,3)+"（"+sf(dP,3)+"mm）、"+
         "いちばん外れているのは穴"+(wi+1)+"（"+nf(worst,3)+"mm）。下の表で内訳を見てください。";
   }
-  if(S.mode==="easy") txt+="<br><span style=\"font-weight:400;font-size:11.5px\">※ かんたんモードのため、穴が円の内外にずれている分は含まれていません。</span>";
+  if(!idOK){
+    /* ★かんたんモードでは、穴ごとの話をしない。言えるのは円の大きさだけ。 */
+    /* ★間隔のばらつきは、仮定に依らず分かる事実。PCDが図面どおりでも必ず知らせる。
+       ここを黙ると「PCDは図面どおり」だけが残り、穴がずれていても安心して見える。 */
+    var Qa=nominalPts(), gapMax=0, gi=0, j3;
+    for(j3=0;j3<S.n;j3++){
+      var pa=Qa[j3], pb=Qa[(j3+1)%S.n];
+      var nd=Math.sqrt((pa.x-pb.x)*(pa.x-pb.x)+(pa.y-pb.y)*(pa.y-pb.y));
+      var gv=(L.res.adj&&numOK(L.res.adj[j3]))? Math.abs(L.res.adj[j3]-nd) : 0;
+      if(gv>gapMax){ gapMax=gv; gi=j3; }
+    }
+    cls=(radialShift>=TH||gapMax>=TH)?"verd ng":"verd ok";
+    txt=(radialShift>=TH)
+      ? "<b>円の大きさが図面とちがいます。</b>等価PCD "+nf(L.pcdEff,3)+"（図面比 "+sf(dP,3)+"mm）。"
+      : "等価PCDは図面どおりです（図面比 "+sf(dP,3)+"mm）。";
+    if(gapMax>=TH){
+      txt+="<b>ただし、隣り合う間隔が図面と最大 "+nf(gapMax,3)+"mm ちがいます</b>"+
+           "（穴"+(gi+1)+"−"+(((gi+1)%S.n)+1)+"）。下の表を見てください。";
+    }
+    txt+="<br><span style=\"font-weight:400;font-size:11.5px\">※ この入れ方（隣どうしのピッチだけ）では、"+
+         "<b>穴ひとつずつのずれ・位置度・組付きは出せません</b>。"+
+         "穴"+S.n+"個の位置を決めるには "+(2*S.n-3)+" 組の独立した測定が要りますが、"+
+         "いまは "+S.n+" 組で、足りないぶんは「全穴が同じ円の上にある」と仮定して埋めています。"+
+         "穴ごとに見るときは<b>しっかり</b>か<b>座標</b>でお願いします。</span>";
+  }
   if(L.res.method==="full"&&numOK(L.res.rms)&&L.res.rms>0.05){
     txt+="<br><span style=\"font-weight:400;font-size:11.5px\">※ 測定どうしが "+nf(L.res.rms,3)+"mm 食い違っています。読み違いかバリを疑ってください。</span>";
   }
   v.className=cls; v.innerHTML=txt;
 
   /* 表 */
+  if(!idOK){
+    /* ★仮定に依らない、測った値そのものを出す。
+       「隣どうしの間隔が図面とどれだけ違うか」は、この入れ方でも確かに分かる。 */
+    var hq='<tr><th style="text-align:left">組</th><th>測った間隔<br>（中心間）</th><th>図面</th><th>差</th></tr>';
+    var Qe=nominalPts(), j2;
+    for(j2=0;j2<S.n;j2++){
+      var qa=Qe[j2], qb=Qe[(j2+1)%S.n];
+      var nomd=Math.sqrt((qa.x-qb.x)*(qa.x-qb.x)+(qa.y-qb.y)*(qa.y-qb.y));
+      var got=(L.res.adj&&numOK(L.res.adj[j2]))?L.res.adj[j2]:NaN;
+      var dd=numOK(got)? got-nomd : NaN;
+      hq+='<tr'+((numOK(dd)&&Math.abs(dd)>=0.02)?' class="bad"':'')+'>'+
+          '<td class="h">穴'+(j2+1)+'−'+(((j2+1)%S.n)+1)+'</td>'+
+          '<td>'+(numOK(got)?nf(got,3):"—")+'</td>'+
+          '<td>'+nf(nomd,3)+'</td>'+
+          '<td>'+(numOK(dd)?sf(dd,3):"—")+'</td></tr>';
+    }
+    hq+='<tr><td colspan="4" style="text-align:left;font-weight:400;color:#5B707E;font-size:10.5px">'+
+        '測った間隔と図面の差です。<b>どの穴がずれているか</b>までは、この表からは決まりません'+
+        '（隣り合う2つのどちらがずれても、間隔は同じだけ変わります）。</td></tr>';
+    g("devTbl").innerHTML=hq;
+    g("verdTP").className="verd na";
+    g("verdTP").innerHTML="この入れ方では位置度は出せません。<b>しっかり</b>か<b>座標</b>で入れてください。";
+    g("verdFit").className="verd na";
+    g("verdFit").innerHTML="この入れ方では組付きは出せません。<b>しっかり</b>か<b>座標</b>で入れてください。";
+    return;
+  }
   var h='<tr><th style="text-align:left">穴</th><th>径方向<br>（内外）</th><th>周方向<br>（回り）</th><th>合計</th><th>穴径</th></tr>';
   var outl=[];
   for(i=0;i<S.n;i++){
@@ -1096,13 +1172,18 @@ function render(){
   /* 図面判定（位置度） */
   var tp=num("inTP"), posDia=2*L.pos.worst;
   var vt=g("verdTP");
+  /* ★合否は出さない（v135・外部監査 A-03）。
+     ここの値は、部品を自由にずらして回して<いちばん小さくなる>ように合わせた
+     ときのもの。図面の位置度はデータム（基準）に従って評価するので、
+     この値で合格・不合格を言ってはいけない。範囲の内か外かだけを色で示す。 */
   if(numOK(tp)&&tp>0){
-    if(posDia<=tp){ vt.className="verd ok"; vt.innerHTML="<b>合格</b>　相当位置度 φ"+nf(posDia,3)+" ≦ 公差 φ"+nf(tp,3); }
-    else { vt.className="verd ng"; vt.innerHTML="<b>規格外</b>　相当位置度 φ"+nf(posDia,3)+" ＞ 公差 φ"+nf(tp,3)+
-      "（"+nf(posDia-tp,3)+"mm 超過）"; }
+    if(posDia<=tp){ vt.className="verd ok"; vt.innerHTML="参考値 φ"+nf(posDia,3)+" は、公差 φ"+nf(tp,3)+" <b>の内側</b>です"+
+      "<br><span style=\"font-weight:400;font-size:11.5px\">データムを使わず自由に合わせた値なので、これで合格とは言えません。</span>"; }
+    else { vt.className="verd ng"; vt.innerHTML="参考値 φ"+nf(posDia,3)+" は、公差 φ"+nf(tp,3)+" <b>を超えています</b>（"+nf(posDia-tp,3)+"mm）"+
+      "<br><span style=\"font-weight:400;font-size:11.5px\">自由に合わせてもこの値なので、データムで見ればさらに大きくなります。</span>"; }
   } else {
     vt.className="verd na";
-    vt.innerHTML="相当位置度は <b>φ"+nf(posDia,3)+"</b>。公差を入れると合否が出ます。";
+    vt.innerHTML="自由ベストフィット相当位置度（参考）は <b>φ"+nf(posDia,3)+"</b>。公差を入れると見比べられます。";
   }
 
   /* 組付き参考 */
@@ -1119,8 +1200,19 @@ function render(){
       vf.innerHTML="<b>通ります。</b>"+rotTxt+"いちばん良い位置にしたとき、余裕は <b>"+nf(-w,3)+"mm</b>（いちばん厳しいのは穴"+(bi+1)+"）。";
     } else {
       vf.className="verd ng";
-      vf.innerHTML="<b>通りません。</b>"+rotTxt+"いちばん良い位置にしても、穴"+(bi+1)+" で <b>"+nf(w,3)+"mm</b> 足りません。"+
-        "この穴を φ"+nf(holeD(bi)+2*w,2)+" 以上に広げれば通ります。";
+      /* ★「この穴を広げれば通る」は、広げた状態で<全穴を計算し直して>から言う
+         （v135・外部監台 A-03）。いちばん厳しい穴の不足を消しても、
+         最適な姿勢が動いて別の穴が足りなくなることがある。 */
+      var need=holeD(bi)+2*w, hi2=holeD(bi)+2*w*4+0.5, lo2=need, mid, k2, okD=null;
+      for(k2=0;k2<40;k2++){
+        mid=(lo2+hi2)/2;
+        var cl2=L.cl.slice(); cl2[bi]=(mid-L.bolt)/2;
+        if(fitAssemble(nominalPts(),L.res.pts,cl2,S.rotFree).worst<=0){ okD=mid; hi2=mid; } else { lo2=mid; }
+      }
+      vf.innerHTML="<b>通りません。</b>"+rotTxt+"いちばん良い位置にしても、穴"+(bi+1)+" で <b>"+nf(w,3)+"mm</b> 足りません。";
+      vf.innerHTML+= (okD!=null)
+        ? "<br>この穴だけを <b>φ"+nf(okD,2)+"</b> 以上にすると、その状態で計算し直しても<b>全穴が通ります</b>。"
+        : "<br>この穴を広げるだけでは足りません（広げると最も良い位置が動き、別の穴が通らなくなります）。<b>複数の穴を直す必要があります。</b>";
     }
     if(S.rotFree){
       var alt=fitAssemble(nominalPts(),L.res.pts,L.cl,false);

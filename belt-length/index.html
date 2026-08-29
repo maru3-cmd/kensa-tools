@@ -312,7 +312,7 @@
       <span class="dro-val warn" id="lenVal">—</span>
       <span class="dro-unit">mm</span>
     </div>
-    <div class="devline none" id="lenMsg">各プーリーの位置と直径を入れてください</div>
+    <div class="devline none" id="lenMsg">各プーリーの位置とピッチ径を入れてください</div>
     <div class="out-grid">
       <div class="cellv"><span class="k">直線部 合計</span><span class="v" id="oStr">—</span><span class="s">mm</span></div>
       <div class="cellv"><span class="k">巻き付き弧 合計</span><span class="v" id="oArc">—</span><span class="s">mm</span></div>
@@ -370,7 +370,9 @@
     <div class="gb">
       <h4>やること</h4>
       <ol>
-        <li>各プーリーの<b>位置（X・Y）</b>と<b>直径</b>を、図面の寸法どおり入れます。プーリー1を X0・Y0 の基準にすると楽です。</li>
+        <li>各プーリーの<b>位置（X・Y）</b>と<b>ピッチ径</b>を入れます。プーリー1を X0・Y0 の基準にすると楽です。
+          ★<b>外径ではありません。</b>歯付きベルトの長さはピッチ線で決まるので、外径を入れると呼び長さと合いません。
+          Vベルトも同じで、規格の長さはピッチ（有効）径で決まります。</li>
         <li>通常のプーリーは<b>外掛け</b>、内側から押すテンションプーリーは<b>内掛け</b>を選びます。</li>
         <li>ベルトが<b>接する順</b>に並べます（上から順に 1→2→3→…→1 でひと回り）。</li>
         <li>上に<b>図面上の周長</b>が出ます。接線と巻き付き弧を厳密に合算した値です。図でベルト経路も確認できます。</li>
@@ -384,6 +386,9 @@
       ・巻き付き弧 … <code>r × ω</code>　（ω=巻き付き角[rad]。出ていく接線と入ってくる接線の角度差から求め、内掛け／外掛けで回る向きを分けています）<br>
       ・周長 … <code>Σ(接線) + Σ(巻き付き弧)</code><br>
       「プーリーが近すぎて経路が作れません」と出るのは <code>|(Rj − Ri) / D| > 1</code> のとき、つまり一方が他方を内側に飲み込んでいて共通接線が引けない配置です。<br>
+      ★<b>経路そのものが成り立つかは見ていません。</b>3〜4軸の自由な配置では、接線が経路に入っていない
+      プーリーを横切ったり、経路が自分自身と交差したりすることがありますが、<b>そこは自動で判定していません</b>。
+      図で経路を必ず確かめてください。<br>
       出るのは<b>図面の配置どおりの理論周長</b>です。実際に使うベルトは規格の呼び長さから選び、テンションで調整するので、<b>正解は図面と部品表</b>です。
     </div>
       <div class="gx">
@@ -471,7 +476,7 @@ function calc(){
   var r=beltCompute();
   var lv=g("lenVal"), lm=g("lenMsg");
   if(r===null){
-    lv.textContent="—"; lv.className="dro-val warn"; lm.className="devline none"; lm.textContent="各プーリーの位置と直径を入れてください";
+    lv.textContent="—"; lv.className="dro-val warn"; lm.className="devline none"; lm.textContent="各プーリーの位置とピッチ径を入れてください";
     g("oStr").textContent="—"; g("oArc").textContent="—"; g("stat").textContent=""; g("teeth").textContent="—";
     drawFig(null); calcCmp(null); persist(); return;
   }
@@ -553,7 +558,7 @@ function renderPls(){
       +'<div class="pl-grid">'
       +fldHTML(i,"x","X（右＋）",p.x,"0")
       +fldHTML(i,"y","Y（下＋）",p.y,"0")
-      +fldHTML(i,"d","直径 φ",p.d,"100")
+      +fldHTML(i,"d","ピッチ径 φ",p.d,"100")
       +'</div>'
       +'<div class="pl-side">'
       +'<button type="button" data-side="'+i+'|out" aria-pressed="'+(!isIn)+'">外掛け</button>'

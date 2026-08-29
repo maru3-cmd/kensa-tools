@@ -145,7 +145,7 @@
       ・等速 … <code>s = u</code>（速度は一定だが、始まりと終わりで加速度が飛ぶ）<br>
       ・単弦（コサイン）… <code>s = (1 − cos πu) / 2</code>、<code>v = (π/2)·sin πu</code>、<code>a = (π²/2)·cos πu</code><br>
       ・サイクロイド … <code>s = u − sin(2πu)/(2π)</code>、<code>v = 1 − cos 2πu</code>、<code>a = 2π·sin 2πu</code><br>
-      ・修正正弦・修正等速などは、区間をさらに分けて上の式をつなぎ、<b>加速度が飛ばないよう</b>係数をそろえています<br>
+      ・修正台形 … 加速度を台形にした曲線です。区間をさらに分けて、<b>加速度が飛ばないよう</b>つないでいます（加速度を数値積分して v・s を出しています）<br>
       ・実寸への換算 … <code>変位 = s × 全リフト</code>、角速度 <code>ω = rpm × 2π / 60</code> [rad/s] を掛けて<b>時間あたりの速度・加速度</b>にします<br>
       ・躍度 j は加速度の変化率で、<b>これが飛ぶと打音・振動の原因</b>になります。曲線を選ぶときの判断材料です。<br>
       グラフは<b>変位線図（カムの回転角に対する従動節の動き）</b>で、カムの外形そのものではありません。外形にするには基礎円半径とローラ径から輪郭を起こす別の計算が要ります。
@@ -321,6 +321,16 @@
       if(x< 7*b) return -A;                                       // 一定 −A
       return -A*(0.5+0.5*Math.cos(Math.PI*(x-7*b)/b));            // −A→0 なめらか
     }
+    /* acc を u で微分したもの。区間の切れ目（b・3b・5b・7b）では
+       加速度は連続なのでジャークも連続。一定区間では 0。 */
+    function jrk(x){
+      var b=0.125;
+      if(x< b)   return A*0.5*(Math.PI/b)*Math.sin(Math.PI*x/b);
+      if(x< 3*b) return 0;
+      if(x< 5*b) return -A*(Math.PI/(2*b))*Math.sin(Math.PI*(x-3*b)/(2*b));
+      if(x< 7*b) return 0;
+      return A*0.5*(Math.PI/b)*Math.sin(Math.PI*(x-7*b)/b);
+    }
     var N=2000, dx=1/N;
     var sArr=new Float64Array(N+1), vArr=new Float64Array(N+1);
     var v=0,s=0,pa=acc(0),pv=0;
@@ -332,7 +342,7 @@
       sArr[i]=s;vArr[i]=v;pa=ai;pv=v;
     }
     var norm=1/sArr[N];               // s(1)=1 に規格化
-    _mt={N:N,dx:dx,sArr:sArr,vArr:vArr,norm:norm,acc:acc};
+    _mt={N:N,dx:dx,sArr:sArr,vArr:vArr,norm:norm,acc:acc, jrk:jrk};
   }
   function modTrap(u){
     if(!_mt)mtSetup();
@@ -342,7 +352,12 @@
     var s=(_mt.sArr[i0]*(1-t)+_mt.sArr[i0+1]*t)*_mt.norm;
     var v=(_mt.vArr[i0]*(1-t)+_mt.vArr[i0+1]*t)*_mt.norm;
     var a=_mt.acc(u)*_mt.norm;
-    return {s:s, v:v, a:a, j:0};
+    /* ★ジャークは加速度の解析微分（v134・外部監査 A-04）。
+       以前は 0 を返していたため、修正台形を選ぶとジャーク線図が
+       真っ平らという明らかな誤りになっていた。加速度は区間内で
+       変化しているので 0 ではない。 */
+    var j=_mt.jrk(u)*_mt.norm;
+    return {s:s, v:v, a:a, j:j};
   }
 
   function buildTabs(){

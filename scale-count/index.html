@@ -92,6 +92,7 @@
     font-variant-numeric:tabular-nums;
   }
   .unitline b{font-size:18px;font-weight:700;color:var(--red)}
+  .unitwhy{margin-top:6px;font-size:12px;color:#B3261E;font-weight:700}
   .unitline .lab{color:#5B707E;font-size:12px;font-weight:600}
 
   .addline{display:flex;gap:8px;align-items:flex-end}
@@ -306,13 +307,13 @@
     </div>
     <div class="row">
       <span class="badge">2</span>
-      <label for="sG">サンプル重量<small>その時の表示値</small></label>
+      <label for="sG">サンプル重量<small>容器ごとの表示値（風袋を引く前）</small></label>
       <input id="sG" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
       <span class="unit">g</span>
     </div>
     <div class="row">
       <span class="badge">3</span>
-      <label for="sTare">風袋<small>容器の重さ(任意・毎回引く)</small></label>
+      <label for="sTare">風袋<small>容器の重さ(任意)。サンプルと小分けで<b>同じ容器</b>を使ってください</small></label>
       <input id="sTare" type="text" inputmode="decimal" autocomplete="off" placeholder="0">
       <span class="unit">g</span>
     </div>
@@ -320,6 +321,7 @@
       <span class="lab">単重(1個あたり)</span>
       <span><b id="unitOut">―</b> <span class="unit">g/個</span></span>
     </div>
+    <div class="unitwhy" id="unitWhy"></div>
   </div>
 
   <!-- 小分け入力 -->
@@ -421,10 +423,25 @@
     }catch(e){}
   }
 
+  /* ★単重は<正味>で出す（v134・外部監査 A-01）。
+     小分けの行は「表示値 − 風袋」で正味にしているのに、ここだけ表示値のまま
+     割っていたため、風袋を使うと単重が重く出て、個数が大きく足りなくなっていた。
+       例）10個・サンプル表示125g・風袋100g・小分け350g
+          誤: 単重 12.5000g/個 → 20個
+          正: 単重  2.5000g/個 → 100個
+     ★サンプルと小分けは<同じ容器>を使う前提。容器が違うなら風袋も別になる。 */
   function unitW(){
-    var n=num(state.n), g=num(state.g);
-    if(n>0&&Number.isInteger(n)&&g>0)return g/n;
+    var n=num(state.n), g=num(state.g), t=tareG();
+    if(n>0&&Number.isInteger(n)&&g>t)return (g-t)/n;
     return null;
+  }
+  /* 単重が出せない理由。黙って「―」で終わらせない。 */
+  function unitWhy(){
+    var n=num(state.n), g=num(state.g), t=tareG();
+    if(!(n>0)||!Number.isInteger(n))return 'サンプル個数を整数で入れてください';
+    if(!(g>0))return 'サンプル重量（容器ごとの表示値）を入れてください';
+    if(g<=t)return 'サンプル重量が風袋以下です。容器ごとの表示値を入れてください（風袋 '+fmtG(t)+' g）';
+    return '';
   }
   function tareG(){
     var t=num(state.tare);
@@ -440,6 +457,7 @@
 
     var u=unitW();
     $('unitOut').textContent=u?u.toFixed(4):'―';
+    $('unitWhy').textContent=u?'':unitWhy();
 
     // 秤量ヒント(最大秤量は固定)
     var cap=CAP;
