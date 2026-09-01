@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#1F3341">
-<meta name="description" content="管用ねじ(R/Rc テーパ・G/Rp 平行)の基準寸法と下穴の目安、実測外径からのサイズ推定(NPTの可能性判別付き)。計算は端末内で完結します。">
+<meta name="description" content="管用ねじ(R/Rc テーパ・G/Rp 平行)の基準寸法と下穴の目安、実測外径からのサイズ推定(NPTの可能性判別付き)、模範(ゲージ)の使い分けと新旧記号の対応。計算は端末内で完結します。">
 <title>管用ねじ | 検査計算ツール</title>
 <style>
   :root{
@@ -33,14 +33,18 @@
   header a{font-size:12px;color:#5B707E;text-decoration:none}
 
   .mode-lg{
-    display:grid;grid-template-columns:1fr 1fr;
+    display:grid;grid-template-columns:1fr 1fr 1fr;
     border:1.5px solid var(--ink);border-radius:9px;overflow:hidden;
     margin-bottom:10px;
   }
   .mode-lg button{
-    font-size:13px;font-weight:700;padding:10px 4px;border:none;
+    font-size:13px;font-weight:700;padding:10px 3px;border:none;
     background:var(--sheet);color:var(--ink);letter-spacing:.03em;
   }
+  /* 3つ目のモードが増えて1つあたりが狭くなったので、
+     狭い端末では字を落とす。折り返して2行になるより読みやすい。 */
+  @media(max-width:400px){.mode-lg button{font-size:11.5px;letter-spacing:0}}
+  @media(max-width:340px){.mode-lg button{font-size:10.5px;padding:10px 1px}}
   .mode-lg button.on{background:var(--ink);color:#fff}
 
   .sheet{background:var(--sheet);border:2px solid var(--ink);padding:5px}
@@ -181,6 +185,22 @@
     text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
   .backlink:active{background:#EEF2F4}
   @media print{.backlink{display:none}}
+  /* ── 模範の使い分け（v139）── */
+  .gbox h3{font-size:12px;font-weight:700;color:#1F3341;margin:12px 2px 6px;letter-spacing:.04em}
+  .gpanel{background:var(--sheet);border:1px solid #C9D3DA;border-radius:10px;padding:11px 12px;
+    margin-top:10px;font-size:12px;line-height:1.75;color:#1F3341}
+  .gpanel h4{font-size:12px;font-weight:700;margin:0 0 5px;letter-spacing:.04em}
+  .gpanel p{margin:0 0 8px}
+  .gpanel p:last-child{margin-bottom:0}
+  .gpanel b{color:#1F3341}
+  .gpanel .hit{color:#0B6B3A;font-weight:700}
+  .gpanel .ng{color:#B23B2E;font-weight:700}
+  .gline{display:grid;grid-template-columns:82px 1fr;gap:4px 9px;margin:0 0 8px;font-size:12px}
+  .gline>div:nth-child(odd){color:#5B707E;font-weight:700}
+  .gwarn{margin-top:9px;padding:8px 10px;background:#FBECEA;border:1px solid #E7B7B0;
+    border-left:3px solid #B23B2E;border-radius:8px;font-size:11.5px;line-height:1.7;color:#5A2A24}
+  .gcaut{margin-top:9px;padding:8px 10px;background:#FFF7E8;border:1px solid #E8D3A8;
+    border-left:3px solid #C08A16;border-radius:8px;font-size:11.5px;line-height:1.7;color:#5A4413}
   .src{margin:10px 0 0;padding:9px 11px;background:#F4F7F9;border:1px solid #D5DDE2;border-left:3px solid #5B707E;
     border-radius:8px;font-size:11.5px;line-height:1.75;color:#3D515F}
   .src b{color:#1F3341}
@@ -190,7 +210,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>管用ねじ<small>R/Rc・G/Rp: 下穴・基準寸法・サイズ推定</small></h1>
+    <h1>管用ねじ<small>下穴・基準寸法・サイズ推定・模範の使い分け</small></h1>
   </header>
 
   <div class="topclear"><a class="backlink" href="../index.html">≡ ツール一覧</a><button type="button" aria-label="入力をすべて消去して最初から始める" onclick="armClear(this)">すべて消去</button></div>
@@ -203,6 +223,7 @@
       <li>ねじの種類（<b>R/Rc テーパ</b> か <b>G/Rp 平行</b>）とサイズ、おねじ/めねじを選びます。</li>
       <li>基準寸法と、めねじなら<b>下穴の目安</b>が出ます。</li>
       <li>「実測からサイズ推定」に切り替えると、ノギスの実測からサイズを当てられます（NPT判別つき）。</li>
+      <li>「模範の使い分け」では、<b>図面記号から使う模範</b>／<b>手元の模範から使える記号</b>／<b>素性不明のめねじがテーパか平行か</b>を調べられます。</li>
     </ol>
     <div class="src">
       <b>出典</b><br>
@@ -215,7 +236,15 @@
       ・テーパは <code>1/16</code>（軸線に対し片側 1°47′24″）。基準径の位置は管端から<b>基準の長さ</b>だけ入った断面です。<br>
       ・めねじ下穴は、その寸法での<b>谷の径</b>を目安にしています（実際はタップの推奨下穴・材質で前後します）。<br>
       ・実測からのサイズ推定は、上の表の外径・谷の径にいちばん近いサイズを選んでいます。NPT は<b>ねじ山の角度が60°</b>（管用ねじは55°）で山数も違うため、外径が近くても別物として注意表示します。<br>
-      受渡しの合否は図面指定の規格とゲージ（JIS B 0253 など）で判断してください。
+      受渡しの合否は図面指定の規格とゲージ（JIS B 0253 など）で判断してください。<br>
+      ★<b>模範の入り方だけでは分けられない組合せがあります。</b>
+        <b>Rc と PT</b>、<b>G と PF</b>、<b>Rp と PS</b> は、呼び・ピッチ・基準径が同じ系統で、
+        違うのは<b>許容差とゲージ</b>です。ですから、旧規格の模範が新規格のねじに入ってしまうのは普通のことで、
+        <b>入ったこと自体は合否の根拠になりません</b>。どの規格かは図面の記号で決まります。<br>
+      ★<b>基準の長さ a はおねじ側の寸法です。</b>管端から基準径の位置までを表します。
+        めねじの基準径の位置は<b>端面</b>なので、めねじの検査は「模範の切欠きが端面に来るか」を見ます。
+        <b>何山入ったかを数える検査ではありません。</b><br>
+      ★模範は測定器です。素性の分からないねじに<b>無理に回し込まないで</b>ください。
     </div>
     <div class="gx">
       <h4>例 ── Rc 1/2 のめねじ下穴</h4>
@@ -238,6 +267,27 @@
         </div>
       </div>
     </div>
+    <div class="gx">
+      <h4>例 ── PT の模範しか無い。Rc に使えるか</h4>
+      <div class="gxin">
+        <div class="gfig"><svg viewBox="0 0 120 120" role="img" aria-label="PTテーパプラグとRcめねじの組合せが正式判定に使えないことを示す図">
+          <rect x="16" y="34" width="40" height="52" fill="#FBFCFC" stroke="#1F3341" stroke-width="1.3"/>
+          <text x="36" y="28" font-size="7.5" fill="#5B707E" text-anchor="middle">Rc めねじ</text>
+          <path d="M 64 50 L 104 44 L 104 76 L 64 70 Z" fill="#FBFCFC" stroke="#1F3341" stroke-width="1.3"/>
+          <text x="84" y="94" font-size="7.5" fill="#5B707E" text-anchor="middle">PT プラグ</text>
+          <line x1="56" y1="60" x2="64" y2="60" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="3 2"/>
+          <line x1="46" y1="40" x2="62" y2="80" stroke="#D63426" stroke-width="2"/>
+          <line x1="62" y1="40" x2="46" y2="80" stroke="#D63426" stroke-width="2"/>
+          <text x="60" y="114" font-size="8" fill="#D63426" text-anchor="middle">正式判定には不可</text>
+        </svg></div>
+        <div class="gtxt">
+          <p>手元に PT のテーパプラグしかありません。図面は Rc です。使えますか？</p>
+          <p class="gset">模範の使い分け ／ 手元の模範から ／ PT テーパプラグ</p>
+          <p class="gread">読み方：正式に使えるのは <b>PT / PS</b> だけ。<b>Rc・Rp には入りますが、正式な判定には使えません</b>。</p>
+          <button class="gbtn" type="button" data-ex='{"set":[{"click":"#mGauge"},{"clickText":"手元の模範から","within":"#gWayChips"},{"clickText":"PT テーパプラグ","within":"#gToolChips"}]}' onclick="tryExample(this)">この例を試す</button>
+        </div>
+      </div>
+    </div>
   </div>
 </details>
 
@@ -246,6 +296,7 @@
   <div class="mode-lg" role="group" aria-label="モード">
     <button type="button" id="mData" class="on">規格データ・下穴</button>
     <button type="button" id="mEst">実測からサイズ推定</button>
+    <button type="button" id="mGauge">模範の使い分け</button>
   </div>
 
   <!-- 図面シート -->
@@ -331,6 +382,54 @@
       </div>
     </div>
     <div class="note">テーパねじ(R)は<b>測る位置で外径が変わります</b>(1/16勾配)。管端寄りで測ると小さめに出ます。山数はねじゲージ(ピッチゲージ)か、25.4mmに定規を当てて数えてもOK。</div>
+  </div>
+
+
+  <!-- モードC: 模範(ゲージ)の使い分け -->
+  <div id="gaugeBox" class="gbox" style="display:none">
+    <h2>調べ方</h2>
+    <div class="chips" id="gWayChips"></div>
+
+    <div id="gSymWrap">
+      <h2>図面のねじ記号</h2>
+      <div class="chips" id="gSymChips"></div>
+    </div>
+
+    <div id="gToolWrap" style="display:none">
+      <h2>手元の模範</h2>
+      <div class="chips" id="gToolChips"></div>
+    </div>
+
+    <div id="gSizeWrap">
+      <h2>呼びサイズ</h2>
+      <div class="chips" id="gSizeChips"></div>
+    </div>
+
+    <div id="gMeasWrap" style="display:none">
+      <div class="inputs">
+        <div class="row">
+          <span class="badge">1</span>
+          <label for="gD1">入口の小径<small>端面のすぐ内側。山の頂どうし</small></label>
+          <input id="gD1" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+          <span class="unit">mm</span>
+        </div>
+        <div class="row">
+          <span class="badge">2</span>
+          <label for="gD2">奥の小径<small>同じ穴の、奥まった位置</small></label>
+          <input id="gD2" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+          <span class="unit">mm</span>
+        </div>
+        <div class="row">
+          <span class="badge">3</span>
+          <label for="gL">1と2の深さの差<small>どれだけ離して測ったか</small></label>
+          <input id="gL" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+          <span class="unit">mm</span>
+        </div>
+      </div>
+      <div class="note">テーパは<b>1/16</b>なので、深さ16mmにつき小径が<b>1mm</b>変わります。差が出るように、できるだけ<b>離して</b>測ってください。奥が測れないときは、この判定は使えません。</div>
+    </div>
+
+    <div id="gPanel"></div>
   </div>
 
   <!-- 結果 -->
@@ -554,8 +653,256 @@
       top.map(function(c){return c.label+'('+(c.diff>=0?'+':'')+c.diff.toFixed(3)+')'}).join(' / ');
   }
 
+
+  /* ═══ モードC: 模範(ゲージ)の使い分け（v139）═══
+     ここでやらないこと:
+       ・「入った/入らない」から何ねじかを点数で当てること。
+         PT と Rc、G と PF、Rp と PS は基準寸法が同じ系統なので、
+         模範の入り方では区別できない。できないことは、できないと書く。
+       ・山数を数えさせること。
+         めねじの基準径の位置は端面。模範の切欠きが端面に来るかで見るのであって、
+         何山入ったかを数える検査ではない。 */
+  var gWay='sym';     /* sym: 図面記号から / tool: 手元の模範から / unk: 素性不明のめねじ */
+  var gSym='Rc';
+  var gTool='Rt';
+
+  /* 基準の長さ a（JIS B 0203）＝管端から基準径の位置まで。これは「おねじ側」の寸法。
+     めねじの基準径の位置は端面なので、めねじにはこの a は当てはまらない。 */
+  var ALEN={'1/16':3.97,'1/8':3.97,'1/4':6.01,'3/8':6.35,'1/2':8.16,'3/4':9.53,
+            '1':10.39,'1.1/4':12.70,'1.1/2':12.70,'2':15.88,'2.1/2':17.46,
+            '3':20.64,'4':25.40,'5':28.58,'6':31.75};
+
+  var SYM={
+    Rc:{nm:'Rc',era:'現行',std:'JIS B 0203',shape:'taper',mf:'めねじ',
+        kind:'テーパめねじ',use:'耐密（ねじ部で密封）',mate:'R おねじ',
+        sh:'R テーパプラグ',gauge:'Rc めねじ用のテーパねじプラグゲージ（JIS B 0253）',
+        cross:['PT のテーパプラグ'],old:'旧記号では PT（めねじ）',
+        note:'模範の切欠き（基準面）が、めねじの端面に来るかどうかで見ます。何山入ったかを数える検査ではありません。'},
+    Rp:{nm:'Rp',era:'現行',std:'JIS B 0203',shape:'para',mf:'めねじ',
+        kind:'平行めねじ',use:'耐密（相手は R テーパおねじ）',mate:'R おねじ',
+        sh:'Rp 用ゲージ',gauge:'Rp めねじ用のゲージ（JIS B 0253）',
+        cross:['PT のテーパプラグ','G の通り・止り'],old:'旧記号では PS',
+        note:'めねじは平行ですが、相手は R のテーパおねじです。同じ平行めねじでも G とは用途が違うので、取り違えないでください。'},
+    R:{nm:'R',era:'現行',std:'JIS B 0203',shape:'taper',mf:'おねじ',
+       kind:'テーパおねじ',use:'耐密（ねじ部で密封）',mate:'Rc めねじ / Rp めねじ',
+       sh:'R テーパリング',gauge:'R おねじ用のテーパねじリングゲージ（JIS B 0253）',
+       cross:['PT のテーパリング'],old:'旧記号では PT（おねじ）',
+       note:'管端面がリングゲージの端面の許容範囲に入るかどうかで見ます。'},
+    G:{nm:'G',era:'現行',std:'JIS B 0202',shape:'para',mf:'おねじ・めねじ',
+       kind:'平行ねじ',use:'機械的結合（ねじ部では密封しない）',mate:'G',
+       sh:'G 通り・止り',gauge:'G 用の限界ゲージ（通り側・止り側）',
+       cross:['PF の通り・止り'],old:'旧記号では PF',
+       note:'ねじ部では密封しません。シールはガスケット・Oリング・座面で取ります。'},
+    PT:{nm:'PT',era:'旧',std:'旧 JIS B 0203',shape:'taper',mf:'おねじ・めねじ',
+        kind:'テーパねじ',use:'耐密（ねじ部で密封）',mate:'PT / PS めねじ',
+        sh:'PT テーパゲージ',gauge:'PT 用のテーパねじゲージ',
+        cross:['R のテーパゲージ'],old:'現行では R（おねじ）・Rc（めねじ）',
+        note:'現行の R/Rc とは呼び・ピッチ・基準径が同じ系統ですが、ゲージは別ものです。'},
+    PS:{nm:'PS',era:'旧',std:'旧 JIS B 0203',shape:'para',mf:'めねじ',
+        kind:'平行めねじ',use:'耐密（相手は PT テーパおねじ）',mate:'PT おねじ',
+        sh:'PS 用ゲージ',gauge:'PS めねじ用のゲージ',
+        cross:['R のテーパプラグ','G の通り・止り'],old:'現行では Rp',
+        note:'めねじは平行ですが、相手は PT のテーパおねじです。'},
+    PF:{nm:'PF',era:'旧',std:'旧 JIS B 0202',shape:'para',mf:'おねじ・めねじ',
+        kind:'平行ねじ',use:'機械的結合',mate:'PF',
+        sh:'PF 通り・止り',gauge:'PF 用の限界ゲージ（通り側・止り側）',
+        cross:['G の通り・止り'],old:'現行では G',
+        note:'加工の工具は G と共用できる場合がありますが、ゲージは共用できません。'}
+  };
+  var SYMORDER=['Rc','Rp','R','G','PT','PS','PF'];
+
+  var PRB={
+    Rt :{nm:'R テーパプラグ', tgt:'めねじ用',shape:'taper',ok:['Rc','Rp'],cross:['PT','PS'],
+         how:'切欠き（基準面）が、めねじの端面に来るかで見ます。'},
+    PTt:{nm:'PT テーパプラグ',tgt:'めねじ用',shape:'taper',ok:['PT','PS'],cross:['Rc','Rp'],
+         how:'切欠き（基準面）が、めねじの端面に来るかで見ます。'},
+    Gp :{nm:'G 通り・止り',   tgt:'めねじ用',shape:'para', ok:['G'], cross:['PF','Rp','PS'],
+         how:'通り側が通り、止り側が入らないことで見ます。'},
+    PFp:{nm:'PF 通り・止り',  tgt:'めねじ用',shape:'para', ok:['PF'],cross:['G','Rp','PS'],
+         how:'通り側が通り、止り側が入らないことで見ます。'},
+    Rr :{nm:'R テーパリング', tgt:'おねじ用',shape:'taper',ok:['R'], cross:['PT'],
+         how:'管端面が、リングの端面の許容範囲に入るかで見ます。'},
+    PTr:{nm:'PT テーパリング',tgt:'おねじ用',shape:'taper',ok:['PT'],cross:['R'],
+         how:'管端面が、リングの端面の許容範囲に入るかで見ます。'}
+  };
+  var PRBORDER=['Rt','PTt','Gp','PFp','Rr','PTr'];
+
+  var CROSSWARN='新旧の規格ちがい・系統ちがいの模範は、<b>入っても正式な判定には使えません</b>。'+
+                '呼びとピッチが同じなので入ってしまうだけで、許容差が別に決められています。';
+
+  function chipsInto(boxId,list,isOn,onPick){
+    var box=$(boxId); if(!box) return;
+    box.innerHTML='';
+    list.forEach(function(it){
+      var b=document.createElement('button');
+      b.type='button'; b.className='chip'+(isOn(it[0])?' on':'');
+      b.textContent=it[1];
+      b.addEventListener('click',function(){onPick(it[0])});
+      box.appendChild(b);
+    });
+  }
+  function buildGWay(){
+    chipsInto('gWayChips',
+      [['sym','図面記号から'],['tool','手元の模範から'],['unk','素性不明のめねじ']],
+      function(k){return gWay===k},
+      function(k){gWay=k;buildGWay();syncGWrap();recalc()});
+  }
+  function buildGSym(){
+    chipsInto('gSymChips',SYMORDER.map(function(k){return [k,SYM[k].nm]}),
+      function(k){return gSym===k},
+      function(k){gSym=k;buildGSym();recalc()});
+  }
+  function buildGTool(){
+    chipsInto('gToolChips',PRBORDER.map(function(k){return [k,PRB[k].nm]}),
+      function(k){return gTool===k},
+      function(k){gTool=k;buildGTool();recalc()});
+  }
+  function buildGSizes(){
+    chipsInto('gSizeChips',SZ.map(function(x,i){return [i,x[0]]}),
+      function(i){return i===sizeIdx},
+      function(i){sizeIdx=i;buildGSizes();buildSizes();recalc()});
+  }
+  function syncGWrap(){
+    $('gSymWrap').style.display =(gWay==='sym')?'':'none';
+    $('gToolWrap').style.display=(gWay==='tool')?'':'none';
+    $('gSizeWrap').style.display=(gWay==='unk')?'none':'';
+    $('gMeasWrap').style.display=(gWay==='unk')?'':'none';
+  }
+  function setShape(sp){
+    $('g-taper').style.display=(sp==='taper')?'':'none';
+    $('g-para').style.display =(sp==='taper')?'none':'';
+  }
+  function ul(arr){return '<ul style="margin:4px 0 0 18px;padding:0">'+
+    arr.map(function(x){return '<li>'+x+'</li>'}).join('')+'</ul>'}
+
+  function recalcGaugeSym(){
+    var y=SYM[gSym], t=derive(SZ[sizeIdx]), a=ALEN[t.name];
+    setShape(y.shape);
+    $('svgName').textContent=y.nm+' '+t.name;
+    $('mainLbl').textContent='正式な模範';
+    $('mainUnit').textContent='';
+    $('out').textContent=y.sh+' '+t.name;
+    cellsHtml([
+      {k:'分類',v:y.kind,s:y.era+'／'+y.std},
+      {k:'用途',v:y.use,s:''},
+      {k:'正規の相手',v:y.mate+' '+t.name,s:''},
+      {k:'新旧の対応',v:y.old,s:'ゲージは共用できません'},
+      {k:'ピッチ P',v:t.P.toFixed(4)+'('+t.n+'山)',s:'mm/25.4mm'},
+      {k:'基準の長さ a',v:(y.shape==='taper'&&typeof a==='number')?a.toFixed(2):'―',
+       s:(y.shape==='taper'&&typeof a==='number')?'mm（おねじ側の寸法）':'テーパねじのみ'}
+    ]);
+    $('statusTxt').textContent=y.nm+' '+t.name+' ｜ '+y.kind+' ｜ '+y.use;
+    $('statusTxt').className='statusTxt';
+    var html='<div class="gpanel"><h4>正式に使う模範</h4><p class="hit">'+y.gauge+'</p>'+
+      '<h4>入るが、正式な判定には使えない模範</h4><p class="ng">'+y.cross.join(' ／ ')+'</p>'+
+      '<div class="gwarn">'+CROSSWARN+'</div>'+
+      '<div class="gcaut">'+y.note+'</div></div>';
+    $('gPanel').innerHTML=html;
+    lastCopy=null;
+  }
+
+  function recalcGaugeTool(){
+    var g=PRB[gTool], t=derive(SZ[sizeIdx]);
+    setShape(g.shape);
+    $('svgName').textContent=g.nm;
+    $('mainLbl').textContent='正式に使えるのは';
+    $('mainUnit').textContent='';
+    $('out').textContent=g.ok.join(' / ')+' '+t.name;
+    cellsHtml([
+      {k:'模範の対象',v:g.tgt,s:g.shape==='taper'?'テーパ':'平行'},
+      {k:'正式に使える',v:g.ok.join(' / '),s:'図面記号'},
+      {k:'入るが不可',v:g.cross.join(' / '),s:'参考にしかなりません'},
+      {k:'見かた',v:g.how,s:''}
+    ]);
+    $('statusTxt').textContent=g.nm+' ｜ 正式判定に使えるのは '+g.ok.join(' / ')+' だけです';
+    $('statusTxt').className='statusTxt';
+    $('gPanel').innerHTML='<div class="gpanel"><h4>この模範で正式に判定できるねじ</h4>'+
+      ul(g.ok.map(function(k){return '<b>'+SYM[k].nm+'</b>（'+SYM[k].kind+'・'+SYM[k].era+'）'}))+
+      '<h4 style="margin-top:9px">入るが、正式な判定には使えないねじ</h4>'+
+      ul(g.cross.map(function(k){return '<b>'+SYM[k].nm+'</b>（'+SYM[k].kind+'・'+SYM[k].era+'）'}))+
+      '<div class="gwarn">'+CROSSWARN+'</div>'+
+      '<div class="gcaut">模範は測定器です。素性の分からないねじに<b>無理に回し込まない</b>でください。模範のほうが傷みます。</div></div>';
+    lastCopy=null;
+  }
+
+  /* 素性不明のめねじ: テーパか平行かだけを実測で切り分ける。
+     テーパは1/16なので、深さ L だけ離して測れば小径は L/16 だけ変わる。 */
+  function recalcGaugeUnk(){
+    var d1=num($('gD1').value), d2=num($('gD2').value), L=num($('gL').value);
+    $('mainLbl').textContent='ねじの形';
+    $('mainUnit').textContent='';
+    lastCopy=null;
+    var ready=(d1>0&&d2>0&&L>0);
+    if(!ready){
+      setShape('taper');
+      $('svgName').textContent='形の切り分け';
+      $('out').textContent='―';
+      cellsHtml([]);
+      $('statusTxt').textContent='入口と奥の小径、その深さの差を入れてください';
+      $('statusTxt').className='statusTxt';
+      $('gPanel').innerHTML='<div class="gpanel"><h4>やること</h4>'+
+        '<p>同じめねじの<b>入口ちかく</b>と<b>奥</b>で小径（山の頂どうし）を測り、その2か所が<b>どれだけ離れているか</b>を入れます。</p>'+
+        '<p>テーパねじなら、深さ16mmにつき小径が1mm変わります。平行ねじなら変わりません。</p>'+
+        '<div class="gcaut">小さい呼びでは奥まで測れないことがあります。測れないときは、この判定は使わないでください。</div></div>';
+      return;
+    }
+    /* 実測は0.01mm刻みで読む。丸めずに比を取ると 19.20−18.95 が
+       0.2500000000000036 になり、境界の 0.25 を外れて「平行」が
+       「判断できない」に化ける。表示と判定を同じ値で行う。 */
+    var diff=Math.round((d1-d2)*1000)/1000, exp=L/16, ratio=(exp>0)?diff/exp:0;
+    var verdict, sp, cand, why;
+    if(exp<0.30){
+      verdict='判断できない'; sp='taper';
+      why='2か所の深さの差が小さすぎます。テーパでも差が '+exp.toFixed(2)+'mm しか出ないため、測定のばらつきに埋もれます。';
+      cand='';
+    }else if(diff<-0.10){
+      verdict='判断できない'; sp='taper';
+      why='奥のほうが大きく出ています。入口と奥を入れちがえたか、面取り・座ぐり・バリを測っている可能性があります。';
+      cand='';
+    }else if(ratio>=0.60){
+      verdict='テーパ'; sp='taper';
+      why='テーパなら出るはずの差 '+exp.toFixed(2)+'mm に対して、実測は '+diff.toFixed(2)+'mm でした。';
+      cand='<h4>候補</h4><p><b>Rc</b>（現行）または <b>PT</b>（旧）</p>'+
+           '<p>この2つは呼び・ピッチ・基準径が同じ系統で、<b>測っても模範を入れても区別できません</b>。'+
+           'どちらかは図面の記号・年代・社内基準で決めてください。</p>';
+    }else if(ratio<=0.25){
+      verdict='平行'; sp='para';
+      why='テーパなら '+exp.toFixed(2)+'mm の差が出るはずですが、実測は '+diff.toFixed(2)+'mm でした。';
+      cand='<h4>候補</h4><p><b>Rp</b>・<b>PS</b>（耐密／相手はテーパおねじ）または <b>G</b>・<b>PF</b>（機械的結合）</p>'+
+           '<p>この4つは平行めねじとして基準径が同じ系統です。<b>めねじを測るだけでは、どれかは決まりません。</b>'+
+           '耐密か機械的結合かは、相手ねじと図面で決まります。</p>';
+    }else{
+      verdict='判断できない'; sp='taper';
+      why='テーパなら '+exp.toFixed(2)+'mm、平行なら 0mm のところ、実測は '+diff.toFixed(2)+'mm でした。どちらとも言い切れません。';
+      cand='<p>2か所をもっと離して測り直すか、図面で確認してください。</p>';
+    }
+    setShape(sp);
+    $('svgName').textContent='形の切り分け';
+    $('out').textContent=verdict;
+    cellsHtml([
+      {k:'実測の差',v:diff.toFixed(3),s:'mm（入口−奥）'},
+      {k:'テーパなら',v:exp.toFixed(3),s:'mm（深さ÷16）'},
+      {k:'比',v:(exp>0?ratio.toFixed(2):'―'),s:'1に近いほどテーパ'},
+      {k:'測った深さ',v:L.toFixed(1),s:'mm'}
+    ]);
+    $('statusTxt').textContent=verdict+' ｜ '+why;
+    $('statusTxt').className='statusTxt';
+    $('gPanel').innerHTML='<div class="gpanel"><h4>判定</h4><p>'+why+'</p>'+cand+
+      '<div class="gwarn"><b>NPT（米国・山60°）はテーパも1/16です。</b>形だけでは分けられません。'+
+      '山の角度と山数の確認は「実測からサイズ推定」に切り替えてください。</div>'+
+      '<div class="gcaut">これは形の切り分けだけです。受渡しの合否は、図面指定の規格と模範で判定してください。</div></div>';
+  }
+
+  function recalcGauge(){
+    if(gWay==='sym')recalcGaugeSym();
+    else if(gWay==='tool')recalcGaugeTool();
+    else recalcGaugeUnk();
+  }
+
   function recalc(){
-    if(mode==='data')recalcData();else recalcEst();
+    if(mode==='data')recalcData();
+    else if(mode==='est')recalcEst();
+    else recalcGauge();
   }
 
   /* ---- 全サイズ表 ---- */
@@ -574,13 +921,18 @@
     mode=m;
     $('mData').classList.toggle('on',m==='data');
     $('mEst').classList.toggle('on',m==='est');
+    $('mGauge').classList.toggle('on',m==='gauge');
     $('dataBox').style.display=(m==='data')?'':'none';
     $('estBox').style.display=(m==='est')?'':'none';
+    $('gaugeBox').style.display=(m==='gauge')?'':'none';
+    if(m==='gauge')buildGSizes();
     recalc();
   }
   $('mData').addEventListener('click',function(){setMode('data')});
   $('mEst').addEventListener('click',function(){setMode('est')});
+  $('mGauge').addEventListener('click',function(){setMode('gauge')});
   ['fMeas','fTpi'].forEach(function(id){$(id).addEventListener('input',recalc)});
+  ['gD1','gD2','gL'].forEach(function(id){$(id).addEventListener('input',recalc)});
 
   $('tblBtn').addEventListener('click',function(){
     var w=$('tblWrap');
@@ -594,6 +946,11 @@
   buildKind();
   buildSizes();
   buildWh();
+  buildGWay();
+  buildGSym();
+  buildGTool();
+  buildGSizes();
+  syncGWrap();
   recalc();
 })();
 </script>
