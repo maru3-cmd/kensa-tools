@@ -97,6 +97,26 @@
   .angbtns button:disabled{opacity:.35}
   .angbtns #angCnt{font-size:12px;color:#5B707E}
 
+  /* ── 不等配：1穴ずつの角度欄（v140）── */
+  .angrow{display:grid;grid-template-columns:92px 1fr 20px;gap:8px;align-items:center;
+    margin:0 0 6px;padding:0 2px}
+  .angrow .angl{font-size:12px;font-weight:700;color:#1F3341;letter-spacing:.02em}
+  .angrow .angl small{display:block;font-size:10.5px;font-weight:400;color:#5B707E;margin-top:1px}
+  .angrow input{font:inherit;font-size:16px;text-align:right;padding:9px 10px;
+    border:1.5px solid #C9D3DA;border-radius:9px;background:var(--sheet);color:var(--ink);width:100%}
+  .angrow input:focus{outline:none;border-color:#1F3341}
+  .angrow .angu{font-size:12px;color:#5B707E}
+  .anggap{margin:2px 2px 0;font-size:12px;color:#B23B2E;font-weight:700}
+  .anghd{display:grid;grid-template-columns:26px 1fr;gap:8px;align-items:center;margin:0 0 7px}
+  .anghd .angt{font-size:13px;font-weight:700;color:#1F3341}
+  .anghd .angt small{display:block;font-size:11px;font-weight:400;color:#5B707E;margin-top:1px;line-height:1.6}
+
+  /* ── どこに何を入れるかの絵（v140）── */
+  .infig{margin:0 0 10px;padding:8px 6px 4px;background:var(--sheet);
+    border:1px solid #C9D3DA;border-radius:10px}
+  .infig svg{display:block;width:100%;height:auto;max-height:190px}
+  .infig .cap{font-size:11px;color:#5B707E;text-align:center;margin-top:2px}
+
   /* 穴間ピッチ 一覧（v105でCSSを用意。v103は class だけ付けて CSS が無かった） */
   table.tol{
     width:100%;border-collapse:collapse;background:var(--sheet);
@@ -291,8 +311,9 @@
         <b>360° ÷ その角度＝穴数</b>として計算します（30°→12穴、45°→8穴）。
         <b>割り切れないときは計算しません</b>。近い穴数を知らせるので、図面と見比べて選んでください
         （50°なら7穴51.429°か8穴45°）。角度がそろっていない図面は「不等配」です。</li>
-      <li><b>角度が等配でないとき</b>は、上段を<b>「不等配」</b>にします。角度は<b>1つずつ入れて、そのつど「＋ 次の穴へ」を押します</b>（30 →「次の穴へ」→ 150 →「次の穴へ」→ 30）。<b>数字キーパッドにスペースが無いので、区切りはボタンで入れます。</b>打ち間違えたら<b>「← 1つ消す」</b>で最後の1つが消えます。いま何穴ぶん入っているかは、ボタンの右に出ています。</li>
+      <li><b>角度が等配でないとき</b>は、上段を<b>「不等配」</b>にします。角度は<b>穴ごとに欄が分かれています</b>。「穴1 → 穴2」「穴2 → 穴3」…と上から順に入れてください。<b>欄が足りなければ「＋ 穴を足す」、多ければ「− 最後を消す」</b>で増減します。<b>最後の1つは省略できます</b>（360°の残りを自動で補います）。<b>途中の欄が空のままだと計算しません</b>（空いた欄を飛ばして計算すると、穴の並びが1つずれた答えが黙って出るためです）。</li>
       <li><b>「隣との角度」なら最後の1つは省略できます</b>（残りを自動で補います）。図面が真上からの角度で書いてあるときは<b>「真上からの角度」</b>に切り替えます。</li>
+      <li><b>PCD（直径）でも半径でも入れられます。</b>いちばん上の切り替えで選びます（等配・不等配のどちらでも使えます）。図面が半径で書いてあるときは、割らずにそのまま入れてください。</li>
       <li>不等配では、<b>組み合わせを全部並べた一覧</b>が下に出ます。<b>押す必要はありません</b>。中心角・中心間・外−外・内−内が横一列に並ぶので、そのまま拾えます。行を押すと、その組だけ図の中で赤く太くなります。<b>不等配では大きな数字の箱は出しません</b>（同じ数が一覧に並ぶためです）。</li>
       <li>図には<b>隣どうしを実線</b>で、<b>飛ばした組を破線</b>で描きます。<b>破線は6穴まで</b>です。7穴以上は線だらけで穴の位置が読めなくなるため描きません（数字は一覧表で見てください）。</li>
       <li><b>穴径を入れると、図に出る数値を「中心間／外−外／内−内」から選べます</b>（図の中のボタン。等配・不等配のどちらでも使えます）。<b>はじめは外−外</b>です。ノギスを当てたまま図が読めます。穴が重なって内−内が測れない組は「―」になります。穴径を入れていないときは中心間しか出せないので、ボタンは出ません。</li>
@@ -353,7 +374,7 @@
       <div class="gxin" style="margin-top:12px">
         <div class="gtxt">
           <p>ピッチ円 φ100 に 4穴。隣との角度が 30° と 150° の繰り返し（不等配）。各組のピッチは？</p>
-          <p class="gset">不等配 ／ 隣との角度 30 →「次の穴へ」→ 150 →「次の穴へ」→ 30 ／ PCD 100</p>
+          <p class="gset">不等配 ／ となりとの角度 30・150・30 を上から順に ／ PCD 100</p>
           <p class="gread">読み方：30°の組が <b>25.882mm</b>、150°の組が <b>96.593mm</b>、
             向かい合う組（180°）が <b>100.000mm</b>。最後の 150° は省いても自動で補います。</p>
           <button class="gbtn" type="button" data-ex='{"set":[{"click":"#swUneq"},{"click":"#swFwd"},{"click":"#swAngRel"},{"id":"in1","v":100},{"id":"inAngs","v":"30 150 30"}]}' onclick="tryExample(this)">この例を試す</button>
@@ -456,6 +477,62 @@
 
   <!-- 入力 -->
   <div class="inputs">
+    <div class="infig" id="inFig">
+      <svg id="figUn" viewBox="0 0 320 160" role="img" aria-label="不等配で何をどこへ入れるかの図">
+        <circle cx="104" cy="80" r="54" fill="none" stroke="#8FA2AF" stroke-width="1.2" stroke-dasharray="5 3"/>
+        <line x1="104" y1="80" x2="104" y2="18" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="3 2"/>
+        <circle cx="104" cy="26" r="6.5" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+        <circle cx="150" cy="52" r="6.5" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+        <circle cx="140" cy="118" r="6.5" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+        <circle cx="58" cy="112" r="6.5" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+        <circle cx="104" cy="80" r="2.2" fill="#1F3341"/>
+        <path d="M 104 44 A 36 36 0 0 1 130 60" fill="none" stroke="#D63426" stroke-width="1.8"/>
+        <text x="140" y="40" font-size="11" font-weight="700" fill="#D63426">2</text>
+        <text x="152" y="40" font-size="10" fill="#5B707E">角度</text>
+        <line x1="104" y1="80" x2="158" y2="80" stroke="#1F3341" stroke-width="1.4"/>
+        <text x="112" y="94" font-size="11" font-weight="700" fill="#1F3341">1</text>
+        <text x="124" y="94" font-size="10" fill="#5B707E">PCD / 半径</text>
+        <text x="104" y="12" font-size="10" fill="#5B707E" text-anchor="middle">真上＝0°</text>
+        <text x="30" y="150" font-size="10" fill="#5B707E">⌀ 穴径</text>
+        <line x1="52" y1="118" x2="34" y2="141" stroke="#8FA2AF" stroke-width="1"/>
+        <text x="196" y="34" font-size="11" font-weight="700" fill="#1F3341">1</text>
+        <text x="208" y="34" font-size="11" fill="#1F3341">ピッチ円の大きさ</text>
+        <text x="196" y="56" font-size="11" font-weight="700" fill="#D63426">2</text>
+        <text x="208" y="56" font-size="11" fill="#1F3341">穴と穴の角度を</text>
+        <text x="208" y="71" font-size="11" fill="#1F3341">1つずつ</text>
+        <text x="196" y="93" font-size="11" font-weight="700" fill="#1F3341">3</text>
+        <text x="208" y="93" font-size="11" fill="#1F3341">穴1の位置</text>
+        <text x="208" y="108" font-size="11" fill="#5B707E">(真上なら 0)</text>
+        <text x="196" y="130" font-size="11" font-weight="700" fill="#1F3341">⌀</text>
+        <text x="208" y="130" font-size="11" fill="#1F3341">キリ径</text>
+        <text x="208" y="145" font-size="11" fill="#5B707E">(任意)</text>
+      </svg>
+      <svg id="figEq" viewBox="0 0 320 160" role="img" aria-label="等配で何をどこへ入れるかの図" style="display:none">
+        <circle cx="104" cy="80" r="54" fill="none" stroke="#8FA2AF" stroke-width="1.2" stroke-dasharray="5 3"/>
+        <circle cx="104" cy="26" r="6.5" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+        <circle cx="151" cy="53" r="6.5" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+        <circle cx="151" cy="107" r="6.5" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+        <circle cx="104" cy="134" r="6.5" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+        <circle cx="57" cy="107" r="6.5" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+        <circle cx="57" cy="53" r="6.5" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+        <circle cx="104" cy="80" r="2.2" fill="#1F3341"/>
+        <path d="M 104 44 A 36 36 0 0 1 135 62" fill="none" stroke="#D63426" stroke-width="1.8"/>
+        <line x1="104" y1="80" x2="158" y2="80" stroke="#1F3341" stroke-width="1.4"/>
+        <text x="112" y="94" font-size="11" font-weight="700" fill="#1F3341">1</text>
+        <text x="124" y="94" font-size="10" fill="#5B707E">PCD / 半径</text>
+        <text x="30" y="150" font-size="10" fill="#5B707E">⌀ 穴径</text>
+        <line x1="52" y1="112" x2="34" y2="141" stroke="#8FA2AF" stroke-width="1"/>
+        <text x="196" y="40" font-size="11" font-weight="700" fill="#1F3341">1</text>
+        <text x="208" y="40" font-size="11" fill="#1F3341">ピッチ円の大きさ</text>
+        <text x="196" y="66" font-size="11" font-weight="700" fill="#1F3341">2</text>
+        <text x="208" y="66" font-size="11" fill="#1F3341">穴の数</text>
+        <text x="208" y="81" font-size="11" fill="#5B707E">(または角度)</text>
+        <text x="196" y="110" font-size="11" font-weight="700" fill="#1F3341">⌀</text>
+        <text x="208" y="110" font-size="11" fill="#1F3341">キリ径</text>
+        <text x="208" y="125" font-size="11" fill="#5B707E">(任意)</text>
+      </svg>
+      <div class="cap" id="figCap">番号は下の入力欄の番号です</div>
+    </div>
     <div class="dimsw" id="dimsw" role="group" aria-label="PCD(直径)で入れるか半径で入れるか">
       <button type="button" id="swDia" class="on">PCD（直径）で</button>
       <button type="button" id="swRad">半径で</button>
@@ -497,16 +574,26 @@
         <button type="button" id="swAngRel" class="on">隣との角度</button>
         <button type="button" id="swAngAbs">真上からの角度</button>
       </div>
-      <div class="row">
+      <!-- ★この欄は v140 から画面に出さない。
+           角度の持ち方（スペース区切り）は変えずに残し、
+           下の1穴ずつの欄がここへ書き込む。記録・例のボタン・逆算は
+           この欄を見ているので、消さずに内部用として置いておく。 -->
+      <div class="row" id="rowAngs" style="display:none">
         <span class="badge">2</span>
         <label for="inAngs" id="lbAngs">角度の並び<small id="lbAngsS">最後の1つは省略できます</small></label>
         <input id="inAngs" type="text" inputmode="decimal" autocomplete="off" placeholder="30">
         <span class="unit">°</span>
       </div>
+      <div class="anghd">
+        <span class="badge">2</span>
+        <span class="angt">角度の並び<small id="angHdS">となりとの角度を、1つずつ</small></span>
+      </div>
+      <div id="angRows"></div>
+      <div class="anggap" id="angGapMsg" style="display:none"></div>
       <div class="angbtns">
-        <button type="button" id="angSep">＋ 次の穴へ</button>
-        <button type="button" id="angDel">← 1つ消す</button>
-        <span id="angCnt">数字を入れて「次の穴へ」</span>
+        <button type="button" id="angSep">＋ 穴を足す</button>
+        <button type="button" id="angDel">− 最後を消す</button>
+        <span id="angCnt"></span>
       </div>
       <div class="row">
         <span class="badge">3</span>
@@ -698,6 +785,77 @@
   }
   function norm360(d){ d=d%360; return (d<0)? d+360 : d; }
 
+
+  /* ── 不等配：角度を1穴ずつの欄で受ける（v140）──
+     いままでは1つの欄にスペース区切りで打っていたが、
+     数字キーパッドにスペースが無いので「次の穴へ」を押す必要があり、
+     どの数字が何番目か分からないという声があった。
+     欄を穴ごとに分ける。<持ち方は変えない>。
+     内部は今までどおり inAngs（スペース区切り）で、欄はその上に乗せるだけ。
+     こうすると readAngs・記録・例のボタン・逆算は一切触らずに済む。 */
+  var angVals=['','','',''];        /* 欄の中身（文字列のまま持つ） */
+  var angSyncing=false;             /* 自分で inAngs を書き換えている最中 */
+  var ANGPH=[15,25,30,40];          /* 薄字の例。同じ数を並べると どの欄か分からない */
+
+  function angLabel(i){
+    if(angM==='abs')return ['穴'+(i+1),'真上からの角度'];
+    return ['穴'+(i+1)+' → 穴'+(i+2),(i===angVals.length-1)?'省略できます':'となりとの角度'];
+  }
+  function buildAngRows(){
+    var box=$('angRows'); if(!box)return;
+    box.innerHTML='';
+    angVals.forEach(function(v,i){
+      var row=document.createElement('div'); row.className='angrow';
+      var lb=document.createElement('div'); lb.className='angl';
+      var t=angLabel(i);
+      lb.appendChild(document.createTextNode(t[0]));
+      var sm=document.createElement('small'); sm.textContent=t[1]; lb.appendChild(sm);
+      var ip=document.createElement('input');
+      ip.type='text'; ip.setAttribute('inputmode','decimal'); ip.setAttribute('autocomplete','off');
+      ip.id='angF'+i;
+      ip.setAttribute('placeholder',String(ANGPH[i%ANGPH.length]));
+      ip.value=v;
+      ip.addEventListener('input',function(){ angVals[i]=ip.value; syncAngs(); });
+      var un=document.createElement('div'); un.className='angu'; un.textContent='°';
+      row.appendChild(lb); row.appendChild(ip); row.appendChild(un);
+      box.appendChild(row);
+    });
+    $('angDel').disabled=(angVals.length<=2);
+    $('angSep').disabled=(angVals.length>=24);
+  }
+  function blank(x){ return String(x==null?'':x).replace(/\s+/g,'')===''; }
+  /* 欄 → inAngs。<あいだが空の欄は通さない>。
+     readAngs は空を読み飛ばすので、通してしまうと穴の並びが1つずれた
+     答えが黙って出る。空きがあるうちは計算させない。 */
+  function syncAngs(){
+    var vals=angVals.slice(), i, gap=-1;
+    while(vals.length && blank(vals[vals.length-1])) vals.pop();   /* 末尾の空欄はまだ未入力 */
+    for(i=0;i<vals.length;i++){ if(blank(vals[i])){ gap=i; break; } }
+    var g=$('angGapMsg');
+    if(gap>=0){
+      g.textContent='「'+angLabel(gap)[0]+'」が空です。順に埋めてください。';
+      g.style.display='';
+    }else{ g.textContent=''; g.style.display='none'; }
+    angSyncing=true;
+    $('inAngs').value=(gap>=0)?'':vals.join(' ');
+    angFire();
+    angSyncing=false;
+  }
+  /* inAngs が外から書き換えられたとき（例のボタンなど）に欄へ流し込む */
+  function pullAngs(){
+    if(angSyncing)return;
+    var raw=String($('inAngs').value||'').replace(/[０-９．，、]/g,function(c){
+      if(c==='．')return '.'; if(c==='，'||c==='、')return ' ';
+      return String.fromCharCode(c.charCodeAt(0)-0xFEE0);
+    });
+    var parts=raw.split(/[\s,]+/), list=[], i;
+    for(i=0;i<parts.length;i++){ if(parts[i]!=='')list.push(parts[i]); }
+    while(list.length<2)list.push('');
+    angVals=list;
+    buildAngRows();
+    $('angGapMsg').style.display='none';
+  }
+
   /* ---- 不等配：角度の並びを読む（v103）----
      入れ方は2通り。図面まるごと穴ピッチ(hole-map)と同じ用語・同じ規則。
        rel … 隣との角度。<最後の1つは省略できる>（残り 360°−合計 を補う）
@@ -705,12 +863,13 @@
      戻り値 {th:[各穴の絶対角], n:穴数, note:補足, err:エラー} */
   /* いま何穴ぶん入っているかを常に出す。数え間違いを防ぐため。 */
   function angCount(){
-    var r=readAngs(), e=$('angCnt'), d1=$('angDel'), s1=$('angSep');
+    var r=readAngs(), e=$('angCnt');
     var v=String($('inAngs').value||'');
-    d1.disabled=(v.replace(/\s+/g,'')==='');
-    s1.disabled=!/[0-9.]$/.test(v);   /* ★末尾が数字のときだけ押せる。\s*$ だと区切りの直後にも当たる */
+    /* ★v140: ボタンの押せる・押せないは buildAngRows() が持つ。
+       ここで触らない。以前は inAngs の末尾が数字かどうかで決めていたので、
+       欄を全部空にすると「＋ 穴を足す」が押せなくなって詰んでいた。 */
     if(!r||(r.err!==undefined&&r.err!=='')){ e.textContent=''; return; }
-    if(!r.th){ e.textContent='数字を入れて「次の穴へ」'; return; }
+    if(!r.th){ e.textContent='角度を上から順に入れてください'; return; }
     /* ★打った個数と、それが何穴になるかを両方出す。
        「隣との角度」は 3つ入れると 4穴。片方だけ出すと食い違って見える。 */
     var cnt=v.replace(/^\s+|\s+$/g,'').split(/[\s,]+/).length;
@@ -1442,7 +1601,10 @@
     $('un3Box').style.display = (un&&!fwd)? '' : 'none';
     /* 不等配の逆算は3辺で受けるので、上の「PCD／実測ピッチ」欄は出さない */
     $('in1').parentNode.style.display = (un&&!fwd)? 'none' : '';
-    $('dimsw').style.display = (un&&fwd)? 'none' : '';
+    /* v140: 不等配でも半径で入れられるようにする。
+       計算は前から pdim を見ていた（recalcUneven で v1*2）。
+       出していなかったのは表示だけの都合だった。 */
+    $('dimsw').style.display = '';
 
     $('lbl1').childNodes[0].textContent = fwd?(rad?'半径 R':'PCD'):'実測ピッチ p';
     $('lbl1s').textContent = fwd?(rad?'ピッチ円の半径':'ピッチ円直径'):'穴の中心間距離';
@@ -1450,11 +1612,22 @@
     $('droLbl').textContent = fwd?'p':(rad?'R':'PCD');
     $('swDia').textContent = fwd? 'PCD（直径）で' : '答えをPCDで';
     $('swRad').textContent = fwd? '半径で' : '答えを半径で';
-    $('lbAngs').childNodes[0].textContent = (angM==='rel')? '角度の並び' : '角度の並び';
     $('lbAngsS').textContent = (angM==='rel')
-      ? '隣どうしの角度。最後の1つは省略できます。例 30 150 30'
-      : '穴1から順に、真上からの角度。例 0 30 180 210';
-    $('inAngs').setAttribute('placeholder',(angM==='rel')? '30 150 30 150' : '0 30 180 210');
+      ? 'となりとの角度。最後の1つは省略できます'
+      : '穴1から順に、真上からの角度';
+    $('angHdS').textContent = (angM==='rel')
+      ? 'となりとの角度を、1つずつ'
+      : '真上からの角度を、穴1から順に';
+    /* v140: 角度の欄は入れ方（となり／真上から）で見出しが変わる。
+       syncUI は切り替えボタンからしか呼ばれないので、
+       ここで組み直しても入力中の欄からフォーカスは飛ばない。 */
+    buildAngRows();
+    /* 入力の絵は、等配と不等配で番号の意味が変わるので差し替える */
+    $('figUn').style.display = un? '' : 'none';
+    $('figEq').style.display = un? 'none' : '';
+    $('figCap').textContent = un
+      ? '番号は下の入力欄の番号です'
+      : '番号は下の入力欄の番号です（等配）';
 
     /* ★いま出していない欄は readOnly にする。
        記録スニペットは readOnly の欄を拾わないので、
@@ -1521,25 +1694,23 @@
     if(!row||!row.scrollIntoView)return;
     try{ row.scrollIntoView({block:'center',behavior:'smooth'}); }catch(e){}
   }
+  /* v140: 欄を1つ増やす／減らす。区切り文字は扱わなくなった。 */
   $('angSep').addEventListener('click',function(){
-    var e=$('inAngs'), v=String(e.value||'');
-    /* 末尾が空（まだ数字を打っていない）なら区切りを足さない。
-       空の区切りが並ぶと、穴数の数え方が狂う。 */
-    if(!/[0-9.]$/.test(v)) return;   /* 区切りの直後なら何もしない（区切りを重ねない） */
-    e.value=v.replace(/\s+$/,'')+' ';
-    angFire();
-    e.focus();
+    if(angVals.length>=24)return;
+    angVals.push('');
+    buildAngRows();
+    syncAngs();
+    var e=$('angF'+(angVals.length-1)); if(e){ e.focus(); }
     angScroll();
   });
   $('angDel').addEventListener('click',function(){
-    var e=$('inAngs'), v=String(e.value||'').replace(/\s+$/,'');
-    /* 最後の1つ（数字のかたまり）ごと消す。1文字ずつ消すより速い。 */
-    var p=v.replace(/[^\s]+$/,'').replace(/\s+$/,'');
-    e.value=p;
-    angFire();
-    e.focus();
+    if(angVals.length<=2)return;
+    angVals.pop();
+    buildAngRows();
+    syncAngs();
     angScroll();
   });
+  $('inAngs').addEventListener('input',pullAngs);
 
   ['rdKindC','rdKindO','rdKindI'].forEach(function(id){
     $(id).addEventListener('click',function(){
@@ -1649,6 +1820,8 @@
   var layUrl=layFromUrl();
   if(layUrl) lay=layUrl;
   syncUI();
+  buildAngRows();
+  syncAngs();
 })();
 </script>
 

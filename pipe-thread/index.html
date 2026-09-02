@@ -185,6 +185,22 @@
     text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
   .backlink:active{background:#EEF2F4}
   @media print{.backlink{display:none}}
+  /* ── 入り方から調べる（v140）── */
+  .glead{margin:8px 2px 0;padding:9px 11px;background:#EEF3F6;border:1px solid #C9D3DA;
+    border-radius:9px;font-size:12.5px;line-height:1.75;color:#1F3341}
+  .gfrow{border:1px solid #C9D3DA;border-radius:10px;padding:9px 10px;margin-top:8px;background:var(--sheet)}
+  .gfnm{font-size:13px;font-weight:700;color:#1F3341}
+  .gfnm span{display:block;font-size:11px;font-weight:400;color:#5B707E;margin-top:2px;line-height:1.6}
+  .gfbtn{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-top:7px}
+  .gfbtn button{font:inherit;font-size:12px;font-weight:700;padding:9px 2px;border-radius:8px;
+    border:1px solid #C9D3DA;background:#fff;color:#5B707E}
+  .gfbtn button.on{background:#1F3341;color:#fff;border-color:#1F3341}
+  .gfbtn button.on.yes{background:#0B6B3A;border-color:#0B6B3A}
+  .gfbtn button.on.now{background:#B23B2E;border-color:#B23B2E}
+  .gfreset{margin-top:9px;text-align:right}
+  .gfreset button{font:inherit;font-size:12px;font-weight:700;padding:8px 14px;border-radius:8px;
+    border:1px solid #C9D3DA;background:#fff;color:#5B707E}
+
   /* ── 模範の使い分け（v139）── */
   .gbox h3{font-size:12px;font-weight:700;color:#1F3341;margin:12px 2px 6px;letter-spacing:.04em}
   .gpanel{background:var(--sheet);border:1px solid #C9D3DA;border-radius:10px;padding:11px 12px;
@@ -223,7 +239,7 @@
       <li>ねじの種類（<b>R/Rc テーパ</b> か <b>G/Rp 平行</b>）とサイズ、おねじ/めねじを選びます。</li>
       <li>基準寸法と、めねじなら<b>下穴の目安</b>が出ます。</li>
       <li>「実測からサイズ推定」に切り替えると、ノギスの実測からサイズを当てられます（NPT判別つき）。</li>
-      <li>「模範の使い分け」では、<b>図面記号から使う模範</b>／<b>手元の模範から使える記号</b>／<b>素性不明のめねじがテーパか平行か</b>を調べられます。</li>
+      <li>「模範の使い分け」には調べ方が4つあります。<b>記号から</b>（この記号には何の模範を使う？）、<b>模範から</b>（この模範は何に使える？）、<b>入り方から</b>（入れてみた結果から、テーパか平行か）、<b>測って</b>（模範が無いとき）。上のチップで選ぶと、その下に説明が出ます。</li>
     </ol>
     <div class="src">
       <b>出典</b><br>
@@ -282,9 +298,30 @@
         </svg></div>
         <div class="gtxt">
           <p>手元に PT のテーパプラグしかありません。図面は Rc です。使えますか？</p>
-          <p class="gset">模範の使い分け ／ 手元の模範から ／ PT テーパプラグ</p>
+          <p class="gset">模範の使い分け ／ 模範から調べる ／ PT テーパプラグ</p>
           <p class="gread">読み方：正式に使えるのは <b>PT / PS</b> だけ。<b>Rc・Rp には入りますが、正式な判定には使えません</b>。</p>
-          <button class="gbtn" type="button" data-ex='{"set":[{"click":"#mGauge"},{"clickText":"手元の模範から","within":"#gWayChips"},{"clickText":"PT テーパプラグ","within":"#gToolChips"}]}' onclick="tryExample(this)">この例を試す</button>
+          <button class="gbtn" type="button" data-ex='{"set":[{"click":"#mGauge"},{"clickText":"模範から調べる","within":"#gWayChips"},{"clickText":"PT テーパプラグ","within":"#gToolChips"}]}' onclick="tryExample(this)">この例を試す</button>
+        </div>
+      </div>
+    </div>
+    <div class="gx">
+      <h4>例 ── PTが入って、PS・PFが入らなかった</h4>
+      <div class="gxin">
+        <div class="gfig"><svg viewBox="0 0 120 120" role="img" aria-label="テーパの模範は入り、平行の模範は途中で止まることを示す図">
+          <rect x="14" y="20" width="44" height="34" fill="#FBFCFC" stroke="#1F3341" stroke-width="1.3"/>
+          <path d="M 62 26 L 104 22 L 104 48 L 62 44 Z" fill="#E4EBEF" stroke="#1F3341" stroke-width="1.3"/>
+          <text x="36" y="16" font-size="7" fill="#5B707E" text-anchor="middle">めねじ</text>
+          <text x="83" y="60" font-size="7" fill="#0B6B3A" text-anchor="middle">PT ○入った</text>
+          <rect x="14" y="74" width="44" height="34" fill="#FBFCFC" stroke="#1F3341" stroke-width="1.3"/>
+          <rect x="62" y="82" width="42" height="18" fill="#F4DEDA" stroke="#1F3341" stroke-width="1.3"/>
+          <line x1="58" y1="72" x2="58" y2="110" stroke="#D63426" stroke-width="2"/>
+          <text x="83" y="114" font-size="7" fill="#B23B2E" text-anchor="middle">PS・PF ×止まる</text>
+        </svg></div>
+        <div class="gtxt">
+          <p>素性の分からないめねじ。PTのテーパプラグは締まって止まり、PSとPFの平行のプラグは途中で進みませんでした。</p>
+          <p class="gset">模範の使い分け ／ 入り方から調べる ／ PT「入った」・Rp/PS「入らない」・PF「入らない」</p>
+          <p class="gread">読み方：<b>テーパめねじ</b>。平行の模範が通らないので平行ではなく、テーパの模範が締まったのでテーパです。ただし <b>Rc か PT かまでは決まりません</b>（寸法が同じため）。</p>
+          <button class="gbtn" type="button" data-ex='{"set":[{"click":"#mGauge"},{"clickText":"入り方から調べる","within":"#gWayChips"},{"clickText":"入った","within":"#gFitRows .gfrow:nth-child(2) .gfbtn"},{"clickText":"入らない","within":"#gFitRows .gfrow:nth-child(3) .gfbtn"},{"clickText":"入らない","within":"#gFitRows .gfrow:nth-child(5) .gfbtn"}]}' onclick="tryExample(this)">この例を試す</button>
         </div>
       </div>
     </div>
@@ -389,6 +426,7 @@
   <div id="gaugeBox" class="gbox" style="display:none">
     <h2>調べ方</h2>
     <div class="chips" id="gWayChips"></div>
+    <div class="glead" id="gLead"></div>
 
     <div id="gSymWrap">
       <h2>図面のねじ記号</h2>
@@ -403,6 +441,12 @@
     <div id="gSizeWrap">
       <h2>呼びサイズ</h2>
       <div class="chips" id="gSizeChips"></div>
+    </div>
+
+    <div id="gFitWrap" style="display:none">
+      <h2>入れてみた結果</h2>
+      <div id="gFitRows"></div>
+      <div class="gfreset"><button type="button" id="gFitReset">全部「試してない」に戻す</button></div>
     </div>
 
     <div id="gMeasWrap" style="display:none">
@@ -741,11 +785,61 @@
       box.appendChild(b);
     });
   }
+  /* 入り方から調べる（v140）
+     模範を入れてみた結果から、テーパめねじか平行めねじかを絞る。
+     点数は付けない。決め手は「平行の模範が最後まで通ったかどうか」の一点。
+       ・平行の模範が最後まで通る → 平行めねじ
+       ・平行の模範が途中で止まり、テーパの模範が締まって止まる → テーパめねじ
+     テーパの模範は平行めねじにも途中まで入って噛むので、
+     「テーパが入った」だけではテーパめねじとは言えない。 */
+  var FITG=[
+    {k:'Rt', nm:'R テーパプラグ',   grp:'taper',
+     hint:'ねじ込んでいって、途中でしっかり締まって止まれば「入った」'},
+    {k:'PTt',nm:'PT テーパプラグ',  grp:'taper',
+     hint:'ねじ込んでいって、途中でしっかり締まって止まれば「入った」'},
+    {k:'RPp',nm:'Rp / PS 用プラグ', grp:'para',
+     hint:'最後までスルスル通れば「入った」。途中で進まなくなれば「入らない」'},
+    {k:'Gp', nm:'G 通り側',         grp:'para',
+     hint:'最後までスルスル通れば「入った」。途中で進まなくなれば「入らない」'},
+    {k:'PFp',nm:'PF 通り側',        grp:'para',
+     hint:'最後までスルスル通れば「入った」。途中で進まなくなれば「入らない」'}
+  ];
+  var gFit={Rt:'na',PTt:'na',RPp:'na',Gp:'na',PFp:'na'};
+
+  function buildGFit(){
+    var box=$('gFitRows'); if(!box)return;
+    box.innerHTML='';
+    FITG.forEach(function(g){
+      var row=document.createElement('div'); row.className='gfrow';
+      var nm=document.createElement('div'); nm.className='gfnm';
+      nm.appendChild(document.createTextNode(g.nm));
+      var sm=document.createElement('span'); sm.textContent=g.hint; nm.appendChild(sm);
+      row.appendChild(nm);
+      var bs=document.createElement('div'); bs.className='gfbtn';
+      [['in','入った','yes'],['no','入らない','now'],['na','試してない','']].forEach(function(o){
+        var b=document.createElement('button');
+        b.type='button'; b.textContent=o[1];
+        b.className=(gFit[g.k]===o[0])?('on '+o[2]):'';
+        b.addEventListener('click',function(){ gFit[g.k]=o[0]; buildGFit(); recalc(); });
+        bs.appendChild(b);
+      });
+      row.appendChild(bs); box.appendChild(row);
+    });
+  }
+
+  var GWAYS=[
+    ['sym','記号から調べる','図面に書いてある記号を選ぶと、<b>どの模範を使えばよいか</b>が出ます。'],
+    ['tool','模範から調べる','手元にある模範を選ぶと、<b>どの記号のねじに使えるか</b>が出ます。'],
+    ['fit','入り方から調べる','模範を入れてみた結果を選ぶと、<b>テーパめねじか平行めねじか</b>が出ます。'],
+    ['unk','測って調べる','模範が無いとき、めねじの内径を2か所で測って<b>形だけ</b>を調べます。']
+  ];
   function buildGWay(){
-    chipsInto('gWayChips',
-      [['sym','図面記号から'],['tool','手元の模範から'],['unk','素性不明のめねじ']],
+    chipsInto('gWayChips',GWAYS.map(function(x){return [x[0],x[1]]}),
       function(k){return gWay===k},
       function(k){gWay=k;buildGWay();syncGWrap();recalc()});
+    for(var i=0;i<GWAYS.length;i++){
+      if(GWAYS[i][0]===gWay){ $('gLead').innerHTML=GWAYS[i][2]; break; }
+    }
   }
   function buildGSym(){
     chipsInto('gSymChips',SYMORDER.map(function(k){return [k,SYM[k].nm]}),
@@ -765,8 +859,11 @@
   function syncGWrap(){
     $('gSymWrap').style.display =(gWay==='sym')?'':'none';
     $('gToolWrap').style.display=(gWay==='tool')?'':'none';
-    $('gSizeWrap').style.display=(gWay==='unk')?'none':'';
+    $('gFitWrap').style.display =(gWay==='fit')?'':'none';
     $('gMeasWrap').style.display=(gWay==='unk')?'':'none';
+    /* 呼びサイズは「記号から」「模範から」だけで使う。
+       入り方と実測では呼びが分からないので出さない。 */
+    $('gSizeWrap').style.display=(gWay==='sym'||gWay==='tool')?'':'none';
   }
   function setShape(sp){
     $('g-taper').style.display=(sp==='taper')?'':'none';
@@ -893,9 +990,106 @@
       '<div class="gcaut">これは形の切り分けだけです。受渡しの合否は、図面指定の規格と模範で判定してください。</div></div>';
   }
 
+
+  /* 入り方から絞る。決め手は平行の模範が最後まで通ったかどうか。 */
+  function recalcGaugeFit(){
+    var taperIn=false,taperNo=false,paraIn=false,paraNo=false,nt=0,np=0,tried=0;
+    FITG.forEach(function(g){
+      var v=gFit[g.k]; if(v==='na')return;
+      tried++;
+      if(g.grp==='taper'){ nt++; if(v==='in')taperIn=true; else taperNo=true; }
+      else { np++; if(v==='in')paraIn=true; else paraNo=true; }
+    });
+    $('mainLbl').textContent='ねじの形';
+    $('mainUnit').textContent='';
+    lastCopy=null;
+
+    var out,sp,why,body;
+    if(tried===0){
+      out='―'; sp='taper';
+      why='試した模範の結果を選んでください';
+      body='<h4>やること</h4>'+
+        '<p><b>同じ呼びサイズ</b>の模範で試した結果を、上から選ぶだけです。'+
+        '持っていない模範は「試してない」のままで構いません。</p>'+
+        '<p>いちばん効くのは<b>平行の模範（Rp/PS 用・G・PF）</b>です。'+
+        'これが最後まで通るかどうかで、テーパか平行かがほぼ決まります。</p>';
+    }else if(paraIn){
+      out='平行めねじ'; sp='para';
+      why='平行の模範が最後まで通ったから';
+      body='<h4>なぜそう言えるか</h4>'+
+        '<p>めねじがテーパなら、平行の模範は途中で進まなくなります。'+
+        '<b>最後まで通ったということは、穴が平行だということです。</b></p>'+
+        (taperIn?'<p>テーパの模範も「入った」になっていますが、<b>これは矛盾ではありません</b>。'+
+                 'テーパの模範は先細りなので、平行の穴でも途中まで入って噛みます。</p>':'')+
+        '<h4>候補</h4>'+
+        '<p><b>Rp・PS</b>（耐密。相手はテーパおねじ）または <b>G・PF</b>（機械的結合）</p>'+
+        '<p>この4つは平行めねじとして寸法が同じ系統です。<b>めねじを見ただけでは、どれかは決まりません。</b>'+
+        '相手のねじと図面で決めてください。</p>';
+    }else if(paraNo&&taperIn){
+      out='テーパめねじ'; sp='taper';
+      why='平行の模範が途中で止まり、テーパの模範が締まって止まったから';
+      body='<h4>なぜそう言えるか</h4>'+
+        '<p>平行の模範が最後まで通らなかったので、<b>穴は平行ではありません</b>。'+
+        'そのうえでテーパの模範が締まって止まったので、<b>テーパのめねじ</b>です。</p>'+
+        '<h4>候補</h4>'+
+        '<p><b>Rc</b>（現行）または <b>PT</b>（旧）</p>'+
+        '<p>この2つは呼び・ピッチ・基準径が同じで、<b>どちらかは入り方では分かりません</b>。'+
+        '図面の記号・年代・社内の決まりで選んでください。</p>'+
+        '<div class="gwarn"><b>NPT（米国・山60°）もテーパです。</b>入り方だけでは分けられません。'+
+        '山の角度が55°か60°かは「実測からサイズ推定」で見られます。</div>';
+    }else if(paraNo&&taperNo){
+      out='合うものがない'; sp='para';
+      why='テーパの模範も平行の模範も入らなかった';
+      body='<h4>考えられること</h4>'+
+        '<ul style="margin:4px 0 0 18px;padding:0">'+
+        '<li><b>呼びサイズが違います。</b>まずここを疑ってください。1/4 と 3/8 のような近い呼びは、'+
+        'どちらの模範も入りません。</li>'+
+        '<li><b>管用ねじではありません。</b>メートルねじ・ユニファイ・NPT などの可能性があります。</li>'+
+        '<li>ねじ山が潰れている、切りくずが残っている、めっきが厚い。</li>'+
+        '</ul>'+
+        '<p style="margin-top:8px">呼びサイズの見当を付けるなら「実測からサイズ推定」が使えます。</p>';
+    }else if(paraNo&&nt===0){
+      out='もう一歩'; sp='para';
+      why='平行の模範は入らなかった。テーパの模範を試すと決まります';
+      body='<h4>次にやること</h4>'+
+        '<p>平行の模範が入らなかったので、<b>平行めねじではなさそう</b>です。'+
+        'あとは <b>R か PT のテーパプラグ</b>を1本試せば決まります。</p>';
+    }else if(taperIn&&np===0){
+      out='まだ決まりません'; sp='taper';
+      why='テーパの模範は入ったが、それだけでは決められない';
+      body='<h4>次にやること</h4>'+
+        '<p>テーパの模範は<b>平行の穴にも途中まで入って噛みます</b>。'+
+        'ですから「入った」だけではテーパめねじとは言えません。</p>'+
+        '<p><b>平行の模範（Rp/PS 用・G・PF）を1本</b>試してください。'+
+        '最後まで通れば平行、途中で止まればテーパです。</p>';
+    }else{
+      out='まだ決まりません'; sp='taper';
+      why='いまの結果だけでは絞りきれない';
+      body='<h4>次にやること</h4>'+
+        '<p><b>平行の模範（Rp/PS 用・G・PF）</b>を試してください。'+
+        '最後まで通れば平行めねじ、途中で止まればテーパめねじです。</p>';
+    }
+
+    setShape(sp);
+    $('svgName').textContent='入り方から';
+    $('out').textContent=out;
+    cellsHtml([
+      {k:'テーパの模範',v:(nt===0?'未実施':(taperIn?'入った':'入らない')),s:'R / PT'},
+      {k:'平行の模範',v:(np===0?'未実施':(paraIn?'通った':'通らない')),s:'Rp,PS / G / PF'},
+      {k:'試した数',v:tried+' / '+FITG.length,s:'本'}
+    ]);
+    $('statusTxt').textContent=out+' ｜ '+why;
+    $('statusTxt').className='statusTxt';
+    $('gPanel').innerHTML='<div class="gpanel">'+body+
+      '<div class="gcaut"><b>同じ呼びサイズの模範で試してください。</b>'+
+      '呼びが違えば、形が合っていても入りません。'+
+      'また模範は測定器です。無理に回し込まないでください。</div></div>';
+  }
+
   function recalcGauge(){
     if(gWay==='sym')recalcGaugeSym();
     else if(gWay==='tool')recalcGaugeTool();
+    else if(gWay==='fit')recalcGaugeFit();
     else recalcGaugeUnk();
   }
 
@@ -947,6 +1141,11 @@
   buildSizes();
   buildWh();
   buildGWay();
+  buildGFit();
+  $('gFitReset').addEventListener('click',function(){
+    FITG.forEach(function(g){gFit[g.k]='na'});
+    buildGFit(); recalc();
+  });
   buildGSym();
   buildGTool();
   buildGSizes();

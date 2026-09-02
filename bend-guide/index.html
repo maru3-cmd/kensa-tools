@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#1F3341">
-<meta name="description" content="パイプ・チューブ製の曲げガイド(杖・傘の柄のような形)の計算。直線と曲げ(R・角度)の並びから形状を作図し、展開長・端点間距離・座標を算出。計算は端末内で完結します。">
+<meta name="description" content="パイプ・チューブ製の曲げガイド(杖・傘の柄のような形)の計算。直線と曲げ(R・角度)の並びから形状を作図し、展開長・端点間距離・座標を算出。図面のRが管の外側・内側から取られていても外径から中心線Rに直せます。弧の上の穴の位置を角度で入れると、端からの寸法が出ます。計算は端末内で完結します。">
 <title>曲げガイド計算 | 検査計算ツール</title>
 <style>
   :root{
@@ -96,6 +96,25 @@
   .unit{font-size:12px;color:#5B707E}
 
   .btnrow{display:flex;gap:8px;margin-top:10px}
+  /* ── Rの基準と管の外径（v141）── */
+  .odRow{display:flex;align-items:center;gap:8px;margin:0 0 8px;padding:0 2px}
+  .odRow label{font-size:12px;font-weight:700;color:#1F3341;flex:none}
+  .odRow label small{display:block;font-size:10.5px;font-weight:400;color:#5B707E;margin-top:1px}
+  .odRow input{font:inherit;font-size:16px;text-align:right;padding:9px 10px;
+    border:1.5px solid #C9D3DA;border-radius:9px;background:var(--sheet);color:var(--ink);
+    width:110px;flex:none}
+  .odRow input:focus{outline:none;border-color:#1F3341}
+  .odRow .u{font-size:12px;color:#5B707E}
+  /* ── 穴・目印（v141）── */
+  .holeHd{margin:14px 2px 6px;font-size:12px;font-weight:700;color:#1F3341;letter-spacing:.03em}
+  .holeHd small{display:block;font-size:10.5px;font-weight:400;color:#5B707E;margin-top:2px;line-height:1.6}
+  .hcard{border:1px solid #C9D3DA;border-radius:10px;padding:10px 11px;margin-top:8px;background:var(--sheet)}
+  .hcard h5{margin:0 0 6px;font-size:12.5px;font-weight:700;color:#D63426}
+  .hcard .hgrid{display:grid;grid-template-columns:74px 1fr;gap:3px 9px;font-size:12px;line-height:1.7}
+  .hcard .hgrid>div:nth-child(odd){color:#5B707E;font-weight:700}
+  .hcard .hng{color:#B23B2E;font-weight:700;font-size:12px}
+  .rbConv{margin:0 2px 8px;font-size:11.5px;line-height:1.7;color:#5B707E}
+  .rbConv b{color:#1F3341}
   .addBend{
     flex:1;font-size:13px;font-weight:700;padding:11px 4px;
     border:1.5px dashed var(--ink);border-radius:10px;
@@ -225,7 +244,9 @@
       <li>まず<b>直線の入れ方</b>を選びます。<b>実長</b>＝真っすぐな部分だけの長さ、<b>交点寸法</b>＝曲げの延長線が交わる点までの長さ。図面がどちらで入っているかで選んでください。</li>
       <li>「直線 → 曲げ → 直線 …」の順に入れます。曲げは<b>θ（＋左/−右）とR</b>。</li>
       <li>「＋ 曲げ+直線を追加」で杖型・S字・多段曲げも表現できます。最初から弧で始まる形は直線1を0に。</li>
+      <li><b>図面のRが管の中心線でないとき</b>は、「Rの基準」を<b>外側</b>か<b>内側</b>にして<b>管の外径 D</b>を入れます。中心線R＝入れたR∓D/2 に直して計算します。どう直したかは欄の下に出ます。</li>
       <li>入力すると形状が描かれ、<b>展開長（切断長）・端点間距離・外形</b>が出ます。</li>
+      <li><b>弧の上に穴や目印があるとき</b>は「穴・目印」で、<b>どの曲げの、始まりから何度か</b>を入れます。図面が中心からの角度で位置を書いているなら、そのまま入れられます。穴ごとに<b>弧に沿った長さ・直線距離・座標</b>が始点側と終点側の両方で出て、図にも印が付きます。</li>
       <li>手元の図面と向きが違うときは、図の上の<b>「図の向き」</b>で<b>左右反転</b>と<b>90°回転</b>を組み合わせて合わせられます（8通りすべて出せます）。<b>向きを変えても、入力した寸法・角度・展開長は変わりません</b>。図・座標・外形が同じ向きになるだけです。</li>
       <li>実物大で写すときは<b>「段ボールに写す座標」</b>を開き、原点を<b>「左下」</b>にします。段ボールの<b>左下の角を(0,0)</b>にして、表の X を横・Y を縦に測れば点が打てます（数字は全部プラスなので、図が段ボールからはみ出しません）。<b>左の辺に始点・下の辺に終点</b>を乗せたいときは、その向きになっているかを画面が教えます。なっていなければ<b>「その向きにする」</b>を押すと一発で合います。打つ点（接点）とコンパスの中心が出ます。<b>中心が図の外に出る曲げ</b>には、弦・矢高と中間点が出るのでコンパス無しで描けます。</li>
     </ol>
@@ -241,6 +262,11 @@
       ・<b>弦と矢高</b>（中心が遠いとき） … <code>弦 = 2R·sin(θ/2)</code>、<code>矢高 = R(1−cos(θ/2))</code><br>
       ・<b>図の向き</b> … 見せ方だけを変えます。左右反転は <code>x → −x</code>、回転は画面上で時計回りに <code>(x, y) → (y, −x)</code> を回数ぶん。反転→回転の順に当てるので、<b>この2つで8通りすべて</b>になります（上下反転＝左右反転＋180°）。回転は始端を中心にするので、始端はどの向きでも動きません。展開長・端点間距離・弧長・弦は向きで変わりません。<br>
       ・端が「0」のとき … 弧から始まる／弧で終わる形として扱います<br>
+      ・<b>Rの基準</b> … 中心線R ＝ 外側R − D/2 ＝ 内側R + D/2（D は管の外径）。<br>
+      　以降の計算はすべて中心線Rで動くので、入口で直すだけです。中心線Rが0以下になる組合せは受け付けません。<br>
+      ・<b>穴・目印</b> … 弧の始まりの接点から角度ぶん回した点です。<br>
+      　弧に沿った長さ = そこまでの直線部と弧部の合計 + R × 角度[rad]、直線距離 = 始点（終点）との2点間距離。<br>
+      　<b>弧に沿った長さと直線距離は、図の向きを変えても変わりません。</b>座標だけが向きに従います。<br>
       ・<b>展開長 = 直線部の合計 + 円弧部の合計</b>（中心線の長さ）<br>
       ・角度は<b>度・分・秒</b>でも入れられます（<code>1°47′24″</code> の形式）<br>
       管の曲げでは中心線の長さが切断長のよい目安になりますが、<b>実際は材料の伸びや曲げ方（マンドレルの有無など）で少し変わります</b>。量産の切断長は<b>試し曲げの実績で補正</b>してください。
@@ -262,6 +288,28 @@
           <p class="gread">読み方：展開長（切断長）≈ <b>115.708mm</b>、外形 60×60。<br>
                 同じ「50 / 50」でも<b>交点寸法で入れると 95.708mm</b>（外形 50×50）になります。入れ方でこれだけ変わるので、図面がどちらか確かめてください。</p>
           <button class="gbtn" type="button" data-ex='{"set":[{"click":"#modeAct"},{"sel":"[data-t=\"s\"][data-i=\"0\"]","v":50},{"click":"#addBend"},{"sel":"[data-t=\"a\"][data-i=\"0\"]","v":90},{"sel":"[data-t=\"r\"][data-i=\"0\"]","v":10},{"sel":"[data-t=\"s\"][data-i=\"1\"]","v":50}]}' onclick="tryExample(this)">この例を試す</button>
+        </div>
+      </div>
+    </div>
+    <div class="gx">
+      <h4>例 ── 弧の上の穴が、端から何mmか</h4>
+      <div class="gxin">
+        <div class="gfig"><svg viewBox="0 0 120 120" role="img" aria-label="弧の上の穴の位置を端からの寸法に直す図">
+          <path d="M 20 100 A 80 80 0 0 1 100 20" fill="none" stroke="#1F3341" stroke-width="2.4"/>
+          <circle cx="20" cy="100" r="3.5" fill="#1F3341"/>
+          <circle cx="100" cy="20" r="3.5" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+          <circle cx="76.6" cy="43.4" r="4" fill="#fff" stroke="#D63426" stroke-width="1.6"/>
+          <line x1="70.6" y1="43.4" x2="82.6" y2="43.4" stroke="#D63426" stroke-width="1.1"/>
+          <line x1="76.6" y1="37.4" x2="76.6" y2="49.4" stroke="#D63426" stroke-width="1.1"/>
+          <text x="14" y="114" font-size="8" fill="#5B707E">始</text>
+          <text x="98" y="14" font-size="8" fill="#5B707E">終</text>
+          <text x="86" y="36" font-size="8" font-weight="700" fill="#D63426">穴</text>
+        </svg></div>
+        <div class="gtxt">
+          <p>R100 の弧が90°。その弧の始まりから45°の位置に穴。端からの寸法は？</p>
+          <p class="gset">入れ方=実長 ／ 直線1 0 ／ 曲げ θ90 R100 ／ 直線2 0 ／ 穴 曲げ1 の 45°</p>
+          <p class="gread">読み方：弧に沿って<b>始点から 78.540mm</b>（終点からも同じ）。まっすぐ測るなら <b>76.537mm</b>。座標は X 70.711・Y 29.289。</p>
+          <button class="gbtn" type="button" data-ex='{"set":[{"click":"#modeAct"},{"click":"#addBend"},{"sel":"[data-t=\"s\"][data-i=\"0\"]","v":0},{"sel":"[data-t=\"a\"][data-i=\"0\"]","v":90},{"sel":"[data-t=\"r\"][data-i=\"0\"]","v":100},{"sel":"[data-t=\"s\"][data-i=\"1\"]","v":0},{"click":"#addHole"},{"sel":"[data-t=\"hb\"][data-i=\"0\"]","v":1},{"sel":"[data-t=\"ha\"][data-i=\"0\"]","v":45}]}' onclick="tryExample(this)">この例を試す</button>
         </div>
       </div>
     </div>
@@ -305,9 +353,25 @@
     <button type="button" class="modeBtn" id="modeApex" aria-pressed="false">交点寸法</button>
     <span class="modeNote" id="modeNote">真っすぐな部分だけの長さ（曲げの始まり〜終わり）</span>
   </div>
+  <!-- Rの基準（v141）。図面のRが中心線とは限らない -->
+  <div class="modeRow">
+    <span class="modeLab">Rの基準</span>
+    <button type="button" class="modeBtn on" id="rbC" aria-pressed="true">中心線</button>
+    <button type="button" class="modeBtn" id="rbO" aria-pressed="false">外側</button>
+    <button type="button" class="modeBtn" id="rbI" aria-pressed="false">内側</button>
+    <span class="modeNote" id="rbNote">図面のRが中心線（管の軸）のときはこのまま</span>
+  </div>
+  <div class="odRow" id="odRow" style="display:none">
+    <label for="inOD">管の外径 D<small>ホース・パイプの外側の直径</small></label>
+    <input id="inOD" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+    <span class="u">mm</span>
+  </div>
+  <div class="rbConv" id="rbConv" style="display:none"></div>
+
   <div class="hint">
     曲げ角度は<b>進行方向が変わる量</b>で、<b>+が左曲げ/−が右曲げ</b>。Rは中心線の曲げ半径です。<b>弧から始まる形は最初の直線を0</b>に(終わりも同様)。<br>
-    ホースのように<b>Rが大きいと、実長と交点寸法は大きく違います</b>（R200・45°でタンジェント長82.8mm）。図面がどちらで入っているか確かめてから選んでください。
+    ホースのように<b>Rが大きいと、実長と交点寸法は大きく違います</b>（R200・45°でタンジェント長82.8mm）。図面がどちらで入っているか確かめてから選んでください。<br>
+    <b>弧どうしが直につながる形</b>（中心の違うRが接している形）は、あいだの<b>直線を0</b>にすると表せます。
   </div>
 
   <!-- 区間入力 -->
@@ -317,6 +381,14 @@
     <button class="addBend" type="button" id="addBend">+ 曲げ+直線を追加</button>
     <button class="delBend" type="button" id="delBend">最後の曲げを削除</button>
   </div>
+  <!-- 穴・目印（v141）。図面は「中心からの角度」で位置を与えることが多い -->
+  <div class="holeHd">穴・目印<small>弧の上の位置を、その曲げの始まりからの角度で入れます。端からの寸法に直します</small></div>
+  <div class="inputs" id="holeList"></div>
+  <div class="btnrow">
+    <button class="addBend" type="button" id="addHole">+ 穴を追加</button>
+    <button class="delBend" type="button" id="delHole">最後の穴を削除</button>
+  </div>
+  <div id="holeOut"></div>
 
   <!-- 結果 -->
   <div class="dro">
@@ -398,6 +470,14 @@
      この2つで8通りすべてを出せる（上下反転＝左右反転＋180°）。 */
   var rot=0;
   var flip=false;
+  /* ★Rの基準（v141）。'c' 中心線 / 'o' 外側 / 'i' 内側。
+     打った数字の<意味>を変える切り替えなので、保存にも入れる。
+     古い保存には無いので、読むときは必ず 'c' に倒す（前は中心線しか無かった）。 */
+  var rBase='c';
+  var tubeOD='';
+  /* 穴・目印（v141）。{b:曲げ番号, a:その曲げの始まりからの角度} を打った文字のまま持つ */
+  var holes=[];
+  var MAXHOLE=12;
 
   function zen(v){
     return String(v).replace(/[０-９．−]/g,function(c){
@@ -463,6 +543,24 @@
     }
   }
 
+  function buildHoleRows(){
+    var box=$('holeList'); if(!box)return;
+    box.innerHTML='';
+    for(var i=0;i<holes.length;i++){
+      var d=document.createElement('div');
+      d.className='seg bd';
+      d.innerHTML=
+        '<span class="tag">穴'+(i+1)+'</span>'+
+        '<span class="fld"><span class="fl">曲げ</span>'+
+          '<input data-t="hb" data-i="'+i+'" type="text" inputmode="numeric" autocomplete="off" placeholder="―"><span class="u">番</span></span>'+
+        '<span class="fld"><span class="fl">始まりから</span>'+
+          '<input data-t="ha" data-i="'+i+'" type="text" inputmode="decimal" autocomplete="off" placeholder="―"><span class="u">°</span></span>';
+      box.appendChild(d);
+      d.querySelector('[data-t="hb"]').value=holes[i].b;
+      d.querySelector('[data-t="ha"]').value=holes[i].a;
+    }
+  }
+
   /* ---- 形状計算 ---- */
   function compute(){
     var n=bends.length;
@@ -472,12 +570,26 @@
       L.push(num(straights[i]));
       if(isNaN(L[i])||L[i]<0)return {err:(isNaN(L[i])?'直線'+(i+1)+' を入力してください':'直線'+(i+1)+' は0以上で入力してください')};
     }
+    /* ★図面のRは中心線とは限らない。外側・内側なら、ここで中心線Rに直す。
+       以降の計算は<すべて中心線R>で動いているので、入口だけを増やす。 */
+    var Rin=[], half=0;
+    if(rBase!=='c'){
+      var Dv=num(tubeOD);
+      if(isNaN(Dv)||Dv<=0)
+        return {err:'管の外径 D を入力してください（Rの基準が'+(rBase==='o'?'外側':'内側')+'のため）'};
+      half=Dv/2;
+    }
     for(i=0;i<n;i++){
       A.push(parseAngle(bends[i].a));
-      R.push(num(bends[i].r));
+      var rIn=num(bends[i].r);
       if(isNaN(A[i]))return {err:'曲げ'+(i+1)+' の角度を入力してください'};
       if(A[i]===0||Math.abs(A[i])>=180)return {err:'曲げ'+(i+1)+' の角度は 0°を除く ±180°未満で入力してください'};
-      if(isNaN(R[i])||R[i]<=0)return {err:'曲げ'+(i+1)+' のRを入力してください'};
+      if(isNaN(rIn)||rIn<=0)return {err:'曲げ'+(i+1)+' のRを入力してください'};
+      Rin.push(rIn);
+      var rc=(rBase==='o')? rIn-half : (rBase==='i')? rIn+half : rIn;
+      if(rc<=0)
+        return {err:'曲げ'+(i+1)+'：外側R '+rIn+' から外径の半分 '+half+' を引くと、中心線Rが0以下になります'};
+      R.push(rc);
     }
 
     // タンジェント長
@@ -569,8 +681,44 @@
 
     var dist=Math.sqrt(end.x*end.x+end.y*end.y);
 
-    return {n:n,L:L,Lapex:Lapex,mode:mode,Leff:Leff,A:A,R:R,T:T,act:act,arcs:arcs,nodes:nodes,end:end,
-      dev:dev,dist:dist,minX:minX,maxX:maxX,minY:minY,maxY:maxY,
+    /* ---- 穴・目印（v141）----
+       経路は 直線0 → 弧0 → 直線1 → 弧1 → … → 直線n の順。
+       弧 i の<始まり>までの道のりを先に出しておく。 */
+    var preLen=[], run=0;
+    for(i=0;i<n;i++){ run+=Math.max(act[i],0); preLen.push(run); run+=arcs[i].len; }
+    var hs=[];
+    for(i=0;i<holes.length;i++){
+      var hb=parseInt(holes[i].b,10), ha=num(holes[i].a);
+      var rec={no:i+1, b:String(holes[i].b||''), a:String(holes[i].a||''), err:''};
+      if(String(holes[i].b||'')===''&&String(holes[i].a||'')===''){
+        rec.err='曲げの番号と、その曲げの始まりからの角度を入れてください';
+        hs.push(rec); continue;
+      }
+      if(!(hb>=1&&hb<=n)){
+        rec.err=n? ('曲げ番号は 1〜'+n+' で入れてください') : '先に曲げを入れてください';
+        hs.push(rec); continue;
+      }
+      if(isNaN(ha)){ rec.err='角度を入れてください'; hs.push(rec); continue; }
+      var bi=hb-1, span=Math.abs(A[bi]);
+      if(ha<0||ha>span+1e-9){
+        rec.err='曲げ'+hb+' の角度は '+(Math.round(span*1000)/1000)+'° までです';
+        hs.push(rec); continue;
+      }
+      var arh=arcs[bi];
+      var ah1=Math.atan2(arh.t1.y-arh.c.y, arh.t1.x-arh.c.x);
+      var sgnh=(A[bi]>0)?1:-1;
+      var thh=ah1+sgnh*ha*Math.PI/180;
+      var ph={x:arh.c.x+arh.r*Math.cos(thh), y:arh.c.y+arh.r*Math.sin(thh)};
+      var sS=preLen[bi]+arh.r*ha*Math.PI/180;
+      rec.bi=bi; rec.p=ph;
+      rec.sStart=sS; rec.sEnd=dev-sS;
+      rec.dStart=Math.sqrt(ph.x*ph.x+ph.y*ph.y);
+      rec.dEnd=Math.sqrt((ph.x-end.x)*(ph.x-end.x)+(ph.y-end.y)*(ph.y-end.y));
+      hs.push(rec);
+    }
+
+    return {n:n,L:L,Lapex:Lapex,mode:mode,Leff:Leff,A:A,R:R,Rin:Rin,rBase:rBase,rHalf:half,T:T,act:act,arcs:arcs,nodes:nodes,end:end,
+      dev:dev,dist:dist,holes:hs,minX:minX,maxX:maxX,minY:minY,maxY:maxY,
       warn:warn,startArc:startArc,endArc:endArc};
   }
 
@@ -651,6 +799,17 @@
     ts.textContent='始';dyn.appendChild(ts);
     var te=el('text',{x:(E.x).toFixed(1),y:(E.y+16).toFixed(1),'font-size':10,fill:'#1F3341','text-anchor':'middle',stroke:'#fff','stroke-width':3,'paint-order':'stroke'});
     te.textContent='終';dyn.appendChild(te);
+
+    // 穴・目印（v141）
+    (m.holes||[]).forEach(function(h){
+      if(!h.p)return;
+      var Q=px(h.p);
+      dyn.appendChild(el('circle',{cx:Q.x.toFixed(1),cy:Q.y.toFixed(1),r:5,fill:'#fff',stroke:'#D63426','stroke-width':1.6}));
+      dyn.appendChild(el('line',{x1:(Q.x-7.5).toFixed(1),y1:Q.y.toFixed(1),x2:(Q.x+7.5).toFixed(1),y2:Q.y.toFixed(1),stroke:'#D63426','stroke-width':1.1}));
+      dyn.appendChild(el('line',{x1:Q.x.toFixed(1),y1:(Q.y-7.5).toFixed(1),x2:Q.x.toFixed(1),y2:(Q.y+7.5).toFixed(1),stroke:'#D63426','stroke-width':1.1}));
+      var ht=el('text',{x:(Q.x+10).toFixed(1),y:(Q.y-8).toFixed(1),'font-size':10,'font-weight':700,fill:'#D63426',stroke:'#fff','stroke-width':3,'paint-order':'stroke'});
+      ht.textContent='穴'+h.no;dyn.appendChild(ht);
+    });
   }
 
   /* ---- 図の向きを変える（v93）----
@@ -680,6 +839,14 @@
     });
     v.nodes=m.nodes.map(turn);
     v.end=turn(m.end);
+    /* 穴も同じ向きへ。距離（弧長・直線）は向きで変わらないのでそのまま持つ。 */
+    v.holes=[];
+    (m.holes||[]).forEach(function(h){
+      var q={},kk;
+      for(kk in h) if(Object.prototype.hasOwnProperty.call(h,kk)) q[kk]=h[kk];
+      if(h.p) q.p=turn(h.p);
+      v.holes.push(q);
+    });
     /* draw() は A[i] の符号で円弧の回り方(sweep)を決める。反転で逆になる。 */
     v.A= flip? m.A.map(function(a){return -a}) : m.A.slice();
     /* 90°の倍数の回転と軸対称は、外形の枠をそのまま枠に移す。
@@ -811,6 +978,14 @@
              : 'コンパスの針。半径 '+fmt(ar.r)]);
       rows.push(['曲げ'+(i+1)+' 接点(出)',P(ar.t2),'弧の終わり＝直線'+(i+2)+'の始まり']);
     }
+    (m.holes||[]).forEach(function(h){
+      if(!h.p)return;
+      var hp=P(h.p);
+      /* 丸めて0になる値が -0.000 と出ないようにそろえる */
+      if(Math.abs(hp.x)<5e-4)hp.x=0;
+      if(Math.abs(hp.y)<5e-4)hp.y=0;
+      rows.push(['穴'+h.no,hp,'曲げ'+(h.bi+1)+' の始まりから '+h.a+'°']);
+    });
     rows.push(['終端',P(m.end),'ここまで']);
 
     rows.forEach(function(r){
@@ -869,6 +1044,37 @@
   /* ---- 表示更新 ---- */
   var lastModel=null;
   var lastView=null;
+  /* 穴ごとの寸法。端からの弧長・直線距離・座標を全部出す。
+     座標は図と同じ向き（mv）から取る。距離は向きで変わらない。 */
+  function renderHoles(m,mv){
+    var box=$('holeOut'); if(!box)return;
+    box.innerHTML='';
+    if(!holes.length)return;
+    if(!m){
+      box.innerHTML='<div class="hcard"><div class="hng">先に直線と曲げを入れてください</div></div>';
+      return;
+    }
+    var ox=(oriMode==='ll')? -mv.minX : 0;
+    var oy=(oriMode==='ll')? -mv.minY : 0;
+    /* 丸めて 0 になる値が -0.000 と出るのを止める。0 は 0 と書く。 */
+    function fz(v){ return fmt(Math.abs(v)<5e-4 ? 0 : v); }
+    (m.holes||[]).forEach(function(h,k){
+      var c=document.createElement('div'); c.className='hcard';
+      if(h.err){
+        c.innerHTML='<h5>穴'+h.no+'</h5><div class="hng">'+h.err+'</div>';
+        box.appendChild(c); return;
+      }
+      var q=(mv.holes&&mv.holes[k]&&mv.holes[k].p)?mv.holes[k].p:h.p;
+      c.innerHTML='<h5>穴'+h.no+' … 曲げ'+(h.bi+1)+' の始まりから '+h.a+'°</h5>'+
+        '<div class="hgrid">'+
+        '<div>弧に沿って</div><div>始点から <b>'+fmt(h.sStart)+'</b> ／ 終点から <b>'+fmt(h.sEnd)+'</b> mm</div>'+
+        '<div>直線距離</div><div>始点から <b>'+fmt(h.dStart)+'</b> ／ 終点から <b>'+fmt(h.dEnd)+'</b> mm</div>'+
+        '<div>座標</div><div>X <b>'+fz(q.x+ox)+'</b>　Y <b>'+fz(q.y+oy)+'</b> mm</div>'+
+        '</div>';
+      box.appendChild(c);
+    });
+  }
+
   function recalc(){
     var m=compute();
     if(m.err){
@@ -878,6 +1084,7 @@
       $('vBend').textContent=String(bends.length);
       $('secBody').innerHTML='';$('coBody').innerHTML='';
       layout(null,null);
+      renderHoles(null,null);
       $('statusTxt').textContent=m.err;
       $('statusTxt').className='statusTxt';
       draw(null);
@@ -931,6 +1138,7 @@
       $('statusTxt').className='statusTxt';
     }
     layout(mv,m);
+    renderHoles(m,mv);
     draw(mv);
   }
 
@@ -942,7 +1150,9 @@
   function snapshot(){
     var i, bs=[];
     for(i=0;i<bends.length;i++) bs.push({a:String(bends[i].a||''),r:String(bends[i].r||'')});
-    return { s:straights.slice(), b:bs, m:mode, rt:rot, fp:flip?1:0 };
+    return { s:straights.slice(), b:bs, m:mode, rt:rot, fp:flip?1:0,
+             rb:rBase, od:String(tubeOD||''),
+             hl:holes.map(function(h){return {b:String(h.b||''),a:String(h.a||'')}}) };
   }
   function applySaved(o){
     if(!o||typeof o!=="object") return false;
@@ -959,6 +1169,14 @@
     /* 向きは無ければ「そのまま」。古い保存の見え方を変えない。 */
     rot=(o.rt===1||o.rt===2||o.rt===3)?o.rt:0;
     flip=!!o.fp;
+    /* ★rb が無い保存は v140 以前＝<中心線で打った数字>。
+       ここで外側/内側にすると、同じ数字の意味が黙って変わる。 */
+    rBase=(o.rb==='o'||o.rb==='i')?o.rb:'c';
+    tubeOD=String(o.od==null?'':o.od);
+    var oh=(o.hl&&o.hl.length)?o.hl:[], hh=[];
+    for(i=0;i<oh.length&&i<MAXHOLE;i++)
+      hh.push({b:String((oh[i]&&oh[i].b)||''),a:String((oh[i]&&oh[i].a)||'')});
+    holes=hh;
     return true;
   }
   function persist(){
@@ -985,7 +1203,11 @@
   };
   /* ★記録から呼び出すと state だけが差し替わる。ボタンの見た目も
      合わせ直さないと、実際の設定とボタンがずれる（v91の見落とし）。 */
-  window.krRedraw=function(){ paintMode(); paintOri(); paintTurn(); buildRows(); recalc(); persist(); };
+  /* ★v141: syncRBase と buildHoleRows を必ず通す。
+     記録から呼び出すと state だけが差し替わるので、
+     ここを抜くと Rの基準・外径・穴の欄が実際の設定とずれる（v91と同じ失敗）。 */
+  window.krRedraw=function(){ paintMode(); syncRBase(); paintOri(); paintTurn();
+    buildRows(); buildHoleRows(); recalc(); persist(); };
 
   /* ---- イベント ---- */
   $('segList').addEventListener('input',function(e){
@@ -995,7 +1217,7 @@
     if(ty==='s')straights[i]=t.value;
     if(ty==='a')bends[i].a=t.value;
     if(ty==='r')bends[i].r=t.value;
-    recalc(); persist();
+    recalc(); syncRBase(); persist();
   });
   /* ---- 入れ方・原点の切り替え（v91）----
      ★切り替えても<打った数字はそのまま>。意味だけが変わる。
@@ -1068,11 +1290,68 @@
   $('oriLL').addEventListener('click',function(){setOri('ll')});
   $('oriSt').addEventListener('click',function(){setOri('st')});
 
+  /* Rの基準の見た目をそろえる。押した結果を必ずここ1か所で反映する。 */
+  function syncRBase(){
+    $('rbC').classList.toggle('on',rBase==='c');
+    $('rbO').classList.toggle('on',rBase==='o');
+    $('rbI').classList.toggle('on',rBase==='i');
+    $('rbC').setAttribute('aria-pressed',rBase==='c'?'true':'false');
+    $('rbO').setAttribute('aria-pressed',rBase==='o'?'true':'false');
+    $('rbI').setAttribute('aria-pressed',rBase==='i'?'true':'false');
+    $('odRow').style.display=(rBase==='c')?'none':'';
+    /* ★欄そのものも state に合わせる。初期化のときだけ書き戻していると、
+       記録から呼び出したときに前の数字が残る。 */
+    if($('inOD').value!==tubeOD)$('inOD').value=tubeOD;
+    $('rbNote').textContent=(rBase==='c')
+      ? '図面のRが中心線（管の軸）のときはこのまま'
+      : (rBase==='o')
+        ? '図面のRが管の外側のとき。中心線R ＝ 入れたR − 外径÷2'
+        : '図面のRが管の内側のとき。中心線R ＝ 入れたR ＋ 外径÷2';
+    var cv=$('rbConv'), Dv=num(tubeOD);
+    if(rBase==='c'||isNaN(Dv)||Dv<=0){ cv.style.display='none'; cv.innerHTML=''; return; }
+    var h=Dv/2, sign=(rBase==='o')?'−':'＋', lines=[], i, rIn, rc;
+    for(i=0;i<bends.length;i++){
+      rIn=num(bends[i].r);
+      if(isNaN(rIn)||rIn<=0)continue;
+      rc=(rBase==='o')? rIn-h : rIn+h;
+      lines.push('曲げ'+(i+1)+' … 入れたR <b>'+rIn+'</b> '+sign+' '+h+' ＝ 中心線R <b>'+
+        (Math.round(rc*1000)/1000)+'</b>');
+    }
+    if(!lines.length){ cv.style.display='none'; cv.innerHTML=''; return; }
+    cv.style.display='';
+    cv.innerHTML='計算に使う中心線R<br>'+lines.join('<br>');
+  }
+  function setRBase(v){ rBase=v; syncRBase(); recalc(); persist(); }
+  $('rbC').addEventListener('click',function(){setRBase('c')});
+  $('rbO').addEventListener('click',function(){setRBase('o')});
+  $('rbI').addEventListener('click',function(){setRBase('i')});
+  $('inOD').addEventListener('input',function(){
+    tubeOD=$('inOD').value; syncRBase(); recalc(); persist();
+  });
+
   $('addBend').addEventListener('click',function(){
     if(bends.length>=MAXBEND){toast('曲げは最大'+MAXBEND+'箇所です');return}
     bends.push({a:'',r:''});
     straights.push('');
-    buildRows();recalc();persist();
+    buildRows();recalc();syncRBase();persist();
+  });
+  $('addHole').addEventListener('click',function(){
+    if(holes.length>=MAXHOLE){toast('穴は最大'+MAXHOLE+'つです');return}
+    holes.push({b:'',a:''});
+    buildHoleRows();recalc();persist();
+  });
+  $('delHole').addEventListener('click',function(){
+    if(!holes.length){toast('穴がありません');return}
+    holes.pop();
+    buildHoleRows();recalc();persist();
+  });
+  $('holeList').addEventListener('input',function(e){
+    var t=e.target;
+    var i=t.getAttribute('data-i'), ty=t.getAttribute('data-t');
+    if(i==null||!ty||!holes[i])return;
+    if(ty==='hb')holes[i].b=t.value;
+    if(ty==='ha')holes[i].a=t.value;
+    recalc(); persist();
   });
   $('delBend').addEventListener('click',function(){
     if(!bends.length){toast('曲げがありません');return}
@@ -1092,8 +1371,11 @@
   paintMode();            /* 保存から戻した設定をボタンにも反映する */
   paintOri();
   paintTurn();
+  $('inOD').value=tubeOD;
   buildRows();
+  buildHoleRows();
   recalc();
+  syncRBase();
 })();
 </script>
 
