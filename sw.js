@@ -2,7 +2,7 @@
  * オフライン専用機向け：全ツールを事前キャッシュし、キャッシュ優先で即表示。
  * 更新時は下の CACHE のバージョン(v1→v2…)を上げるだけ。古いキャッシュは自動削除。
  */
-var CACHE = "kensa-tools-v141";
+var CACHE = "kensa-tools-v142";
 
 /* プリキャッシュで取りこぼしたURLの記録先。ページからの診断に使う（外部通信はしない） */
 var FAILKEY = "./__precache_failed";
@@ -14,6 +14,8 @@ var PRECACHE = [
   "./arc-part/index.html",
   "./axis-tilt/",
   "./axis-tilt/index.html",
+  "./band-shape/",
+  "./band-shape/index.html",
   "./bend-guide-3d/",
   "./bend-guide-3d/index.html",
   "./bend-guide/",
@@ -69,6 +71,8 @@ var PRECACHE = [
   "./right-triangle/index.html",
   "./scale-count/",
   "./scale-count/index.html",
+  "./spring-coil/",
+  "./spring-coil/index.html",
   "./tally-split/",
   "./tally-split/index.html",
   "./belt-length/",
