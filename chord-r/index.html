@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#1F3341">
-<meta name="description" content="弦(スパン)と矢高から円弧の半径Rを計算。R既知なら期待矢高の逆算も。Rと開き角から周長・弦と角度指示の穴の割り出し(円弧カバー)にも対応。計算は端末内で完結し、入力値はどこにも送信されません。">
+<meta name="description" content="弦(スパン)と矢高から円弧の半径Rを計算。R既知なら期待矢高の逆算も。Rと開き角から周長・弦と角度指示の穴の割り出し(円弧カバー)にも対応。両端に直線の付いたカバーを定盤に置いたときの先端の高さ・全長・高さ推移も出せます。計算は端末内で完結し、入力値はどこにも送信されません。">
 <title>弦・矢高とR | 検査計算ツール</title>
 <style>
   :root{
@@ -186,6 +186,9 @@
       <li>c・h・R の<b>どれか2つ</b>を入れると、残りが赤字で出ます。</li>
       <li>図面のRと定規のスパン c から「合格時の矢高 h」を逆算することもできます。</li>
       <li>円弧カバーなど「<b>R と開き角</b>」の図面は、上の<b>「R・角度から割り出し」タブ</b>へ。周長・弦と、角度指示の穴の<b>左端からの周長・弦</b>が出ます（開き角は「117 30」＝117°30′のように度・分でも可）。</li>
+      <li>そのタブの<b>「定盤に置いて測る」</b>は、両端に直線の付いたカバーを<b>片方の直線を定盤に密着させて置き</b>、反対の先端の高さをハイトゲージで測るとき用です。
+        <b>先端の高さ</b>・<b>定盤上の全長</b>・<b>展開長</b>と、水平位置ごとの<b>高さ推移表</b>が出ます。
+        <b>この測り方は実質「角度ゲージ」です。</b>角度には非常に敏感（1°で数mm動く）ですが、<b>R にはほとんど反応しません</b>。この置き方で R の良否は判定できないと考えてください。</li>
           <li><b>割り部品</b>のタブは、割った片側だけを測るとき用です。<b>半径</b>と<b>割の隙間</b>を入れると、
         割面での<b>弦</b>と<b>矢高</b>が出ます（隙間のぶんを電卓で引く必要はありません）。
         <b>中心から端面まで</b>も入れると、実際に測れる<b>端面から円の底まで</b>が公差つきで出ます。</li>
@@ -210,6 +213,24 @@
       ・<b>端面から円の底まで</b> … <code>H − R</code>（H は割の中心から端面までの距離）。
         中心そのものはノギスやハイトゲージで当てられないので、実際に測れる寸法に置きかえたものです。
         公差は H に付いたものをそのまま移しています。<b>穴径にも公差がある場合は、その半分ぶんだけ別に振れます。</b><br>
+      ・<b>定盤に置いて測る</b> … 定盤に付けた直線を水平にとり、弧の始まりを原点として順に足しています。
+        弧は中心が真上（高さ R の位置）にあるので、開き角 θ まで回したときの<br>
+        　<code>弧の終わりの高さ = R(1 − cos θ)</code>　<code>弧の終わりの水平 = R sin θ</code><br>
+        そこから先端側の直線 L₂ を θ の向きに伸ばして<br>
+        　<code>先端の高さ = R(1 − cos θ) + L₂ sin θ</code>　<code>定盤上の全長 = L₁ + R sin θ + L₂ cos θ</code><br>
+        <b>定盤に付けた側の直線 L₁ は高さに効きません</b>（寝ているだけなので）。効くのは全長のほうです。<br>
+      ・<b>板厚と面の向き</b> … 定盤に接するのは弧の<b>外面</b>です（中心が上にあるため）。
+        図面のRが<b>内面</b>基準のときは <code>外面R = 内R + 板厚</code> に直してから上の式に入れています。
+        ハイトゲージが当たるのは<b>上面</b>なので、先端では <code>板厚 × cos θ</code> ぶん高く出ます。
+        上面の弧は<b>下面と同じ中心で半径が板厚ぶん小さい弧</b>なので、途中の高さは <code>R − √((R−板厚)² − 水平²)</code> です。
+        上面は板厚のぶんだけ手前で終わる（<code>板厚 × sin θ</code>）ので、表のいちばん先の行は「―」になることがあります。<br>
+      ・<b>展開長</b> … <code>L₁ + R θ + L₂</code>（θ はラジアン）で、<b>図面のRが指している面に沿った長さ</b>です。
+        材料の切り出し長さは普通<b>中立面</b>（板厚の中心）で取るので、板厚のあるものはそのぶん違います。<br>
+      ・<b>感度</b> … 高さを θ で微分すると <code>R sin θ + L₂ cos θ</code>（1°あたりはこれ×π/180）、
+        R で微分すると <code>1 − cos θ</code>、L₂ で微分すると <code>sin θ</code> です。
+        θ が浅いほど <code>1 − cos θ</code> は小さく、<b>R の効きだけが極端に鈍くなります</b>。
+        開き角の公差を入れると、上下限を上の式にそのまま入れ直した高さの管理値を出します（近似ではありません）。<br>
+      ・開き角が<b>90°を超える</b>と定盤の上で倒れるため、この計算は 90° までにしてあります。<br>
 </div>
     <div class="gx">
       <h4>例 ── 弦100・矢高10 の大きなR</h4>
@@ -253,6 +274,26 @@
           <button class="gbtn" type="button" data-ex='{"set":[{"click":"#tArc"},{"id":"fAR","v":200},{"id":"fATh","v":90},{"id":"fAHr","v":""},{"id":"fAAngs","v":"15 45 75"}]}' onclick="tryExample(this)">この例を試す</button>
         </div>
       </div>
+    <div class="gx">
+      <h4>例 ── R1000・15°、両端に100の直線のカバーを定盤に置く</h4>
+      <div class="gxin">
+        <div class="gfig"><svg viewBox="0 0 120 120" role="img" aria-label="片方の直線を定盤に付けて置いたカバーと先端の高さの図">
+          <line x1="8" y1="95" x2="112" y2="95" stroke="#1F3341" stroke-width="1.8"/>
+          <path d="M14,95 L46,95 A 62 62 0 0 1 92,79 L110,74" fill="none" stroke="#1F3341" stroke-width="2"/>
+          <line x1="110" y1="74" x2="110" y2="95" stroke="#D63426" stroke-width="1.4"/>
+          <text x="98" y="70" font-size="8" fill="#D63426">H</text>
+          <text x="26" y="107" font-size="7.5" fill="#5B707E">定盤</text>
+        </svg></div>
+        <div class="gtxt">
+          <p>R1000・開き角15°の弧の両端に100の直線。片方の直線を定盤に付けたとき、反対の先端の高さは？</p>
+          <p class="gset">定盤に置いて測る ／ R 1000 ／ θ 15 ／ 定盤側の直線 100 ／ 先端側の直線 100</p>
+          <p class="gread">読み方：先端の高さは <b>59.956</b>（≒60.0）、定盤上の全長は <b>455.412</b>、展開長は <b>461.799</b>。
+            高さ推移表の値をハイトゲージで拾えば、途中の形も見られます。
+            <b>1°ずれると6.2mm動く</b>ので、これは角度の検査です。R が±10 違っても 0.34 しか動きません。</p>
+          <button class="gbtn" type="button" data-ex='{"set":[{"click":"#tArc"},{"click":"#pmPlate"},{"click":"#prOut"},{"id":"fAR","v":1000},{"id":"fATh","v":15},{"id":"fPL1","v":100},{"id":"fPL2","v":100},{"id":"fPT","v":""},{"id":"fPTol","v":""},{"id":"fPStep","v":""}]}' onclick="tryExample(this)">この例を試す</button>
+        </div>
+      </div>
+    </div>
         <div class="gx">
       <h4>例 ── φ80 の穴を隙間0.4で割った下側、中心高さ50±0.1</h4>
       <div class="gxin">
@@ -474,6 +515,15 @@
       <input id="fATh" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
       <span class="unit">°</span>
     </div>
+  </div>
+
+  <div class="dimsw" id="arcModeChips" role="group" aria-label="穴を割り出すか、定盤に置いて測るか">
+    <button type="button" id="pmHole" class="on">穴を割り出す</button>
+    <button type="button" id="pmPlate">定盤に置いて測る</button>
+  </div>
+
+  <div id="arcHole">
+  <div class="inputs">
     <div class="row">
       <span class="badge">3</span>
       <label for="fAHr">穴の並ぶ半径<small>空欄なら R と同じ</small></label>
@@ -494,6 +544,70 @@
       <span class="unit">°</span>
     </div>
   </div>
+  </div>
+
+  <div id="arcPlate" hidden>
+  <div class="hint">片方の直線を<b>定盤にぴったり付けて</b>置いたときの、反対の先端の高さを出します。ハイトゲージで読む値です。置く向きを変えるときは、下の2つの直線を<b>入れ替えて</b>ください。直線が無い（弧だけの）部品は空欄のままで大丈夫です。</div>
+
+  <div class="dimsw" id="prChips" role="group" aria-label="図面のRが外面か内面か">
+    <button type="button" id="prOut" class="on">R は外面（定盤に付く側）</button>
+    <button type="button" id="prIn">R は内面（上側）</button>
+  </div>
+
+  <div class="inputs">
+    <div class="row">
+      <span class="badge">3</span>
+      <label for="fPL1">定盤に付ける直線<small>高さには効きません。全長には効きます</small></label>
+      <input id="fPL1" type="text" inputmode="decimal" autocomplete="off" placeholder="0">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row">
+      <span class="badge">4</span>
+      <label for="fPL2">先端側の直線<small>高さに効きます。空欄は0</small></label>
+      <input id="fPL2" type="text" inputmode="decimal" autocomplete="off" placeholder="0">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row">
+      <span class="badge">5</span>
+      <label for="fPT">板厚<small>空欄なら0。ゲージが読む上面の高さに効きます</small></label>
+      <input id="fPT" type="text" inputmode="decimal" autocomplete="off" placeholder="0">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row">
+      <span class="badge">6</span>
+      <label for="fPTol">開き角の公差 ±<small>空欄可。先端の高さの管理値に直します</small></label>
+      <input id="fPTol" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">°</span>
+    </div>
+    <div class="row">
+      <span class="badge">7</span>
+      <label for="fPStep">測る間隔<small>定盤に沿った水平の間隔。空欄なら弧を5等分</small></label>
+      <input id="fPStep" type="text" inputmode="decimal" autocomplete="off" placeholder="=弧÷5">
+      <span class="unit">mm</span>
+    </div>
+  </div>
+
+  <div class="dro">
+    <div class="dro-grid">
+      <div class="cellv"><span class="k">先端の高さ</span><span class="v dim" id="vPH">―</span><span class="s">mm 上面</span></div>
+      <div class="cellv"><span class="k">定盤上の全長</span><span class="v dim" id="vPX">―</span><span class="s">mm</span></div>
+      <div class="cellv"><span class="k">展開長</span><span class="v dim" id="vPD">―</span><span class="s">mm</span></div>
+    </div>
+    <div class="dro-sub" id="pSub">下面 = ― | 弧の終わり = ― | 端点間 = ―</div>
+    <div class="dro-sub" id="pTol">　</div>
+    <div class="dro-foot">
+      <span class="statusTxt" id="pStatus">R と開き角 θ を入れてください</span>
+    </div>
+  </div>
+
+  <div class="htblwrap">
+    <table class="htbl" id="pTbl" style="display:none">
+      <thead><tr><th>端から<br>水平</th><th>高さ<br>上面</th><th>高さ<br>下面</th><th>位置</th></tr></thead>
+      <tbody id="pBody"></tbody>
+    </table>
+  </div>
+  <div class="hint" id="pNote" style="display:none">「端から」は<b>定盤に付けた側の端</b>からの水平距離です。<b>上面</b>がハイトゲージで読む値、<b>下面</b>は定盤に接する面の形です。板厚が空欄のときは同じ値になります。上面は板厚のぶんだけ手前で終わるので、いちばん先の行は「―」になることがあります。</div>
+  </div>
 
   <div class="dro">
     <div class="dro-grid">
@@ -508,6 +622,7 @@
     </div>
   </div>
 
+  <div id="arcHoleOut">
   <div class="htblwrap">
     <table class="htbl" id="aTbl" style="display:none">
       <thead><tr><th>穴</th><th>左端から<br>角度</th><th>左端から<br>周長</th><th>左端から<br>弦</th><th>隣から<br>周長</th><th>隣から<br>弦</th></tr></thead>
@@ -515,6 +630,7 @@
     </table>
   </div>
   <div class="hint" id="aNote" style="display:none">周長・弦は<b>「穴の並ぶ半径」の円弧上</b>の値です（左端＝その円弧の端 0°）。⚠は開き角の外にある穴、隣の⚠は並び順が逆の穴です。</div>
+  </div>
   </section>
 
   <button class="clearBtn" type="button" onclick="armClear(this)">すべて消去</button>
@@ -698,7 +814,7 @@ function CD_K(){ return CD_DIM==='d' ? 2 : 1; }
     if(window.__splitCalc) window.__splitCalc();   /* 割り部品は別スクリプトのため window 経由 */
     $('fAHr').previousElementSibling.innerHTML = d? '穴の並ぶ直径<small>空欄なら \u03c6 と同じ</small>' : '穴の並ぶ半径<small>空欄なら R と同じ</small>';
     var kk=$('cR').getElementsByClassName('k')[0]; if(kk) kk.textContent = d?'\u03c6':'R';
-    recalc(); if(typeof calcArc==='function') calcArc();
+    recalc(); if(window.__arcRecalc) window.__arcRecalc();
   }
   $('cdR').addEventListener('click',function(){ CD_DIM='r'; syncDim(); });
   $('cdD').addEventListener('click',function(){ CD_DIM='d'; syncDim(); });
@@ -1013,6 +1129,223 @@ function CD_K(){ return CD_DIM==='d' ? 2 : 1; }
     for(var i=0;i<bs.length;i++) bs[i].className=(bs[i]===b)?'on':'';
     calcArc();
   });
+
+
+  /* ══════ 定盤に置いて測る（v143） ══════════════════════════════════
+     片方の直線を定盤に密着させて置いたときの、反対の先端の高さを出す。
+     ・定盤に付く面＝弧の外面（中心は上にあるので、外面が下になる）。
+       図面のRが内面基準なら 外面R ＝ 内R ＋ 板厚 に直してから計算する。
+     ・下面（定盤に接する面）を基準に組み立て、上面は中心側へ板厚ぶん寄せる。
+         下面の弧  … 中心(L1, Rb)・半径 Rb
+         上面の弧  … 中心(L1, Rb)・半径 Rb−t   （同じ中心の内側の弧）
+       よって上面の弧は「高さ Rb から 半径 Rb−t ぶん下りた」形になる。
+     ・θ>90° は定盤に置くと倒れるので受け付けない（幾何の破綻ではなく物として）。 */
+  var arcMode='hole', prMode='out';
+
+  function optNum(id){                       /* 空欄＝0。負や数字でないものは null */
+    var v=$(id).value.trim();
+    if(v==='') return 0;
+    var x=numA(v);
+    if(isNaN(x)||x<0) return null;
+    return x;
+  }
+  function setPSt(msg,isErr){
+    var s=$('pStatus'); s.textContent=msg;
+    s.className='statusTxt'+(isErr?' err':'');
+  }
+  function clearPOut(){
+    ['vPH','vPX','vPD'].forEach(function(id){ var e=$(id); e.textContent='―'; e.className='v dim'; });
+    $('pSub').textContent='下面 = ― | 弧の終わり = ― | 端点間 = ―';
+    $('pTol').innerHTML='&#12288;';
+    $('pTbl').style.display='none'; $('pNote').style.display='none';
+    $('pBody').innerHTML='';
+    $('figArc').innerHTML='';
+  }
+  function paintPr(){
+    $('prOut').className=(prMode==='out')?'on':'';
+    $('prIn').className =(prMode==='in') ?'on':'';
+  }
+  function paintArcMode(){
+    $('pmHole').className =(arcMode==='hole') ?'on':'';
+    $('pmPlate').className=(arcMode==='plate')?'on':'';
+    $('arcHole').hidden   =(arcMode!=='hole');
+    $('arcHoleOut').hidden=(arcMode!=='hole');
+    $('arcPlate').hidden  =(arcMode!=='plate');
+  }
+  function setArcMode(m){
+    arcMode=m; paintArcMode();
+    if(m==='plate') calcPlate(); else calcArc();
+  }
+
+  /* ── 図（定盤の上に寝かせた姿） ── */
+  function drawPlate(Rb,th,L1,L2,tk){
+    var thR=th*RAD, s=Math.sin(thR), c=Math.cos(thR), Ru=Rb-tk;
+    var aX=L1+Rb*s, aY=Rb*(1-c);               /* 下面の弧の終わり */
+    var tX=aX+L2*c, tY=aY+L2*s;                /* 下面の先端 */
+    var uX=L1+Ru*s, uY=Rb-Ru*c;                /* 上面の弧の終わり */
+    var vX=tX-tk*s, vY=tY+tk*c;                /* 上面の先端 */
+    var W=340, HH=250, padL=26, padR=52, padT=24, padB=48;
+    var mxx=Math.max(tX,vX,aX), mxy=Math.max(tY,vY);
+    var k=Math.min((W-padL-padR)/(mxx||1),(HH-padT-padB)/(mxy||1));
+    if(!isFinite(k)||k<=0) k=1;
+    var ox=padL, oy=HH-padB;
+    function X(x){ return ox+x*k; }
+    function Y(y){ return oy-y*k; }
+    function n(v){ return v.toFixed(1); }
+    var g='<defs><marker id="arP" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L8,3 L0,6 z" fill="#1F3341"/></marker>'
+          +'<marker id="arPr" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L8,3 L0,6 z" fill="#D63426"/></marker></defs>';
+    /* 定盤 */
+    var pl0=X(0)-16, pl1=X(mxx)+18;
+    g+='<line x1="'+n(pl0)+'" y1="'+n(oy)+'" x2="'+n(pl1)+'" y2="'+n(oy)+'" stroke="#1F3341" stroke-width="2.2"/>';
+    var xh;
+    for(xh=pl0;xh<pl1;xh+=9){
+      g+='<line x1="'+n(xh)+'" y1="'+n(oy)+'" x2="'+n(xh-5)+'" y2="'+n(oy+5)+'" stroke="#8FA2AF" stroke-width="1"/>';
+    }
+    g+='<text x="'+n(pl0)+'" y="'+n(oy+16)+'" font-size="9" fill="#5B707E">定盤</text>';
+    /* 部品 */
+    var rk=(Rb*k).toFixed(1), uk=(Ru*k).toFixed(1);
+    var body='M '+n(X(0))+' '+n(Y(0))+' L '+n(X(L1))+' '+n(Y(0))
+           +' A '+rk+' '+rk+' 0 0 1 '+n(X(aX))+' '+n(Y(aY))
+           +' L '+n(X(tX))+' '+n(Y(tY));
+    if(tk>0){
+      body+=' L '+n(X(vX))+' '+n(Y(vY))+' L '+n(X(uX))+' '+n(Y(uY))
+          + ' A '+uk+' '+uk+' 0 0 0 '+n(X(L1))+' '+n(Y(tk))
+          + ' L '+n(X(0))+' '+n(Y(tk))+' Z';
+      g+='<path d="'+body+'" fill="#DCE5EA" stroke="#1F3341" stroke-width="2"/>';
+    }else{
+      g+='<path d="'+body+'" fill="none" stroke="#1F3341" stroke-width="2.4"/>';
+    }
+    /* 弧の始まり・終わりの目印 */
+    g+='<line x1="'+n(X(L1))+'" y1="'+n(Y(0)-4)+'" x2="'+n(X(L1))+'" y2="'+n(Y(0)+4)+'" stroke="#8FA2AF" stroke-width="1.2"/>';
+    g+='<circle cx="'+n(X(aX))+'" cy="'+n(Y(aY))+'" r="2.2" fill="#8FA2AF"/>';
+    /* 先端の高さ（上面）の寸法 */
+    var hy=Math.max(tY,vY), hx=X(mxx)+16;
+    g+='<line x1="'+n(X(vX))+'" y1="'+n(Y(hy))+'" x2="'+n(hx+6)+'" y2="'+n(Y(hy))+'" stroke="#D63426" stroke-width="0.9" stroke-dasharray="3 2"/>';
+    g+='<line x1="'+n(hx)+'" y1="'+n(oy)+'" x2="'+n(hx)+'" y2="'+n(Y(hy))+'" stroke="#D63426" stroke-width="1.5" marker-start="url(#arPr)" marker-end="url(#arPr)"/>';
+    g+='<text x="'+n(hx+5)+'" y="'+n((oy+Y(hy))/2)+'" font-size="10" font-weight="700" fill="#D63426">H</text>';
+    /* 定盤上の全長 */
+    var dy=oy+26;
+    g+='<line x1="'+n(X(0))+'" y1="'+n(dy)+'" x2="'+n(X(tX))+'" y2="'+n(dy)+'" stroke="#1F3341" stroke-width="1.2" marker-start="url(#arP)" marker-end="url(#arP)"/>';
+    g+='<line x1="'+n(X(0))+'" y1="'+n(oy)+'" x2="'+n(X(0))+'" y2="'+n(dy+4)+'" stroke="#8FA2AF" stroke-width="0.8"/>';
+    g+='<line x1="'+n(X(tX))+'" y1="'+n(Y(tY))+'" x2="'+n(X(tX))+'" y2="'+n(dy+4)+'" stroke="#8FA2AF" stroke-width="0.8" stroke-dasharray="3 2"/>';
+    g+='<text x="'+n((X(0)+X(tX))/2)+'" y="'+n(dy+13)+'" font-size="9.5" fill="#1F3341" text-anchor="middle">定盤上の全長</text>';
+    $('figArc').innerHTML=g;
+  }
+
+  /* ── 本体 ── */
+  function calcPlate(){
+    if(arcMode!=='plate') return;
+    var rTxt=$('fAR').value.trim(), tTxt=$('fATh').value.trim();
+    if(rTxt===''||tTxt===''){ clearPOut(); setPSt('入力待ち(R と開き角 θ を入れてください)',false); return; }
+    var Rin=numA(rTxt)/CD_K(), th=parseAng(tTxt);
+    if(isNaN(Rin)||Rin<=0){ clearPOut(); setPSt('R は正の値で入力してください',true); return; }
+    if(isNaN(th)||th<=0){ clearPOut(); setPSt('θ は正の値で入力してください(「7 30」=7°30′も可)',true); return; }
+    if(th>90){ clearPOut(); setPSt('開き角が90°を超えると定盤の上で倒れます。この計算は90°までです',true); return; }
+    var L1=optNum('fPL1'), L2=optNum('fPL2'), tk=optNum('fPT');
+    if(L1===null||L2===null||tk===null){ clearPOut(); setPSt('直線の長さと板厚は0以上の数で入れてください',true); return; }
+    var Rb=(prMode==='in')? Rin+tk : Rin;      /* 定盤に接する外面の半径 */
+    var Ru=Rb-tk;                              /* 上面の弧の半径 */
+    if(Ru<=0){ clearPOut(); setPSt('板厚が半径以上です。R と板厚を見直してください',true); return; }
+
+    var thR=th*RAD, s=Math.sin(thR), c=Math.cos(thR);
+    var aX=L1+Rb*s, aY=Rb*(1-c);               /* 弧の終わり（下面） */
+    var tX=aX+L2*c, tY=aY+L2*s;                /* 先端（下面） */
+    var uX=L1+Ru*s;                            /* 弧の終わり（上面）の水平 */
+    var vX=tX-tk*s, vY=tY+tk*c;                /* 先端（上面） */
+    var diag=Math.sqrt(tX*tX+tY*tY);
+    var dev=L1+Rin*thR+L2;                     /* 展開長は図面のRの面で */
+
+    $('vPH').textContent=fmt(vY); $('vPH').className='v led';
+    $('vPX').textContent=fmt(tX); $('vPX').className='v led';
+    $('vPD').textContent=fmt(dev); $('vPD').className='v led';
+    $('pSub').textContent='下面 = '+fmt(tY)+' | 弧の終わり = 高さ '+fmt(aY)+'・水平 '+fmt(aX)+' | 端点間 = '+fmt(diag);
+
+    /* 開き角の公差 → 先端の高さの管理値 */
+    function hTopAt(deg){
+      var r=deg*RAD;
+      if(r<0) r=0;
+      return Rb*(1-Math.cos(r))+L2*Math.sin(r)+tk*Math.cos(r);
+    }
+    var tolTxt=$('fPTol').value.trim();
+    if(tolTxt===''){
+      $('pTol').innerHTML='&#12288;';
+    }else{
+      var tol=numA(tolTxt);
+      if(isNaN(tol)||tol<0){
+        $('pTol').textContent='公差は0以上の数で入れてください';
+      }else{
+        var loD=th-tol; if(loD<0) loD=0;
+        var hiD=th+tol; if(hiD>90) hiD=90;
+        $('pTol').textContent='開き角 ±'+fa(tol)+'° → 先端の高さ '+fmt(hTopAt(loD))+' 〜 '+fmt(hTopAt(hiD));
+      }
+    }
+
+    /* 高さ推移（ハイトゲージ用） */
+    var stTxt=$('fPStep').value.trim(), step;
+    if(stTxt===''){ step=(Rb*s)/5; }
+    else{
+      step=numA(stTxt);
+      if(isNaN(step)||step<=0){
+        $('pTbl').style.display='none'; $('pNote').style.display='none'; $('pBody').innerHTML='';
+        setPSt('測る間隔は0より大きい数で入れてください(空欄なら弧を5等分)',true);
+        drawPlate(Rb,th,L1,L2,tk); return;
+      }
+    }
+    if((tX-L1)/step>60){
+      $('pTbl').style.display='none'; $('pNote').style.display='none'; $('pBody').innerHTML='';
+      setPSt('測る間隔が細かすぎます(行が60を超えます)。もう少し広げてください',true);
+      drawPlate(Rb,th,L1,L2,tk); return;
+    }
+    var xs=[], x=L1, guard=0;
+    while(x<tX-1e-9 && guard<200){ xs.push(x); x+=step; guard++; }
+    xs.push(tX);
+    /* 弧の終わりの行を必ず入れる */
+    var i, hasArcEnd=false;
+    for(i=0;i<xs.length;i++){ if(Math.abs(xs[i]-aX)<1e-7){ hasArcEnd=true; break; } }
+    if(!hasArcEnd){
+      for(i=0;i<xs.length;i++){ if(xs[i]>aX){ xs.splice(i,0,aX); break; } }
+    }
+    function yBot(xx){                          /* 下面の高さ（無ければ null） */
+      if(xx<-1e-9||xx>tX+1e-7) return null;
+      if(xx<=L1+1e-9) return 0;
+      if(xx<=aX+1e-9){ var q=xx-L1; return Rb-Math.sqrt(Math.max(0,Rb*Rb-q*q)); }
+      return aY+(xx-aX)*(s/c);
+    }
+    function yTop(xx){                           /* 上面の高さ（無ければ null） */
+      if(xx<-1e-9||xx>vX+1e-7) return null;
+      if(xx<=L1+1e-9) return tk;
+      if(xx<=uX+1e-9){ var q=xx-L1; return Rb-Math.sqrt(Math.max(0,Ru*Ru-q*q)); }
+      return (Rb-Ru*c)+(xx-uX)*(s/c);
+    }
+    var rows='', yb, yt, tag;
+    for(i=0;i<xs.length;i++){
+      yb=yBot(xs[i]); yt=yTop(xs[i]);
+      tag='';
+      if(Math.abs(xs[i]-L1)<1e-7) tag='弧の始まり';
+      if(Math.abs(xs[i]-aX)<1e-7) tag=tag?tag+'／弧の終わり':'弧の終わり';
+      if(Math.abs(xs[i]-tX)<1e-7) tag=tag?tag+'／先端':'先端';
+      rows+='<tr><td>'+fmt(xs[i])+'</td>'
+           +'<td>'+(yt===null?'―':fmt(yt))+'</td>'
+           +'<td>'+(yb===null?'―':fmt(yb))+'</td>'
+           +'<td>'+tag+'</td></tr>';
+    }
+    $('pBody').innerHTML=rows;
+    $('pTbl').style.display=''; $('pNote').style.display='';
+    setPSt('計算しました（'+xs.length+'行'+(prMode==='in'?'・R は内面として外面Rに直しました':'')+'）',false);
+    drawPlate(Rb,th,L1,L2,tk);
+  }
+
+  $('pmHole').addEventListener('click',function(){ setArcMode('hole'); });
+  $('pmPlate').addEventListener('click',function(){ setArcMode('plate'); });
+  $('prOut').addEventListener('click',function(){ prMode='out'; paintPr(); calcPlate(); });
+  $('prIn').addEventListener('click',function(){ prMode='in';  paintPr(); calcPlate(); });
+  ['fAR','fATh','fPL1','fPL2','fPT','fPTol','fPStep'].forEach(function(id){
+    $(id).addEventListener('input',calcPlate);
+  });
+  /* 直径切替（別スクリプト）から呼べるように出しておく。
+     v142 まで syncDim の中の typeof calcArc は別IIFEのため常に undefined で、
+     半径⇔直径を切り替えても割り出しタブが古い値のままだった。 */
+  window.__arcRecalc=function(){ calcArc(); calcPlate(); };
 
 
 })();
