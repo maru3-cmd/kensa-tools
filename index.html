@@ -67,6 +67,15 @@
   /* カードは <a> とお気に入り <button> の兄弟コンテナ（v35）。
      <a> の中に <button> を置くのは不正なHTMLで、キーボード操作も壊れるため。 */
   .tool-card{position:relative;margin-bottom:8px}
+/* ── 選抜（v148）：名前＋一行の短いカード。中身は同じツールへ飛ぶ ── */
+.tool-card.pick a.tool{padding:8px 12px}
+.tool-card.pick .ds{font-size:11.5px;line-height:1.5}
+.pick-modes{display:flex;gap:6px;margin:4px 0 0 60px;flex-wrap:wrap}
+.pick-modes a{font-size:12px;font-weight:700;color:var(--ink);text-decoration:none;
+  background:#EDF1F3;border:1px solid #C9D3DA;border-radius:999px;padding:5px 12px;min-height:30px;
+  display:inline-flex;align-items:center}
+.pick-modes a:active{background:var(--ink);color:#fff}
+.pick-lead{font-size:12px;color:#5B707E;line-height:1.7;margin:2px 2px 8px}
   .tool-card.hide{display:none}
   a.tool .chev{grid-column:4}
   .pin{
@@ -251,7 +260,7 @@
 
   <div class="cover">
     <div class="cover-inner">
-      <div class="h1row"><h1>検査ミニポータル</h1><button type="button" class="verBtn" id="verBtn" aria-expanded="false" aria-controls="chglog">v143 ｜ 更新内容</button></div>
+      <div class="h1row"><h1>検査ミニポータル</h1><button type="button" class="verBtn" id="verBtn" aria-expanded="false" aria-controls="chglog">v148 ｜ 更新内容</button></div>
       <div class="sub">INSPECTION MINI TOOLS</div>
       <div class="desc">
         現場のための計算・記録ツール集。すべての計算はこの端末の中で行われ、入力値がネットに送信されることはありません。
@@ -259,6 +268,11 @@
       <div class="chglog" id="chglog" hidden>
         <h3>更新内容（新しい順）</h3>
         <ul>
+          <li><span class="vtag">v148</span><b>トップの初期表示を「選抜」にしました。</b>ムギさんから「ツールが増えすぎて、開いた最初の画面が長く、スクロールに時間がかかって誰も使わなくなっている」という相談です。チップの先頭に<b>「選抜」</b>を足し、<b>開いたときはそれが出る</b>ようにしました。<b>現場でよく使う11個</b>だけが、名前と一行の短いカードで並びます。「すべて」は右に1つずれただけで、分類のチップ・検索・★お気に入り・最近はいままでどおりです。<b>選抜の中身と順番</b>はムギさんの指定です：穴ピッチ（半径と角度から）／PCD穴ピッチ／図面まるごと穴ピッチ／直角三角形／弦・矢高とR／曲げガイド計算／公差判定・公差表／はかり数取器／またぎ歯厚／オーバーピン径／並び寸法ピッチ。<b>穴ピッチと PCD穴ピッチは1枚ずつにまとめ、カードの下に「同半径／異半径」「等配／不等配」の入口を並べました。</b>「すべて」では従来どおり2枚ずつのままです。どちらから開いても中身は同じツールで、画面の上で切り替えられます。<b>すでに開いたことのある端末には「すべて」が記憶されている</b>ので、そのままだと新しい初期表示に当たりません。v148 を開いた<b>最初の1回だけ</b>「選抜」に戻し、そのあとは押したチップを覚える今までの動きに戻ります。押したいものが選抜に無いときは、「すべて」か分類のチップを押すか、上の検索に言葉を入れてください。検索はチップに関係なく全部から探します。</li>
+          <li><span class="vtag">v147</span><b>新しいツール：タイミングプーリの径（TOOL-43）</b>。スプロケットに続く、既製品の寸法を規格の式から出す2つ目です。ベルトの種類と歯数を入れると、<b>歯先円直径（外径）</b>と<b>その許容差</b>が出ます。ノギスやマイクロメータで実際に測るのは外径のほうなので、そちらを主表示にしました。<b>この部品でいちばん間違えやすいのは2つ</b>あります。ひとつは<b>ピッチ円がプーリの外側にある</b>こと。ベルトの心線がプーリの歯先より外を通るため、<b>歯先円直径はピッチ円直径より小さくなります</b>。歯車の感覚で「ピッチ円＝実物の径」と思うと外します。図でも一点鎖線のピッチ円が本体の外を通るように描きました。もうひとつは<b>歯先円直径の許容差が＋側だけ</b>（0 〜 ＋いくつ）だということです。<b>基準寸法がそのまま下限</b>になります。±のつもりで下に振ると、規格外の品を通してしまいます。実測を入れると、下に外れた場合は「下限を○○下回っています」とはっきり出します。<b>ピッチ円直径は測れない値</b>なので、そう書き添えてあります。<b>公差も規格の表から出します。</b>隣接ピッチ誤差・累積ピッチ誤差・側面の振れ・歯先円周の円周振れを、歯先円直径の大きさで区分して表示します。大径側は計算式（側面の振れは101.60超で歯先円直径×0.001、254.00超で 0.25＋(d₀−254.00)×0.0005 など）なので、そこも式どおりに出しています。<b>入っていないもの</b>：<b>円弧歯形（HTD・STS・S形など）は扱えません</b>。このツールは台形歯形（MXL・XXL・XL・L・H・XH・XXH）だけで、円弧歯形は JIS B 1857-2 という別の規格です。<b>形が違うので数字を流用できません</b>。歯形そのもの（カッタのラック寸法）は投影機で当たる話なので入れていません。歯幅方向の外径差と平行度は呼び幅で決まるため、幅の分かる図面から規格表を引いてください。</li>
+          <li><span class="vtag">v146</span><b>新しいツール：スプロケットの径（TOOL-42）</b>。<b>チェーンの呼び番号と歯数を入れるだけ</b>で、<b>ピッチ円直径</b>・<b>歯先円直径</b>・<b>歯底円直径</b>・<b>歯底距離</b>が出ます。<b>メーカーのカタログは要りません。</b>これらの径は規格の式で決まるので、どこの製品でも同じ値になるからです。いちばん使うのは<b>歯底距離</b>で、これは<b>ポイントマイクロメータを歯底に直接当てて測る値</b>です。測定ピンを入れて測るときは<b>オーバピン寸法</b>のほうを見てください。実測を入れると差が出て、<b>許容差</b>も入れれば合否まで出ます。<b>いちばん大事なのは奇数歯です。</b>偶数歯は向かい合う歯底で測れるので、歯底距離＝歯底円直径です。ところが<b>奇数歯は向かい合う歯底がありません</b>。半歯ぶんずれた位置で測ることになるので、その分だけ小さい値になります（RS40・21歯なら歯底円直径77.291に対して歯底距離77.052。<b>0.238 の差</b>）。<b>歯底円直径のほうを期待値にすると、良品を不良として落とします。</b>図では偶数歯か奇数歯かと、赤い線でどこを測るかを描き分けています。<b>測定ピンの太さにも決まりがあります。</b>規格では<b>測定ピン外径はローラ外径を超えてはならない</b>とされています。太いピンは歯底まで届かず実際より大きく出るので、超えたときは警告を出します。<b>入れていないものもあります。</b>寸法許容差は<b>入っていません</b>。規格に表はあるのですが手元の資料では数値が読み取れず、当て推量の値を入れるとそれが基準として一人歩きするためです。図面か規格表の値を欄に入れてください。呼び番号41も、ローラ外径を2つ以上の資料で確かめられなかったので入れていません。入っているのは<b>A系の単列12番手</b>（RS25〜RS240）です。呼び番号25と35は<b>ローラの無いブシュチェーン</b>なので、式のd₁はブシュ外径を指します。<b>規格番号の訂正</b>：スプロケットは以前 JIS B 1802 でしたが、<b>現行は JIS B 1801:2020 の附属書JA</b> に入っています。</li>
+          <li><span class="vtag">v145</span><b>新しいツール：ボルトのねじ部長さ（TOOL-41）</b>。ムギさんからの相談で作りました。<b>図面が「半ねじ」を指示しているのに、その呼び長さには半ねじの規格品が無い</b>、という食い違いを検査の場で押さえるためのツールです。品物を返却しても、取引先も無いものに困るだけで手間が増えるだけ、という状態を止めるのが目的です。<b>ねじの呼びと呼び長さを入れるだけ</b>で、<b>全ねじだけ</b>／<b>半ねじあり</b>／<b>表の範囲外</b>のどれかを出します。半ねじがある場合は<b>首下の円筒部 ℓs・ℓg</b> が出るので、現物をノギスで測って突き合わせられます。半ねじが無い場合は<b>代わりに指示できる最短の呼び長さ</b>も出すので、差し戻すときに「では何にすればよいか」まで書けます。<b>六角穴付きボルト（JIS B 1176）と六角ボルト（JIS B 1180）でタブを分けました。</b>この2つは<b>ねじ部長さ b の決まり方がまったく違う</b>ためです。六角穴付きは呼び径ごとに b が1つだけ（2d+12）。六角ボルトは<b>呼び長さで3段階に変わります</b>（125以下で 2d+6、125〜200 で 2d+12、200超で 2d+25）。混ぜると長いボルトで必ず外すので、タブごと分けています。<b>言い方には気をつけました。</b>「市場に無い」ではなく<b>「規格品は全ねじだけ。半ねじが要るなら特注」</b>と出します。規格の全ねじ範囲でも<b>メーカーによっては半ねじを作っている</b>ことがあるので、「市場に無い」と言い切ると1社見つかっただけで崩れるからです。同じ理由で、表の上限を超えたものは「無い」ではなく<b>「この表の範囲外」</b>と出します。入っているのは六角ボルトが部品等級A・第1選択の抜粋なので、等級Bや第2選択まで含めた話は別だからです。<b>判定を止める場所もあります。</b>六角ボルトの呼び長さ <b>125〜130</b> と <b>200〜220</b> です。六角ボルトには本体規格（ISO準拠）と附属書（旧JIS）の2系統があり、b の切り替わりが 125／200 と 130／220 で違うため、この帯だけ値が割れます（M10×130 なら 32 と 26）。ここは黙って片方で答えず、現物確認をお願いする作りにしました。なお<b>いちばん短い側の流通範囲は判定していません</b>。境目が手元の資料で確認できていないので、全ねじ範囲としか出しません。</li>
+          <li><span class="vtag">v144</span><b>弦・矢高とR（TOOL-04）「定盤に置いて測る」の図で、弧が逆向きに反っていたのを直しました。</b>ムギさんの指摘です。<b>数字は正しく、絵だけが裏返っていました</b>（先端の高さ・全長・展開長・高さ推移表はどれも v143 から変わりません）。画面は上下が逆さの座標なので、SVG の弧に「どちら回りに描くか」を指定する必要があり、そこを取り違えていました。そのため弧が弦の反対側にふくらみ、<b>弧の終わりで直線と折れて見えて</b>いました。案内の中の小さい図も同じ向きに直し、直線と弧がきちんと接する形に引き直しました。<b>あわせて「↕ 定盤に付ける側を入れ替える」ボタン</b>を足しました。2つの直線の数字を入れ替えます。なお<b>弧の反る向きは選べません</b>。定盤に付けた直線から弧が立ち上がる以上、弧の中心は必ず真上にあります（中心が下にあると、弧は定盤の中へもぐってしまいます）。図面の弧が下にふくらんで見える部品は、<b>ひっくり返して定盤に置く</b>ことになります。反対側の端を定盤に付けたいときは、上の入れ替えボタンを使ってください。<b>この種の間違いへの手当て</b>：絵の向きは目で見ないと分からないため、これまで検査していませんでした。今回から<b>SVG の弧を計算で追いかけて、弧が弦のどちら側にふくらんでいるかを数値で確かめる</b>検査を入れました。</li>
           <li><span class="vtag">v143</span><b>弦・矢高とR（TOOL-04）の「R・角度割り出し」タブに、<b>定盤に置いて測る</b>を足しました。</b>両端に直線の付いた円弧カバーを、<b>片方の直線を定盤にぴったり付けて置き</b>、反対の先端の高さをハイトゲージで測る、あの測り方の計算です。これまでは現場で出せず、人に頼むしかありませんでした。R と開き角はいままでの欄をそのまま使い、<b>定盤に付ける直線</b>・<b>先端側の直線</b>・<b>板厚</b>を足すと、<b>先端の高さ</b>・<b>定盤上の全長</b>・<b>展開長</b>・<b>端点間</b>と、<b>水平位置ごとの高さ推移表</b>（ハイトゲージで拾う値）が出ます。定盤に置いた姿の図も描きます。<b>図面のRが外面・内面のどちらでも入れられます</b>（内面なら 内R＋板厚 で外面Rに直します）。定盤に接するのは弧の外面、ゲージが当たるのは上面なので、<b>先端では板厚×cosθ ぶん高く出ます</b>。上面は板厚のぶんだけ手前で終わるので、表のいちばん先の行は「―」になることがあります。<b>開き角の公差</b>を入れると、先端の高さの管理値（例：±0.5°→59.795〜65.984）に直します。上下限をそのまま式に入れ直した値で、近似ではありません。<b>知っておいてほしいこと</b>：この置き方は<b>角度には非常に敏感で、R にはほとんど反応しません</b>（R1000・15°・直線100なら、1°で6.2mm動くのに R が±10 違っても0.34しか動きません）。実質「角度ゲージ」なので、<b>この置き方で R の良否は判定できません</b>。また<b>定盤に付けた側の直線は高さに効きません</b>（寝ているだけです）。効くのは先端側の直線のほうで、1mm長いと0.26mm上がります。開き角が90°を超えると定盤の上で倒れるため、この計算は90°までにしてあります。<b>あわせて不具合を1つ直しました。</b>この画面上部の<b>「半径 R で」「直径 φ で」の切り替えが、割り出しタブに効いていませんでした</b>。ラベルは「直径 φ」に変わるのに中身は半径のままで、周長や弦が黙って倍の値のままになっていました（φ200・90°で 314.159 と出ていた。正しくは 157.080）。v30 で割り出しタブを別のスクリプトとして足したときからの取りこぼしです。</li>
           <li><span class="vtag">v142</span><b>新しいツールを2つ足しました。</b><b>①コイルばね計算（TOOL-39）</b>。圧縮・引張の切り替え。線径・コイル径（外径／平均径／内径のどれで入れてもよい）・有効巻数・自由長と材質から、<b>ばね定数 k</b> と<b>指定した長さ（たわみ）での荷重</b>、せん断応力（ワールの補正つき）を出します。材質を選ぶと横弾性係数 G が入ります（JIS B 2704 の値）。もう1つの入れ方が<b>「実測から定数」</b>で、ばねを<b>2つの長さで測った荷重</b>から実物の k を出し、図面の k を入れると差と割合が出ます。検査で実際にやるのはこちらです。長さと荷重を入れ違えたときは、圧縮なら短いほうが重いはずなので、逆なら知らせます。<b>②弧と直線の部品 作図（TOOL-40）</b>。図面のガイドのような<b>幅のある帯</b>を、基準線（穴が載る線）で追いかけて作図します。曲げガイド（TOOL-10）は管の中心線を1本の線で描くツールなので、幅のある帯・端面（切り口）・帯の上の穴は表せませんでした。こちらは基準線の両側に<b>外側の幅・内側の幅</b>を付けて帯にし、区間は<b>直線／接する弧（180°を超えてもよい。Ω形はこれ）／中心を決める弧</b>（中心の位置を「今の点から」か「前の弧の中心から」で指定。前の区間と折れてつながる）の3種類を順につなぎます。端面は<b>直角</b>か<b>角度をつける</b>かを選べます。穴を「何本目の区間の、始まりから何度（直線なら何mm）」で置くと、<b>始まりの端面から・終わりの端面から</b>の寸法が、<b>外周に沿って／内周に沿って／基準線に沿って／端面の角からまっすぐ</b>の全部で出ます。穴が2つ以上なら穴どうしの直線距離も出ます。外側・内側は最初の弧の曲がる向きで決め、図の中に「外」「内」と書きます。弧の縁の長さは<b>縁のR × 角度</b>（中心側は基準線のR − 幅、外側は ＋ 幅）で、角度をつけた端面の角は直線と円（または直線どうし）の交点を解いています。端面の角の丸み（面取り・R）は描きません。穴は基準線の上に限ります。いずれも検算は手計算と突き合わせてあります。</li>
           <li><span class="vtag">v141</span><b>曲げガイド（TOOL-10）に2つ足しました。ホースのガイドと、弧の部品の穴位置のためです。</b><b>①図面のRが管の中心線でなくても入れられます。</b>これまでRの欄は中心線専用で、図面が<b>外側</b>や<b>内側</b>からRを取っていると、手で R∓D/2 に直してから打つ必要がありました。「Rの基準」を<b>中心線／外側／内側</b>から選び、<b>管の外径 D</b>を入れると、中心線Rに直して計算します。<b>どう直したかは欄の下に出ます</b>（例：入れたR 100 − 10 ＝ 中心線R 90）。打った数字はそのまま残り、意味だけが変わります。中心線Rが0以下になる組合せは受け付けません。<b>v140以前の保存は、必ず「中心線」で開きます。</b>同じ数字の意味が黙って変わらないようにするためです。<b>②弧の上の穴・目印の位置が出せます。</b>図面は穴の位置を<b>中心からの角度</b>で書くことが多いので、「どの曲げの、始まりから何度か」で入れます。穴ごとに<b>弧に沿った長さ・直線距離・座標</b>が、<b>始点側と終点側の両方</b>で出ます。図にも印が付き、座標表にも行が増えます。<b>弧に沿った長さと直線距離は、図の向きを変えても変わりません</b>（座標だけが向きに従います）。あわせて、<b>中心の違うRが接してつながる形</b>は、あいだの<b>直線を0</b>にすると表せることを案内に書きました。この形はもともと計算できていましたが、どこにも書いていませんでした。計算のしかたは今までどおりです。</li>
@@ -387,7 +401,10 @@
 
   <div class="chips" id="chips" aria-label="分類で絞り込み"></div>
 
-  <h2 id="favHead" style="display:none">★ お気に入り(この端末のみ)</h2>
+  <h2 id="pickHead" style="display:none">◎ 選抜（よく使うもの）</h2>
+<div id="pickLead" class="pick-lead" style="display:none">現場でよく使う11個です。ほかは「すべて」か分類のチップ、または検索で探せます。</div>
+<div id="pickBox"></div>
+<h2 id="favHead" style="display:none">★ お気に入り(この端末のみ)</h2>
   <div id="favBox"></div>
   <h2 id="recHead" style="display:none">🕒 最近使ったツール(この端末のみ)</h2>
   <div id="recBox"></div>
@@ -685,6 +702,7 @@
     <span class="chev">›</span>
   </a>
   </div>
+  
   <div class="tool-card">
   <a class="tool" href="band-shape/">
     <span class="icon"><svg viewBox="0 0 44 44">
@@ -744,6 +762,43 @@
   </a>
   </div>
   <div class="tool-card">
+  <a class="tool" href="sprocket/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <path d="M22 5 L25 9 L29 7 L30 12 L35 12 L34 17 L39 19 L36 23 L39 27 L34 29 L35 34 L30 34 L29 39 L25 37 L22 41 L19 37 L15 39 L14 34 L9 34 L10 29 L5 27 L8 23 L5 19 L10 17 L9 12 L14 12 L15 7 L19 9 Z" fill="#DCE5EA" stroke="#1F3341" stroke-width="1.5" stroke-linejoin="round"/>
+      <circle cx="22" cy="23" r="14.5" fill="none" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="4 2 1 2"/>
+      <circle cx="22" cy="23" r="5" fill="#fff" stroke="#1F3341" stroke-width="1.5"/>
+      <line x1="22" y1="10.5" x2="22" y2="35.5" stroke="#D63426" stroke-width="1.8"/>
+      <circle cx="22" cy="10.5" r="2" fill="#D63426"/>
+      <circle cx="22" cy="35.5" r="2" fill="#D63426"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-42</span>
+      <div class="nm">スプロケットの径</div>
+      <div class="ds">チェーンの<b>呼び番号と歯数だけ</b>でピッチ円・歯先円・<b>歯底距離</b>が出ます。カタログ不要。<b>奇数歯は式が変わる</b>ので、歯底円直径を期待値にすると良品を落とします。オーバピン寸法・実測との合否も</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  </div>
+  <div class="tool-card">
+  <a class="tool" href="timing-pulley/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <circle cx="22" cy="22" r="13" fill="#F7F9FA" stroke="#1F3341" stroke-width="1.8"/>
+      <circle cx="22" cy="22" r="16.5" fill="none" stroke="#D63426" stroke-width="1.2" stroke-dasharray="5 2 1 2"/>
+      <circle cx="22" cy="22" r="4" fill="#fff" stroke="#1F3341" stroke-width="1.5"/>
+      <path d="M22 9 v3 M31.2 12.8 l-2.1 2.1 M35 22 h-3 M31.2 31.2 l-2.1-2.1 M22 35 v-3 M12.8 31.2 l2.1-2.1 M9 22 h3 M12.8 12.8 l2.1 2.1"
+        stroke="#8FA2AF" stroke-width="1.6"/>
+      <line x1="22" y1="22" x2="35" y2="22" stroke="#1F3341" stroke-width="1.1"/>
+      <line x1="35" y1="22" x2="38.5" y2="22" stroke="#D63426" stroke-width="1.8"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-43</span>
+      <div class="nm">タイミングプーリの径</div>
+      <div class="ds">台形歯形(MXL〜XXH)の<b>歯先円直径</b>と<b>許容差</b>。<b>許容差は＋側だけ</b>なので基準がそのまま下限です。実測で合否も。ピッチ誤差・振れの公差も規格の表から</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  </div>
+  <div class="tool-card">
   <a class="tool" href="pipe-thread/">
     <span class="icon"><svg viewBox="0 0 44 44">
       <line x1="4" y1="14" x2="20" y2="14" stroke="#1F3341" stroke-width="1.8"/>
@@ -774,6 +829,28 @@
       <span class="no">TOOL-20</span>
       <div class="nm">ねじ下穴・ひっかかり率</div>
       <div class="ds">並目/細目・切削/転造。材質別の限度%(編集可)で下穴を判定。実測内径・外径の2級(6H/6g)合否も</div>
+    </span>
+    <span class="chev">›</span>
+  </a>
+  </div>
+  <div class="tool-card">
+  <a class="tool" href="bolt-thread/">
+    <span class="icon"><svg viewBox="0 0 44 44">
+      <rect x="4" y="14" width="8" height="16" fill="#DCE5EA" stroke="#1F3341" stroke-width="1.8"/>
+      <rect x="12" y="18" width="28" height="8" fill="#F2F4F5" stroke="#1F3341" stroke-width="1.8"/>
+      <line x1="26" y1="18" x2="26" y2="26" stroke="#1F3341" stroke-width="1.4"/>
+      <path d="M 29 18 L 27 26 M 33 18 L 31 26 M 37 18 L 35 26" fill="none" stroke="#8FA2AF" stroke-width="1.3"/>
+      <line x1="26" y1="10" x2="40" y2="10" stroke="#D63426" stroke-width="1.8"/>
+      <line x1="26" y1="7" x2="26" y2="13" stroke="#D63426" stroke-width="1.6"/>
+      <line x1="40" y1="7" x2="40" y2="13" stroke="#D63426" stroke-width="1.6"/>
+      <line x1="12" y1="34" x2="26" y2="34" stroke="#2E9E5B" stroke-width="1.8"/>
+      <line x1="12" y1="31" x2="12" y2="37" stroke="#2E9E5B" stroke-width="1.6"/>
+      <line x1="26" y1="31" x2="26" y2="37" stroke="#2E9E5B" stroke-width="1.6"/>
+    </svg></span>
+    <span>
+      <span class="no">TOOL-41</span>
+      <div class="nm">ボルトのねじ部長さ</div>
+      <div class="ds">呼びと呼び長さから<b>その長さに半ねじの規格品があるか</b>を判定。図面が<b>規格に無い半ねじ</b>を指示していないかその場で分かります。半ねじがあるときは<b>円筒部 ℓs・ℓg</b> も。六角穴付き(B 1176)と六角ボルト(B 1180)</div>
     </span>
     <span class="chev">›</span>
   </a>
@@ -1223,7 +1300,29 @@
     'pcd-pitch/?m=un':'PCD ピッチ円 不等配 不等分割 不等間隔 ばらばら 角度の並び 隣との角度 真上からの角度 起点角 回り方向 総当たり 一覧 全組み合わせ 3辺 三辺 外接円 現物合わせ 図面なし 現場戻り 戻り品 外−外'
   };
   var FAVKEY='kensa-fav';
-  var CHIPKEY='kensa-chip';   // 選んだチップ(次に開いたときも覚える)
+  var CHIPKEY='kensa-chip';
+  var PICKKEY='kensa-chip-pick148';   // v148 を開いた最初の1回だけ、初期表示を選抜へ戻す目印
+  /* ── 選抜（v148）──────────────────────────────────────────
+     並びはムギさん指定：01, 02, 30, 24, 04, 10, 05, 07, 06, 15, 28。
+     h … 本体のカード（一覧に実在するもの）。アイコンはそのカードから借りる。
+     nm/ds … 選抜用の短い名前と一行。
+     modes … 1つのツールに入口が2つあるもの（01 同半径/異半径、02 等配/不等配）。
+     ★h が一覧に無ければその項目は静かに落ちるのではなく、検査で落ちる。 */
+  var PICK=[
+    {h:'pitch-radius/?m=same', nm:'穴ピッチ（半径と角度から）', ds:'中心からの半径と角度で2穴の距離。キリ径を入れるとノギスの読みも',
+     modes:[{t:'同半径',h:'pitch-radius/?m=same'},{t:'異半径（r₁≠r₂）',h:'pitch-radius/?m=diff'}]},
+    {h:'pcd-pitch/?m=eq', nm:'PCD穴ピッチ', ds:'PCDと穴数から穴間ピッチ。実測ピッチからPCDの逆算も',
+     modes:[{t:'等配',h:'pcd-pitch/?m=eq'},{t:'不等配（角度ばらばら）',h:'pcd-pitch/?m=un'}]},
+    {h:'hole-map/',       nm:'図面まるごと穴ピッチ', ds:'図面1枚ぶんの穴をまとめて入れ、全穴の座標と総当たりピッチ'},
+    {h:'right-triangle/', nm:'直角三角形',           ds:'辺と角のうち2つで残りが出る。度分秒も'},
+    {h:'chord-r/',        nm:'弦・矢高とR',           ds:'弦と矢高からR。R・開き角から周長・穴割り出し・定盤に置いた高さ'},
+    {h:'bend-guide/',     nm:'曲げガイド計算',        ds:'パイプの曲げ形状を作図し、展開長・端点間距離'},
+    {h:'tolerance/',      nm:'公差判定・公差表',      ds:'JISはめあい公差。実測の合否、穴×軸のすきま'},
+    {h:'scale-count/',    nm:'はかり数取器',          ds:'単重から総個数。小分け計量の記録・合計'},
+    {h:'gear-w/',         nm:'またぎ歯厚',            ds:'平歯車のW寸法。またぎ歯数は自動'},
+    {h:'over-pin/',       nm:'オーバーピン径',        ds:'歯車のピン挟み測定値。実測から歯厚を逆算して合否'},
+    {h:'pitch-row/',      nm:'並び寸法ピッチ',        ds:'端面からの並び寸法から隣接ピッチ・任意2穴間'}
+  ];   // 選んだチップ(次に開いたときも覚える)
   var RECKEY='kensa-recent';  // 最近開いたツール(新しい順・最大5件)
 
   /* PCD穴ピッチが 'pcd-pitch/' から '?m=eq' / '?m=un' の2枚になった（版108）。
@@ -1283,7 +1382,7 @@
   var recs=keepListed(loadRec());
   var noHit=document.getElementById('noHit');
   var qInput=document.getElementById('q');
-  var h2s=[].slice.call(document.querySelectorAll('.wrap > h2')).filter(function(h){return h.id!=='favHead'&&h.id!=='recHead'});
+  var h2s=[].slice.call(document.querySelectorAll('.wrap > h2')).filter(function(h){return h.id!=='favHead'&&h.id!=='recHead'&&h.id!=='pickHead'});
 
   // ── 分類チップ(v63) ──
   // チップの名前: h2 の見出しを短くしたもの
@@ -1297,7 +1396,7 @@
   var secOf=(function(){
     var map={}, cur='';
     [].slice.call(wrap.children).forEach(function(el){
-      if(el.tagName==='H2'&&el.id!=='favHead'&&el.id!=='recHead')cur=chipLabel(el.textContent);
+      if(el.tagName==='H2'&&el.id!=='favHead'&&el.id!=='recHead'&&el.id!=='pickHead')cur=chipLabel(el.textContent);
       else if(el.classList&&el.classList.contains('tool-card')){
         var a=el.querySelector('a.tool');
         if(a)map[a.getAttribute('href')]=cur;
@@ -1309,10 +1408,17 @@
     };
   })();
   var chipBar=document.getElementById('chips');
-  var chipDefs=[{k:'all',t:'すべて'},{k:'fav',t:'★お気に入り'},{k:'recent',t:'最近'}];
+  var chipDefs=[{k:'pick',t:'選抜'},{k:'all',t:'すべて'},{k:'fav',t:'★お気に入り'},{k:'recent',t:'最近'}];
   h2s.forEach(function(hh){var L=chipLabel(hh.textContent);chipDefs.push({k:L,t:L})});
-  var chip='all';
+  var chip='pick';
   try{
+    /* v148: 初期表示を「すべて」から「選抜」へ。すでに「すべて」を記憶している端末が
+       そのままだと新しい初期表示に当たらないので、最初の1回だけ選抜へ戻す。
+       そのあとは押したチップを覚える今までの動き。 */
+    if(!localStorage.getItem(PICKKEY)){
+      localStorage.setItem(PICKKEY,'1');
+      localStorage.setItem(CHIPKEY,'pick');
+    }
     var savedChip=localStorage.getItem(CHIPKEY), ci;
     for(ci=0;ci<chipDefs.length;ci++)if(chipDefs[ci].k===savedChip){chip=savedChip;break}
   }catch(e){}
@@ -1359,6 +1465,43 @@
       if(on)p.classList.add('on');else p.classList.remove('on');
     });
   }
+  var pickHead=document.getElementById('pickHead');
+  var pickLead=document.getElementById('pickLead');
+  var pickBox=document.getElementById('pickBox');
+  function renderPick(){
+    pickBox.innerHTML='';
+    PICK.forEach(function(it){
+      var src=document.querySelector('.wrap > .tool-card > a.tool[href="'+it.h+'"]');
+      if(!src)return;                                   /* 一覧に無いものは出さない（検査で拾う） */
+      var no=src.querySelector('.no')?src.querySelector('.no').textContent:'';
+      var icon=src.querySelector('.icon')?src.querySelector('.icon').innerHTML:'';
+      var card=document.createElement('div');
+      card.className='tool-card pick';
+      /* ★文字列で <a class="tool" href=…> を組むと、構造検査がカードと誤認するので DOM で組む */
+      var a=document.createElement('a');
+      a.className='tool'; a.setAttribute('href',it.h);
+      /* ★ここも文字列で組まない。'<span class="no">' の字面が、番号を数える検査に拾われる */
+      var ic=document.createElement('span'); ic.className='icon'; ic.innerHTML=icon;
+      var body=document.createElement('span');
+      var noEl=document.createElement('span'); noEl.className='no'; noEl.textContent=no;
+      var nmEl=document.createElement('div'); nmEl.className='nm'; nmEl.textContent=it.nm;
+      var dsEl=document.createElement('div'); dsEl.className='ds'; dsEl.textContent=it.ds;
+      body.appendChild(noEl); body.appendChild(nmEl); body.appendChild(dsEl);
+      var ch=document.createElement('span'); ch.className='chev'; ch.textContent='›';
+      a.appendChild(ic); a.appendChild(body); a.appendChild(ch);
+      card.appendChild(a);
+      if(it.modes){
+        var mw=document.createElement('div'); mw.className='pick-modes';
+        it.modes.forEach(function(m){
+          var ma=document.createElement('a');
+          ma.className='pick-mode'; ma.setAttribute('href',m.h); ma.textContent=m.t;
+          mw.appendChild(ma);
+        });
+        card.appendChild(mw);
+      }
+      pickBox.appendChild(card);
+    });
+  }
   function renderFav(){
     favs=keepListed(favs);
     favBox.innerHTML='';
@@ -1392,7 +1535,7 @@
         }
       }else if(chip==='all'){
         show=true;
-      }else if(chip==='fav'||chip==='recent'){
+      }else if(chip==='fav'||chip==='recent'||chip==='pick'){
         show=false;   // 本体は隠し、上の箱(複製)だけを見せる。本体の並びは変えない
       }else{
         show=(secOf(card)===chip);
@@ -1409,6 +1552,14 @@
       }
       h.style.display=any?'':'none';
     });
+    // 選抜の箱: 「選抜」チップのときだけ
+    var showPick=!searching&&chip==='pick';
+    /* ★見えない複製を DOM に残さない。「最近」の箱と同じで、出すときだけ組み立てる。
+       残しておくと、検索や重複の検査が「見えていないカード」を数えてしまう。 */
+    if(showPick){ if(!pickBox.firstChild) renderPick(); } else { pickBox.innerHTML=''; }
+    pickHead.style.display=showPick?'':'none';
+    pickLead.style.display=showPick?'':'none';
+    pickBox.style.display=showPick?'':'none';
     // お気に入りの箱: 「すべて」では従来どおり一番上、「★お気に入り」ではそれだけ
     var showFav=!searching&&favs.length>0&&(chip==='all'||chip==='fav');
     favHead.style.display=showFav?'':'none';
@@ -1451,7 +1602,7 @@
 
   // ツールを開いたら「最近」へ記録(遷移前に端末内へ保存される。送信なし)
   document.addEventListener('click',function(e){
-    var a=e.target&&e.target.closest?e.target.closest('a.tool'):null;
+    var a=e.target&&e.target.closest?e.target.closest('a.tool, a.pick-mode'):null;
     if(!a)return;
     if(a.closest&&a.closest('#labSec'))return;   // 調整中のツールは履歴に残さない
     var hh=a.getAttribute('href');

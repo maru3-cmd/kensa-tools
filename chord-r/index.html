@@ -231,6 +231,10 @@
         θ が浅いほど <code>1 − cos θ</code> は小さく、<b>R の効きだけが極端に鈍くなります</b>。
         開き角の公差を入れると、上下限を上の式にそのまま入れ直した高さの管理値を出します（近似ではありません）。<br>
       ・開き角が<b>90°を超える</b>と定盤の上で倒れるため、この計算は 90° までにしてあります。<br>
+      ・<b>弧の反る向き</b> … 定盤に付けた直線から弧が立ち上がる以上、
+        <b>弧の中心は必ず真上</b>にあります（中心が下にあると弧は定盤の中へもぐってしまいます）。
+        向きを選ぶ余地はないので、<b>反対側の直線を定盤に付けたいときは入れ替えボタン</b>を使ってください。
+        図面の弧が下にふくらんで見えるときは、その部品は<b>ひっくり返して置く</b>ことになります。<br>
 </div>
     <div class="gx">
       <h4>例 ── 弦100・矢高10 の大きなR</h4>
@@ -278,10 +282,10 @@
       <h4>例 ── R1000・15°、両端に100の直線のカバーを定盤に置く</h4>
       <div class="gxin">
         <div class="gfig"><svg viewBox="0 0 120 120" role="img" aria-label="片方の直線を定盤に付けて置いたカバーと先端の高さの図">
-          <line x1="8" y1="95" x2="112" y2="95" stroke="#1F3341" stroke-width="1.8"/>
-          <path d="M14,95 L46,95 A 62 62 0 0 1 92,79 L110,74" fill="none" stroke="#1F3341" stroke-width="2"/>
-          <line x1="110" y1="74" x2="110" y2="95" stroke="#D63426" stroke-width="1.4"/>
-          <text x="98" y="70" font-size="8" fill="#D63426">H</text>
+          <line x1="6" y1="95" x2="116" y2="95" stroke="#1F3341" stroke-width="1.8"/>
+          <path d="M12,95 L36,95 A 112 112 0 0 0 88.6,81.9 L109.8,70.6" fill="none" stroke="#1F3341" stroke-width="2"/>
+          <line x1="109.8" y1="70.6" x2="109.8" y2="95" stroke="#D63426" stroke-width="1.4"/>
+          <text x="99" y="66" font-size="8" fill="#D63426">H</text>
           <text x="26" y="107" font-size="7.5" fill="#5B707E">定盤</text>
         </svg></div>
         <div class="gtxt">
@@ -547,7 +551,7 @@
   </div>
 
   <div id="arcPlate" hidden>
-  <div class="hint">片方の直線を<b>定盤にぴったり付けて</b>置いたときの、反対の先端の高さを出します。ハイトゲージで読む値です。置く向きを変えるときは、下の2つの直線を<b>入れ替えて</b>ください。直線が無い（弧だけの）部品は空欄のままで大丈夫です。</div>
+  <div class="hint">片方の直線を<b>定盤にぴったり付けて</b>置いたときの、反対の先端の高さを出します。ハイトゲージで読む値です。置く向きを変えるときは<b>入れ替えボタン</b>を押してください。直線が無い（弧だけの）部品は空欄のままで大丈夫です。</div>
 
   <div class="dimsw" id="prChips" role="group" aria-label="図面のRが外面か内面か">
     <button type="button" id="prOut" class="on">R は外面（定盤に付く側）</button>
@@ -566,6 +570,9 @@
       <label for="fPL2">先端側の直線<small>高さに効きます。空欄は0</small></label>
       <input id="fPL2" type="text" inputmode="decimal" autocomplete="off" placeholder="0">
       <span class="unit">mm</span>
+    </div>
+    <div class="achips" id="pSwapWrap">
+      <button type="button" id="pSwap">↕ 定盤に付ける側を入れ替える</button>
     </div>
     <div class="row">
       <span class="badge">5</span>
@@ -1205,11 +1212,11 @@ function CD_K(){ return CD_DIM==='d' ? 2 : 1; }
     /* 部品 */
     var rk=(Rb*k).toFixed(1), uk=(Ru*k).toFixed(1);
     var body='M '+n(X(0))+' '+n(Y(0))+' L '+n(X(L1))+' '+n(Y(0))
-           +' A '+rk+' '+rk+' 0 0 1 '+n(X(aX))+' '+n(Y(aY))
+           +' A '+rk+' '+rk+' 0 0 0 '+n(X(aX))+' '+n(Y(aY))
            +' L '+n(X(tX))+' '+n(Y(tY));
     if(tk>0){
       body+=' L '+n(X(vX))+' '+n(Y(vY))+' L '+n(X(uX))+' '+n(Y(uY))
-          + ' A '+uk+' '+uk+' 0 0 0 '+n(X(L1))+' '+n(Y(tk))
+          + ' A '+uk+' '+uk+' 0 0 1 '+n(X(L1))+' '+n(Y(tk))
           + ' L '+n(X(0))+' '+n(Y(tk))+' Z';
       g+='<path d="'+body+'" fill="#DCE5EA" stroke="#1F3341" stroke-width="2"/>';
     }else{
@@ -1335,6 +1342,11 @@ function CD_K(){ return CD_DIM==='d' ? 2 : 1; }
     drawPlate(Rb,th,L1,L2,tk);
   }
 
+  $('pSwap').addEventListener('click',function(){
+    var a=$('fPL1').value, b=$('fPL2').value;
+    $('fPL1').value=b; $('fPL2').value=a;
+    calcPlate();
+  });
   $('pmHole').addEventListener('click',function(){ setArcMode('hole'); });
   $('pmPlate').addEventListener('click',function(){ setArcMode('plate'); });
   $('prOut').addEventListener('click',function(){ prMode='out'; paintPr(); calcPlate(); });
