@@ -285,6 +285,15 @@
     border-radius:8px;font-size:11.5px;line-height:1.75;color:#3D515F}
   .src b{color:#1F3341}
   .src code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#fff;border:1px solid #E3E9EC;border-radius:4px;padding:0 3px}
+  /* v150: 入力の案内図を「使い方」の中へ移した。
+     .inputs の中に居た前提の余白が付いているので、ここで整える。 */
+  .ghow{margin:2px 0 10px;padding:8px;background:var(--sheet);border:1px solid #C9D3DA;border-radius:9px}
+  .ghow .infig{margin:0;padding:0;border:none;background:none}
+  .ghow .infig svg{display:block;width:100%;height:auto}
+  .ghow .cap{margin-top:4px;text-align:center}
+  /* v151: 著作権表示。フッターの末尾に置く（全ページ共通の見た目） */
+  .crnote{margin-top:8px;padding-top:7px;border-top:1px solid rgba(143,162,175,.45);
+    font-size:11px;line-height:1.7;color:inherit;opacity:.92}
 </style>
 </head>
 <body>
@@ -299,6 +308,64 @@
   <summary>使い方と例を見る</summary>
   <div class="gb">
     <h4>使い方</h4>
+    <div class="ghow">
+      <div class="infig" id="inFig">
+        <svg id="figUn" viewBox="0 0 320 160" role="img" aria-label="不等配で何をどこへ入れるかの図">
+          <circle cx="104" cy="80" r="54" fill="none" stroke="#8FA2AF" stroke-width="1.2" stroke-dasharray="5 3"/>
+          <line x1="104" y1="80" x2="104" y2="18" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="3 2"/>
+          <circle cx="104" cy="26" r="6.5" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+          <circle cx="150" cy="52" r="6.5" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+          <circle cx="140" cy="118" r="6.5" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+          <circle cx="58" cy="112" r="6.5" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+          <circle cx="104" cy="80" r="2.2" fill="#1F3341"/>
+          <path d="M 104 44 A 36 36 0 0 1 130 60" fill="none" stroke="#D63426" stroke-width="1.8"/>
+          <text x="140" y="40" font-size="11" font-weight="700" fill="#D63426">2</text>
+          <text x="152" y="40" font-size="10" fill="#5B707E">角度</text>
+          <line x1="104" y1="80" x2="158" y2="80" stroke="#1F3341" stroke-width="1.4"/>
+          <text x="112" y="94" font-size="11" font-weight="700" fill="#1F3341">1</text>
+          <text x="124" y="94" font-size="10" fill="#5B707E">PCD / 半径</text>
+          <text x="104" y="12" font-size="10" fill="#5B707E" text-anchor="middle">真上＝0°</text>
+          <text x="30" y="150" font-size="10" fill="#5B707E">⌀ 穴径</text>
+          <line x1="52" y1="118" x2="34" y2="141" stroke="#8FA2AF" stroke-width="1"/>
+          <text x="196" y="34" font-size="11" font-weight="700" fill="#1F3341">1</text>
+          <text x="208" y="34" font-size="11" fill="#1F3341">ピッチ円の大きさ</text>
+          <text x="196" y="56" font-size="11" font-weight="700" fill="#D63426">2</text>
+          <text x="208" y="56" font-size="11" fill="#1F3341">穴と穴の角度を</text>
+          <text x="208" y="71" font-size="11" fill="#1F3341">1つずつ</text>
+          <text x="196" y="93" font-size="11" font-weight="700" fill="#1F3341">3</text>
+          <text x="208" y="93" font-size="11" fill="#1F3341">穴1の位置</text>
+          <text x="208" y="108" font-size="11" fill="#5B707E">(真上なら 0)</text>
+          <text x="196" y="130" font-size="11" font-weight="700" fill="#1F3341">⌀</text>
+          <text x="208" y="130" font-size="11" fill="#1F3341">キリ径</text>
+          <text x="208" y="145" font-size="11" fill="#5B707E">(任意)</text>
+        </svg>
+        <svg id="figEq" viewBox="0 0 320 160" role="img" aria-label="等配で何をどこへ入れるかの図" style="display:none">
+          <circle cx="104" cy="80" r="54" fill="none" stroke="#8FA2AF" stroke-width="1.2" stroke-dasharray="5 3"/>
+          <circle cx="104" cy="26" r="6.5" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+          <circle cx="151" cy="53" r="6.5" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+          <circle cx="151" cy="107" r="6.5" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+          <circle cx="104" cy="134" r="6.5" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+          <circle cx="57" cy="107" r="6.5" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+          <circle cx="57" cy="53" r="6.5" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
+          <circle cx="104" cy="80" r="2.2" fill="#1F3341"/>
+          <path d="M 104 44 A 36 36 0 0 1 135 62" fill="none" stroke="#D63426" stroke-width="1.8"/>
+          <line x1="104" y1="80" x2="158" y2="80" stroke="#1F3341" stroke-width="1.4"/>
+          <text x="112" y="94" font-size="11" font-weight="700" fill="#1F3341">1</text>
+          <text x="124" y="94" font-size="10" fill="#5B707E">PCD / 半径</text>
+          <text x="30" y="150" font-size="10" fill="#5B707E">⌀ 穴径</text>
+          <line x1="52" y1="112" x2="34" y2="141" stroke="#8FA2AF" stroke-width="1"/>
+          <text x="196" y="40" font-size="11" font-weight="700" fill="#1F3341">1</text>
+          <text x="208" y="40" font-size="11" fill="#1F3341">ピッチ円の大きさ</text>
+          <text x="196" y="66" font-size="11" font-weight="700" fill="#1F3341">2</text>
+          <text x="208" y="66" font-size="11" fill="#1F3341">穴の数</text>
+          <text x="208" y="81" font-size="11" fill="#5B707E">(または角度)</text>
+          <text x="196" y="110" font-size="11" font-weight="700" fill="#1F3341">⌀</text>
+          <text x="208" y="110" font-size="11" fill="#1F3341">キリ径</text>
+          <text x="208" y="125" font-size="11" fill="#5B707E">(任意)</text>
+        </svg>
+        <div class="cap" id="figCap">番号は入力欄の左に付いている番号です</div>
+      </div>
+    </div>
     <ol>
       <li>「PCD → ピッチ」を選び、<b>PCD</b>（ピッチ円直径）と<b>穴数 n</b>を入れます。</li>
       <li><b>穴とび k</b>は、隣どうしなら 1、1つ飛ばしなら 2…です。</li>
@@ -477,62 +544,6 @@
 
   <!-- 入力 -->
   <div class="inputs">
-    <div class="infig" id="inFig">
-      <svg id="figUn" viewBox="0 0 320 160" role="img" aria-label="不等配で何をどこへ入れるかの図">
-        <circle cx="104" cy="80" r="54" fill="none" stroke="#8FA2AF" stroke-width="1.2" stroke-dasharray="5 3"/>
-        <line x1="104" y1="80" x2="104" y2="18" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="3 2"/>
-        <circle cx="104" cy="26" r="6.5" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
-        <circle cx="150" cy="52" r="6.5" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
-        <circle cx="140" cy="118" r="6.5" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
-        <circle cx="58" cy="112" r="6.5" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
-        <circle cx="104" cy="80" r="2.2" fill="#1F3341"/>
-        <path d="M 104 44 A 36 36 0 0 1 130 60" fill="none" stroke="#D63426" stroke-width="1.8"/>
-        <text x="140" y="40" font-size="11" font-weight="700" fill="#D63426">2</text>
-        <text x="152" y="40" font-size="10" fill="#5B707E">角度</text>
-        <line x1="104" y1="80" x2="158" y2="80" stroke="#1F3341" stroke-width="1.4"/>
-        <text x="112" y="94" font-size="11" font-weight="700" fill="#1F3341">1</text>
-        <text x="124" y="94" font-size="10" fill="#5B707E">PCD / 半径</text>
-        <text x="104" y="12" font-size="10" fill="#5B707E" text-anchor="middle">真上＝0°</text>
-        <text x="30" y="150" font-size="10" fill="#5B707E">⌀ 穴径</text>
-        <line x1="52" y1="118" x2="34" y2="141" stroke="#8FA2AF" stroke-width="1"/>
-        <text x="196" y="34" font-size="11" font-weight="700" fill="#1F3341">1</text>
-        <text x="208" y="34" font-size="11" fill="#1F3341">ピッチ円の大きさ</text>
-        <text x="196" y="56" font-size="11" font-weight="700" fill="#D63426">2</text>
-        <text x="208" y="56" font-size="11" fill="#1F3341">穴と穴の角度を</text>
-        <text x="208" y="71" font-size="11" fill="#1F3341">1つずつ</text>
-        <text x="196" y="93" font-size="11" font-weight="700" fill="#1F3341">3</text>
-        <text x="208" y="93" font-size="11" fill="#1F3341">穴1の位置</text>
-        <text x="208" y="108" font-size="11" fill="#5B707E">(真上なら 0)</text>
-        <text x="196" y="130" font-size="11" font-weight="700" fill="#1F3341">⌀</text>
-        <text x="208" y="130" font-size="11" fill="#1F3341">キリ径</text>
-        <text x="208" y="145" font-size="11" fill="#5B707E">(任意)</text>
-      </svg>
-      <svg id="figEq" viewBox="0 0 320 160" role="img" aria-label="等配で何をどこへ入れるかの図" style="display:none">
-        <circle cx="104" cy="80" r="54" fill="none" stroke="#8FA2AF" stroke-width="1.2" stroke-dasharray="5 3"/>
-        <circle cx="104" cy="26" r="6.5" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
-        <circle cx="151" cy="53" r="6.5" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
-        <circle cx="151" cy="107" r="6.5" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
-        <circle cx="104" cy="134" r="6.5" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
-        <circle cx="57" cy="107" r="6.5" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
-        <circle cx="57" cy="53" r="6.5" fill="#fff" stroke="#1F3341" stroke-width="1.6"/>
-        <circle cx="104" cy="80" r="2.2" fill="#1F3341"/>
-        <path d="M 104 44 A 36 36 0 0 1 135 62" fill="none" stroke="#D63426" stroke-width="1.8"/>
-        <line x1="104" y1="80" x2="158" y2="80" stroke="#1F3341" stroke-width="1.4"/>
-        <text x="112" y="94" font-size="11" font-weight="700" fill="#1F3341">1</text>
-        <text x="124" y="94" font-size="10" fill="#5B707E">PCD / 半径</text>
-        <text x="30" y="150" font-size="10" fill="#5B707E">⌀ 穴径</text>
-        <line x1="52" y1="112" x2="34" y2="141" stroke="#8FA2AF" stroke-width="1"/>
-        <text x="196" y="40" font-size="11" font-weight="700" fill="#1F3341">1</text>
-        <text x="208" y="40" font-size="11" fill="#1F3341">ピッチ円の大きさ</text>
-        <text x="196" y="66" font-size="11" font-weight="700" fill="#1F3341">2</text>
-        <text x="208" y="66" font-size="11" fill="#1F3341">穴の数</text>
-        <text x="208" y="81" font-size="11" fill="#5B707E">(または角度)</text>
-        <text x="196" y="110" font-size="11" font-weight="700" fill="#1F3341">⌀</text>
-        <text x="208" y="110" font-size="11" fill="#1F3341">キリ径</text>
-        <text x="208" y="125" font-size="11" fill="#5B707E">(任意)</text>
-      </svg>
-      <div class="cap" id="figCap">番号は下の入力欄の番号です</div>
-    </div>
     <div class="dimsw" id="dimsw" role="group" aria-label="PCD(直径)で入れるか半径で入れるか">
       <button type="button" id="swDia" class="on">PCD（直径）で</button>
       <button type="button" id="swRad">半径で</button>
@@ -728,6 +739,8 @@
     <a href="../pcd-diag/" style="color:#5B707E">PCDずれ診断(TOOL-35)</a> で調べられます。<br>
     このページは計算のみを行います。<br>
     入力値の送信・保存は一切ありません(端末内で完結)。
+  
+    <div class="crnote">© 2026 まるちゃん ｜ 許諾なく転載・複製・再配布・改変することを禁じます。本ツールは著作権法により保護されています。</div>
   </footer>
 </div>
 
@@ -1626,8 +1639,8 @@
     $('figUn').style.display = un? '' : 'none';
     $('figEq').style.display = un? 'none' : '';
     $('figCap').textContent = un
-      ? '番号は下の入力欄の番号です'
-      : '番号は下の入力欄の番号です（等配）';
+      ? '番号は入力欄の左に付いている番号です'
+      : '番号は入力欄の左に付いている番号です（等配）';
 
     /* ★いま出していない欄は readOnly にする。
        記録スニペットは readOnly の欄を拾わないので、
