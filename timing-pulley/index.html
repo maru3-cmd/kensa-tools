@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#1F3341">
-<meta name="description" content="タイミングプーリ(台形歯形)の径の計算。ベルトの種類と歯数から、ピッチ円直径と歯先円直径(外径)を出します。歯先円直径の許容差は+側だけなので、基準寸法がそのまま下限になります。ピッチ誤差・振れ・平行度の公差も規格の表から出します。実測を入れると合否も出ます。計算は端末内で完結します。">
+<meta name="description" content="タイミングプーリの径の計算。台形歯形(MXL〜XXH)と円弧歯形S形(S2M〜S14M)に対応。28H100A・42S8M0400A のような型番をそのまま入れると歯形と歯数を読み取ります。ベルトの種類と歯数から、ピッチ円直径と歯先円直径(外径)を出します。歯先円直径の許容差は+側だけなので、基準寸法がそのまま下限になります。ピッチ誤差・振れ・平行度の公差も規格の表から出します。実測を入れると合否も出ます。計算は端末内で完結します。">
 <title>タイミングプーリの径 | 検査計算ツール</title>
 <style>
   :root{
@@ -213,12 +213,22 @@
   /* v151: 著作権表示。フッターの末尾に置く（全ページ共通の見た目） */
   .crnote{margin-top:8px;padding-top:7px;border-top:1px solid rgba(143,162,175,.45);
     font-size:11px;line-height:1.7;color:inherit;opacity:.92}
+  /* v153: 歯形を系列ごとに並べる／型番の読み取り結果 */
+  .tchips{display:block}
+  .tgrp{margin-bottom:8px}
+  .tlbl{display:block;font-size:11px;color:#5B707E;margin:2px 2px 4px;letter-spacing:.04em}
+  .trow{display:flex;flex-wrap:wrap;gap:6px}
+  #fKata{text-align:left;font-family:ui-monospace,Menlo,Consolas,monospace;letter-spacing:.04em}
+  .kbox{margin:6px 0 0;padding:9px 11px;border-radius:9px;font-size:12px;line-height:1.8}
+  .kbox.ok{background:#ECF5EF;border:1px solid #A9CDB8;border-left:3px solid #0B6B3A;color:#1E4530}
+  .kbox.ng{background:#FBECEA;border:1px solid #E7B7B0;border-left:3px solid #B23B2E;color:#5A2A24}
+  .kbox b{font-weight:700}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <h1>タイミングプーリの径<small>台形歯形：歯先円直径と許容差／ピッチ円直径</small></h1>
+    <h1>タイミングプーリの径<small>台形歯形・円弧歯形S形／型番から読み取り</small></h1>
     <a href="../">← ポータル</a>
   </header>
 
@@ -251,20 +261,61 @@
     </div>
     <h4>入っていないもの</h4>
     <div class="gline">
-      ・<b>円弧歯形（HTD・STS・S形など）は扱えません。</b>このツールは<b>台形歯形</b>（MXL・XXL・XL・L・H・XH・XXH）だけです。
-      　円弧歯形は JIS B 1857-2 という別の規格で、2a に相当する値も違います。<b>形が違うので数字を流用できません。</b><br>
+      ・<b>HTD・GT・P形などの円弧歯形は扱えません。</b>入っている円弧歯形は<b>S形（S2M・S3M・S5M・S8M・S14M）だけ</b>です。
+      　★<b>同じピッチでも系列が違えば数字が違います。</b>5mmピッチの S5M は PLD×2 が <b>0.96</b> ですが、
+      　5GT・P5M は <b>1.143</b> で、<b>0.18 も違います</b>。<b>形が違うものに数字を流用できません。</b><br>
+      ・<b>S形の許容差・公差は入っていません。</b>このツールが持っている許容差の表は JIS B 1856（台形歯形）のもので、
+      　S形はメーカーの規格なので当てはまりません。出すと<b>別の規格の値で合否を出す</b>ことになります。
+      　S形は<b>径だけ</b>を出し、許容差は図面かメーカーの仕様書で確かめてもらう形にしています。<br>
       ・<b>歯形そのもの（カッタのラック寸法）</b>は入れていません。投影機で当たる話で、現場のノギス検査とは別物のためです。<br>
-      ・<b>歯数の下限</b>は規格の表にあるものを警告に使っています（MXL・XXL・XL・L は10、H は14、XH・XXH は18）。
+      ・<b>歯数の下限</b>は表にあるものを警告に使っています（台形歯形：MXL・XXL・XL・L は10、H は14、XH・XXH は18。
+      　S形：S2M・S3M・S5M は14、S8M は18、S14M は28）。
       　これは<b>その歯数から下は規格の表に無い</b>という意味で、作れないという意味ではありません。<br>
       ・<b>フランジ・ボス・軸穴</b>はメーカーで変わるので入れていません。<br>
     </div>
+    <h4>型番から入れる</h4>
+    <div class="gline">
+      手配の型番をそのまま入れると、<b>歯形と歯数</b>を読み取って下の欄に入れます。<br>
+      　<b>28H100A</b> … 歯数28 ＋ 歯形H ＋ 呼び幅100（1.00インチ＝25.4mm）＋ 形状記号A<br>
+      　<b>42S8M0400A</b> … 歯数42 ＋ 歯形S8M ＋ 呼び幅0400（40.0mm）＋ 形状記号A<br>
+      呼び幅の数字は<b>台形歯形はインチ×100</b>、<b>S形は mm×10</b> です。先頭に P が付いていても読めます。<br>
+      ★<b>呼び幅と形状記号は径に効きません。</b>径は歯形と歯数だけで決まります。
+      　形状記号（A・B・F など）はメーカーで意味が変わるので、読み取ってそのまま出すだけにしてあります。<br>
+      読み取れない型番は、下の歯形と歯数を手で選べば同じように計算できます。
+    </div>
     <div class="src">
-      出典：JIS B 1856:2018（一般用台形歯形歯付ベルト伝動−ベルト及びプーリ）。
+      出典（台形歯形）：JIS B 1856:2018（一般用台形歯形歯付ベルト伝動−ベルト及びプーリ）。
       ピッチと 2a はカッタのラック寸法及び公差の表、許容差・公差は
       「プーリ歯先円直径の許容差」「隣接ピッチ誤差および累積ピッチ誤差の公差」
-      「側面の振れの公差」「歯先円周の円周振れの公差」「歯幅方向の外径差の公差」「歯と軸穴中心線との平行度公差」の各表による。
+      「側面の振れの公差」「歯先円周の円周振れの公差」「歯幅方向の外径差の公差」「歯と軸穴中心線との平行度公差」の各表による。<br>
+      出典（S形）：三ツ星ベルト スーパートルクG のプーリサイズ表（S2M・S3M・S5M・S8M・S14M）。
+      ★PLD×2 は表に直接は載っていないので、<b>歯数ごとのピッチ円直径と外径の差から逆算</b>し、
+      各歯形で複数の歯数（14〜144歯）にわたって同じ値になることを確かめたうえで入れています。
+      S8M は椿本の P8M の表とも一致しました。
     </div>
 
+    <div class="gx">
+      <h4>例 ── 型番 42S8M0400A をそのまま入れる</h4>
+      <div class="gxin">
+        <div class="gtxt">
+          <p>手配の型番が 42S8M0400A。外径をノギスで測ると、いくつになるはずか。</p>
+          <p class="gset">型番 42S8M0400A（歯形S8M ／ 歯数42 ／ 呼び幅40.0mm）</p>
+          <p class="gread">読み方：<b>歯先円直径 105.581</b>、ピッチ円直径は 106.952。S形なので<b>許容差は出しません</b>（JIS B 1856 は台形歯形の規格です）。図面の指定と突き合わせてください。</p>
+          <button class="gbtn" type="button" data-ex='{"set":[{"id":"fKata","v":"42S8M0400A"},{"id":"fMeas","v":""}]}' onclick="tryExample(this)">この例を試す</button>
+        </div>
+      </div>
+    </div>
+    <div class="gx">
+      <h4>例 ── 型番 28H100A（台形歯形なので許容差も出ます）</h4>
+      <div class="gxin">
+        <div class="gtxt">
+          <p>同じく手配の型番 28H100A。こちらは JIS B 1856 の台形歯形。</p>
+          <p class="gset">型番 28H100A（歯形H ／ 歯数28 ／ 呼び幅1.00インチ＝25.4mm）</p>
+          <p class="gread">読み方：<b>歯先円直径 111.819</b>、ピッチ円直径は 113.191。許容差は <b>0 〜 +0.13</b> なので、<b>111.819 〜 111.949 が合格範囲</b>です。</p>
+          <button class="gbtn" type="button" data-ex='{"set":[{"id":"fKata","v":"28H100A"},{"id":"fMeas","v":""}]}' onclick="tryExample(this)">この例を試す</button>
+        </div>
+      </div>
+    </div>
     <div class="gx">
       <h4>例 ── XL・20歯</h4>
       <div class="gxin">
@@ -304,7 +355,18 @@
     </div>
   </div>
 
-  <h2>ベルトの種類</h2>
+  <h2>型番から入れる<small>任意。手配の型番をそのまま</small></h2>
+  <div class="inputs">
+    <div class="row">
+      <span class="badge">型</span>
+      <label for="fKata">プーリの型番<small>例 28H100A ／ 42S8M0400A</small></label>
+      <input id="fKata" type="text" autocomplete="off" spellcheck="false" placeholder="42S8M0400A">
+      <span class="unit"></span>
+    </div>
+  </div>
+  <div id="kataOut" style="display:none"></div>
+
+  <h2>ベルトの種類<small>型番を入れると自動で選ばれます</small></h2>
   <div class="tchips" id="tChips"></div>
 
   <div class="inputs">
@@ -339,7 +401,7 @@
 
   <footer>
     検査ミニポータル｜計算はすべてこの端末の中で行われます。入力値は端末のブラウザ内にのみ保存され、消去ボタンで完全に削除できます。<br>
-    値は JIS B 1856:2018（一般用台形歯形歯付ベルト伝動）による。円弧歯形（HTD・STSなど）には使えません。
+    台形歯形の値は JIS B 1856:2018 による。S形はメーカーの寸法表から確かめた径のみで、許容差は入っていません。HTD・GT・P形には使えません。
   
     <div class="crnote">© 2026 まるちゃん ｜ 許諾なく転載・複製・再配布・改変することを禁じます。本ツールは著作権法により保護されています。</div>
   </footer>
@@ -362,15 +424,26 @@
   /* ══════ ベルトの種類（JIS B 1856:2018 カッタのラック寸法表より）══════
      p … ベルトのピッチ、a2 … 表の「2a」＝ピッチ線と歯先の差の2倍、
      zmin … 表に載っている歯数の下限。                                   */
+  /* sys … 'jis' 台形歯形（JIS B 1856）／'sts' 円弧歯形 S形（メーカー規格）
+     a2  … ピッチ円直径 − 歯先円直径。JIS では「2a」、S形では「PLD×2」と呼ばれる値。
+     ★S形の a2 は系列ごとに違う。とくに S5M は 0.96 で、
+       同じ5mmピッチの 5GT・P5M の 1.143 とは<別の値>。流用すると 0.18 ずれる。
+       いずれもメーカーの寸法表（歯数ごとの PD・OD）から逆算して確かめた値。 */
   var BT=[
-    {n:'MXL', p:2.032,  a2:0.508, zmin:10},
-    {n:'XXL', p:3.175,  a2:0.508, zmin:10},
-    {n:'XL',  p:5.080,  a2:0.508, zmin:10},
-    {n:'L',   p:9.525,  a2:0.762, zmin:10},
-    {n:'H',   p:12.700, a2:1.372, zmin:14},
-    {n:'XH',  p:22.225, a2:2.794, zmin:18},
-    {n:'XXH', p:31.750, a2:3.048, zmin:18}
+    {n:'MXL', p:2.032,  a2:0.508,  zmin:10, sys:'jis'},
+    {n:'XXL', p:3.175,  a2:0.508,  zmin:10, sys:'jis'},
+    {n:'XL',  p:5.080,  a2:0.508,  zmin:10, sys:'jis'},
+    {n:'L',   p:9.525,  a2:0.762,  zmin:10, sys:'jis'},
+    {n:'H',   p:12.700, a2:1.372,  zmin:14, sys:'jis'},
+    {n:'XH',  p:22.225, a2:2.794,  zmin:18, sys:'jis'},
+    {n:'XXH', p:31.750, a2:3.048,  zmin:18, sys:'jis'},
+    {n:'S2M', p:2.0,    a2:0.508,  zmin:14, sys:'sts'},
+    {n:'S3M', p:3.0,    a2:0.762,  zmin:14, sys:'sts'},
+    {n:'S5M', p:5.0,    a2:0.96,   zmin:14, sys:'sts'},
+    {n:'S8M', p:8.0,    a2:1.3716, zmin:18, sys:'sts'},
+    {n:'S14M',p:14.0,   a2:2.794,  zmin:28, sys:'sts'}
   ];
+  function isJ(b){ return b.sys!=='sts'; }
   var sel=2;   /* 既定 XL */
 
   /* 歯先円直径 d0 の区分で決まる各公差。上限は「以下」。 */
@@ -404,9 +477,15 @@
 
   function buildChips(){
     var h='',i;
-    for(i=0;i<BT.length;i++){
-      h+='<button type="button" id="t'+BT[i].n+'" class="'+(i===sel?'on':'')+'" data-i="'+i+'">'+BT[i].n+'</button>';
+    function grp(lbl,sysv){
+      var s='<div class="tgrp"><span class="tlbl">'+lbl+'</span><div class="trow">',k;
+      for(k=0;k<BT.length;k++){
+        if(BT[k].sys!==sysv) continue;
+        s+='<button type="button" id="t'+BT[k].n+'" class="'+(k===sel?'on':'')+'" data-i="'+k+'">'+BT[k].n+'</button>';
+      }
+      return s+'</div></div>';
     }
+    h=grp('台形歯形（JIS B 1856）','jis')+grp('円弧歯形 S形（メーカー規格）','sts');
     $('tChips').innerHTML=h;
     var bs=$('tChips').getElementsByTagName('button'),j;
     for(j=0;j<bs.length;j++){
@@ -479,18 +558,25 @@
     if(z>500){ clearOut(); setSt('歯数は500までにしてください',true); return; }
 
     var d=b.p*z/Math.PI, d0=d-b.a2;
-    var tol=band(TOL_D0,d0), pa=band(TOL_PA,d0), pc=band(TOL_PC,d0);
-    var sr=sideRun(d0), tr=tipRun(d0);
+    /* ★許容差・公差はすべて JIS B 1856（台形歯形）の表。
+       S形はメーカー規格なので当てはまらない。出すと別の規格の値で合否を出してしまう。 */
+    var J=isJ(b);
+    var tol=J?band(TOL_D0,d0):null, pa=J?band(TOL_PA,d0):null, pc=J?band(TOL_PC,d0):null;
+    var sr=J?sideRun(d0):null, tr=J?tipRun(d0):null;
 
     $('out').textContent=f3(d0);
     cells([['ピッチ円直径 d',f3(d),'mm 測れません'],
-           ['許容差',(tol===null?'―':'+'+tol.toFixed(2)),(tol===null?'表の外':'mm ／ 下は 0')],
+           ['許容差',(tol===null?'―':'+'+tol.toFixed(2)),(J?(tol===null?'表の外':'mm ／ 下は 0'):'図面による')],
            ['合格の上限',(tol===null?'―':f3(d0+tol)),'mm']]);
 
     var ex='';
     ex+='<div class="verdict"><div class="vh">検査で測る値</div>'
-      +'<b>歯先円直径 d₀ ＝ '+f3(d0)+'</b>（ピッチ円直径 '+f3(d)+' − 2a '+f3(b.a2)+'）<br>';
-    if(tol===null){
+      +'<b>歯先円直径 d₀ ＝ '+f3(d0)+'</b>（ピッチ円直径 '+f3(d)+' − '
+      +(J?'2a ':'PLD×2 ')+f3(b.a2)+'）<br>';
+    if(!J){
+      ex+='<b>許容差はこのツールには入っていません。</b>下に出す公差は JIS B 1856（台形歯形）の表で、'
+        +'<b>S形には当てはまりません</b>。合否は図面の指定かメーカーの仕様書で判断してください。';
+    }else if(tol===null){
       ex+='<b>この径は規格の許容差の表の外です</b>（表は 5.96〜967.16）。';
     }else{
       ex+='許容差は <b>0 〜 +'+tol.toFixed(2)+'</b>。つまり合格範囲は <b>'+f3(d0)+' 〜 '+f3(d0+tol)+'</b>。<br>'
@@ -505,6 +591,10 @@
       var m=num(mt);
       if(isNaN(m)){
         ex+='<div class="warnbox">実測は数字で入れてください。</div>';
+      }else if(!J){
+        ex+='<div class="warnbox"><b>実測 '+f3(m)+'</b> ／ 基準 '+f3(d0)+' との差 <b>'
+          +((m-d0)>=0?'+':'')+f3(m-d0)+'</b><br>'
+          +'<b>S形の許容差は入っていないので、合否は出しません。</b>図面の指定と突き合わせてください。</div>';
       }else if(tol===null){
         ex+='<div class="warnbox">許容差が表の外なので、合否は出せません。図面の指定で判断してください。</div>';
       }else{
@@ -525,7 +615,7 @@
 
     /* 歯数が表の下限より少ない */
     if(z<b.zmin){
-      ex+='<div class="warnbox"><b>'+esc(b.n)+' の歯数 '+z+' は、規格の表に載っている下限（'+b.zmin+'歯）より少ないです。</b>'
+      ex+='<div class="warnbox"><b>'+esc(b.n)+' の歯数 '+z+' は、'+(J?'規格':'メーカー')+'の表に載っている下限（'+b.zmin+'歯）より少ないです。</b>'
         +'径の式は歯数によらないのでそのまま出していますが、<b>歯形の規定が表に無い範囲</b>です。'
         +'図面の指定を確かめてください。</div>';
     }
@@ -535,8 +625,20 @@
         +'径は同じですが、<b>歯形の図面値を見るときは歯数の区分に注意</b>してください。</div>';
     }
 
-    /* 公差の一覧 */
+    /* 公差の一覧。★S形には JIS B 1856 の表を出さない（別の規格の値になる） */
     function row(k,v,u){ return '<tr><td>'+k+'</td><td>'+(v===null?'表の外':v)+'</td><td>'+(u||'mm')+'</td></tr>'; }
+    if(!J){
+      ex+='<div class="ngbox"><b>S形の許容差・公差はこのツールには入っていません。</b>'
+        +'このツールが持っている許容差の表は <b>JIS B 1856（台形歯形）</b>のもので、'
+        +'S形はメーカーの規格なので<b>当てはまりません</b>。'
+        +'ここに出すと、別の規格の値で合否を出してしまいます。<br>'
+        +'<b>径（ピッチ円直径・歯先円直径）は出せます。</b>メーカーの寸法表と歯数ごとに突き合わせて確かめた値です。'
+        +'許容差は図面の指定かメーカーの仕様書で確かめてください。</div>';
+      $('extra').innerHTML=ex;
+      setSt('計算しました（'+b.n+' ／ '+z+'歯）',false);
+      draw(z,d,d0);
+      return;
+    }
     ex+='<table class="tolTbl"><thead><tr><th>項目</th><th>公差</th><th>単位</th></tr></thead><tbody>'
       +row('歯先円直径の許容差',(tol===null?null:'0 〜 +'+tol.toFixed(2)))
       +row('隣接ピッチ誤差',(pa===null?null:pa.toFixed(2)))
@@ -553,6 +655,73 @@
     draw(z,d,d0);
   }
 
+  /* ══════ 型番から歯形と歯数を読む（v153）══════════════════════
+     28H100A      → 歯数28 ＋ 歯形H   ＋ 呼び幅100  ＋ 形状A
+     42S8M0400A   → 歯数42 ＋ 歯形S8M ＋ 呼び幅0400 ＋ 形状A
+     先頭の P（プーリ記号）は落とす。
+     ★歯形の並び順に注意。XXH は XH・H より先、XXL/MXL は XL・L より先に
+       置かないと、短いほうに先に当たって取り違える。                    */
+  function kataParse(s){
+    /* ★共通の z2h は数字・記号しか半角にしない。型番は英字が要るので、
+       全角の英字（Ａ-Ｚ・ａ-ｚ）もここで半角に直す。 */
+    var t=z2h(s).replace(/[Ａ-Ｚａ-ｚ]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0)})
+                .toUpperCase().replace(/[\s\-_.、,・･]/g,'');
+    if(t==='') return null;
+    t=t.replace(/^P/,'');
+    var m=t.match(/^(\d{1,3})(S14M|S2M|S3M|S5M|S8M|MXL|XXL|XXH|XL|XH|L|H)(\d{2,4})?([A-Z]*)$/);
+    if(!m) return {err:1};
+    return {z:Number(m[1]), n:m[2], w:m[3]||'', sh:m[4]||''};
+  }
+  function kataIdx(n){ var i; for(i=0;i<BT.length;i++) if(BT[i].n===n) return i; return -1; }
+  /* 呼び幅の読み方。★径には効かないので、読み違えても計算は狂わない。 */
+  function kataW(b,w){
+    if(w==='') return '';
+    var v=Number(w);
+    if(!isFinite(v)||v<=0) return '';
+    if(isJ(b)) return '呼び幅 '+w+'（'+(v/100).toFixed(2)+' インチ ＝ '+f3(v/100*25.4)+' mm）';
+    return '呼び幅 '+w+'（'+(v/10).toFixed(1)+' mm）';
+  }
+  function kataRun(){
+    var box=$('kataOut'), raw=$('fKata').value;
+    var r=kataParse(raw);
+    if(r===null){ box.style.display='none'; box.innerHTML=''; return; }
+    if(r.err){
+      box.style.display='';
+      box.innerHTML='<div class="kbox ng"><b>この型番は読み取れませんでした。</b>'
+        +'<b>歯数＋歯形</b>で始まる並びなら読めます（例 <b>28H100A</b>／<b>42S8M0400A</b>）。'
+        +'読めないときは、下の歯形と歯数を手で選んでください。<b>計算そのものは手入力でできます。</b><br>'
+        +'<span style="font-size:11.5px">★下に出ている数字は、<b>いま選ばれている歯形と歯数</b>のものです。'
+        +'<b>この型番から出した値ではありません。</b></span></div>';
+      return;
+    }
+    var i=kataIdx(r.n);
+    if(i<0){
+      box.style.display='';
+      box.innerHTML='<div class="kbox ng"><b>歯形 '+esc(r.n)+' はこのツールに入っていません。</b>'
+        +'入っているのは台形歯形（MXL・XXL・XL・L・H・XH・XXH）と円弧歯形S形（S2M・S3M・S5M・S8M・S14M）です。</div>';
+      return;
+    }
+    sel=i;
+    $('fZ').value=String(r.z);
+    /* ★value を入れただけでは共通スニペットの「未入力の破線」が消えない。
+       入力欄を人が触ったときと同じ形にするため input を起こす。 */
+    try{ $('fZ').dispatchEvent(new Event('input',{bubbles:true})); }
+    catch(e){ var ev=document.createEvent('Event'); ev.initEvent('input',true,true); $('fZ').dispatchEvent(ev); }
+    var b=BT[i], w=kataW(b,r.w);
+    box.style.display='';
+    box.innerHTML='<div class="kbox ok"><b>歯形 '+esc(b.n)+'</b> ／ <b>歯数 '+r.z+'</b>'
+      +(w?' ／ '+esc(w):'')
+      +(r.sh?' ／ 形状記号 '+esc(r.sh):'')+'<br>'
+      +'<span style="font-size:11.5px">'
+      +((w||r.sh)?'<b>径は歯形と歯数だけで決まります。</b>'
+         +(w?'呼び幅':'')+(w&&r.sh?'と':'')+(r.sh?'形状記号':'')+'は径に効きません。':'')
+      +(w?'★呼び幅の書き方は<b>メーカーで違うことがあります</b>ので、mm の読み替えは目安です'
+         +'（違っていても径は狂いません）。':'')
+      +(r.sh?'形状記号（フランジなど）はメーカーで意味が変わるので、そのまま出しています。':'')
+      +'</span></div>';
+    buildChips(); recalc();
+  }
+  $('fKata').addEventListener('input',kataRun);
   $('fZ').addEventListener('input',recalc);
   $('fMeas').addEventListener('input',recalc);
   buildChips();
