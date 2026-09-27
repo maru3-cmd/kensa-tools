@@ -2,7 +2,7 @@
  * オフライン専用機向け：全ツールを事前キャッシュし、キャッシュ優先で即表示。
  * 更新時は下の CACHE のバージョン(v1→v2…)を上げるだけ。古いキャッシュは自動削除。
  */
-var CACHE = "kensa-tools-v154";
+var CACHE = "kensa-tools-v159";
 
 /* プリキャッシュで取りこぼしたURLの記録先。ページからの診断に使う（外部通信はしない） */
 var FAILKEY = "./__precache_failed";
@@ -24,6 +24,8 @@ var PRECACHE = [
   "./point-build/index.html",
   "./warp-width/",
   "./warp-width/index.html",
+  "./split-open/",
+  "./split-open/index.html",
   "./sprocket/",
   "./sprocket/index.html",
   "./bend-guide-3d/",
@@ -52,6 +54,10 @@ var PRECACHE = [
   "./hardness/index.html",
   "./hole-map/",
   "./hole-map/index.html",
+  "./hole-map-a/",
+  "./hole-map-a/index.html",
+  "./hole-map-b/",
+  "./hole-map-b/index.html",
   "./icon-192.png",
   "./icon-512-maskable.png",
   "./icon-512.png",
