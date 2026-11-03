@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#1F3341">
-<meta name="description" content="ひねり(回転)を伴う3D曲げパイプ・チューブガイドの計算。三面図で形状を確認し、展開長・端点間距離・XYZ座標を算出。計算は端末内で完結します。">
+<meta name="description" content="ひねり(回転)を伴う3D曲げパイプ・チューブガイドの計算。指で回せる立体図と三面図で形状を確認し、展開長・端点間距離・XYZ座標を算出。計算は端末内で完結します。">
 <title>曲げガイド計算(3D) | 検査計算ツール</title>
 <style>
   :root{
@@ -68,6 +68,20 @@
   }
   .fld input:focus{border-bottom-color:var(--red)}
   .fld input:disabled{border-bottom-color:#D5DDE2;color:#8FA2AF}
+  /* 曲げ1の回転は入れない（版162）。入力欄に見えないよう、点線の下線と薄い字で「基準」と出す */
+  .fld.fx .fxv{flex:1;text-align:right;font-size:13px;font-weight:700;color:#8FA2AF;
+    padding:2px 3px;border-bottom:2px dotted #D5DDE2;white-space:nowrap}
+  .segnote{grid-column:1/-1;font-size:10.5px;color:#5B707E;line-height:1.6;margin-top:1px}
+  .segnote b{color:var(--ink)}
+  /* 立体／三面図の切り替え（版162） */
+  .vtabs{display:grid;grid-template-columns:1fr 1fr;border:1.5px solid var(--ink);border-radius:9px;overflow:hidden;margin-bottom:8px}
+  .vtabs button{font:inherit;font-size:13px;font-weight:700;padding:9px 4px;border:none;background:var(--sheet);color:var(--ink);cursor:pointer}
+  .vtabs button.on{background:var(--ink);color:#fff}
+  #solid{touch-action:none;cursor:grab;-webkit-user-select:none;user-select:none}
+  .viewChips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px;border-top:1px solid #DCE3E7}
+  .viewChips button{font:inherit;font-size:12px;font-weight:700;padding:5px 10px;min-height:32px;border:1px solid #C9D3DA;
+    border-radius:999px;background:#fff;color:#5B707E;cursor:pointer}
+  .viewChips button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
   .fld .u{font-size:10px;color:#5B707E;flex:none}
   .unit{font-size:12px;color:#5B707E}
   .seg.st .fld input{font-size:18px}
@@ -192,7 +206,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>曲げガイド計算(3D)<small>ひねり付き曲げの三面図/展開長</small></h1>
+    <h1>曲げガイド計算(3D)<small>ひねり付き曲げの立体図・三面図/展開長</small></h1>
   </header>
 
   <div class="topclear"><a class="backlink" href="../index.html">≡ ツール一覧</a><button type="button" aria-label="入力をすべて消去して最初から始める" onclick="armClear(this)">すべて消去</button></div>
@@ -204,6 +218,8 @@
     <ol>
       <li>2D版と同じく「直線 → 曲げ → 直線 …」を入れます。曲げには<b>θ・R</b>に加えて<b>ひねり（回転）</b>を入れられます。</li>
       <li>ひねりは「前の曲げ面から何度ねじって次を曲げるか」。これで立体的な取り回しを表せます。</li>
+      <li><b>曲げ1には回転（ひねり）がありません。</b>曲げ1で曲がった面を<b>向きの基準</b>（平面図の XY 面）にしているためです。最初の曲げは「何に対してねじるか」の相手が無いので、入れても形は変わりません（部品全体の置き方が変わるだけです）。回転は<b>曲げ2から</b>入れます。部品をいろいろな向きから見たいときは、立体の図を指でなぞって回してください。</li>
+      <li>図は<b>立体</b>と<b>三面図</b>を切り替えて見られます。立体は<b>指でなぞると回り</b>、「上から」「正面」「横から」を押すと三面図と同じ向きになります。管の太さは見やすくするための見た目で、寸法はすべて中心線です。</li>
       <li><b>展開長・端点間距離・外形 X/Y/Z</b>と、三面図（平面・正面・側面）が出ます。</li>
     </ol>
     <div class="src">
@@ -231,7 +247,7 @@
         <div class="gtxt">
           <p>直線50 →90°R10 →直線50 →90°R10（ひねり90°）→直線50 の立体形状は？</p>
           <p class="gset">直線50 ／ 曲げ θ90 R10 ／ 直線50 ／ 曲げ θ90 R10 ひねり90 ／ 直線50</p>
-          <p class="gread">読み方：展開長 ≈ <b>141.416mm</b>、外形 <b>50×50×50</b>（Zが出る＝立体）。三面図で向きを確認できます。</p>
+          <p class="gread">読み方：展開長 ≈ <b>141.416mm</b>、外形 <b>50×50×50</b>（Zが出る＝立体）。立体を指で回したり、三面図に切り替えたりして向きを確認できます。</p>
           <button class="gbtn" type="button" data-ex='{"set":[{"sel":"[data-t=\"s\"][data-i=\"0\"]","v":50},{"click":"#addBend"},{"sel":"[data-t=\"a\"][data-i=\"0\"]","v":90},{"sel":"[data-t=\"r\"][data-i=\"0\"]","v":10},{"sel":"[data-t=\"s\"][data-i=\"1\"]","v":50},{"click":"#addBend"},{"sel":"[data-t=\"a\"][data-i=\"1\"]","v":90},{"sel":"[data-t=\"r\"][data-i=\"1\"]","v":10},{"sel":"[data-t=\"p\"][data-i=\"1\"]","v":90},{"sel":"[data-t=\"s\"][data-i=\"2\"]","v":50}]}' onclick="tryExample(this)">この例を試す</button>
         </div>
       </div>
@@ -241,10 +257,27 @@
 
 
 
-  <!-- 三面図シート -->
+  <!-- 図：立体と三面図（版162 で立体を足した。既定は立体） -->
+  <div class="vtabs" id="vtabs">
+    <button type="button" id="vSolid" class="on">立体で見る</button>
+    <button type="button" id="vTri">三面図</button>
+  </div>
   <div class="sheet">
     <div class="sheet-inner">
-      <svg id="dwg" viewBox="0 0 340 250" role="img" aria-label="3D曲げガイドの平面図・正面図・側面図">
+      <svg id="solid" viewBox="0 0 340 270" role="img" aria-label="3D曲げガイドの立体図（指でなぞると回せます）">
+        <rect x="0" y="0" width="340" height="270" fill="#fff"/>
+        <g id="dyn3"></g>
+        <text id="vCap" x="8" y="16" font-size="10" font-weight="700" fill="#5B707E">斜めから</text>
+        <text x="332" y="16" font-size="9" fill="#8FA2AF" text-anchor="end">指でなぞると回せます</text>
+        <text id="emptyMsg3" x="170" y="140" font-size="11" fill="#8FA2AF" text-anchor="middle">入力すると立体が描かれます</text>
+      </svg>
+      <div class="viewChips" id="viewChips">
+        <button type="button" data-v="iso" class="on">斜めから</button>
+        <button type="button" data-v="top">上から</button>
+        <button type="button" data-v="front">正面</button>
+        <button type="button" data-v="side">横から</button>
+      </div>
+      <svg id="dwg" viewBox="0 0 340 250" role="img" aria-label="3D曲げガイドの平面図・正面図・側面図" style="display:none">
         <!-- ペイン枠 -->
         <rect x="6" y="6" width="162" height="114" fill="none" stroke="#C9D3DA" stroke-width="1"/>
         <rect x="6" y="128" width="162" height="114" fill="none" stroke="#C9D3DA" stroke-width="1"/>
@@ -262,7 +295,7 @@
       </svg>
       <div class="titleblock">
         <div><b>品名</b> 曲げガイド 3D</div>
-        <div><b>方式</b> 中心線・三面図</div>
+        <div><b>方式</b> <span id="tbMode">中心線・立体</span></div>
         <div>TOOL-11</div>
       </div>
     </div>
@@ -396,8 +429,13 @@
             '<input data-t="a" data-i="'+i+'" type="text" inputmode="decimal" autocomplete="off" placeholder="±―"><span class="u">°</span></span>'+
           '<span class="fld"><span class="fl">R</span>'+
             '<input data-t="r" data-i="'+i+'" type="text" inputmode="decimal" autocomplete="off" placeholder="―"><span class="u">mm</span></span>'+
-          '<span class="fld"><span class="fl">回転</span>'+
-            '<input data-t="p" data-i="'+i+'" type="text" inputmode="decimal" autocomplete="off" '+(i===0?'value="0" disabled':'placeholder="0"')+'><span class="u">°</span></span>';
+          /* 曲げ1の回転は入れない（版162）。以前は 0 の入らない欄を出していて「入力できない」と言われた。
+             欄に見えない形で「基準」と出し、なぜ無いかをその場に書く */
+          (i===0
+            ? '<span class="fld fx"><span class="fl">回転</span><span class="fxv">基準</span></span>'+
+              '<span class="segnote">曲げ1は回転を入れません。曲げ1で曲がった面を<b>向きの基準</b>（平面図の XY 面）にしているためです。回転（ひねり）は<b>曲げ2から</b>入れます。</span>'
+            : '<span class="fld"><span class="fl">回転</span>'+
+              '<input data-t="p" data-i="'+i+'" type="text" inputmode="decimal" autocomplete="off" placeholder="0"><span class="u">°</span></span>');
         box.appendChild(b);
         b.querySelector('[data-t="a"]').value=bends[i].a;
         b.querySelector('[data-t="r"]').value=bends[i].r;
@@ -552,6 +590,287 @@
     te.textContent='終';dyn.appendChild(te);
   }
 
+  /* ---- 立体の図（版162）----
+     ムギさん：「3D のモデルがもっと三次元的なモデルとして見られると分かりやすい」。
+     三面図（平面・正面・側面）は寸法の確かめに残し、切り替えで<立体>を見せる（既定は立体）。
+     ・中心線を太い管にして、遠近をつけて斜め上から見る。床に格子と影を描き、高さが分かるようにする。
+     ・指（マウス）でなぞると回る。横＝まわり込む（yaw）、縦＝見下ろす角（pitch 0〜90°）。
+     ・「上から」「正面」「横から」は三面図と同じ向き（平面図 X→Y↑／正面図 X→Z↑／側面図 Y→Z↑）。
+     ・管は<奥から順に>描く（手前が上に重なる＝交差したときの前後が分かる）。
+     ・管の太さは見やすくするための見た目だけ。寸法はすべて中心線（パイプ径は入れない）。
+     ・曲げの所は少し赤みのある色にし、曲げの番号を添える。                                      */
+  var VIEW={yaw:-30,pitch:30,v:'iso'};
+  var PRESET={
+    iso:  {yaw:-30, pitch:30, t:'斜めから'},
+    top:  {yaw:0,   pitch:90, t:'上から（平面図の向き）'},
+    front:{yaw:0,   pitch:0,  t:'正面から（正面図の向き）'},
+    side: {yaw:-90, pitch:0,  t:'横から（側面図の向き）'}
+  };
+  var W3=340, H3=270;
+  var lastM3=null;
+  function niceStep(v){
+    if(!(v>0)) return 1;
+    var e=Math.pow(10,Math.floor(Math.log(v)/Math.LN10)), f=v/e;
+    return (f<1.5?1:(f<3.5?2:(f<7.5?5:10)))*e;
+  }
+  function hex2(c){ return [parseInt(c.substr(1,2),16),parseInt(c.substr(3,2),16),parseInt(c.substr(5,2),16)]; }
+  function mix(a,b,k){
+    var A=hex2(a), B=hex2(b), o='#', i, v;
+    for(i=0;i<3;i++){ v=Math.round(A[i]+(B[i]-A[i])*k); o+=(v<16?'0':'')+v.toString(16); }
+    return o;
+  }
+  /* 見る向き → 画面。yaw は上下の軸（Z）まわり、pitch は見下ろす角。
+     x1 … 画面の右、y1 … 奥（pitch 0 のとき）、up … 画面の上、dep … 奥行き（大きいほど遠い） */
+  function camera(m){
+    var cx0=(m.mn.x+m.mx.x)/2, cy0=(m.mn.y+m.mx.y)/2, cz0=(m.mn.z+m.mx.z)/2;
+    var dx=m.mx.x-m.mn.x, dy=m.mx.y-m.mn.y, dz=m.mx.z-m.mn.z;
+    var Rs=Math.max(Math.sqrt(dx*dx+dy*dy+dz*dz)/2,1e-6);
+    var ya=VIEW.yaw*Math.PI/180, pa=VIEW.pitch*Math.PI/180;
+    var cyw=Math.cos(ya), syw=Math.sin(ya), cp=Math.cos(pa), sp=Math.sin(pa);
+    var Dp=4.5*Rs;                                  /* 目までの距離（大きいほど遠近がゆるい） */
+    var s=(Math.min(W3,H3)/2-30)/(Rs*1.12);         /* 回しても大きさが変わらないよう、外接球で決める */
+    var ox=W3/2, oy=H3/2+4;
+    function rot(x,y,z){
+      var x1=x*cyw-y*syw, y1=x*syw+y*cyw;
+      return {x:x1, up:z*cp+y1*sp, dep:y1*cp-z*sp};
+    }
+    return {
+      Rs:Rs, s:s,
+      p:function(q){
+        var r=rot(q.x-cx0,q.y-cy0,q.z-cz0), f=Dp/(Dp+r.dep);
+        return {x:ox+r.x*f*s, y:oy-r.up*f*s, d:r.dep, f:f};
+      },
+      dir:function(v){ var r=rot(v.x,v.y,v.z); return {x:r.x, y:r.up, d:r.dep}; }
+    };
+  }
+  function lerp(a,b,k){ return V(a.x+(b.x-a.x)*k, a.y+(b.y-a.y)*k, a.z+(b.z-a.z)*k); }
+  /* 管の中心線を「かたまり」に分ける（奥から順に描くため）。
+     直線は全体の 1/6 ごと、曲げは 15° ごと。かたまりの中は1本の線で描く（つなぎ目が出ない）。
+     arc … 何番目の曲げか（直線は −1） */
+  function chunks3(m,stepL){
+    var out=[], cur=V(0,0,0), i, j;
+    function line(a,b){
+      var L=vlen(sub(b,a)), k=Math.max(1,Math.ceil(L/stepL));
+      for(j=0;j<k;j++) out.push({pts:[lerp(a,b,j/k), lerp(a,b,(j+1)/k)], arc:-1});
+    }
+    for(i=0;i<m.n;i++){
+      var ar=m.arcs[i];
+      if(m.act[i]>1e-9) line(cur,ar.t1);
+      var d1=mul(sub(ar.t1,ar.c),1/ar.r), deg=Math.abs(ar.a), tot=deg*Math.PI/180;
+      var nk=Math.max(1,Math.ceil(deg/15)), sub2=Math.max(2,Math.ceil(deg/nk/3)), c, kk;
+      for(c=0;c<nk;c++){
+        var pts=[];
+        for(kk=0;kk<=sub2;kk++){
+          var al=tot*(c+kk/sub2)/nk;
+          pts.push(add(ar.c, add(mul(d1,ar.r*Math.cos(al)), mul(ar.tPrev,ar.r*Math.sin(al)))));
+        }
+        out.push({pts:pts, arc:i});
+      }
+      cur=ar.t2;
+    }
+    if(m.act[m.n]>1e-9||m.n===0) line(cur,m.end);
+    return out;
+  }
+  function tx(g,x,y,str,at){
+    var a={x:x.toFixed(1), y:y.toFixed(1), 'font-size':10, fill:'#1F3341', 'text-anchor':'middle', stroke:'#fff', 'stroke-width':3, 'paint-order':'stroke'}, k;
+    for(k in (at||{})) a[k]=at[k];
+    var t=el('text',a); t.textContent=str; g.appendChild(t); return t;
+  }
+  function draw3d(m){
+    var g=$('dyn3');
+    if(!g) return;
+    while(g.firstChild) g.removeChild(g.firstChild);
+    $('emptyMsg3').style.display=m?'none':'';
+    $('vCap').textContent=(PRESET[VIEW.v]? PRESET[VIEW.v].t : '自由な向き');
+    lastM3=m||null;
+    if(!m) return;
+    var cam=camera(m), P=cam.p, i, j;
+    var dx=m.mx.x-m.mn.x, dy=m.mx.y-m.mn.y, dz=m.mx.z-m.mn.z;
+    var diag=Math.sqrt(dx*dx+dy*dy+dz*dz);
+    if(!(diag>1e-9)){ $('emptyMsg3').style.display=''; return; }   /* 長さ 0 だけ（形が無い） */
+    /* 管の太さ（見た目）：全体の 3.2%。曲げの R より太いと曲げが潰れて見えるので R の 0.8 倍まで */
+    var minR=1e18; for(i=0;i<m.n;i++) if(m.R[i]<minR) minR=m.R[i];
+    var rt=diag*0.032; if(m.n&&rt>minR*0.8) rt=minR*0.8;
+    if(rt*cam.s<1.6) rt=1.6/cam.s;
+    var zf=m.mn.z-rt;                                 /* 床：いちばん低い所の管の下 */
+
+    /* ① 床と格子 */
+    var span=Math.max(dx,dy,diag*0.3), st=niceStep(span/5), pad=st*0.7;
+    var gx0=Math.floor((m.mn.x-pad)/st)*st, gx1=Math.ceil((m.mx.x+pad)/st)*st;
+    var gy0=Math.floor((m.mn.y-pad)/st)*st, gy1=Math.ceil((m.mx.y+pad)/st)*st;
+    var c1=P(V(gx0,gy0,zf)), c2=P(V(gx1,gy0,zf)), c3=P(V(gx1,gy1,zf)), c4=P(V(gx0,gy1,zf));
+    g.appendChild(el('path',{d:'M '+c1.x.toFixed(1)+' '+c1.y.toFixed(1)+' L '+c2.x.toFixed(1)+' '+c2.y.toFixed(1)+' L '+c3.x.toFixed(1)+' '+c3.y.toFixed(1)+' L '+c4.x.toFixed(1)+' '+c4.y.toFixed(1)+' Z',
+      fill:'#F3F6F8', stroke:'#C9D3DA', 'stroke-width':1, 'class':'floor'}));
+    var gg='', q1, q2, gv;
+    for(gv=gx0+st; gv<gx1-1e-9; gv+=st){ q1=P(V(gv,gy0,zf)); q2=P(V(gv,gy1,zf)); gg+='M '+q1.x.toFixed(1)+' '+q1.y.toFixed(1)+' L '+q2.x.toFixed(1)+' '+q2.y.toFixed(1)+' '; }
+    for(gv=gy0+st; gv<gy1-1e-9; gv+=st){ q1=P(V(gx0,gv,zf)); q2=P(V(gx1,gv,zf)); gg+='M '+q1.x.toFixed(1)+' '+q1.y.toFixed(1)+' L '+q2.x.toFixed(1)+' '+q2.y.toFixed(1)+' '; }
+    if(gg) g.appendChild(el('path',{d:gg, fill:'none', stroke:'#DCE3E8', 'stroke-width':0.8}));
+
+    var cs=chunks3(m,diag/6), k, kk;
+    /* ② 床の影（真下に落とした管） */
+    var sd='', wAvg=2*rt*cam.s;
+    for(k=0;k<cs.length;k++){
+      for(kk=(k===0?0:1);kk<cs[k].pts.length;kk++){
+        var fq=P(V(cs[k].pts[kk].x,cs[k].pts[kk].y,zf));
+        sd+=(sd?' L ':'M ')+fq.x.toFixed(1)+' '+fq.y.toFixed(1);
+        wAvg=2*rt*cam.s*fq.f;
+      }
+    }
+    g.appendChild(el('path',{d:sd, fill:'none', stroke:'#1F3341', 'stroke-opacity':0.13, 'stroke-width':Math.max(1.5,wAvg).toFixed(1), 'stroke-linecap':'round', 'stroke-linejoin':'round', 'class':'shadow'}));
+    /* 始と終から床へ下ろした細い線（高さの手がかり） */
+    [V(0,0,0), m.end].forEach(function(e0){
+      var a=P(e0), b=P(V(e0.x,e0.y,zf));
+      if(Math.abs(a.y-b.y)>2) g.appendChild(el('line',{x1:a.x.toFixed(1),y1:a.y.toFixed(1),x2:b.x.toFixed(1),y2:b.y.toFixed(1),stroke:'#9AA9B2','stroke-width':0.8,'stroke-dasharray':'2 2'}));
+    });
+    /* ③ 端点間（赤の点線。三面図と同じ） */
+    var S=P(V(0,0,0)), E=P(m.end);
+    g.appendChild(el('line',{x1:S.x.toFixed(1),y1:S.y.toFixed(1),x2:E.x.toFixed(1),y2:E.y.toFixed(1),stroke:'#D63426','stroke-width':1,'stroke-dasharray':'5 3','class':'dist'}));
+
+    /* ④ 管：かたまりごとに、奥（dep が大きい）から順に。外形の線 → 胴 → 光の筋。
+       かたまりの端は butt（平ら）にする。丸くすると、後から描いたかたまりの外形の線が
+       前のかたまりの胴に輪になって乗る（つなぎ目が点線のように見えた）。直線と曲げの境は向きが
+       そろっているので、平らな端どうしで隙間なくつながる。 */
+    var Ld={x:-0.45,y:0.62,d:-0.64};                   /* 光：左上・手前から */
+    var segs=[];
+    for(k=0;k<cs.length;k++){
+      var pts=cs[k].pts, sp2=[], dsum=0, fsum=0;
+      for(kk=0;kk<pts.length;kk++){ var q=P(pts[kk]); sp2.push(q); dsum+=q.d; fsum+=q.f; }
+      var dv=cam.dir(sub(pts[pts.length-1],pts[0]));
+      var dl=Math.sqrt(dv.x*dv.x+dv.y*dv.y+dv.d*dv.d)||1;
+      var ca=(dv.x*Ld.x+dv.y*Ld.y+dv.d*Ld.d)/dl;
+      var lit=0.25+0.75*Math.sqrt(Math.max(0,1-ca*ca));      /* 円柱は、光が軸に直角に当たるほど明るい */
+      segs.push({p:sp2, d:dsum/pts.length, w:2*rt*cam.s*fsum/pts.length, lit:lit, arc:cs[k].arc, first:k===0, last:k===cs.length-1});
+    }
+    segs.sort(function(u,v){ return v.d-u.d; });
+    /* 管の口（端の円）：外へ向いた向きが手前なら胴の後に、奥なら胴の前に描く（奥なら丸い縁だけ見える） */
+    function mouth(pAt,pIn,wpx,front){
+      var dir=cam.dir(sub(pAt,pIn)), dl2=Math.sqrt(dir.x*dir.x+dir.y*dir.y+dir.d*dir.d)||1;
+      var sx=dir.x/dl2, sy=-dir.y/dl2, sl=Math.sqrt(sx*sx+sy*sy);
+      var ang=(sl>1e-6)? Math.atan2(sy,sx)*180/Math.PI : 0;
+      var c=P(pAt), ry=Math.max(wpx/2*Math.abs(dir.d/dl2),0.6);
+      g.appendChild(el('ellipse',{cx:c.x.toFixed(1),cy:c.y.toFixed(1),rx:ry.toFixed(1),ry:(wpx/2+1.1).toFixed(1),
+        transform:'rotate('+ang.toFixed(1)+' '+c.x.toFixed(1)+' '+c.y.toFixed(1)+')',
+        fill:front?'#5B707E':'#C8D4DB',stroke:'#1F3341','stroke-width':1.1,'class':'mouth'}));
+    }
+    var c0=cs[0], cL=cs[cs.length-1];
+    var mS={at:c0.pts[0], inn:c0.pts[1]}, mE={at:cL.pts[cL.pts.length-1], inn:cL.pts[cL.pts.length-2]};
+    mS.front=cam.dir(sub(mS.at,mS.inn)).d<0; mE.front=cam.dir(sub(mE.at,mE.inn)).d<0;
+    /* 胴と光の筋は、かたまりの両端を 0.8px だけ伸ばして描く（となりと重ねる）。
+       ぴったり突き合わせると、ふちのぼかし（アンチエイリアス）で外形の黒が細い線になって透ける。
+       外形の線は伸ばさない（伸ばすと、外形と胴の端が同じ所でぼけて、黒い筋が横切って見えた）。
+       重ねた所は後から描いた胴の色になる。管の口の側は伸ばさない */
+    function ext(pp,a0,a1){
+      var q=pp.slice(), n2=q.length, ux, uy, ul;
+      if(a0){ ux=q[0].x-q[1].x; uy=q[0].y-q[1].y; ul=Math.sqrt(ux*ux+uy*uy); if(ul>1e-6) q[0]={x:q[0].x+ux/ul*0.8, y:q[0].y+uy/ul*0.8}; }
+      if(a1){ ux=q[n2-1].x-q[n2-2].x; uy=q[n2-1].y-q[n2-2].y; ul=Math.sqrt(ux*ux+uy*uy); if(ul>1e-6) q[n2-1]={x:q[n2-1].x+ux/ul*0.8, y:q[n2-1].y+uy/ul*0.8}; }
+      return q;
+    }
+    function pd(pp,ox2,oy2){ var s2='', i2; for(i2=0;i2<pp.length;i2++) s2+=(i2?' L ':'M ')+(pp[i2].x+ox2).toFixed(1)+' '+(pp[i2].y+oy2).toFixed(1); return s2; }
+    for(k=0;k<segs.length;k++){
+      var sgm=segs[k], w=Math.max(sgm.w,2), pe=ext(sgm.p,!sgm.first,!sgm.last);
+      if(sgm.first&&!mS.front) mouth(mS.at,mS.inn,w,false);
+      if(sgm.last&&!mE.front) mouth(mE.at,mE.inn,w,false);
+      var body=(sgm.arc<0)? mix('#6A7F8D','#C8D4DB',sgm.lit) : mix('#8A6660','#E2C3BD',sgm.lit);
+      g.appendChild(el('path',{d:pd(sgm.p,0,0),fill:'none',stroke:'#1F3341','stroke-width':(w+2.2).toFixed(1),'stroke-linecap':'butt','stroke-linejoin':'round'}));
+      g.appendChild(el('path',{d:pd(pe,0,0),fill:'none',stroke:body,'stroke-width':w.toFixed(1),'stroke-linecap':'butt','stroke-linejoin':'round','class':(sgm.arc<0?'tube':'tube bendp')}));
+      /* 光の筋：管の中心から、画面で左上の側へずらした細い線 */
+      if(w>=4){
+        var a0=sgm.p[0], a1=sgm.p[sgm.p.length-1], ex=a1.x-a0.x, ey=a1.y-a0.y, el2=Math.sqrt(ex*ex+ey*ey);
+        if(el2>0.01){
+          var nx=-ey/el2, ny=ex/el2;
+          if(nx*(-0.5)+ny*(-0.86)<0){ nx=-nx; ny=-ny; }
+          var o=w*0.2;
+          g.appendChild(el('path',{d:pd(pe,nx*o,ny*o),fill:'none',stroke:'#fff','stroke-opacity':(0.2+0.45*sgm.lit).toFixed(2),'stroke-width':(w*0.24).toFixed(1),'stroke-linecap':'butt','stroke-linejoin':'round'}));
+        }
+      }
+      if(sgm.first&&mS.front) mouth(mS.at,mS.inn,w,true);
+      if(sgm.last&&mE.front) mouth(mE.at,mE.inn,w,true);
+    }
+
+    /* ⑤ 始・終・曲げの番号（いちばん上に） */
+    g.appendChild(el('circle',{cx:S.x.toFixed(1),cy:S.y.toFixed(1),r:3.4,fill:'#1F3341',stroke:'#fff','stroke-width':1.2}));
+    g.appendChild(el('circle',{cx:E.x.toFixed(1),cy:E.y.toFixed(1),r:3.4,fill:'#fff',stroke:'#1F3341','stroke-width':1.6}));
+    var lo=Math.max(wAvg/2,4)+9;
+    tx(g,S.x,S.y-lo+3,'始',{'font-weight':700,'class':'lbl'});
+    tx(g,E.x,E.y-lo+3,'終',{'font-weight':700,'class':'lbl'});
+    for(i=0;i<m.n;i++){
+      var ar=m.arcs[i];
+      var d1=mul(sub(ar.t1,ar.c),1/ar.r), half=Math.abs(ar.a)*Math.PI/360;
+      var mid=add(ar.c, add(mul(d1,ar.r*Math.cos(half)), mul(ar.tPrev,ar.r*Math.sin(half))));
+      var pm=P(mid), pc=P(ar.c), ux=pm.x-pc.x, uy=pm.y-pc.y, ul=Math.sqrt(ux*ux+uy*uy);
+      if(ul<0.5){ ux=0; uy=-1; ul=1; }
+      var off=Math.max(2*rt*cam.s*pm.f/2,3)+10;
+      tx(g,pm.x+ux/ul*off,pm.y+uy/ul*off+3.5,'曲げ'+(i+1),{fill:'#B23B2E','font-size':9.5,'font-weight':700,'class':'blbl'});
+    }
+
+    /* ⑥ 軸の向き（左下）。X 赤・Y 緑・Z 青（よくある CAD の色） */
+    var ax=[['X',V(1,0,0),'#D63426'],['Y',V(0,1,0),'#0B6B3A'],['Z',V(0,0,1),'#1F5F99']], ox=30, oy=H3-28, L3=19;
+    ax.sort(function(u,v){ return cam.dir(v[1]).d-cam.dir(u[1]).d; });
+    ax.forEach(function(a){
+      var v=cam.dir(a[1]), x2=ox+v.x*L3, y2=oy-v.y*L3;
+      g.appendChild(el('line',{x1:ox,y1:oy,x2:x2.toFixed(1),y2:y2.toFixed(1),stroke:a[2],'stroke-width':1.8,'stroke-linecap':'round'}));
+      if(Math.sqrt(v.x*v.x+v.y*v.y)>0.15) tx(g,ox+v.x*(L3+8),oy-v.y*(L3+8)+3.5,a[0],{fill:a[2],'font-size':9,'font-weight':700,'class':'axl'});
+      else tx(g,ox+6,oy-6,a[0]+(v.d<0?'：手前へ':'：奥へ'),{fill:a[2],'font-size':8,'font-weight':700,'text-anchor':'start','class':'axl'});
+    });
+  }
+  function setView(v){
+    if(PRESET[v]){ VIEW.yaw=PRESET[v].yaw; VIEW.pitch=PRESET[v].pitch; VIEW.v=v; }
+    var bs=document.querySelectorAll('#viewChips button[data-v]'), i;
+    for(i=0;i<bs.length;i++) bs[i].className=(bs[i].getAttribute('data-v')===VIEW.v)?'on':'';
+    draw3d(lastM3);
+  }
+  /* 立体／三面図の切り替え。どちらを見ていたかは端末に覚える（答えではないので記録には入れない） */
+  var VKEY='bendguide3d_view';
+  function setTab(t){
+    var solid=(t!=='tri');
+    $('solid').style.display=solid?'':'none';
+    $('viewChips').style.display=solid?'':'none';
+    $('dwg').style.display=solid?'none':'';
+    $('vSolid').className=solid?'on':'';
+    $('vTri').className=solid?'':'on';
+    $('tbMode').textContent=solid?'中心線・立体':'中心線・三面図';
+    try{ localStorage.setItem(VKEY,solid?'solid':'tri'); }catch(e){}
+  }
+  (function(){
+    var svg=$('solid'); if(!svg) return;
+    var drag=null, raf=0;
+    function later(){
+      if(raf) return;
+      var go=function(){ raf=0; draw3d(lastM3); };
+      if(window.requestAnimationFrame) raf=window.requestAnimationFrame(go); else { raf=1; setTimeout(go,16); }
+    }
+    function pt(e){ var t=(e.touches&&e.touches[0])||e; return {x:t.clientX, y:t.clientY}; }
+    function down(e){
+      var p=pt(e); drag={x:p.x, y:p.y, yaw:VIEW.yaw, pitch:VIEW.pitch};
+      if(e.pointerId!=null&&svg.setPointerCapture){ try{ svg.setPointerCapture(e.pointerId); }catch(x){} }
+    }
+    function move(e){
+      if(!drag) return;
+      var p=pt(e), ddx=p.x-drag.x, ddy=p.y-drag.y;
+      if(Math.abs(ddx)+Math.abs(ddy)<2) return;
+      VIEW.yaw=((drag.yaw+ddx*0.5)%360+540)%360-180;   /* 右へなぞると、手前の側が右へ回る（つかんで回す向き） */
+      VIEW.pitch=Math.max(0,Math.min(90,drag.pitch+ddy*0.4));
+      if(VIEW.v){ VIEW.v=''; var bs=document.querySelectorAll('#viewChips button[data-v]'), i; for(i=0;i<bs.length;i++) bs[i].className=''; }
+      if(e.cancelable&&e.preventDefault) e.preventDefault();
+      later();
+    }
+    function up(){ drag=null; }
+    if(window.PointerEvent){
+      svg.addEventListener('pointerdown',down); svg.addEventListener('pointermove',move);
+      svg.addEventListener('pointerup',up); svg.addEventListener('pointercancel',up);
+    } else {
+      svg.addEventListener('touchstart',down); svg.addEventListener('touchmove',move);
+      svg.addEventListener('touchend',up); svg.addEventListener('mousedown',down);
+      window.addEventListener('mousemove',move); window.addEventListener('mouseup',up);
+    }
+    var bs=document.querySelectorAll('#viewChips button[data-v]'), i;
+    for(i=0;i<bs.length;i++) bs[i].addEventListener('click',function(){ setView(this.getAttribute('data-v')); });
+    $('vSolid').addEventListener('click',function(){ setTab('solid'); });
+    $('vTri').addEventListener('click',function(){ setTab('tri'); });
+    var t0='solid'; try{ t0=localStorage.getItem(VKEY)||'solid'; }catch(e){}
+    setTab(t0);
+  })();
+
   /* ---- 表示更新 ---- */
   var lastModel=null;
   function recalc(){
@@ -563,7 +882,7 @@
       $('secBody').innerHTML='';$('coBody').innerHTML='';
       $('statusTxt').textContent=m.err;
       $('statusTxt').className='statusTxt';
-      draw(null);
+      draw(null); draw3d(null);
       return;
     }
     lastModel=m;
@@ -605,7 +924,7 @@
       $('statusTxt').textContent=(m.startArc?'弧から開始 ':'')+(m.endArc?'弧で終了 ':'')+'| 曲げ'+m.n+'箇所 | 実直線長は内訳表を参照';
       $('statusTxt').className='statusTxt';
     }
-    draw(m);
+    draw(m); draw3d(m);
   }
 
   /* ---- 保存（v79）----
