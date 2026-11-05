@@ -53,6 +53,22 @@
   }
   .chip.on{background:var(--ink);color:#fff}
 
+  /* v164: 公差域クラスを「記号（行）× 等級（列）」の表で選ぶ（34個を1列に流すと探しにくい）。 */
+  .cgrid{display:grid;grid-template-columns:30px repeat(9,minmax(0,1fr));gap:3px;margin-bottom:4px}
+  .cgrid .gh{font-size:10.5px;font-weight:700;color:#5B707E;text-align:center;padding:2px 0 1px;font-variant-numeric:tabular-nums}
+  .cgrid .gh.corner{font-size:9.5px;text-align:left;letter-spacing:-.02em}
+  .cgrid .grp{grid-column:1/-1;font-size:10.5px;font-weight:700;color:#5B707E;letter-spacing:.04em;
+    padding:7px 2px 2px;border-bottom:1px solid #C9D3DA;margin-bottom:1px}
+  .cgrid .rl{display:flex;align-items:center;justify-content:center;
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;font-size:16px;font-weight:800;color:#8FA2AF}
+  .cgrid .rl.on{color:var(--red)}
+  .cgrid .chip{padding:7px 0;border-radius:6px;font-size:13px;line-height:1.15;text-align:center;
+    min-width:0;white-space:nowrap;overflow:hidden;letter-spacing:-.01em}
+  .cgrid .chip .cl{font-size:9.5px;font-weight:600;opacity:.55}
+  .cgrid .chip.on .cl{opacity:.8}
+  .cgrid .nil{border:1px dashed #D3DBE0;border-radius:6px;min-height:30px}
+  .cgrid-note{font-size:11px;line-height:1.6;color:#5B707E;margin:2px 0 12px}
+
   .sheet{background:var(--sheet);border:2px solid var(--ink);padding:5px}
   .sheet-inner{border:1px solid var(--ink)}
   .sheet svg{display:block;width:100%;height:auto}
@@ -215,7 +231,7 @@
   <div class="gb">
     <h4>使い方</h4>
     <ol>
-      <li>「軸(小文字)」か「穴(大文字)」を選び、下のチップで<b>公差域クラス</b>（h7 など）を選びます。</li>
+      <li>「軸(小文字)」か「穴(大文字)」を選び、下の表で<b>公差域クラス</b>（h7 など）を選びます。<b>行が記号</b>（d・e・f …）、<b>列が等級</b>（5〜13）です。点線のマスは規格の表に無い組合せです。</li>
       <li><b>呼び寸法</b>（図面の基準寸法φ）を入れると、上下の許容差と最大・最小許容寸法が出ます。</li>
       <li><b>実測値</b>を入れると、公差域内かどうかを合否判定します（空欄なら許容差だけ表示）。</li>
       <li>実測値を入れると、<b>その寸法が同じ記号の何等級に相当するか</b>も出ます。h8 の図面で「h11相当になります」と出れば、等級を3つ外していることがひと目で分かります（IT16 まで探します）。</li>
@@ -234,6 +250,8 @@
       　Δ を足すのは <b>K・M・N は IT8 以下、P〜ZC は IT7 以下</b> のときだけです（それより粗い等級と、呼び寸法3mm以下は Δ=0）<br>
       　<b>φ500 を超えると Δ は足しません</b>（規格の Δ の表が φ500 まで）。例：M7 は φ500 以下なら 0／−IT7 ですが、φ560 では <b>−26／−96</b><br>
       ・対応範囲 … <b>全クラス φ1600 まで</b>。φ500 を超える区分は 500〜630〜800〜1000〜1250〜1600 です<br>
+      ・選べるクラス … 規格（JIS B 0401-2）の表にある範囲を<b>等級5〜13</b>で出しています。軸 d5〜d13・e5〜e10・f5〜f10・g5〜g10・h5〜h13・js5〜js13・k5〜k13・m5〜m9・p5〜p10・s5〜s10、穴 D6〜D13・E〜G は 5〜10・H5〜H13・JS5〜JS13・<b>K5〜K8</b>・M5〜M10・P5〜P10・S5〜S10<br>
+      　穴 K は IT8 を超えると規格の値が φ3 以下にしか無いので K8 までです。IT5 の φ500 超は規格で「試験的な値」とされています<br>
       ・上・下の限界寸法 … <code>呼び寸法 + es(ES)/1000</code>、<code>呼び寸法 + ei(EI)/1000</code>（µm→mm）<br>
       ・はめあい … <code>最大すきま = 穴ES − 軸ei</code>、<code>最小すきま = 穴EI − 軸es</code>（負ならしめしろ）<br>
       ・めっき … 図面公差はめっき後に適用。片面 t µm なら径は軸 −2t／穴 +2t 動くので、<b>めっき前の狙い＝図面値 − その分</b>。<br>
@@ -291,7 +309,8 @@
     <button type="button" id="mHole">穴(大文字)</button>
   </div>
 
-  <div class="chips" id="chips"></div>
+  <div class="cgrid" id="chips" role="group" aria-label="公差域クラス（行が記号、列が等級）"></div>
+  <div class="cgrid-note" id="chipsNote"></div>
 
   <!-- 公差域図 -->
   <div class="sheet">
@@ -427,6 +446,10 @@
     10:[40,48,58,70,84,100,120,140,160,185,210,230,250, 280,320,360,420,500]
   };
   /* ↑ v163: 各行の後ろ5つが φ500〜1600（500〜630／630〜800／800〜1000／1000〜1250／1250〜1600）。 */
+  /* v164: IT4 は穴 K・M・P・S の IT5 の Δ（＝IT5−IT4）にだけ使う。v163 までは無く、IT5 の穴の Δ が出せなかった。
+     φ500 以下の IT5−IT4 は ISO 286-1 の Δ の表の IT5 の列（1,1,2,3,3,4,5,5,6,6,7,7,7）と一致する。
+     後ろ5つ（φ500 超）は Δ を使わないが、配列の長さをほかの IT とそろえるために持つ。 */
+  IT[4]=[3,4,4,5,6,7,8,10,12,14,16,18,20, 22,25,28,33,39];
   /* IT11〜IT13 は JIS B 0401-1 の表をそのまま持つ（v92）。
      ★v91まで「5等級ごとに10倍」の規則で生成していたが、IT11 の φ3〜6 だけ
        規則と表が食い違う。IT6=8 → ×10 = 80 に対し、表は 75。
@@ -492,7 +515,29 @@
   /* v92: P7 / g8 / h11〜h13 / js9・js10 を追加（ムギさん依頼）。
      並びは記号ごと・等級の小さい順。穴のときは大文字で表示される。 */
   /* v163: f9・f10・g9・g10・m7・m8 を追加（ムギさん依頼。M7・M8 は穴にすると出る）。34クラス。 */
-  var CLASSES=['d9','e7','e8','e9','f7','f8','f9','f10','g6','g7','g8','g9','g10','h6','h7','h8','h9','h10','h11','h12','h13','js7','js8','js9','js10','k7','k8','m6','m7','m8','p6','p7','s6','s7'];
+  /* v164: 各記号を等級13まで（ムギさん「d13 が出てきた。各公差13まで。出せなければそれより下でも」）。
+     出すのは JIS B 0401-2／ISO 286-2 の表にある範囲を IT5〜IT13 で切ったもの。[最小, 最大]。
+     ★穴 K は IT8 を超えると、規格の基礎となる許容差の表に φ3 以下の値しか無いので K8 まで。
+     ★穴 D は D6 から、軸 m は m9 まで（穴 M は M10 まで）。e・f・g・p・s は表が IT10 まで。 */
+  var LETTERS=['d','e','f','g','h','js','k','m','p','s'];
+  var GRADES={
+    shaft:{d:[5,13],e:[5,10],f:[5,10],g:[5,10],h:[5,13],js:[5,13],k:[5,13],m:[5,9], p:[5,10],s:[5,10]},
+    hole: {d:[6,13],e:[5,10],f:[5,10],g:[5,10],h:[5,13],js:[5,13],k:[5,8], m:[5,10],p:[5,10],s:[5,10]}
+  };
+  /* 行のまとまり（見出し）。軸でも穴でも、d〜g はすきま側・k〜s はしまり側（h・H 基準の相手と組んだとき）。 */
+  var GROUPS=[['すきま側',['d','e','f','g']],['基準',['h','js']],['中間・しまり側',['k','m','p','s']]];
+  var GMIN=5, GMAX=13;
+  function classesOf(hole){
+    var out=[], r=GRADES[hole?'hole':'shaft'];
+    LETTERS.forEach(function(L){ for(var g=r[L][0];g<=r[L][1];g++)out.push(L+g); });
+    return out;
+  }
+  function hasClass(c,hole){
+    var m=c.match(/^([a-z]+)(\d+)$/), r=m&&GRADES[hole?'hole':'shaft'][m[1]];
+    return !!r && Number(m[2])>=r[0] && Number(m[2])<=r[1];
+  }
+  var CLASSES=classesOf(false);        /* 軸（71） */
+  var HOLE_CLASSES=classesOf(true);    /* 穴（66） */
   /* js は ±IT/2 だけで出せるので、IT のある φ500 まで無条件に使える。
      v91まで50に制限していたが、制限する理由が無かった（v92で500へ）。 */
   /* v102: d・f・k・m を 500 へ。d は表を φ250 まで持っていたのに 200 で
@@ -566,8 +611,10 @@
   function equivGrade(letter,hole,ri,nominal,dev){
     var g, d;
     if(FUND[letter] && fundOf(letter,ri,nominal)===undefined) return null;   /* その記号は この寸法の表を持たない */
-    for(g=5;g<=16;g++){
+    var gr=GRADES[hole?'hole':'shaft'][letter];
+    for(g=(gr?gr[0]:5);g<=16;g++){
       if(!IT[g]) continue;
+      if(hole && letter==='k' && g>8) break;   /* v164: 穴 K は IT8 まで（それより粗い K は規格に φ3 以下しか無い） */
       if(hole && 'defgh'.indexOf(letter)<0 && letter!=='js' && !IT[g-1]) continue;  /* Δ に IT(g−1) が必要 */
       d=deviations(letter,g,hole,ri,nominal);
       if(!isFinite(d.es)||!isFinite(d.ei)) continue;
@@ -585,21 +632,40 @@
   }
 
   /* ============ チップ生成 ============ */
+  /* v164: 記号（行）× 等級（列 5〜13）の表。規格に無いマスは点線の空き。
+     ボタンの文字は今までどおりクラス名（textContent＝"h7" 等）。記号は小さく、等級は太く見せる。 */
   function buildChips(){
-    var box=$('chips');
+    var box=$('chips'), r=GRADES[isHole?'hole':'shaft'], cur=parseClass(curClass), g;
     box.innerHTML='';
-    CLASSES.forEach(function(c){
-      var b=document.createElement('button');
-      b.type='button';
-      b.className='chip'+(c===curClass?' on':'');
-      b.textContent=dispClass(c);
-      b.addEventListener('click',function(){
-        curClass=c;
-        buildChips();
-        recalc();
+    function div(cls,txt){ var d=document.createElement('div'); d.className=cls; if(txt!=null)d.textContent=txt; box.appendChild(d); return d; }
+    div('gh corner','記号＼等級');
+    for(g=GMIN;g<=GMAX;g++)div('gh',String(g));
+    GROUPS.forEach(function(G){
+      div('grp',G[0]+'（'+G[1].map(dispClass).join('・')+'）');
+      G[1].forEach(function(L){
+        div('rl'+(L===cur.letter?' on':''),dispClass(L));
+        for(g=GMIN;g<=GMAX;g++){
+          if(g<r[L][0]||g>r[L][1]){ var n=div('nil'); n.setAttribute('aria-hidden','true'); continue; }
+          (function(c){
+            var b=document.createElement('button');
+            b.type='button';
+            b.className='chip'+(c===curClass?' on':'');
+            var s=document.createElement('span'); s.className='cl'; s.textContent=dispClass(L);
+            b.appendChild(s); b.appendChild(document.createTextNode(String(g)));
+            b.setAttribute('aria-label',dispClass(c));
+            b.addEventListener('click',function(){
+              curClass=c;
+              buildChips();
+              recalc();
+            });
+            box.appendChild(b);
+          })(L+g);
+        }
       });
-      box.appendChild(b);
     });
+    $('chipsNote').innerHTML=isHole
+      ?'点線のマスは規格の表に無い組合せです（E・F・G・P・S は 10 まで、M は 10 まで、<b>K は 8 まで</b>、D は 6 から）。'
+      :'点線のマスは規格の表に無い組合せです（e・f・g・p・s は 10 まで、<b>m は 9 まで</b>）。';
   }
 
   /* ============ 公差域図 ============ */
@@ -768,7 +834,7 @@
           eqTxt='<br>'+eqCls+' の範囲に収まっています';
         }
       }else{
-        eqTxt='<br>この記号の表（IT16まで）では相当する等級が見つかりません';
+        eqTxt='<br>この記号の表（'+(isHole&&p.letter==='k'?'K8':'IT16')+'まで）では相当する等級が見つかりません';
       }
       if(ok){
         res.textContent='合格';res.className='res ok';
@@ -787,24 +853,31 @@
     drawZone(d.es,d.ei,devEff);
     var sub=subOf(p.letter,n);
     setStatus('区分: '+RANGES[ri][0]+'を超え'+RANGES[ri][1]+'以下 | IT'+p.grade+' = '+IT[p.grade][ri]+' µm'+
-      (sub?' | 細分 '+sub[0]+'を超え'+sub[1]+'以下':''),false);
+      (sub?' | 細分 '+sub[0]+'を超え'+sub[1]+'以下':'')+
+      (p.grade<=5&&n>500?' | IT5 の φ500 超は規格で「試験的な値」':''),false);
     if($('tblWrap').classList.contains('show'))buildTable();
   }
 
   /* ============ はめあいのすきま(穴×軸) ============ */
   function buildFitSel(){
-    var hs=$('fitHole'), ss=$('fitShaft'), i, o;
-    for(i=0;i<CLASSES.length;i++){
-      o=document.createElement('option'); o.value=CLASSES[i]; o.textContent=CLASSES[i].toUpperCase();
-      if(CLASSES[i]==='h7') o.selected=true;
-      hs.appendChild(o);
+    var hs=$('fitHole'), ss=$('fitShaft');
+    /* v164: 穴は穴の一覧、軸は軸の一覧（範囲が違う）。「すきま側／基準／中間・しまり側」でまとめる。 */
+    function fill(sel,list,up,def){
+      GROUPS.forEach(function(G){
+        var og=document.createElement('optgroup');
+        og.label=G[0]+'（'+G[1].map(function(L){return up?L.toUpperCase():L}).join('・')+'）';
+        list.forEach(function(c){
+          if(G[1].indexOf(parseClass(c).letter)<0)return;
+          var o=document.createElement('option'); o.value=c; o.textContent=up?c.toUpperCase():c;
+          if(c===def)o.selected=true;
+          og.appendChild(o);
+        });
+        sel.appendChild(og);
+      });
+      sel.value=def;
     }
-    var d=hs.querySelector('option[value="h7"]'); if(d){d.selected=true;}
-    for(i=0;i<CLASSES.length;i++){
-      o=document.createElement('option'); o.value=CLASSES[i]; o.textContent=CLASSES[i];
-      if(CLASSES[i]==='g6') o.selected=true;
-      ss.appendChild(o);
-    }
+    fill(hs,HOLE_CLASSES,true,'h7');
+    fill(ss,CLASSES,false,'g6');
   }
   function calcFit(){
     var n=num($('fN').value);
@@ -838,8 +911,18 @@
     isHole=h;
     $('mShaft').classList.toggle('on',!h);
     $('mHole').classList.toggle('on',h);
+    /* v164: 軸と穴で出せる等級が違う（d5・k9〜k13 は軸だけ、M10 は穴だけ）。
+       切り替えた側に無いクラスは、同じ記号の一番近い等級にして、そのことを下の欄に出す。 */
+    var moved='';
+    if(!hasClass(curClass,h)){
+      var p=parseClass(curClass), r=GRADES[h?'hole':'shaft'][p.letter];
+      var from=(h?curClass:curClass.toUpperCase());
+      curClass=p.letter+Math.min(Math.max(p.grade,r[0]),r[1]);
+      moved=from+' は'+(h?'穴':'軸')+'の規格の表に無いので '+dispClass(curClass)+' にしました';
+    }
     buildChips();
     recalc();
+    if(moved)setStatus(moved,false);
   }
   $('mShaft').addEventListener('click',function(){setHole(false)});
   $('mHole').addEventListener('click',function(){setHole(true)});
