@@ -368,6 +368,106 @@
   #cpy{font:inherit;font-size:13px;font-weight:700;padding:9px 16px;border-radius:8px;border:1.5px solid var(--ink);background:var(--ink);color:#fff;cursor:pointer;min-height:40px}
   #cpy:active{opacity:.85}
   #cpyMsg{font-size:11.5px;color:var(--ok);font-weight:700}
+
+  /* ── v167：頻度（目安）・よくある形・前例・考え方の違い ── */
+  .rtags{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px}
+  .rtags .rlv{margin-top:0}
+  .rfq{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:999px;background:#fff;border:1px solid #C9D3DA;color:var(--ink);line-height:1.5}
+  .fq{display:inline-flex;gap:2px;align-items:flex-end;height:12px}
+  .fq i{display:block;width:4px;background:#D5DDE2;border-radius:1px}
+  .fq i:nth-child(1){height:6px} .fq i:nth-child(2){height:9px} .fq i:nth-child(3){height:12px}
+  .fq.f0 i{background:var(--ink)}
+  .fq.f1 i:nth-child(1),.fq.f1 i:nth-child(2){background:var(--ink)}
+  .fq.f2 i:nth-child(1){background:var(--ink)}
+  .inh{font-size:10.5px;font-weight:700;color:#fff;background:#B23B2E;border-radius:4px;padding:1px 6px}
+  .cases .aru{font-size:12.5px;line-height:1.75}
+  .inhn{font-size:12px;line-height:1.7;margin-top:8px;background:#FBECEA;border:1px solid #EDB9B2;border-radius:8px;padding:7px 10px;color:#9E2F23}
+  .pres{list-style:none;display:flex;flex-direction:column;gap:7px;margin-top:10px}
+  .pres li{display:grid;grid-template-columns:auto 1fr;gap:8px;font-size:12px;line-height:1.65;align-items:baseline}
+  .pres li>span:last-child{min-width:0}
+  .py{font-size:10.5px;font-weight:700;color:#fff;background:#3D515F;border-radius:4px;padding:1px 6px;white-space:nowrap;line-height:1.5}
+  .pcert{font-size:11.5px;color:#5B707E;line-height:1.7;margin-top:10px}
+  .cbtn{display:flex;flex-wrap:wrap;gap:6px}
+  .cbtn .inl{margin-top:8px}
+  .ovf{font-size:10.5px;font-weight:700;text-align:center;border-radius:4px;padding:1px 0;line-height:1.5;display:inline-block;min-width:24px}
+  .ovf.f0{background:var(--ink);color:#fff;border:1px solid var(--ink)}
+  .ovf.f1{background:#EEF2F4;color:var(--ink);border:1px solid #C9D3DA}
+  .ovf.f2,.ovf.f3{color:#5B707E;border:1px dashed #C9D3DA}
+  /* ── v170：別表（聞き慣れない名前の正体）と、あるある（置き換わる理由・値段の差） ── */
+  .gnav{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px;padding-top:11px;border-top:1px dashed #D5DDE2}
+  .gnav button{font:inherit;text-align:left;display:flex;flex-direction:column;gap:2px;padding:9px 11px;border-radius:9px;border:1.5px solid var(--ink);background:#fff;color:var(--ink);cursor:pointer;min-height:52px}
+  .gnav button b{font-size:13.5px}
+  .gnav button span{font-size:10.5px;color:#5B707E;line-height:1.4}
+  .gnav button:active{background:#EEF2F4}
+  .ghint{margin-top:8px;font-size:11.5px;color:#5B707E;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .ghint .inl{margin-top:0}
+  .leadx{margin-top:8px;font-size:12px;line-height:2.1}
+  .leadx .inl{margin:0 3px;font-size:11px;padding:3px 9px;min-height:30px;vertical-align:middle}
+  .suss .gsx{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:5px;font-size:11px;color:#5B707E}
+  .gbt{font:inherit;font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:6px;border:1px solid var(--ink);background:#fff;color:var(--ink);cursor:pointer;min-height:28px}
+  .gtop{margin:4px 0 8px}
+  .gtop .q{-webkit-appearance:none;appearance:none;width:100%;font-size:16px;padding:9px 11px;border:1.5px solid #C9D3DA;border-radius:9px;background:#fff;color:var(--ink);outline:none;font-family:inherit}
+  .gtop .q:focus{border-color:var(--ink)}
+  .gtabs{display:flex;gap:5px;margin-top:7px;align-items:center;flex-wrap:wrap}
+  .gtabs button{font:inherit;font-size:11.5px;font-weight:700;padding:5px 11px;border-radius:999px;border:1.5px solid #C9D3DA;background:#fff;color:#3A5060;cursor:pointer;min-height:32px}
+  .gtabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .gcnt{margin-left:auto;font-size:11px;color:#5B707E;font-family:var(--mono)}
+  .rules{margin:0 0 10px;border:1px solid #E3E9EC;border-radius:9px;background:#F7F9FA}
+  .rules>summary{list-style:none;cursor:pointer;padding:9px 11px;font-size:12px;font-weight:700;color:var(--ink);position:relative;padding-right:28px}
+  .rules>summary::-webkit-details-marker{display:none}
+  .rules>summary::after{content:'›';position:absolute;right:11px;top:7px;font-size:17px;color:#B7C3CA}
+  .rules[open]>summary::after{transform:rotate(90deg)}
+  .rb{padding:2px 11px 9px;font-size:11.5px;line-height:1.75}
+  .rb h5{font-size:12px;margin:9px 0 3px;padding-left:8px;border-left:4px solid #8FA2AF}
+  .rb h5.mcn{border-left-color:var(--cn)} .rb h5.mus{border-left-color:var(--us)} .rb h5.meu{border-left-color:#5B707E}
+  .rb ul{padding-left:1.1em;margin-bottom:4px}
+  .rb li{margin-bottom:4px}
+  .ggh{font-size:11px;font-weight:700;color:#3A5060;letter-spacing:.05em;margin:12px 0 5px;display:flex;align-items:center;gap:6px}
+  .ggh .cc{display:inline-block;color:#fff;border-radius:4px;padding:0 6px;font-size:10px;line-height:1.7}
+  .ge{border:1px solid #E3E9EC;border-left:4px solid #C9D3DA;border-radius:9px;padding:8px 10px;margin-bottom:7px;background:#fff}
+  .ge.rel-eq{border-left-color:#1E7A45} .ge.rel-near{border-left-color:#C98A1B} .ge.rel-diff{border-left-color:#D63426} .ge.rel-mkt{border-left-color:#8FA2AF}
+  .gh{display:flex;align-items:baseline;gap:7px;flex-wrap:wrap;margin-bottom:4px}
+  .gn{font-family:var(--mono);font-size:14px;color:var(--ink)}
+  .ga{font-size:11px;color:#5B707E}
+  .grel{font-size:10.5px;font-weight:700;border-radius:4px;padding:1px 6px;margin-left:auto;white-space:nowrap}
+  .ge.rel-eq .grel{background:#E8F3EC;color:#1E7A45} .ge.rel-near .grel{background:#FFF7E8;color:#8A5300} .ge.rel-diff .grel{background:#FBECEA;color:#9E2B20} .ge.rel-mkt .grel{background:#EEF2F4;color:#3A5060}
+  .gr{display:grid;grid-template-columns:44px 1fr;gap:6px;font-size:11.5px;line-height:1.65;color:#3A5060;padding:3px 0;border-top:1px dotted #EEF2F4}
+  .gr .gl{font-size:10.5px;font-weight:700;color:#5B707E;padding-top:2px}
+  .gr.warn{color:#7E2A20} .gr.warn .gl{color:#9E2B20} .gr.warn b{font-family:var(--mono);color:#9E2B20}
+  .gj{font:inherit;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:5px;border:1px solid var(--ink);background:#fff;color:var(--ink);cursor:pointer;min-height:26px;margin-left:4px}
+  .pk{display:inline-block;font-style:normal;font-size:10px;font-weight:700;border-radius:4px;padding:0 5px;margin-right:5px;line-height:1.7;vertical-align:middle}
+  .pk.src{background:var(--ink);color:#fff} .pk.est{background:#EEF2F4;color:#3A5060;border:1px solid #C9D3DA} .pk.na{color:#5B707E;border:1px dashed #C9D3DA}
+  .aru .ten{padding-left:1.4em;margin-bottom:8px}
+  .aru .ten li{margin-bottom:6px;line-height:1.7}
+  .aru .types{list-style:none;padding-left:0}
+  .aru .types li{border:1px solid #E3E9EC;border-radius:9px;padding:8px 10px;margin-bottom:7px;background:#fff}
+  .aru .th{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:4px;font-size:12.5px}
+  .tk{font-size:10.5px;font-weight:700;border-radius:4px;padding:1px 7px;white-space:nowrap}
+  .tk.k1{background:#EEF2F4;color:#3A5060;border:1px solid #C9D3DA} .tk.k2{background:#D63426;color:#fff} .tk.k3{background:#FFF7E8;color:#8A5300;border:1px solid #EACB92}
+  .aru .types p{margin-bottom:4px;font-size:11.5px;line-height:1.7}
+  .aru .types .ex{color:#3A5060;background:#F7F9FA;border-radius:6px;padding:5px 8px}
+  .aru .types .fx{color:#1E7A45;font-weight:700}
+  .aru .types .fx .inl{margin-top:0;font-size:11px;padding:3px 9px;min-height:28px}
+  .aru .pn{font-size:11.5px;color:#3A5060}
+  table.pt td:first-child{font-family:var(--mono);font-size:10.5px;font-weight:700}
+  table.pt td:nth-child(2){font-weight:700;white-space:nowrap}
+  table.pt td:nth-child(3){text-align:left;font-size:10.5px}
+  .ovr button{grid-template-columns:28px 84px 1fr}
+  .ovs{margin-left:auto;font-size:10px;font-weight:400;color:#8FA2AF}
+  .pbody .fqdef{list-style:none;padding-left:0}
+  .pbody ol{padding-left:1.3em;margin-bottom:7px}
+  .fqdef li{display:grid;grid-template-columns:30px 1fr;gap:8px;align-items:baseline;margin-bottom:5px}
+  .mind h5{font-size:12.5px;margin:12px 0 4px;padding-left:8px;border-left:4px solid #8FA2AF}
+  .mind h5.mjp{border-left-color:var(--jp)} .mind h5.mcn{border-left-color:var(--cn)} .mind h5.mus{border-left-color:var(--us)}
+  .mind ul{margin-bottom:4px}
+  .mlist{margin-top:12px}
+  .mnote{font-size:11px;color:#5B707E}
+  .case{border-top:1px solid #E3E9EC;padding:10px 0 8px}
+  .case .ch{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:4px;font-size:12.5px}
+  .case p{margin:3px 0}
+  .case .cl{color:#9E2F23;font-weight:700}
+  .case .cs{font-size:11px;color:#5B707E;word-break:break-all}
+  .case .cs a{color:var(--us)}
 </style>
 </head>
 <body>
@@ -387,7 +487,9 @@
         <li><b>図面の材質</b>を押します。「材質を変える」で一覧が開きます。一覧に無い記号（<code>1Cr13</code>、<code>S31603</code>、<code>Cr12MoV</code> など）は下の欄で探せます。赤い印＝別の材に置き換わる恐れ、黄の印＝規格の違いで JIS から外れることがある材です。</li>
         <li>すぐ下に、<b>いちばん先に疑うこと</b>・<b>置き換わると起きること</b>・<b>検査で見ること</b>（XRF・硬さ・ミルシートの合格の目安と疑う値）・<b>疑う材</b>・<b>ミルシートで見ること</b>が出ます。</li>
         <li>「<b>取引先・調達に伝える文</b>」は、そのまま貼り付けて使えます。直してからコピーもできます。</li>
+        <li>結果の上に<b>頻度（高・中・低の目安）</b>、下に<b>よくある形（あるある）と他社・他国の前例</b>が出ます。注意する材の一覧は頻度の高い順です。</li>
         <li>ミルシートの値は「ミルシートの値を入れて確かめる」へ。日米中のどの規格に入るか、どの元素で外れるかが出ます。背景は「背景（余談）」に折りたたんであります。</li>
+        <li>聞き慣れない名前（<code>12Cr13</code>・<code>Cr12MoV</code>・<code>40CrNiMoA</code> …）の<b>読み方・正体・取り違えの相手・値段の目安</b>は「<b>別表</b>」に、<b>なぜ置き換わるか</b>（値段の差・入手の事情・あるある 10 か条）は「<b>あるある</b>」にまとめました。疑う材の行の「正体を別表で見る」からも開けます。</li>
       </ol>
     <div class="src" id="srcBox">
       <b>出典と使い方</b><br>
@@ -396,6 +498,7 @@
       ・「置き換わると起きること」は、資料で確かめたこと（焼入れ後の硬さ、200 番台の耐食、Ni と高圧水素の試験など）を言い切り、元素の働きから言えることには「一般的な冶金の説明」と添えています。<br>
       ・米国は<b>製品の形（板 A240・棒 A276/A479 など）で同じ記号でも成分の幅が少し違う</b>ことがあります。<br>
       ・「相当材」は<b>近い材</b>であって<b>同じ材ではありません</b>。図面・注文で指定した規格に入るかで判断してください。<br>
+      ・<b>頻度（高・中・低）</b>は統計ではなく、公開情報での取り上げられ方と取引の仕組みからの目安です。付け方と前例は「背景と解説」に。<br>
       <b>受入検査の判断は、注文書の規格・ミルシート（検査証明書）・分析結果で行ってください。</b>この画面は当たりをつけ、相手と話すための早見表です。
       <span id="srcList"></span>
     </div>
@@ -466,8 +569,10 @@
       <div class="sfind">
         <input class="q" id="q" type="search" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="ほかの記号で探す（1Cr13・S31603・Cr12MoV など）" aria-label="材質の記号で探す">
         <div id="hits"></div>
+        <div class="ghint">一覧に無い名前・聞き慣れない名前（12Cr13・Cr12MoV・40CrNiMoA …）の正体は<button type="button" class="inl" data-panel="pGloss">別表</button></div>
       </div>
     </div>
+    <div class="gnav"><button type="button" data-panel="pGloss"><b>別表</b><span>聞き慣れない名前の正体</span></button><button type="button" data-panel="pAru"><b>あるある</b><span>なぜ置き換わる・値段の差</span></button></div>
   </section>
 
   <section id="res" aria-live="polite"></section>
@@ -494,7 +599,180 @@
       <li><b>見た目も磁石も同じで、安い・削りやすい材に置き換わりやすい組</b>がある（440C→410・420、SKD11→Cr12MoV、304→201 など）。</li>
       <li>防ぐには、注文・図面に<b>規格番号＋記号</b>（例 <code>JIS G 4303 SUS316L</code>）、必要なら<b>成分の下限や熱処理後の硬さ</b>、<b>検査証明書（ミルシート）</b>を書き、受入れで<b>XRF・硬さ</b>を当てる。</li>
     </ol>
+    <p class="leadx">聞き慣れない名前の正体は<button type="button" class="inl" data-panel="pGloss">別表</button>、なぜ置き換わるか（値段の差・入手の事情）は<button type="button" class="inl" data-panel="pAru">あるある</button></p>
   </div>
+  <details class="panel aru" id="pAru">
+    <summary>なぜ置き換わるのか（あるある・値段の差・入手の事情）— 周知用</summary>
+    <div class="pbody">
+      <p>取り違えには<b>「知らずに替わる」</b>と<b>「分かっていて替える」</b>の 2 つがあります。どちらでも、図面の材と違えば起きることは同じ（強度不足・錆・割れ・衛生）。<b>出荷後に分かると、同じロット・同じ取引先の品をさかのぼって調べ、交換することになります。</b>先に知っておけば、受入れの 1 回の確認で止められます。</p>
+
+      <h4>周知用：あるある 10 か条（朝礼・受入れ場の掲示に）</h4>
+      <ol class="ten">
+        <li><b>何も書かなければ、相手の国の「対応材」で来る。</b>対応材は近い材で、同じ材ではない。</li>
+        <li><b>名前が同じでも範囲が違う。</b>316L の Ni は日本 12％から、米・中は 10％から。不正ではなく規格の違い。</li>
+        <li><b>安い材に置き換わる組は決まっている。</b>304→201（値段ほぼ半分）、SKD11→Cr12MoV（2〜3 割安）、440C→410・420。</li>
+        <li><b>見た目・磁石・寸法では分からない。</b>手持ちの XRF でも炭素は測れない（440A と 440C、420J1 と J2、304 と 304L）。</li>
+        <li><b>少量の注文は製鋼所ではなく市中在庫から買われる。</b>在庫にあるのは売れ筋の材。特殊な材は無い・納期がかかる。</li>
+        <li><b>日本の記号の材（SKD11 など）をそのまま買おうとすると、海外では輸入材。</b>現地には「対応材」の在庫があり、納期と値段でそちらに流れる。</li>
+        <li><b>440C・SKD11 は削りにくく、熱処理が難しい。</b>扱いやすい材に逃げたくなる（削りやすい＝炭素や合金が少ない＝性能が落ちる）。</li>
+        <li><b>値下げを迫ると、材料と再委託で応じられる。</b>材料を工場任せにすると「知り合いか一番安い所」から買われる。</li>
+        <li><b>ミルシートは証拠であって保証ではない。</b>商社名義・EN 10204 の 2.2 は弱い。日本の大手でも書き換えはあった（2017 年）。</li>
+        <li><b>防ぎ方は 1 つ。</b>注文に<b>規格番号＋記号＋効く条件</b>と<b>「代用は書面承認なしに不可」</b>を書き、受入れで<b>XRF・硬さ・ミルシート</b>を当てる。</li>
+      </ol>
+
+      <h4>置き換わる理由の型（どの型かで、防ぎ方が変わる）</h4>
+      <ul class="types">
+        <li class="t-k"><div class="th"><span class="tk k1">知らずに</span><b>① 読み替え（相当表）</b></div>
+          <p>図面の記号を、自国の規格の「対応材」に置き換えて手配するのが相手のふつう。対応表は売る側の言葉でもある。</p>
+          <p class="ex">例：S45C→45、SS400→Q235B、SCM440→42CrMo／4140、SKD61→4Cr5MoSiV1／H13、C3604→HPb59-1、SNCM439→40CrNiMoA（Ni が足りない）、316L→Ni 10％台。</p>
+          <p class="fx">防ぎ方：規格番号＋記号＋効く条件（Ni の下限、熱処理後の硬さ）。「相当可」と書かない。</p></li>
+        <li class="t-k"><div class="th"><span class="tk k2">分かっていて</span><b>② 値段</b></div>
+          <p>安い材で原価を下げる。値段の差が大きい組ほど動機になる。下の「値段の差」を見てください。</p>
+          <p class="ex">例：304→201、SKD11→Cr12MoV、440C→Cr13 系（410・420）、42CrMo→40Cr（Mo なし）、2017→2011（快削）。</p>
+          <p class="fx">防ぎ方：安すぎる見積りは材料の手配先を聞く。受入れで XRF・硬さ。</p></li>
+        <li class="t-k"><div class="th"><span class="tk k3">分かっていても</span><b>③ 入手できない・在庫が無い・納期</b></div>
+          <p>製鋼所は溶解の単位（1 ヒート＝数十トン）でしか作らないので、少量は市中在庫（鋼材問屋）から買う。<b>在庫にあるのは売れ筋の材</b>（中国なら Cr13 系・45・Q235・Cr12MoV・40CrNiMoA・5A02 …）。特殊な材は無いか、納期が 1〜3 か月かかる。<b>納期を守るために手持ちの材で作る</b>、が起きる。</p>
+          <p class="ex">例：440C（中国では作る製鋼所が少なく、市中在庫は Cr13 系）、SKD11（日本の鋼材メーカーの名前。中国では輸入材で、国産の Cr12MoV・Cr12Mo1V1 が在庫にある）、SNCM439→40CrNiMoA（国内の標準材）、5052→5A02・2017→2A11・7075→7A04（旧来の国内材の在庫）。</p>
+          <p class="fx">防ぎ方：少量・特殊材は<b>材料を当社から支給</b>するか、ミルシート（ヒート番号つき）を注文の条件にする。「無ければ代わりで」を認めない。</p></li>
+        <li class="t-k"><div class="th"><span class="tk k2">分かっていて</span><b>④ 加工・熱処理の都合</b></div>
+          <p>440C は削りにくく（製鋼所の資料で「高速度工具鋼に近い」）、焼入れ後すぐ焼戻しが要り割れやすい。扱いやすい材に逃げたくなる。</p>
+          <p class="ex">例：440C→420（削りやすい・割れにくい）、420J2→20Cr13（削りやすい）、2017→2011（快削）。逆に C3604→HPb59-1 は<b>削りにくくなる</b>ので、加工で気づくことがある。</p>
+          <p class="fx">防ぎ方：熱処理後の硬さを図面に書き、受入れで硬さを当てる。</p></li>
+        <li class="t-k"><div class="th"><span class="tk k1">知らずに</span><b>⑤ 商流の途中で落ちる</b></div>
+          <p>商社→工場→再委託→材料屋。受けた工場が勝手に再委託したり、材料を一番安い所から買ったりすると、図面の材質が途中で落ちる（品質コンサルの報告）。ミルシートが商社名義で、元の製鋼所につながらない。</p>
+          <p class="fx">防ぎ方：再委託の有無と材料の手配先を注文で決める。ミルシートは製鋼所の 3.1。</p></li>
+        <li class="t-k"><div class="th"><span class="tk k2">分かっていて</span><b>⑥ 検査で分からないと知っている</b></div>
+          <p>炭素は手持ちの XRF で測れない（440A↔440C、420J1↔J2、304↔304L）。磁石は 410・420・440C のどれにも付き、201・304 のどれにも付かない。硬さは熱処理でも変わる。「どうせ分からない」が置き換えを後押しする。</p>
+          <p class="fx">防ぎ方：受入れで確かめていることを相手に伝える（伝える文に書いてある）。炭素の違いは分析へ。</p></li>
+        <li class="t-k"><div class="th"><span class="tk k1">知らずに</span><b>⑦ 図面・注文の隙</b></div>
+          <p>「SUS」「ステンレス」とだけ書く（→ 304 か 201 が来る）、「相当」「同等品可」と書く、規格番号・版・硬さを書かない、英訳で条件が落ちる。</p>
+          <p class="fx">防ぎ方：<button type="button" class="inl" data-panel="pOrder">書き方の例</button></p></li>
+      </ul>
+
+      <h4>値段の差（目安）— どの組にどれだけ差があるか</h4>
+      <p class="pn">値段は市況で動くので、<b>差の向きと大きさの目安</b>です。<i class="pk src">資料あり</i> は公開の数字、<i class="pk est">目安</i> は元素の値段と市場の仕組みからの推定です。</p>
+      <table class="mt pt">
+        <tr><th>図面の材 → 来る材</th><th>値段の差</th><th>根拠</th></tr>
+        <tr><td>304 → 201</td><td><b>約半分</b></td><td><i class="pk src">資料あり</i>板の市況 2026 年：201 8,000 元/t 台、304 14,000〜15,000 元/t（新華網）</td></tr>
+        <tr><td>SKD11 → Cr12MoV</td><td><b>2〜3 割安</b></td><td><i class="pk src">資料あり</i>中国の鋼材業者が「経済グレード」として販売（Mo・V が少ない）</td></tr>
+        <tr><td>440C → 410・420（Cr13 系）</td><td>安い（数割〜）</td><td><i class="pk est">目安</i>合金代の差は小さい（Cr 17 対 13）。差の主因は 440C が少量で、作れる製鋼所が少ないこと。確かな公開資料なし</td></tr>
+        <tr><td>316L（Ni 12〜）→ Ni 10％台</td><td>Ni 2％分安い</td><td><i class="pk est">目安</i>Ni は約 19,000 USD/t（2026 年）。高い元素は下限で作られる</td></tr>
+        <tr><td>SCM440（42CrMo）→ 40Cr</td><td>Mo 分安い</td><td><i class="pk est">目安</i>フェロモリブデン 240,000 元/t（2025 年末）。Mo は最も高い元素のひとつ</td></tr>
+        <tr><td>SNCM439 → 40CrNiMoA</td><td>Ni 0.4％分</td><td><i class="pk est">目安</i>差は小さい。主因は値段ではなく国内の標準材で在庫があること</td></tr>
+        <tr><td>5052 → 5A02／2017 → 2A11／7075 → 7A04</td><td>ほぼ同じ</td><td><i class="pk est">目安</i>値段ではなく、旧来の国内材の在庫・習慣</td></tr>
+        <tr><td>C3604 → HPb59-1</td><td>ほぼ同じ</td><td><i class="pk est">目安</i>Pb は安い元素。読み替え・在庫</td></tr>
+        <tr><td>SS400→Q235B、S45C→45、SCM440→4140、SKD61→H13 など</td><td>―</td><td>読み替え。値段の問題ではない</td></tr>
+      </table>
+      <p class="pn"><b>元素の値段の順（目安）</b>：Mo・V（kg 当たり数十 USD）＞ Ni（約 19 USD/kg）＞ Cu（約 10 USD/kg）≫ Cr・Mn（数 USD/kg 以下）。だから <b>Mo・V・Ni を減らした材が安く</b>（201、Cr12MoV、40Cr、Ni 下限の 316L）、<b>Cr を減らしても合金代はあまり変わらない</b>（440C→410 の差は合金代ではなく、作れる所の少なさ）。</p>
+
+      <h4>取り返しがつかなくなる前に</h4>
+      <ul>
+        <li>材質違いは、使い始めてから摩耗・錆・割れとして出る。<b>出荷後に分かると、同じロット・同じ取引先の品をさかのぼって調べ、交換する。</b></li>
+        <li>食品機械では、錆・異物は衛生の問題。</li>
+        <li>受入れで 1 回確かめれば止まる。XRF 1 回・硬さ 1 回・ミルシートの規格番号とヒート番号。</li>
+        <li>相手に伝えるときは、上の「取引先・調達に伝える文」と <button type="button" class="inl" data-panel="pMust">なぜ必ず確かめるのか</button>。</li>
+      </ul>
+      <p class="mnote">※ 出典：新華網（人民日報）2026 年 8 月の報道、Made-in-China.com の商品説明（Cr12MoV）、qualityinspection.org（再委託と安い材料）、Procurement Resource（Ni 価格 2026 年 7 月）、SteelOrbis（フェロモリブデン価格 2025 年 12 月）。「ふつう」「目安」と書いた所は、公開資料と取引の仕組みからの推定で、統計ではありません。</p>
+    </div>
+  </details>
+  <details class="panel" id="pGloss">
+    <summary>別表：聞き慣れない名前の正体（中国・米国・欧州の材質名）</summary>
+    <div class="pbody">
+      <p>この画面に出てくる<b>聞き慣れない名前</b>を、<b>読み方（名前から分かること）・正体（JIS で言うと何か）・取り違えの相手・値段の目安</b>で並べました。「画面へ」を押すと、その材の受入れの画面に移ります。</p>
+      <div class="gtop">
+        <input class="q" id="gq" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="名前で探す（Cr13・CrMo・Pb・201 …）" aria-label="別表を名前で探す">
+        <div class="gtabs" id="gtabs" role="group" aria-label="国で絞る">
+          <button type="button" data-cc="all">すべて</button><button type="button" data-cc="cn">中国</button><button type="button" data-cc="us">米国</button><button type="button" data-cc="eu">欧州</button>
+          <span class="gcnt" id="gcnt"></span>
+        </div>
+      </div>
+      <details class="rules">
+        <summary>名前の読み方（これが分かれば、初めて見る名前でも見当がつく）</summary>
+        <div class="rb">
+          <h5 class="mcn">中国（GB）</h5>
+          <ul>
+            <li><b>鋼の名前は「炭素＋元素と％」</b>。先頭の数字が炭素：<b>2 桁は 0.01％単位</b>（12Cr13 ＝ C 0.12）、<b>旧い名前と合金工具鋼は 1 桁で 0.1％単位</b>（1Cr13 ＝ C 0.1、4Cr5MoSiV1 ＝ C 0.4）。元素の後ろの数字はその％（Cr13 ＝ Cr 13％）。<b>数字が無い元素は 1.5％未満</b>（42CrMo の Cr・Mo）。</li>
+            <li><b>0・06 ＝ 低炭素（0.08 以下）、00・022 ＝ 極低炭素（0.03 以下＝L 材）</b>。0Cr18Ni9→06Cr19Ni10、00Cr17Ni14Mo2→022Cr17Ni12Mo2 のように、2007 年の規格で名前が変わった。旧名と新名が混ざって流通している。</li>
+            <li><b>数字だけ</b>（45・50）＝ 炭素鋼で C ％。<b>Q235</b> ＝ 降伏点 235 MPa（Q ＝ 屈服）。<b>T10</b> ＝ 炭素工具鋼 C 1.0。<b>GCr15</b> ＝ 軸受鋼（Cr だけ 0.1％単位：1.5％）。<b>Y</b> ＝ 快削。<b>末尾の A</b> ＝ 高級（P・S が少ない）。<b>C が 1％を超える合金工具鋼は炭素を書かない</b>（Cr12MoV）。</li>
+            <li><b>アルミ</b>：国際の 4 桁（5052・6061・7075）は同じ材。<b>2 文字目が A（5A02・2A11・7A04）は中国独自の材</b>。旧記号 LF ＝ 防锈（5000 系）、LY ＝ 硬铝（2000 系）、LC ＝ 超硬铝（7000 系）、LD ＝ 锻铝（6000 系）。</li>
+            <li><b>銅</b>：H ＝ 黄銅＋Cu％（H62）、HPb ＝ 鉛黄銅（HPb59-1 ＝ Cu 59・Pb 1）、T ＝ 純銅（T2）、TU ＝ 無酸素銅、QSn ＝ 錫青銅（QSn6.5-0.1 ＝ Sn 6.5・P 0.1）。</li>
+          </ul>
+          <h5 class="mus">米国（SAE／AISI・ASTM・UNS）</h5>
+          <ul>
+            <li><b>鋼の 4 桁（SAE）</b>：上 2 桁が系、下 2 桁が C（0.01％単位）。10xx 炭素鋼（1045 ＝ C 0.45）、11xx・12xx 快削（12L14 の L ＝ 鉛）、41xx Cr-Mo（4140）、43xx Ni-Cr-Mo（4340）、52100 ＝ Cr 鋼・C 1.00（軸受）。</li>
+            <li><b>ステンレスの 3 桁（AISI）</b>：2xx Cr-Ni-Mn（Ni を減らした材）、3xx Cr-Ni（磁石に付かない）、4xx Cr 系（磁石に付く）。L ＝ 低炭素。440 の A・B・C ＝ 炭素の多さ。<b>420 は J1・J2 を分けない</b>。</li>
+            <li><b>工具鋼の頭文字</b>：D ＝ 冷間ダイス（D2）、H ＝ 熱間（H13）、W ＝ 水焼入れ（W1）、O ＝ 油、A ＝ 空気、M・T ＝ ハイス、P ＝ プラスチック型。</li>
+            <li><b>UNS</b> ＝ 成分の識別番号で仕様ではない：S ＝ ステンレス（S30400）、G ＝ SAE の鋼（G10450）、T ＝ 工具鋼（T30402 ＝ D2）、C ＝ 銅合金（C36000）、A9 ＝ アルミ（A95052）。</li>
+            <li><b>ASTM の規格番号は製品の形ごと</b>：A240 板、A276・A479 棒、A582 快削棒、A36 構造用（36 ＝ 降伏 36 ksi）。同じ 304 でも規格と版で範囲が違う。</li>
+            <li><b>銅合金</b>：C1xxxx 純銅（C11000 タフピッチ、C10200 無酸素）、C2xxxx 黄銅（C28000）、C3xxxx 鉛黄銅（C36000）、C5xxxx りん青銅（C51900）。</li>
+            <li><b>17-4PH</b> ＝ Cr 17・Ni 4・析出硬化。H900・H1150 は時効の温度（°F）で、硬さが大きく変わる。</li>
+          </ul>
+          <h5 class="meu">欧州（EN・DIN）参考</h5>
+          <ul>
+            <li><b>番号</b>：1.43xx・1.44xx ステンレス（1.4301 ＝ 304、1.4404 ＝ 316L）、1.2xxx 工具鋼（1.2379 ＝ D2、1.2344 ＝ H13）、1.7xxx 合金鋼（1.7225 ＝ 42CrMo4）、1.3505 ＝ 100Cr6（軸受鋼）、1.0503 ＝ C45。</li>
+            <li><b>記号</b>：X が付けば高合金で％をそのまま書く（X5CrNi18-10 ＝ C 0.05・Cr 18・Ni 10）。X が無い低合金鋼は<b>元素の数字を 4 で割る</b>（42CrMo4 ＝ Cr 1％、100Cr6 ＝ Cr 1.5％）。C45 ＝ 非合金鋼 C 0.45。</li>
+          </ul>
+          <p class="mnote">※ 読み方は規格の名付けの規則です。<b>正体（範囲）は規格の表で決まる</b>ので、名前が同じ形でも範囲は JIS とずれることがあります。</p>
+        </div>
+      </details>
+      <div id="glist"></div>
+      <p class="mnote">※ 「相当」は近い材であって同じ材ではありません。値段は市況で動くので差の向きと大きさの目安です。この画面に無い名前は上の「ほかの記号で探す」か、ミルシートの規格番号で確かめてください。</p>
+    </div>
+  </details>
+  <details class="panel" id="pMind">
+    <summary>日本・中国・米国の考え方の違い（何も書かなければ必ずずれる所）</summary>
+    <div class="pbody">
+      <p>図面の「材質」欄の読み方が、国によって違います。どちらかが悪いのではなく前提が違うので、<b>注文に書かなければ必ずずれます</b>。</p>
+      <div class="mind">
+        <h5 class="mjp">日本（図面を描く側）</h5>
+        <ul>
+          <li>「SUS440C」と書けば、JIS G 4303 の SUS440C そのもの（成分・性質まで）を指したつもりになる。</li>
+          <li>規格番号・版・熱処理後の硬さを書かないことが多い（記号だけで通じる前提）。</li>
+          <li>代用（相当材）は、事前に承認を取るものと考える。</li>
+          <li>ミルシートは製鋼所の証明と受け取りがち。国内でも書き換えの例がある（2017 年）。</li>
+        </ul>
+        <h5 class="mcn">中国（作る・買う側）</h5>
+        <ul>
+          <li>図面の記号を、中国の規格の「対応材」に読み替えて手配するのがふつう（SUS304→06Cr19Ni10、S45C→45、SS400→Q235B、SKD11→Cr12MoV か Cr12Mo1V1、SNCM439→40CrNiMoA、C3604→HPb59-1 など）。</li>
+          <li>対応材は「近い材」。対照表の上では同じに見えても、範囲が JIS とずれることがある。対照表は売る側の言葉でもある（Cr12MoV を「SKD11 の安い代わり」として売る例）。</li>
+          <li>材料は加工先が自分で、知り合いか一番安い所から買うことが多い。ミルシートは商社のもので、元の製鋼所につながらないことがある。</li>
+          <li>値下げを迫られると、無断の再委託や安い材料で応じることがある（品質コンサルの報告）。</li>
+          <li>規格そのものも変わる（316L の名前と Ni の範囲を ASTM に合わせた、など）。どの規格で判定するかで、合否が割れた例もある（2011 年）。</li>
+        </ul>
+        <h5 class="mus">米国（作る・買う側）</h5>
+        <ul>
+          <li>材料は ASTM・AISI・UNS の記号と、製品の形ごとの規格（棒 A276・A479、板 A240）で手配する。JIS の記号は、相当する ASTM の材に読み替えて手配されるのがふつう。</li>
+          <li>1つの材に2つの記号の証明（316/316L、304/304L の二重証明）を付けるのがふつう。</li>
+          <li>規格どおりの正しい材でも、JIS の範囲に入らないことがある（316L の Ni 10％台など）。不正ではない。</li>
+          <li>米国でも規格外・偽の品の問題は繰り返し起きている（1988 年のボルト、2017 年に見つかった鋳物の試験の書き換え）。</li>
+        </ul>
+      </div>
+      <p class="mlist"><b>何も書かなければ必ずずれる所</b></p>
+      <ol>
+        <li><b>記号の読み替え</b>…中国・米国とも、相手の国の対応材で来るのがふつう。</li>
+        <li><b>範囲</b>…同じ名前・対応材でも、成分や強さの範囲が JIS と違う。</li>
+        <li><b>熱処理・硬さ</b>…図面に書いていなければ、相手のふつうの条件で作る。</li>
+        <li><b>証明書</b>…商社名義で製鋼所につながらない書類や、EN 10204 の 2.1・2.2（その製品の試験結果ではない）で済まされる。</li>
+        <li><b>代用の判断</b>…「近い材なら同じ」と考える側と、「承認が要る」と考える側がいる。</li>
+      </ol>
+      <p>防ぎ方は同じです。注文に<b>規格番号＋記号＋効く条件</b>と<b>「代用は書面承認なしに不可」「EN 10204 3.1」</b>を書き、受入れで確かめる。<button type="button" class="inl" data-panel="pOrder">書き方の例を開く</button></p>
+      <p class="mnote">※「ふつう」と書いた所は、公開資料と取引の仕組みからの目安です（統計ではありません）。</p>
+    </div>
+  </details>
+  <details class="panel" id="pCases">
+    <summary>他社・他国の前例と、頻度（高・中・低）の付け方</summary>
+    <div class="pbody">
+      <p><b>頻度（目安）の付け方</b>…統計ではありません。公開情報での取り上げられ方と、取引の仕組みから付けています。</p>
+      <ul class="fqdef">
+        <li><span class="ovf f0">高</span><span>何も言わなければ、そうなるのがふつう（相手の国の規格の材で手配される・対照表でそう対応づけられている）か、公開の事例・注意喚起が繰り返しある。<b>毎回確かめる。</b></span></li>
+        <li><span class="ovf f1">中</span><span>事例や注意喚起はあるが、毎回ではない。値段・在庫・再委託などの条件がそろうと起きる。</span></li>
+        <li><span class="ovf f2">低</span><span>理屈では起きうるが、公開の事例は少ない。</span></li>
+      </ul>
+      <p>社内で実例があった組（中国 × SUS440C）は、頻度にかかわらず<b>毎回確かめる組</b>として扱います。</p>
+      <p class="mlist"><b>前例</b>…置き換え・書き換えは、どの国でも起きています。効くのは国ではなく、<b>値段の圧力・あいまいな仕様・長い商流・受入れで確かめないこと</b>です。</p>
+      <div id="caseList"></div>
+    </div>
+  </details>
   <details class="panel" id="pMust">
     <summary>なぜ材質を必ず確かめるのか（取引先・調達の方へ）</summary>
     <div class="pbody">
@@ -524,7 +802,7 @@
         <li><b>削りにくい</b>…製鋼所の資料で「高速度工具鋼に近い削りにくさ」。焼なまし状態で削るのが前提。</li>
         <li><b>熱処理が難しい</b>…焼入れ後すぐ焼戻しが要り、過熱や扱いで割れやすい。焼入れの管理ができない工場は、扱いやすい材を選びがち。</li>
         <li><b>名前の置き換え</b>…中国の GB では 410・420 系が「Cr13」の名前（12Cr13・20Cr13 …）、440 系が「Cr17」の名前（108Cr17 など）。注文を GB の名前に置き換えるときに Cr13 系にすると 410〜420 相当の材になります（推定）。</li>
-        <li><b>値段・在庫</b>…440C は合金が多く量の出ない材。安く手に入りやすい材へ流れる圧力がかかります（値段差の確かな資料は見つからず）。</li>
+        <li><b>値段・在庫</b>…440C は合金が多く量の出ない材。安く手に入りやすい材へ流れる圧力がかかります。どの組にどれだけ差があるか、少量だとなぜ手に入らないかは <button type="button" class="inl" data-panel="pAru">あるある・値段の差・入手の事情</button>。</li>
         <li><b>多段の下請け・商社</b>…受けた工場が勝手に再委託したり、材料を「知り合いか一番安い所」から買ったりすると、図面の材質が途中で落ちます（品質コンサルの報告）。</li>
       </ul>
       <h4>国の問題ではない</h4>
@@ -1187,7 +1465,333 @@
           say:'Sn が JIS の下限を下回る材は、ばね・端子の力や繰り返しへの強さが図面の前提より下がる恐れがあります。'}
     }
   };
+  /* ── 頻度（目安）・よくある形（あるある）・前例 ──
+     f … 高＝何も言わなければそうなるのがふつう（相手の国の規格の材で手配される・相当表でそう対応づけられている）か、
+          公開の事例・注意喚起が繰り返しある
+          中＝事例や注意喚起はあるが毎回ではない。値段・在庫・再委託などの条件がそろうと起きる
+          低＝理屈では起きうるが、公開の事例は少ない
+     ★統計ではない。公開情報での取り上げられ方と、取引の仕組みからの目安。
+     t … よくある形（あるある）。pre … 関係する前例（PRE の id）。inh … 社内で実例があった組 */
+  var FREQ={
+    sus304:{
+      cn:{f:'高',t:'ステンレスの置き換えで、いちばん多く報じられる組。201 の値段は 304 のほぼ半分（板で 201 は 8,000元/t 台、304 は 14,000〜15,000元/t）。報道は日用品・板物が中心だが、商社を通した安い見積りでは機械部品でも疑う',pre:['cn2026','cn2011','valve']},
+      us:{f:'低',t:'JIS の上限（Ni 10.50）を超える 304 に当たることは少ないとみられる。ただし 200 番台を 304 と偽って表示した例は、米国の業界誌に何件か報告がある',pre:['valve']}
+    },
+    sus304l:{
+      cn:{f:'中',t:'中国の規格の 304L（022Cr19Ni10）は Ni 8.00 から。Ni は高い元素なので下限の近くで作られやすく、JIS の 9.00 を割る材に当たりうる'},
+      us:{f:'中',t:'米国の 304L は Ni 8.0 から。「304/304L」の二重証明の材も多い。下限の近くで作られた材は JIS の 9.00 を割る'}
+    },
+    sus316:{
+      us:{f:'低',t:'成分の窓は JIS と同じ。316 と 304 の取り違え（Mo の有無）は、どの国でも起きうる'}
+    },
+    sus316l:{
+      cn:{f:'中',t:'中国は 316L の名前と範囲を ASTM に合わせた（新 022Cr17Ni12Mo2：Ni 10〜14）。新しい名前の材なら、Ni 10〜11 台でも中国の規格どおり'},
+      us:{f:'高',t:'米・欧の 316L は Ni 10％台で作るのがふつう（欧州大手の代表値 10.1）。「316/316L」の二重証明の材もこれ。何も言わなければ、JIS の 12.00 を割る材がふつうに来る'}
+    },
+    sus420j1:{
+      us:{f:'中',t:'ASTM の 420 で手配されると、C は 0.15 以上としか決まっていない。J1 の上限 0.25 を超える材に当たりうる'}
+    },
+    sus420j2:{
+      cn:{f:'中',t:'中国では 410・420 系がまとめて「Cr13」系と呼ばれ、20Cr13（J1 相当）は安い。J2 を「Cr13」と読み替えて、炭素の低い 20Cr13 で手配されることがある'},
+      us:{f:'中',t:'ASTM の 420 で手配されると、J1 と J2 の区別が無い。炭素が J2 に届くかは材しだい'}
+    },
+    sus430:{
+      us:{f:'高',t:'ASTM の 430 で手配されるのがふつう。Si の上限が JIS より高い（1.00 と 0.75）'}
+    },
+    sus440c:{
+      cn:{f:'中',inh:1,t:'公開の統計は無いが、起きやすい仕組みがそろっている。中国の名前では 410・420 系が「Cr13」、440 系が「Cr17」と系統が分かれ、読み替えで Cr13 にすると 410・420 になる。440C は削りにくく、焼入れ後すぐに焼戻しが要り割れやすいので、熱処理を管理できない工場ほど避けたがる。値下げを迫られた工場は安い材料で応じることがある',pre:['anjoran']},
+      us:{f:'低',t:'成分の窓は JIS と同じ。置き換わりの公開の事例は少ない'}
+    },
+    ss400:{
+      cn:{f:'高',t:'中国でいちばん使われる炭素構造用鋼は Q235。SS400 の図面は Q235B で手配されるのがふつう。引張強さ 370〜399MPa の材は SS400 に入らないので、ミルシートの Rm を毎回見る'},
+      us:{f:'高',t:'米国でよく使われる構造用鋼 A36 で手配されるのがふつう。引張強さの上限が 550MPa で、SS400 の 510 を超える材に当たりうる'}
+    },
+    s45c:{
+      cn:{f:'高',t:'中国でいちばん使われる中炭素の調質鋼は「45」。S45C の図面は 45 で手配されるのがふつう。C・Mn の窓が JIS より広い'},
+      us:{f:'高',t:'1045 で手配されるのがふつう。C の上限が 0.50（JIS 0.48）'}
+    },
+    s50c:{
+      cn:{f:'高',t:'S50C の図面は中国の「50」で手配されるのがふつう。C・Mn の窓が JIS より広い'},
+      us:{f:'高',t:'1050 で手配されるのがふつう。C の窓が JIS と少しずれている'}
+    },
+    scm435:{
+      cn:{f:'高',t:'35CrMo で手配されるのがふつう。Cr・C の窓がずれている。ボルトによく使う鋼で、規格外のボルトの前例がある',pre:['fqa']},
+      us:{f:'中',t:'4135 か 4137 で手配される。Cr・C の窓がずれている。ボルトによく使う鋼で、規格外のボルトの前例がある',pre:['fqa']}
+    },
+    scm440:{
+      cn:{f:'高',t:'42CrMo で手配されるのがふつう。C の上限が 0.45（JIS 0.43）。ボルト・軸によく使う鋼',pre:['fqa']},
+      us:{f:'高',t:'4140 で手配されるのがふつう（米国でよく使われる合金鋼）。Cr の下限が 0.80（JIS 0.90）',pre:['fqa']}
+    },
+    sncm439:{
+      cn:{f:'高',t:'相当表で SNCM439（4340）＝40CrNiMoA とされることが多く、何も言わなければこれが来る。Ni の窓が低い側にずれた材'}
+    },
+    sum24l:{
+      cn:{f:'中',t:'Y12Pb か Y15Pb のどちらで来るかは取引先しだい。Y15Pb なら C・S がずれる'}
+    },
+    suj2:{
+      cn:{f:'高',t:'軸受鋼は GCr15 で手配されるのがふつう。窓の差は小さい'},
+      us:{f:'高',t:'52100 で手配されるのがふつう。窓の差は小さい'}
+    },
+    skd11:{
+      cn:{f:'高',t:'中国の鋼材業者は Cr12MoV を「D2・SKD11 の安い代わり（Mo・V の少ない経済グレード）」として売り、対照表でも SKD11 の対応材に並べている。安い見積りなら、まず Cr12MoV を疑う',pre:['cr12','anjoran']},
+      us:{f:'高',t:'D2 で手配されるのがふつう。V・Mo の窓が SKD11 と違う'}
+    },
+    skd61:{
+      cn:{f:'高',t:'4Cr5MoSiV1（H13 相当）で手配されるのがふつう。Mo・C の窓が SKD61 より広い'},
+      us:{f:'高',t:'H13 で手配されるのがふつう。Mo・C の窓が SKD61 より広い'}
+    },
+    sk105:{
+      cn:{f:'高',t:'T10 で手配されるのがふつう。C の窓が低い側にずれている'},
+      us:{f:'中',t:'W1 系で手配される。Si の上限が JIS より高い'}
+    },
+    a5052:{
+      cn:{f:'中',t:'中国にも国際と同じ 5052 がある。旧来の国内材 5A02（旧 LF2）が「相当」として出てくることがある'}
+    },
+    a2017:{
+      cn:{f:'中',t:'中国では旧来のジュラルミン 2A11（旧 LY11）が「相当」として出てくることがある。快削の 2011 が出てくることもある'}
+    },
+    a2024:{
+      cn:{f:'中',t:'旧来の 2A12（旧 LY12）が「相当」として出てくることがある。Zn の窓だけの違い'}
+    },
+    a7075:{
+      cn:{f:'中',t:'中国にも国際と同じ 7075 がある。旧来の 7A04（旧 LC4）が「相当」として出てくることがある'}
+    },
+    c3604:{
+      cn:{f:'高',t:'相当表で C3604＝HPb59-1 とされることが多く、何も言わなければ HPb59-1 が来やすい。Pb が少なく削りにくい'},
+      us:{f:'高',t:'C36000 で手配されるのがふつう（米国の快削黄銅の代表）。重なるのは Cu 60〜61・Pb 2.5〜3.0 だけ'}
+    },
+    c2801:{
+      cn:{f:'高',t:'H62 で手配されるのがふつう。Cu・Fe の窓が JIS と違う'},
+      us:{f:'中',t:'C28000 で手配される。Cu の上限が 63.0（JIS 62.0）'}
+    },
+    c1020:{
+      cn:{f:'中',t:'TU1 か TU2 で来る。TU2 は Cu 99.95 から・酸素の上限がゆるい'},
+      us:{f:'高',t:'C10200 で手配されるのがふつう。Cu 99.95 から（JIS 99.96）'}
+    },
+    c5191:{
+      us:{f:'高',t:'C51900 で手配されるのがふつう。Sn 5.0 から（JIS 5.5）'}
+    }
+  };
 
+  /* 前例（他社・他国）。★国の偏りが出ないように、日本・米国・韓国・フランス・中国・中東・ブラジルを並べる。
+     結論：置き換え・書き換えは、どの国でも起きている。効くのは国ではなく、値段の圧力・あいまいな仕様・長い商流・受入れで確かめないこと。 */
+  var PRE=[
+    {id:'cn2026',cc:'中国',yr:'2026',t:'304・316 表示の調理器具が 201',
+     d:'304・316 と表示した調理器具が 201 だった、という消費者の苦情とブロガーの分光分析を人民日報が報じ、新華社などが転載。板の値段は 201 が 8,000元/t 台、304 が 14,000〜15,000元/t。',
+     l:'値段の差が大きい組ほど、置き換えの動機になる。',src:'新華網（人民日報）',u:'https://www.news.cn/20260831/091e65393f42475c8bda07e82862bf14/c.html'},
+    {id:'cn2011',cc:'中国',yr:'2011',t:'調理器具 81 型式で「Mn 超過・Ni 不足」',
+     d:'大手調理器具メーカーのステンレス製品 81 型式について、ハルビン市の工商局が「Mn 超過・Ni 不足」と発表。メーカーは適用する規格が違うと反論し、国の検査機関の再検査では合格とされた。',
+     l:'どの規格で判定するかを決めていないと、同じ材でも合否が割れる。',src:'中国新聞網',u:'https://www.chinanews.com.cn/cj/2011/11-05/3439623.shtml'},
+    {id:'valve',cc:'米国',yr:'2008',t:'200 番台を 304 と偽った表示',
+     d:'ポンプ・バルブ大手の技術者が業界誌で、200 番台を 304 と偽って表示した例が何件かあると報告。200 番台は磁石に付かず、磁石に頼ると 300 番台として通ってしまう。',
+     l:'磁石では見分けられない。XRF の Mn・Ni で見る。',src:'Valve Magazine',u:'https://valvemagazine.com/articles/less-expensive-stainless-steels/'},
+    {id:'fqa',cc:'米国',yr:'1988',t:'規格外・偽のボルトが原発・軍・橋に',
+     d:'米下院の調査で、規格外・偽のボルトが原発・軍・橋・スクールバスなどで見つかった。国防総省は調査中に偽のファスナー 3,000 万本を見つけた。安い輸入品を高品質のボルトとして売る業者や、国内品の品質を偽る業者もいた。見分けは多くの場合、金属の分析でしかできなかった。1990 年に Fastener Quality Act ができた。',
+     l:'刻印・表示は当てにならない。分析で確かめる。',src:'Christian Science Monitor',u:'https://www.csmonitor.com/1988/0902/abolt.html'},
+    {id:'bradken',cc:'米国',yr:'〜2017',t:'潜水艦向け鋳物の試験結果の書き換え',
+     d:'米国の鋳造所で、海軍の潜水艦向け鋼鋳物の強度・粘りの試験結果を、冶金の責任者が約 30 年にわたり書き換えていた（240 件超）。社内の試験担当が 2017 年に見つけた。責任者に禁錮 30 か月、会社は約 1,090 万ドルを支払った。',
+     l:'機械試験の書き換えは、受入れのいつもの検査ではまず見つからない。',src:'米司法省',u:'https://www.justice.gov/usao-wdwa/pr/former-lab-director-sentenced-prison-falsifying-results-steel-testing-parts-navy-subs'},
+    {id:'kobe',cc:'日本',yr:'2017',t:'アルミ・銅・鉄鋼の検査データの書き換え',
+     d:'国内の大手鉄鋼メーカーが、アルミ・銅・鉄鋼の製品で検査データを書き換え、顧客の仕様に合うように見せて出荷していた。出荷先は 600 社を超え、1970 年代から続いていたと会社が説明した。',
+     l:'国内の大手の検査証明でも、証拠であって保証ではない。日本だけが安全、ではない。',src:'Gardner Web',u:'https://www.gardnerweb.com/news/kobe-steel-indicted-for-decades-of-falsified-quality-data'},
+    {id:'korea',cc:'韓国',yr:'2012〜13',t:'原発部品の品質証明書の偽造',
+     d:'原発部品の品質証明書（7,682 品目）と、安全系ケーブルの試験証明が偽造されていた。100 人が起訴され、7,500 を超える部品を交換し、原子炉を止めた。',
+     l:'証明書は、発行元に本物かを確かめる。',src:'World Nuclear News',u:'https://world-nuclear-news.org/articles/indictments-for-south-korea-forgery-scandal'},
+    {id:'creusot',cc:'フランス',yr:'2016',t:'鍛造所の約 400 部品で書類の不備',
+     d:'原子力向けの鍛造所で、約 400 の部品の書類に不備・食い違いが見つかった。古いものは 1965 年から。',
+     l:'長く続く取引先でも、書類の中身は確かめる。',src:'World Nuclear Association',u:'https://world-nuclear.org/images/articles/REPORT-countering-counterfeit.pdf'},
+    {id:'fight',cc:'中東',yr:'2016',t:'有名ブランド名の、認証の無い鋼管',
+     d:'鋼管メーカー 18 社の団体が、認証の無い鋼材が有名ブランドの名前で、多くは偽の検査証明付きで売られていると警告し、証明書の真正性の確認を求めた。',
+     l:'ブランド名と証明書だけでは足りない。',src:'Steel Alliance Against Counterfeiting',u:'https://fight-fake.org/news/13'},
+    {id:'brazil',cc:'ブラジル',yr:'2025',t:'輸入鋼材のめっき量・成分が表示と違う',
+     d:'ブラジルの輸入業者が、中国から来た鋼材でめっき量・成分が表示と違う、検査証明が書き換えられている、と業界紙に訴えた（主張は未確認）。',
+     l:'疑いの段階でも、受入れで現物を当てる理由になる。',src:'Fastmarkets',u:'https://www.fastmarkets.com/insights/chinese-steel-concerns-brazilian-importers-warn-of-alleged-fakes/'},
+    {id:'anjoran',cc:'中国の調達',yr:'2010〜16',t:'値下げには「再委託と安い材料」で応じる',
+     d:'品質コンサルが、600 社を超える中国の供給元への聞き取りを引いて、値下げを迫られると「無断の再委託と、より安い材料の購入」で応じる、と報告。材料を工場任せにすると「知り合いか一番安い所」から買う。品質の問題は、要の工程を再委託したロットに偏って出る。',
+     l:'材料の手配先と再委託の有無を、注文で決めておく。',src:'qualityinspection.org',u:'https://qualityinspection.org/chinese-reduce-costs'},
+    {id:'cr12',cc:'中国の市場',yr:'いま',t:'Cr12MoV を「SKD11 の安い代わり」として販売',
+     d:'中国の鋼材業者が、Cr12MoV を「D2・SKD11 の安い代わり（Mo・V の少ない経済グレード）」として売り、対照表で SKD11 の対応材として並べている（通販サイトの商品説明）。',
+     l:'「対応材」は売る側の言葉。図面の材と同じとは限らない。',src:'Made-in-China.com の商品説明',u:'https://shanghaibozhong.en.made-in-china.com/product/JNxnvlCKbXWE/China-GB-Cr12MOV-Tool-Steel-Bar-Economic-Grade-of-D2-and-SKD11.html'}
+  ];
+  var FQR={'高':0,'中':1,'低':2};
+  function preOf(id){ for(var i=0;i<PRE.length;i++)if(PRE[i].id===id)return PRE[i]; return null; }
+
+  /* ── 別表：聞き慣れない名前の正体（v170）──
+     ムギさん：「ツールの所々に聞き慣れない名前の材質が出てくるが、正体不明で理解が難しい。別表でボタンを
+       押すと表が出る形で、分かりやすく見られるものを。取り違えやすい材質も表記してほしい」。
+     n  … 名前（画面に出る形）。a … 旧名・別名。cc … cn/us/eu。cat … ss/cs/ts/al/cu
+     rd … 名前の読み方（名前から分かること）。is … 正体（JIS で言うと何か）
+     rel… eq＝JIS の材にほぼ相当 / near＝近いが範囲（窓）が違う / diff＝別の材（JIS に同じものが無い） / mkt＝市場の呼び名（規格に無い）
+     jis… 相当する JIS の材（画面のある材なら id）。sw … [[画面の材 id, 取り違え・置き換えの形], …]
+     pr … 値段の目安。pk … src＝資料あり / est＝元素・市場の仕組みからの目安 / na＝値段の問題ではない
+     ★値段は市況で動く。ここは「差の向きと大きさの目安」。確かな数字は 201 と Cr12MoV だけ（出典は「あるある」の表）。 */
+  var GCC={cn:'中国',us:'米国',eu:'欧州'}, GCAT={ss:'ステンレス',cs:'炭素鋼・合金鋼',ts:'工具鋼・軸受鋼',al:'アルミ',cu:'銅合金'};
+  var GREL={eq:'JIS の材にほぼ相当',near:'近いが範囲が違う',diff:'別の材',mkt:'市場の呼び名'};
+  var GL=[
+    /* ── 中国 ステンレス ── */
+    {n:'06Cr19Ni10',a:['旧 0Cr18Ni9','S30408'],cc:'cn',cat:'ss',rd:'C 0.06％前後（0.08 以下）・Cr 19％・Ni 10％。先頭の 2 桁が炭素（0.01％単位）',is:'SUS304 相当。中国の 304',rel:'eq',jis:'sus304',
+     sw:[['sus304','304 として来る正しい材。Ni の上限が 11.0 で JIS（10.50）より広い']],pr:'304 の基準になる材',pk:'na'},
+    {n:'022Cr19Ni10',a:['旧 00Cr19Ni10'],cc:'cn',cat:'ss',rd:'先頭 022 ＝ C 0.03％以下（極低炭素＝L 材）',is:'SUS304L 相当。ただし Ni 8.00 から（JIS 9.00）',rel:'near',jis:'sus304l',
+     sw:[['sus304l','Ni 8 台で来ると JIS SUS304L に入らない（不正ではなく規格の違い）']],pr:'Ni が少ないぶん、下限で作ると安い',pk:'est'},
+    {n:'06Cr17Ni12Mo2',a:['旧 0Cr17Ni12Mo2','S31608'],cc:'cn',cat:'ss',rd:'C 0.08 以下・Cr 17・Ni 12・Mo 2',is:'SUS316 相当',rel:'eq',jis:'sus316',sw:[['sus316','316 として来る材']],pr:'―',pk:'na'},
+    {n:'022Cr17Ni12Mo2',a:[],cc:'cn',cat:'ss',rd:'新しい名前。022 ＝ C 0.03 以下。Ni12 は代表値で、範囲は 10〜14',is:'SUS316L 相当。ただし Ni 10.00 から（JIS 12.00）。ASTM に合わせた新しい名前',rel:'near',jis:'sus316l',
+     sw:[['sus316l','Ni 10〜11 台で来ると JIS SUS316L に入らない（不正ではなく規格の違い）']],pr:'Ni は高い元素。下限（10％）で作るのがふつう',pk:'est'},
+    {n:'00Cr17Ni14Mo2',a:[],cc:'cn',cat:'ss',rd:'旧い名前。00 ＝ 旧の書き方で C 0.03 以下。Ni14 ＝ 代表値（範囲 12〜15）',is:'SUS316L 相当（旧名）。Ni 12〜15 で JIS と同じ範囲',rel:'eq',jis:'sus316l',sw:[['sus316l','旧名で来れば Ni は JIS と同じ範囲']],pr:'新名の材より Ni が多いぶん高い',pk:'est'},
+    {n:'12Cr17Mn6Ni5N',a:['旧 1Cr17Mn6Ni5N','201','S35350'],cc:'cn',cat:'ss',rd:'C 0.12・Cr 17・Mn 6・Ni 5・N（窒素）。Ni を減らして Mn と N で補った材',is:'SUS201（200 番台）。磁石に付かず見た目も 304 と同じだが、錆びやすい',rel:'eq',jis:'sus201',
+     sw:[['sus304','304 の代わりに来る。いちばん多く報じられる組']],pr:'304 の約半分（板の市況 2026 年：201 8,000 元/t 台、304 14,000〜15,000 元/t）',pk:'src'},
+    {n:'201 J1〜J5',a:[],cc:'cn',cat:'ss',rd:'規格に無い市場の呼び名。J の後ろの数字が大きいほど Ni が少ない（1％台）',is:'どの国の 201 の規格にも入らない、さらに安い 200 番台',rel:'mkt',jis:'sus201',
+     sw:[['sus304','304 の代わりの最安材。201 よりさらに錆びやすい']],pr:'201 よりさらに安い（Ni 1％台）',pk:'est'},
+    {n:'12Cr13',a:['旧 1Cr13','S41010'],cc:'cn',cat:'ss',rd:'C 0.12％（0.15 以下）・Cr 13％',is:'SUS410 相当。焼入れしても HRC 40 前後',rel:'eq',jis:'sus410',
+     sw:[['sus440c','440C の代わりに来た（社内で実例）。磁石ではどちらも付く'],['sus420j2','J2 の代わりに来ると、硬さが出ない']],pr:'440C より安い。差の主因は合金代ではなく、440C が少量生産で作れる製鋼所が少ないこと',pk:'est'},
+    {n:'20Cr13',a:['旧 2Cr13','S42020'],cc:'cn',cat:'ss',rd:'C 0.20％（0.16〜0.25）・Cr 13％',is:'SUS420J1 相当',rel:'eq',jis:'sus420j1',
+     sw:[['sus420j2','「Cr13 系」とまとめて読み替えられ、J2 の代わりに来る。炭素が少なく HRC 50 に届かない'],['sus440c','440C の代わりにも']],pr:'30Cr13 とほぼ同じ。440C より安い',pk:'est'},
+    {n:'30Cr13',a:['旧 3Cr13','S42030'],cc:'cn',cat:'ss',rd:'C 0.30％（0.26〜0.35）・Cr 13％',is:'SUS420J2 相当（J2 は C 0.26〜0.40 で、こちらの方が窓が狭い）',rel:'eq',jis:'sus420j2',
+     sw:[['sus420j2','J2 として来る正しい材'],['sus440c','440C の代わりに来ることがある（Cr 13 対 17）']],pr:'440C より安い',pk:'est'},
+    {n:'40Cr13',a:['旧 4Cr13'],cc:'cn',cat:'ss',rd:'C 0.40％（0.36〜0.45）・Cr 13％。刃物によく使う',is:'SUS420J2 の高炭素側。C 0.41〜0.45 は J2 の上限（0.40）を超える',rel:'near',jis:'sus420j2',
+     sw:[['sus420j2','J2 の代わりに来ると、硬くなりすぎ・割れやすい側']],pr:'30Cr13 とほぼ同じ',pk:'est'},
+    {n:'108Cr17',a:['旧 11Cr17','S44096'],cc:'cn',cat:'ss',rd:'C 1.08％（0.95〜1.20）・Cr 17％',is:'SUS440C 相当。中国の 440C',rel:'eq',jis:'sus440c',sw:[['sus440c','440C として来る正しい材']],pr:'440C の基準になる材',pk:'na'},
+    {n:'102Cr17Mo',a:['旧 9Cr18Mo'],cc:'cn',cat:'ss',rd:'C 1.02・Cr 17・Mo 入り',is:'SUS440C 相当（Mo 入り。1.4125 と同じ系）',rel:'eq',jis:'sus440c',sw:[['sus440c','「440C」として来る材のひとつ']],pr:'108Cr17 とほぼ同じ',pk:'est'},
+    {n:'95Cr18',a:['旧 9Cr18'],cc:'cn',cat:'ss',rd:'C 0.95％（0.90〜1.00）・Cr 18％',is:'440B〜440C の間。中国では「440C」と呼ばれて売られる',rel:'near',jis:'sus440c',
+     sw:[['sus440c','C 0.90〜0.94 だと 440C の下限（0.95）を割る。XRF では分からず、ミルシートの C を見る']],pr:'108Cr17 とほぼ同じ',pk:'est'},
+    {n:'10Cr17',a:['旧 1Cr17'],cc:'cn',cat:'ss',rd:'C 0.10・Cr 17（Ni なし＝フェライト系。磁石に付く）',is:'SUS430 相当',rel:'eq',jis:'sus430',sw:[['sus430','430 として来る材']],pr:'―',pk:'na'},
+    {n:'Y12Cr18Ni9',a:['旧 Y1Cr18Ni9','S30317'],cc:'cn',cat:'ss',rd:'先頭の Y ＝ 易切削（快削）。C 0.12・Cr 18・Ni 9',is:'SUS303 相当（S 入りの快削ステンレス）',rel:'eq',jis:'sus303',sw:[['sus303','303 として来る材']],pr:'―',pk:'na'},
+    {n:'05Cr17Ni4Cu4Nb',a:['旧 0Cr17Ni4Cu4Nb','17-4PH'],cc:'cn',cat:'ss',rd:'C 0.05・Cr 17・Ni 4・Cu 4・Nb（析出硬化）',is:'SUS630（17-4PH）相当。硬さは時効の条件（H900・H1150 など）で決まる',rel:'eq',jis:'sus630',sw:[['sus630','630 として来る材。時効の条件を図面に書かないと、相手のふつうの条件で来る']],pr:'―',pk:'na'},
+    {n:'Cr13 系／Cr17 系',a:[],cc:'cn',cat:'ss',rd:'名前の Cr の数字で系統を呼ぶ言い方。Cr13 ＝ 410・420 の仲間、Cr17 ＝ 440 の仲間',is:'呼び方であって材ではない。注文を「Cr13 で」と読み替えると 410〜420 相当になる',rel:'mkt',jis:'',
+     sw:[['sus440c','440C を「Cr13 系」と読み替えた所で 410・420 に落ちる（推定）']],pr:'―',pk:'na'},
+    /* ── 中国 炭素鋼・合金鋼 ── */
+    {n:'Q235B',a:['Q235','Q235A','Q235C','Q235D'],cc:'cn',cat:'cs',rd:'Q ＝ 屈服（降伏）、235 ＝ 降伏点 235 MPa。後ろの A〜D は品質等級（衝撃試験の温度）',is:'SS400 相当。中国でいちばん使われる一般構造用鋼',rel:'near',jis:'ss400',
+     sw:[['ss400','SS400 の図面は Q235B で手配されるのがふつう。引張強さ 370〜399 MPa は SS400 に入らない']],pr:'読み替え。値段の問題ではない',pk:'na'},
+    {n:'45',a:['45#','45号钢','45 号鋼'],cc:'cn',cat:'cs',rd:'数字だけ ＝ 優質炭素構造用鋼。45 ＝ C 0.45％',is:'S45C 相当（C 0.42〜0.50・Mn 0.50〜0.80 で、JIS より窓が広い）',rel:'near',jis:'s45c',
+     sw:[['s45c','S45C の図面は 45 で手配されるのがふつう。C 0.49〜0.50・Mn 0.50〜0.59 は S45C に入らない']],pr:'読み替え。値段の問題ではない',pk:'na'},
+    {n:'50',a:['50#','50号钢'],cc:'cn',cat:'cs',rd:'C 0.50％の炭素鋼',is:'S50C 相当（窓が広い）',rel:'near',jis:'s50c',sw:[['s50c','S50C の図面は 50 で手配される']],pr:'―',pk:'na'},
+    {n:'35CrMo',a:[],cc:'cn',cat:'cs',rd:'C 0.35・Cr（1.5％未満は数字なし）・Mo',is:'SCM435 相当（Cr 0.80〜1.10 で、JIS 0.90〜1.20 より低い側）',rel:'near',jis:'scm435',sw:[['scm435','SCM435 の図面は 35CrMo で手配されるのがふつう']],pr:'―',pk:'na'},
+    {n:'42CrMo',a:['42CrMoA'],cc:'cn',cat:'cs',rd:'C 0.42・Cr・Mo。末尾 A ＝ 高級優質（P・S が少ない）',is:'SCM440 相当（C 0.38〜0.45 で、JIS 0.38〜0.43 より上側に広い）',rel:'near',jis:'scm440',sw:[['scm440','SCM440 の図面は 42CrMo で手配されるのがふつう']],pr:'―',pk:'na'},
+    {n:'40Cr',a:['40CrA'],cc:'cn',cat:'cs',rd:'C 0.40・Cr 約 1％。Mo が入っていない',is:'SCr440（クロム鋼）相当。中国でいちばん使われる合金構造用鋼。この画面の材には無い',rel:'diff',jis:'',
+     sw:[['scm440','Mo の無い安い材。42CrMo（SCM440）の代わりに軸・ボルトで出てくることがある。焼入れ性が低く、太物の芯が硬くならない'],['scm435','35CrMo の代わりにも']],pr:'42CrMo より安い（Mo は高い元素）',pk:'est'},
+    {n:'40CrNiMoA',a:['40CrNiMo'],cc:'cn',cat:'cs',rd:'C 0.40・Cr・Ni・Mo（どれも 1.5％未満）。A ＝ 高級優質',is:'「SNCM439（4340）相当」と書かれるが、Ni 1.25〜1.65 で SNCM439（1.60〜2.00）に届かないことが多い別の材',rel:'diff',jis:'',
+     sw:[['sncm439','相当表でこれに対応づけられ、何も言わなければこれが来る。Ni が足りず、焼入れ性・じん性が落ちる']],pr:'Ni が少ないぶん少し安い。差の主因は国内の標準材で在庫があること',pk:'est'},
+    {n:'40CrNi2Mo',a:['40CrNi2MoA'],cc:'cn',cat:'cs',rd:'Ni2 ＝ Ni 約 2％（1.65〜2.00）',is:'SNCM439（4340）に近い材。流通は 40CrNiMoA より少ない',rel:'near',jis:'sncm439',sw:[['sncm439','SNCM439 を頼むなら、こちらを指定する']],pr:'40CrNiMoA より少し高い',pk:'est'},
+    {n:'Y12Pb',a:[],cc:'cn',cat:'cs',rd:'Y ＝ 易切削（快削）、12 ＝ C 0.12、Pb ＝ 鉛入り',is:'SUM24L（12L14）相当',rel:'eq',jis:'sum24l',sw:[['sum24l','SUM24L として来る材']],pr:'―',pk:'na'},
+    {n:'Y15Pb',a:[],cc:'cn',cat:'cs',rd:'C 0.15・鉛入りの快削鋼。S 0.23〜0.33',is:'SUM24L に近いが、C・S・P の窓が違う',rel:'near',jis:'sum24l',sw:[['sum24l','Y12Pb の代わりにこれで来ると、C・S が JIS から外れることがある']],pr:'Y12Pb とほぼ同じ',pk:'est'},
+    /* ── 中国 工具鋼・軸受鋼 ── */
+    {n:'GCr15',a:[],cc:'cn',cat:'ts',rd:'G ＝ 滚動軸受（軸受鋼）、Cr15 ＝ Cr 1.5％（軸受鋼だけ 0.1％単位で書く）',is:'SUJ2（52100）相当。Cr の上限が 1.65（JIS 1.60）',rel:'near',jis:'suj2',sw:[['suj2','軸受鋼は GCr15 で手配されるのがふつう。窓の差は小さい']],pr:'―',pk:'na'},
+    {n:'Cr12MoV',a:['T21201'],cc:'cn',cat:'ts',rd:'C は 1％を超えるので省く。Cr 12％・Mo・V（どちらも少量）',is:'SKD11 の「安い代わり」として売られる別の材。Mo 0.4〜0.6（SKD11 0.8〜1.2）・V 0.15〜0.3。硬さは同じ HRC 60 前後が出る',rel:'diff',jis:'',
+     sw:[['skd11','業者の対照表で SKD11 の対応材に並べられ、安い見積りならまずこれ。硬さでは見分けられない。耐摩耗・じん性が落ち、金型の寿命が短い']],pr:'SKD11 より 2〜3 割安（中国の業者の資料「経済グレード」）。Mo・V が少ないぶん合金代も安い',pk:'src'},
+    {n:'Cr12Mo1V1',a:['T21202','D2（中国）'],cc:'cn',cat:'ts',rd:'Mo1・V1 ＝ Mo 約 1％・V 約 1％',is:'D2 相当。SKD11 に近いが V が高め（0.5〜1.1）',rel:'near',jis:'skd11',sw:[['skd11','SKD11 の対応材として正しい方。図面が D2 を認めるかを先に確かめる']],pr:'Cr12MoV より高く、日本ブランドの SKD11（輸入材）より安い',pk:'est'},
+    {n:'Cr12',a:['D3（相当）'],cc:'cn',cat:'ts',rd:'Cr 12％だけ。Mo・V なし。C 2％超',is:'D3 相当。もろく、SKD11 の代わりにならない',rel:'diff',jis:'',sw:[['skd11','さらに安い材として出てくることがある。割れやすい']],pr:'Cr12MoV よりさらに安い',pk:'est'},
+    {n:'4Cr5MoSiV1',a:['T20502','H13（中国）'],cc:'cn',cat:'ts',rd:'合金工具鋼は先頭 1 桁が C（0.1％単位）：4 ＝ C 0.4％。Cr 5・Mo・Si・V1',is:'SKD61（H13）相当。Mo・C の窓が SKD61 より広い',rel:'near',jis:'skd61',sw:[['skd61','SKD61 の図面はこれで手配されるのがふつう']],pr:'―',pk:'na'},
+    {n:'T10',a:['T10A'],cc:'cn',cat:'ts',rd:'T ＝ 炭素工具鋼、10 ＝ C 1.0％。末尾 A ＝ 高級（P・S が少ない）',is:'SK105（旧 SK3）相当。C 0.95〜1.04 で、JIS（1.00〜1.10）より低い側',rel:'near',jis:'sk105',sw:[['sk105','SK105 の図面は T10 で手配されるのがふつう']],pr:'―',pk:'na'},
+    /* ── 中国 アルミ ── */
+    {n:'5A02',a:['旧 LF2'],cc:'cn',cat:'al',rd:'4 桁の 2 文字目が A ＝ 中国独自の材（国際登録の 5052 とは別）。旧 LF ＝ 防锈铝（さびにくいアルミ＝5000 系）',is:'5052 に近いが別の材（Mn・Si の窓が違う）',rel:'diff',jis:'a5052',
+     sw:[['a5052','「5052 相当」として来る。中国にも国際と同じ 5052 があるので、5052 を指定する']],pr:'5052 とほぼ同じ。値段ではなく在庫・習慣',pk:'est'},
+    {n:'2A11',a:['旧 LY11'],cc:'cn',cat:'al',rd:'旧 LY ＝ 硬铝（ジュラルミン＝2000 系）',is:'2017 に近いジュラルミンだが別の材（Cu 3.8〜4.8）',rel:'diff',jis:'a2017',sw:[['a2017','「2017 相当」として来る']],pr:'2017 とほぼ同じ',pk:'est'},
+    {n:'2A12',a:['旧 LY12'],cc:'cn',cat:'al',rd:'旧 LY12',is:'2024 とほぼ同じ（Zn の上限 0.30 だけ違う）',rel:'near',jis:'a2024',sw:[['a2024','「2024 相当」として来る']],pr:'2024 とほぼ同じ',pk:'est'},
+    {n:'7A04',a:['旧 LC4'],cc:'cn',cat:'al',rd:'旧 LC ＝ 超硬铝（超々ジュラルミン＝7000 系）',is:'7075 に近いが別の材（Zn・Mn・Mg・Cr の窓が違う）',rel:'diff',jis:'a7075',sw:[['a7075','「7075 相当」として来る。中国にも国際と同じ 7075 がある']],pr:'7075 とほぼ同じ',pk:'est'},
+    {n:'LD30',a:[],cc:'cn',cat:'al',rd:'旧 LD ＝ 锻铝（鍛造アルミ＝6000 系）',is:'6061 の旧名',rel:'eq',jis:'a6061',sw:[['a6061','6061 と同じ']],pr:'―',pk:'na'},
+    {n:'2011',a:[],cc:'cn',cat:'al',rd:'国際番号。Pb・Bi 入りの快削アルミ',is:'2017 の仲間ではなく快削材。資料によっては「2A11 の相当」と書かれる',rel:'diff',jis:'',sw:[['a2017','削りやすいので 2017 の代わりに出ることがある。強度・耐食が違う']],pr:'同程度。削りやすさで選ばれる',pk:'est'},
+    /* ── 中国 銅合金 ── */
+    {n:'HPb59-1',a:[],cc:'cn',cat:'cu',rd:'H ＝ 黄铜（黄銅）、Pb ＝ 鉛入り、59 ＝ Cu 59％、1 ＝ Pb 1％',is:'「C3604 相当」とされるが、Pb 0.8〜1.9 で C3604（1.8 以上）を割ることがある。鍛造用の黄銅に近い',rel:'diff',jis:'',
+     sw:[['c3604','相当表でこれに対応づけられ、何も言わなければこれが来る。削り屑が長くつながる']],pr:'HPb58-3 とほぼ同じ（Pb は安い元素）。読み替え・在庫',pk:'est'},
+    {n:'HPb58-3',a:[],cc:'cn',cat:'cu',rd:'Cu 58％・Pb 3％の鉛黄銅（快削棒の規格 GB/T 26306）',is:'C3604 に近い',rel:'near',jis:'c3604',sw:[['c3604','C3604 を頼むなら、こちらを指定する']],pr:'―',pk:'na'},
+    {n:'H62',a:[],cc:'cn',cat:'cu',rd:'H ＝ 黄銅、62 ＝ Cu 62％',is:'C2801 相当（Cu 60.5〜63.5 で、JIS 59.0〜62.0 より上側に広い）',rel:'near',jis:'c2801',sw:[['c2801','C2801 の図面は H62 で手配されるのがふつう']],pr:'―',pk:'na'},
+    {n:'T2',a:[],cc:'cn',cat:'cu',rd:'T ＝ 纯铜（純銅）。数字は純度の等級',is:'C1100（タフピッチ銅）相当',rel:'eq',jis:'c1100',sw:[['c1100','C1100 として来る材']],pr:'―',pk:'na'},
+    {n:'TU1・TU2',a:['TU1','TU2'],cc:'cn',cat:'cu',rd:'TU ＝ 无氧铜（無酸素銅）',is:'C1020 相当。TU2 は Cu 99.95 から（JIS 99.96）',rel:'near',jis:'c1020',sw:[['c1020','TU2 で来ると C1020 に入らないことがある']],pr:'TU1 の方が高い',pk:'est'},
+    {n:'QSn6.5-0.1',a:[],cc:'cn',cat:'cu',rd:'Q ＝ 青铜（青銅）、Sn 6.5％、P 0.1％',is:'C5191（りん青銅）相当',rel:'eq',jis:'c5191',sw:[['c5191','C5191 として来る材']],pr:'―',pk:'na'},
+    /* ── 米国 ── */
+    {n:'201',a:['S20100'],cc:'us',cat:'ss',rd:'AISI の 3 桁：2xx ＝ Cr-Ni-Mn 系（Ni を減らした材）',is:'SUS201。磁石に付かず、304 と見た目で区別できない',rel:'eq',jis:'sus201',sw:[['sus304','200 番台を 304 と偽った例が米国の業界誌にもある']],pr:'304 の約半分（中国の市況から）',pk:'src'},
+    {n:'304 / 304L / 316 / 316L',a:['S30400','S30403','S31600','S31603'],cc:'us',cat:'ss',rd:'3xx ＝ Cr-Ni 系（オーステナイト）。L ＝ 低炭素（0.03 以下）。UNS は S＋5 桁',is:'JIS と同じ番号だが、範囲が違う所がある（316L の Ni 10〜14、304L の Ni 8〜12）',rel:'near',jis:'sus316l',
+     sw:[['sus316l','Ni 10％台の正しい 316L が、JIS SUS316L に入らない'],['sus304','Ni の上限が 11.0（JIS 10.50）']],pr:'Ni は高い元素。下限で作るのがふつう',pk:'est'},
+    {n:'410 / 420 / 440A・B・C',a:['ASTM 420','420','440A','440B','S41000','S42000','S44004'],cc:'us',cat:'ss',rd:'4xx ＝ Cr 系（磁石に付く）。440 の A・B・C は炭素の多さ（A 0.60〜0.75、B 0.75〜0.95、C 0.95〜1.20）',is:'410 ＝ SUS410、440C ＝ SUS440C。420 は J1・J2 の区別が無く「C 0.15 以上」だけ',rel:'near',jis:'sus420j2',
+     sw:[['sus420j2','ASTM の 420 で注文すると、J1 程度の炭素でも合格'],['sus440c','440A・440B が「440」として来ると、炭素が 440C に届かない']],pr:'440C は 420 より高い（少量生産・作れる製鋼所が少ない）',pk:'est'},
+    {n:'17-4PH',a:['630','S17400'],cc:'us',cat:'ss',rd:'Cr 17・Ni 4・PH ＝ 析出硬化。H900・H1025・H1150 は時効の温度（°F）',is:'SUS630。時効の条件で硬さが HRC 28〜44 と大きく変わる',rel:'eq',jis:'sus630',sw:[['sus630','時効の条件を図面に書かないと、相手のふつうの条件で来る']],pr:'―',pk:'na'},
+    {n:'A36',a:['ASTM A36'],cc:'us',cat:'cs',rd:'ASTM の規格番号。36 ＝ 降伏点 36 ksi（250 MPa）',is:'SS400 相当（引張 400〜550 MPa で、上側が JIS より広い）',rel:'near',jis:'ss400',sw:[['ss400','SS400 の図面は A36 で手配されるのがふつう']],pr:'読み替え',pk:'na'},
+    {n:'1045 / 1050',a:['G10450','G10500'],cc:'us',cat:'cs',rd:'SAE の 4 桁：10xx ＝ 炭素鋼、下 2 桁 ＝ C（0.01％単位）。1045 ＝ C 0.45',is:'S45C・S50C 相当（C の上限が 0.50・0.55 で JIS より広い）',rel:'near',jis:'s45c',sw:[['s45c','1045 で手配されるのがふつう'],['s50c','1050 で手配される']],pr:'読み替え',pk:'na'},
+    {n:'4140 / 4135 / 4137',a:['G41400','4142'],cc:'us',cat:'cs',rd:'41xx ＝ Cr-Mo 鋼（クロモリ）。下 2 桁 ＝ C',is:'4140 ＝ SCM440、4135・4137 ＝ SCM435 相当（Cr 0.80〜1.10 で JIS より低い側）',rel:'near',jis:'scm440',sw:[['scm440','4140 で手配されるのがふつう'],['scm435','4135 か 4137 で']],pr:'読み替え',pk:'na'},
+    {n:'4340',a:['G43400'],cc:'us',cat:'cs',rd:'43xx ＝ Ni-Cr-Mo 鋼。Ni 1.65〜2.00',is:'SNCM439 相当（窓がほぼ同じ）',rel:'eq',jis:'sncm439',sw:[['sncm439','4340 なら JIS と近い。中国の 40CrNiMoA（Ni 不足）とは別']],pr:'―',pk:'na'},
+    {n:'12L14',a:['G12144'],cc:'us',cat:'cs',rd:'12xx ＝ 快削鋼（S・P 入り）、L ＝ 鉛、14 ＝ C 0.14',is:'SUM24L 相当',rel:'eq',jis:'sum24l',sw:[['sum24l','12L14 で手配されるのがふつう']],pr:'―',pk:'na'},
+    {n:'52100',a:['G52986','E52100'],cc:'us',cat:'ts',rd:'5 桁：52 ＝ Cr 鋼（約 1.5％）、100 ＝ C 1.00',is:'SUJ2 相当（C の下限 0.93 で JIS 0.95 より低い）',rel:'near',jis:'suj2',sw:[['suj2','52100 で手配されるのがふつう']],pr:'―',pk:'na'},
+    {n:'D2',a:['T30402'],cc:'us',cat:'ts',rd:'工具鋼の頭文字：D ＝ 冷間ダイス鋼（高炭素・高クロム）',is:'SKD11 に近いが、V 0.5〜1.1（SKD11 0.2〜0.5）で窓が違う',rel:'near',jis:'skd11',sw:[['skd11','D2 で手配されるのがふつう。図面が D2 を認めるかを先に確かめる']],pr:'―',pk:'na'},
+    {n:'H13',a:['T20813'],cc:'us',cat:'ts',rd:'H ＝ 熱間工具鋼（Hot work）',is:'SKD61 相当（Mo・C の窓が広い）',rel:'near',jis:'skd61',sw:[['skd61','H13 で手配されるのがふつう']],pr:'―',pk:'na'},
+    {n:'W1',a:['W1-10'],cc:'us',cat:'ts',rd:'W ＝ 水焼入れ（Water hardening）の炭素工具鋼。W1-10 ＝ C 1.0',is:'SK105 相当。1095（ばね・刃物用の炭素鋼）は工具鋼の規格ではなく別物',rel:'near',jis:'sk105',sw:[['sk105','1095 で来ると、工具鋼としての P・S・組織の管理が無い']],pr:'―',pk:'na'},
+    {n:'5052 / 6061 / 2017 / 2024 / 7075',a:['A95052','A96061','A92017','A92024','A97075'],cc:'us',cat:'al',rd:'国際の 4 桁（1 桁目が系：2 ＝ Cu、5 ＝ Mg、6 ＝ Mg-Si、7 ＝ Zn）。UNS は A9＋4 桁',is:'JIS の A5052・A6061… と同じ材',rel:'eq',jis:'a5052',sw:[['a5052','同じ材。中国の 5A02 などの「A 付き」とは別']],pr:'―',pk:'na'},
+    {n:'C36000',a:['C36010','CDA 360'],cc:'us',cat:'cu',rd:'銅合金の番号：C1xxxx 純銅、C2xxxx 黄銅、C3xxxx 鉛黄銅、C5xxxx りん青銅',is:'快削黄銅。C3604 と重なるのは Cu 60〜61・Pb 2.5〜3.0 だけ',rel:'near',jis:'c3604',sw:[['c3604','C36000 で手配されるのがふつう']],pr:'―',pk:'na'},
+    {n:'C28000 / C11000 / C10200 / C51900',a:[],cc:'us',cat:'cu',rd:'C28000 ＝ 六四黄銅、C11000 ＝ タフピッチ銅、C10200 ＝ 無酸素銅、C51900 ＝ りん青銅',is:'C2801・C1100・C1020・C5191 相当。Cu・Sn の窓が少しずつ違う',rel:'near',jis:'c2801',sw:[['c2801','C28000'],['c1020','C10200（Cu 99.95 から）'],['c5191','C51900（Sn 5.0 から）']],pr:'―',pk:'na'},
+    /* ── 欧州（参考。米国経由の材や、欧州の製鋼所の材で出てくる名前）── */
+    {n:'1.4301 / 1.4307',a:['X5CrNi18-10','X2CrNi18-9'],cc:'eu',cat:'ss',rd:'EN の番号：1.43xx・1.44xx ＝ ステンレス。記号は X ＋ C（0.01％単位）＋ 元素と％',is:'304・304L 相当（Ni 8.0〜10.5）',rel:'eq',jis:'sus304',sw:[['sus304','欧州の製鋼所の材でこの名前']],pr:'―',pk:'na'},
+    {n:'1.4404 / 1.4435',a:['X2CrNiMo17-12-2','X2CrNiMo18-14-3'],cc:'eu',cat:'ss',rd:'1.4404 ＝ Ni 10〜13、1.4435 ＝ Ni 12.5〜15（JIS に近いのはこちら）',is:'どちらも「316L」。JIS SUS316L に入るのは 1.4435 の側',rel:'near',jis:'sus316l',sw:[['sus316l','1.4404 の 316L は Ni 10％台（欧州大手の代表値 10.1）']],pr:'1.4435 の方が Ni が多く高い',pk:'est'},
+    {n:'1.4006 / 1.4021 / 1.4028 / 1.4125',a:['X12Cr13','X20Cr13','X30Cr13','X105CrMo17'],cc:'eu',cat:'ss',rd:'X12Cr13 ＝ C 0.12・Cr 13。X105CrMo17 ＝ C 1.05・Cr 17・Mo',is:'410・420J1・420J2・440C 相当（1.4125 は Mo 入り）',rel:'eq',jis:'sus440c',sw:[['sus440c','1.4125'],['sus420j2','1.4028']],pr:'―',pk:'na'},
+    {n:'1.2379 / 1.2344',a:['X153CrMoV12','X40CrMoV5-1'],cc:'eu',cat:'ts',rd:'1.2xxx ＝ 工具鋼',is:'D2（SKD11 に近い）・H13（SKD61）相当',rel:'near',jis:'skd11',sw:[['skd11','1.2379 は V 0.7〜1.0 で SKD11 より高い'],['skd61','1.2344']],pr:'―',pk:'na'},
+    {n:'42CrMo4 / C45 / 100Cr6',a:['1.7225','1.0503','1.3505'],cc:'eu',cat:'cs',rd:'低合金鋼は元素の数字を 4 で割る：42CrMo4 ＝ C 0.42・Cr 1％。100Cr6 ＝ C 1.00・Cr 1.5％。C45 ＝ C 0.45 の非合金鋼',is:'SCM440・S45C・SUJ2 相当',rel:'near',jis:'scm440',sw:[['scm440','42CrMo4'],['s45c','C45'],['suj2','100Cr6']],pr:'―',pk:'na'},
+    {n:'CuZn36Pb3 / 11SMnPb30',a:['CW603N'],cc:'eu',cat:'cu',rd:'成分をそのまま書く：Cu・Zn 36％・Pb 3％。11SMnPb30 ＝ C 0.11・S 0.30 の鉛快削鋼',is:'C3604・SUM24L 相当',rel:'near',jis:'c3604',sw:[['c3604','CuZn36Pb3'],['sum24l','11SMnPb30']],pr:'―',pk:'na'}
+  ];
+  var GS={cc:'all',q:''};
+  function gnorm(s){ return String(s||'').toLowerCase().replace(/[\s\-‐‑–—・／\/（）()]/g,''); }
+  /* 疑う材の名前（例「20Cr13（旧 2Cr13）」「410（12Cr13・旧 1Cr13）」）から、別表の項目を引く */
+  function glossOf(name){
+    var n=gnorm(name), toks=String(name||'').replace(/旧\s*/g,'').split(/[\s、・（）()／\/「」]+/), nt=[], i, j, k, e, keys;
+    for(i=0;i<toks.length;i++){ k=gnorm(toks[i]); if(k) nt.push(k); }
+    /* ① 長い名前（4 文字以上）が含まれているか（いちばん長く一致したもの。40Cr が 40CrNiMoA に当たらないように）
+       → ② 区切った語がそのまま一致するか（420 など短い名前） */
+    var best=null, bl=0;
+    for(i=0;i<GL.length;i++){
+      e=GL[i]; keys=[e.n].concat(e.a||[]);
+      for(j=0;j<keys.length;j++){ k=gnorm(keys[j].replace(/^旧\s*/,'')); if(k.length>=4&&k.length>bl&&n.indexOf(k)>=0){ best=e; bl=k.length; } }
+    }
+    if(best) return best;
+    for(i=0;i<GL.length;i++){
+      e=GL[i]; keys=[e.n].concat(e.a||[]);
+      for(j=0;j<keys.length;j++){ k=gnorm(keys[j].replace(/^旧\s*/,'')); if(k&&nt.indexOf(k)>=0) return e; }
+    }
+    return null;
+  }
+  function gmatch(e){
+    if(GS.cc!=='all'&&e.cc!==GS.cc) return false;
+    if(!GS.q) return true;
+    var s=gnorm([e.n].concat(e.a||[]).join(' ')+' '+e.is+' '+e.rd), i;
+    if(s.indexOf(GS.q)>=0) return true;
+    for(i=0;i<e.sw.length;i++){ var m=byId(e.sw[i][0]); if(m&&gnorm(m.title).indexOf(GS.q)>=0) return true; if(gnorm(e.sw[i][1]).indexOf(GS.q)>=0) return true; }
+    return false;
+  }
+  function drawGloss(){
+    var el=g('glist'), h='', i, e, last='', n=0, m, j, jm, pk={src:'資料あり',est:'目安',na:'―'};
+    if(!el) return;
+    for(i=0;i<GL.length;i++){
+      e=GL[i]; if(!gmatch(e)) continue; n++;
+      var grp=GCC[e.cc]+'：'+GCAT[e.cat];
+      if(grp!==last){ h+='<div class="ggh"><span class="cc" style="background:'+(COLOR[e.cc]||'#5B707E')+'">'+GCC[e.cc]+'</span>'+GCAT[e.cat]+'</div>'; last=grp; }
+      jm=e.jis?byId(e.jis):null;
+      h+='<div class="ge rel-'+e.rel+'"><div class="gh"><b class="gn">'+esc(e.n)+'</b>'+(e.a&&e.a.length&&e.a.join('')?'<span class="ga">'+esc(e.a.filter(function(x){return x;}).join('・'))+'</span>':'')
+        +'<span class="grel">'+esc(GREL[e.rel])+'</span></div>'
+        +'<div class="gr"><span class="gl">読み方</span><span>'+esc(e.rd)+'</span></div>'
+        +'<div class="gr"><span class="gl">正体</span><span>'+esc(e.is)+'</span></div>';
+      if(e.sw&&e.sw.length){
+        h+='<div class="gr warn"><span class="gl">取り違え</span><span>';
+        for(j=0;j<e.sw.length;j++){ m=byId(e.sw[j][0]); h+=(j?'<br>':'')+'<b>'+esc(m?m.title.replace(/（.*$/,''):e.sw[j][0])+'</b>：'+esc(e.sw[j][1])+(m?' <button type="button" class="gj" data-id="'+esc(m.id)+'">画面へ</button>':''); }
+        h+='</span></div>';
+      }
+      if(e.pr&&e.pr!=='―') h+='<div class="gr"><span class="gl">値段</span><span><i class="pk '+e.pk+'">'+pk[e.pk]+'</i>'+esc(e.pr)+'</span></div>';
+      h+='</div>';
+    }
+    if(!n) h='<div class="nohit">見つかりませんでした。名前の一部（Cr13、CrMo、Pb など）でも探せます。</div>';
+    el.innerHTML=h;
+    var bs=g('gtabs').getElementsByTagName('button');
+    for(i=0;i<bs.length;i++){ var on=bs[i].getAttribute('data-cc')===GS.cc; bs[i].className=on?'on':''; bs[i].setAttribute('aria-pressed',on?'true':'false'); }
+    g('gcnt').textContent=n+' / '+GL.length;
+  }
+  function glossFind(q){ GS.q=gnorm(q); GS.cc='all'; var qi=g('gq'); if(qi) qi.value=q; drawGloss(); }
+  function initGloss(){
+    if(!g('glist')) return;
+    drawGloss();
+    g('gq').addEventListener('input',function(){ GS.q=gnorm(this.value); drawGloss(); });
+    g('gtabs').addEventListener('click',function(e){
+      var b=e.target; while(b&&b!==this&&b.tagName!=='BUTTON')b=b.parentNode;
+      if(!b||b===this)return; GS.cc=b.getAttribute('data-cc'); drawGloss();
+    });
+    g('glist').addEventListener('click',function(e){
+      var b=e.target; while(b&&b!==this&&!(b.getAttribute&&b.getAttribute('data-id')))b=b.parentNode;
+      if(!b||b===this)return; pick(b.getAttribute('data-id'),true);
+    });
+  }
   /* ══ 受入れの早見：国 → 材質 → 検査で見ること ══ */
   var ORGN={cn:'中国',us:'米国'};
   var LV={red:'別の材に置き換わる恐れ',amber:'規格の違いで JIS から外れることがある',green:'大きな違いは少ない',gray:'この国の値は載せていない'};
@@ -1341,19 +1945,52 @@
     s+='納品時に、この材のミルシート（EN 10204 3.1、ヒート番号つき）を提出してください。受入れでは、ミルシートの値'+(meth.length?'に加えて '+meth.join('・')+' で':'で')+'確かめます。';
     return s;
   }
+  /* ── 頻度（目安）・よくある形・前例 ── */
+  function fqOf(m,org){ return (FREQ[m.id]&&FREQ[m.id][org])||null; }
+  function fqTag(fr){
+    if(!fr)return '';
+    return '<div class="rfq"><span class="fq f'+FQR[fr.f]+'" aria-hidden="true"><i></i><i></i><i></i></span><span>頻度 '+esc(fr.f)+'（目安）</span>'+(fr.inh?'<span class="inh">社内で実例</span>':'')+'</div>';
+  }
+  function caseHtml(fr){
+    if(!fr)return '';
+    var h='<div class="rsec cases"><h3>よくある形（あるある）と前例</h3><p class="aru">'+esc(fr.t)+'</p>', i, p;
+    if(fr.inh)h+='<p class="inhn"><b>社内でも実例があった組です。</b>受入れでは毎回確かめる組として扱ってください。</p>';
+    if(fr.pre&&fr.pre.length){
+      h+='<ul class="pres">';
+      for(i=0;i<fr.pre.length;i++){ p=preOf(fr.pre[i]); if(p)h+='<li><span class="py">'+esc(p.yr+' '+p.cc)+'</span><span><b>'+esc(p.t)+'</b>。'+esc(p.l)+'</span></li>'; }
+      h+='</ul>';
+    }
+    h+='<p class="pcert">検査証明の書き換え・偽造は、日本・米国・韓国・フランスでも起きています。効くのは国ではなく、値段の圧力・あいまいな仕様・長い商流・受入れで確かめないことです。</p>'
+      +'<div class="cbtn"><button type="button" class="inl" data-panel="pAru">なぜ置き換わるのか（あるある・値段の差）</button><button type="button" class="inl" data-panel="pCases">他社・他国の前例と頻度の付け方</button><button type="button" class="inl" data-panel="pMind">日本・中国・米国の考え方の違い</button></div></div>';
+    return h;
+  }
+  function drawCases(){
+    var el=g('caseList'), h='', i, p;
+    if(!el)return;
+    for(i=0;i<PRE.length;i++){
+      p=PRE[i];
+      h+='<div class="case" id="case-'+esc(p.id)+'"><div class="ch"><span class="py">'+esc(p.yr+' '+p.cc)+'</span><b>'+esc(p.t)+'</b></div>'
+        +'<p>'+esc(p.d)+'</p><p class="cl">→ '+esc(p.l)+'</p>'
+        +'<p class="cs">出典：<a href="'+esc(p.u)+'" target="_blank" rel="noopener">'+esc(p.src)+'</a></p></div>';
+    }
+    el.innerHTML=h;
+  }
   function drawRes(){
-    var m=byId(S2.id), org=S2.org, a=advOf(m,org), h='', i;
+    var m=byId(S2.id), org=S2.org, a=advOf(m,org), fr=fqOf(m,org), h='', i;
     h+='<div class="rbox2 lv-'+a.lv+'">';
     if(a.lv==='red')h+='<div class="tape" aria-hidden="true"></div>';
     h+='<div class="rhead"><div class="rtop"><span class="rorg">'+ORGN[org]+'から</span><span class="rx">×</span><span class="rmat">'+esc(m.title)+'</span></div>'
-      +'<div class="rlv"><i class="d '+a.lv+'"></i>'+esc(LV[a.lv])+'</div>'
+      +'<div class="rtags"><div class="rlv"><i class="d '+a.lv+'"></i>'+esc(LV[a.lv])+'</div>'+fqTag(fr)+'</div>'
       +'<div class="rh">'+esc(a.head)+'</div>'+(a.sub?'<p class="rsub">'+esc(a.sub)+'</p>':'')+'</div>';
     var k=riskOf(m,org,a);
     h+=riskHtml(a,k);
+    h+=caseHtml(fr);
     h+='<div class="rsec"><h3>検査で見ること</h3>'+chkRows(a.chk)+'</div>';
     if(a.sus.length){
       h+='<div class="rsec"><h3>疑う材</h3><ul class="suss">';
-      for(i=0;i<a.sus.length;i++)h+='<li><b>'+esc(a.sus[i][0])+'</b>'+(a.sus[i][1]?'<span>'+esc(a.sus[i][1])+'</span>':'')+'</li>';
+      for(i=0;i<a.sus.length;i++){ var ge=glossOf(a.sus[i][0]);
+        h+='<li><b>'+esc(a.sus[i][0])+'</b>'+(a.sus[i][1]?'<span>'+esc(a.sus[i][1])+'</span>':'')
+          +(ge?'<span class="gsx">'+(ge.pr&&ge.pr!=='―'?'<span>値段の目安：'+esc(ge.pr.split('。')[0])+'</span>':'')+'<button type="button" class="gbt" data-panel="pGloss" data-gq="'+esc(ge.n)+'">正体を別表で見る</button></span>':'')+'</li>'; }
       h+='</ul></div>';
     }
     h+='<div class="rsec"><h3>ミルシートで見ること</h3>';
@@ -1367,7 +2004,7 @@
     h+='<details class="rmore"><summary>背景（余談）</summary><div class="rmb"><ul class="bgl">';
     for(i=0;i<a.bg.length;i++)h+='<li>'+a.bg[i]+'</li>';
     for(i=0;i<(m.notes||[]).length;i++)h+='<li>'+m.notes[i]+'</li>';
-    h+='</ul><button type="button" class="inl" data-panel="pWhy">なぜ置き換わるのか（全体の話）</button></div></details>';
+    h+='</ul><button type="button" class="inl" data-panel="pAru">あるある・値段の差・入手の事情</button> <button type="button" class="inl" data-panel="pWhy">なぜ置き換わるのか（全体の話）</button> <button type="button" class="inl" data-panel="pGloss">聞き慣れない名前の正体（別表）</button></div></details>';
     h+='<details class="rmore"><summary>名前の対照・成分の幅（日米中）</summary><div class="rmb"><div class="sec"><h3>名前の対照</h3>'+namesHtml(m)+'</div>'
       +'<div class="sec"><h3>成分の幅（質量％）</h3><div class="eleg">';
     for(i=0;i<m.cols.length;i++)h+='<span><span class="cc" style="background:'+COLOR[m.cols[i].k]+'">'+esc(bdg(m.cols[i]))+'</span>'+esc(m.cols[i].lbl.replace(/^[日米中]\s*/,''))+'</span>';
@@ -1382,14 +2019,20 @@
   /* ── 注意する材の一覧（いまの国） ── */
   function drawOv(){
     var reds=[],ambers=[],i,m,a,h='';
-    for(i=0;i<M.length;i++){ m=M[i]; a=advOf(m,S2.org); if(a.lv==='red')reds.push([m,a]); else if(a.lv==='amber')ambers.push([m,a]); }
+    for(i=0;i<M.length;i++){ m=M[i]; a=advOf(m,S2.org); if(a.lv==='red')reds.push([m,a,i]); else if(a.lv==='amber')ambers.push([m,a,i]); }
+    /* 頻度の高い順（同じ頻度なら一覧の順） */
+    /* 社内で実例があった組は、頻度にかかわらず先頭（毎回確かめる組） */
+    function rk(x){ var f=fqOf(x[0],S2.org); return f?(f.inh?-1:FQR[f.f]):3; }
+    function byFq(x,y){ return (rk(x)-rk(y))||(x[2]-y[2]); }
+    reds.sort(byFq); ambers.sort(byFq);
+    function row(x){ var f=fqOf(x[0],S2.org); return '<li><button type="button" data-id="'+esc(x[0].id)+'"><span class="ovf f'+(f?FQR[f.f]:3)+'">'+(f?esc(f.f):'―')+'</span><span class="on1">'+esc(x[0].title.replace(/（.*$/,''))+'</span><span class="oh">'+(f&&f.inh?'<span class="inh">社内で実例</span> ':'')+esc(x[1].head)+'</span></button></li>'; }
     g('ovh').firstChild.nodeValue=ORGN[S2.org]+'から来る品で注意する材';
     g('ovcnt').textContent=(reds.length+ambers.length)+' / '+M.length+' 材';
-    h+='<div class="ovg"><div class="ovl"><i class="d red"></i>別の材に置き換わる恐れ</div><ul class="ovr">';
-    for(i=0;i<reds.length;i++)h+='<li><button type="button" data-id="'+esc(reds[i][0].id)+'"><span class="on1">'+esc(reds[i][0].title.replace(/（.*$/,''))+'</span><span class="oh">'+esc(reds[i][1].head)+'</span></button></li>';
+    h+='<div class="ovg"><div class="ovl"><i class="d red"></i>別の材に置き換わる恐れ<span class="ovs">頻度の高い順</span></div><ul class="ovr">';
+    for(i=0;i<reds.length;i++)h+=row(reds[i]);
     if(!reds.length)h+='<li class="none">この国ではありません</li>';
-    h+='</ul></div><div class="ovg"><div class="ovl"><i class="d amber"></i>規格の違いで JIS から外れることがある</div><ul class="ovr">';
-    for(i=0;i<ambers.length;i++)h+='<li><button type="button" data-id="'+esc(ambers[i][0].id)+'"><span class="on1">'+esc(ambers[i][0].title.replace(/（.*$/,''))+'</span><span class="oh">'+esc(ambers[i][1].head)+'</span></button></li>';
+    h+='</ul></div><div class="ovg"><div class="ovl"><i class="d amber"></i>規格の違いで JIS から外れることがある<span class="ovs">頻度の高い順</span></div><ul class="ovr">';
+    for(i=0;i<ambers.length;i++)h+=row(ambers[i]);
     h+='</ul></div>';
     g('ov').innerHTML=h;
   }
@@ -1444,6 +2087,8 @@
       for(k=0;k<D.sources.length;k++)sh+='<br>・'+esc(D.sources[k].t)+'：<a href="'+esc(D.sources[k].u)+'" target="_blank" rel="noopener">'+esc(D.sources[k].u)+'</a>';
       sl.innerHTML=sh;
     }
+    drawCases();
+    initGloss();
     drawAll();
     g('org').addEventListener('click',function(e){
       var b=e.target; while(b&&b!==this&&b.tagName!=='BUTTON')b=b.parentNode;
@@ -1479,7 +2124,7 @@
     });
     document.addEventListener('click',function(e){
       var b=e.target; while(b&&b!==document&&!(b.getAttribute&&b.getAttribute('data-panel')))b=b.parentNode;
-      if(!b||b===document)return; openPanel(b.getAttribute('data-panel'));
+      if(!b||b===document)return; var gq=b.getAttribute('data-gq'); if(gq)glossFind(gq); openPanel(b.getAttribute('data-panel'));
     });
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init2); else init2();

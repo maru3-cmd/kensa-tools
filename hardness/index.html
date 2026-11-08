@@ -53,6 +53,70 @@
     background:var(--sheet);color:var(--ink);
   }
   .chip.on{background:var(--ink);color:#fff}
+  /* ── v168：材質・処理の選び方（公差判定 v164 と同じ作り：分類ごとの行・同じ大きさのマス） ── */
+  .why{background:#EEF4F7;border:1px solid #C9DAE3;border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.75;color:#3A5060;margin:2px 0 4px}
+  .why>b:first-child{display:block;color:#1F3341;font-size:12.5px;margin-bottom:2px}
+  .pgrid{display:flex;flex-direction:column;gap:6px}
+  .prow{display:grid;grid-template-columns:64px 1fr;gap:6px;align-items:start}
+  .pl{font-size:10.5px;font-weight:700;color:#5B707E;line-height:1.35;padding-top:8px;min-width:0}
+  .pcs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;min-width:0}
+  .chip.pc{flex:none;min-width:0;font-size:12.5px;padding:9px 3px;min-height:40px;line-height:1.25;position:relative;overflow-wrap:anywhere;cursor:pointer}
+  .chip.pc .mk{position:absolute;top:2px;right:4px;font-size:10px;line-height:1}
+  .chip.pc.st-main,.chip.pc.st-mainw{border-width:2px}
+  .chip.pc.st-main .mk,.chip.pc.st-mainw .mk{color:#D63426}
+  .chip.pc.st-w .mk{color:#B26B00}
+  .chip.pc.st-x{border:1.5px dashed #C9D3DA;color:#AEBBC4;background:#F7F9FA;font-weight:400}
+  .chip.pc.st-x .mk{color:#AEBBC4}
+  .chip.pc.on .mk{color:#fff}
+  .chip.pc.st-x.on{background:#8FA2AF;border:1.5px solid #8FA2AF;color:#fff}
+  .pleg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:10.5px;color:#5B707E;margin:0 2px 6px}
+  .pleg b{margin-right:3px}
+  .pleg .lk{color:#D63426} .pleg .lw{color:#B26B00} .pleg .lx{color:#AEBBC4} .pleg .lo{color:#1F3341}
+  .info{margin-top:8px;background:var(--sheet);border:1px solid #D5DDE2;border-radius:10px;padding:10px 12px}
+  .ih{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:7px;font-size:14px}
+  .it{font-size:10.5px;font-weight:700;color:#fff;background:#3A5060;border-radius:4px;padding:1px 7px}
+  .ist{font-size:11px;font-weight:700;border-radius:999px;padding:1px 9px;border:1px solid #C9D3DA;color:#3A5060}
+  .ist.s-main,.ist.s-mainw{color:#D63426;border-color:#E9A79F}
+  .ist.s-w{color:#8A5300;border-color:#EACB92}
+  .ist.s-x{color:#5B707E;border-style:dashed}
+  .il{display:grid;grid-template-columns:78px 1fr;gap:6px 8px;font-size:12px;line-height:1.7}
+  .il dt{font-size:10.5px;font-weight:700;color:#5B707E;padding-top:2px}
+  .il dd{color:#1F3341;min-width:0}
+  .mains{display:flex;flex-wrap:wrap;gap:5px}
+  .mainb{font:inherit;font-size:11.5px;font-weight:700;padding:4px 9px;border-radius:7px;border:1.5px solid #D63426;background:#fff;color:#D63426;cursor:pointer}
+  .inote{margin-top:8px;font-size:11.5px;line-height:1.65;color:#7A4E00;background:#FFF4E5;border:1px solid #F0D7A8;border-radius:8px;padding:7px 9px}
+  .ihint{font-size:11.5px;color:#5B707E;line-height:1.7}
+  .tx .wn{color:#8A5300}
+  .mxbox{margin-top:10px;background:var(--sheet);border:1px solid #D5DDE2;border-radius:10px}
+  .mxbox>summary{cursor:pointer;padding:10px 12px;font-size:12px;font-weight:700;color:#3A5060}
+  .mxwrap{overflow-x:auto;padding:0 8px 10px}
+  .mx{border-collapse:collapse;font-size:11px}
+  .mx th,.mx td{border:1px solid #E3E9EC;padding:3px 4px;text-align:center;white-space:nowrap}
+  .mx thead th{vertical-align:bottom;height:96px}
+  .mx thead th span{writing-mode:vertical-rl;display:inline-block;font-weight:700;color:#3A5060}
+  .mx .c0{position:sticky;left:0;background:#fff;text-align:left;z-index:1}
+  .mx tr.mg td{background:#EEF2F4;font-weight:700;color:#5B707E;text-align:left}
+  .mx td.s-main,.mx td.s-mainw{color:#D63426;font-weight:700}
+  .mx td.s-w{color:#B26B00;font-weight:700}
+  .mx td.s-x{color:#C9D3DA}
+  /* ── v169：測り方の比べ（推奨・どちらでもよい・非推奨） ── */
+  .mbox{margin:0 0 10px;background:var(--sheet);border:1px solid #D5DDE2;border-radius:10px;padding:10px 12px}
+  .mh{font-size:13px;font-weight:700;color:#1F3341;margin-bottom:8px}
+  .mh span{display:block;font-size:10.5px;font-weight:400;color:#5B707E;margin-top:1px}
+  .ml{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+  .ml li{border:1px solid #E3E9EC;border-left:4px solid #C9D3DA;border-radius:8px;padding:7px 9px;background:#fff}
+  .mt{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:12.5px;color:#1F3341}
+  .lv{font-size:10.5px;font-weight:700;border-radius:999px;padding:1px 8px;white-space:nowrap}
+  .ml li.p1{border-left-color:#1F6B3A}
+  .ml li.p1 .lv{background:#1F6B3A;color:#fff}
+  .ml li.p2{border-left-color:#8FA2AF}
+  .ml li.p2 .lv{background:#EEF2F4;color:#3A5060;border:1px solid #C9D3DA}
+  .ml li.p3{border-left-color:#D63426;background:#FFFAF9}
+  .ml li.p3 .lv{background:#fff;color:#9E2B20;border:1px solid #E7C3BE}
+  .md{font-size:12px;line-height:1.7;color:#3A5060;margin-top:4px}
+  .ml li.p3 .md{color:#7E2A20}
+  .ms{font-size:11px;line-height:1.6;color:#5B707E;margin-top:4px;padding-top:4px;border-top:1px dotted #E3E9EC}
+  .mfoot{margin:8px 0 0;font-size:11.5px;line-height:1.7;color:#3A5060;background:#EEF4F7;border-radius:8px;padding:7px 9px}
 
   .inputs{margin-top:10px}
   .row{
@@ -236,6 +300,8 @@
     <h4>使い方</h4>
     <ol>
       <li><b>①材質</b>と<b>②熱処理・表面処理</b>を選びます（材質が分からなければ「不明」で構いません。幅を広くとって判定します）。<b>期待される硬さ</b>と<b>測り方（機器・試験力）</b>が出ます。</li>
+      <li>材質を選ぶと、処理のボタンに印が付きます。<b>★＝その材質で主流</b>／<b>△＝できるが気をつけること付き</b>／<b>点線（×）＝一般にしない組み合わせ</b>。材質と処理の説明（<b>何に使うか・なぜその処理をするのか・どこが硬くなるか</b>）も出るので、新人の方はまずここを読んでください。全体は「材質 × 処理の早見表」で見渡せます。</li>
+      <li>その下の<b>「測り方の比べ」</b>に、ロックウェル・ビッカース・ブリネルなどを<b>推奨／どちらでもよい／非推奨</b>で並べます。<b>傷を小さくしたいとき</b>はビッカースの行を、非推奨の行は<b>なぜ使わないか</b>を見てください。圧痕の大きさ（この硬さでの目安）も出ます。</li>
       <li><b>組み合わせが成立しないとき</b>は、測る前に止めます（SS400 に高周波焼入れ、SUS304 に調質など）。図面の指示を確かめてください。</li>
       <li><b>③測った値</b>を入れると、<b>期待される硬さの範囲に入っているか</b>を色で示します（<b>緑＝範囲の中</b>／<b>オレンジ＝範囲の外</b>）。<b>合格・不合格は出しません。</b>硬さだけでは受渡しの合否は決まらないためです。範囲から外れたときは「<b>S45C の調質相当</b>」「<b>生材の可能性があります</b>」のように、いま何に相当する硬さかを出します。</li>
       <li>期待される硬さの下に、<b>推奨設定</b>（圧子・試験力・保持時間）と、どの機器にも共通する置き方（圧痕の間隔・端からの距離・測る点数）が出ます。</li>
@@ -273,6 +339,18 @@
       ・<b>HRB域（HV107〜240）</b>は生材〜調質のところです。ここは<b>目安</b>で、HRC の換算は規格に無いので出していません（HB ≒ HV とみなしています）。<br>
       ・<b>生材か焼入れかの見立て</b>も、代表的な鋼種の一般値による<b>目安</b>です。材料指定や熱処理指示の代わりにはなりません。
     </div>
+    <div class="src">
+      <b>材質・処理の硬さと説明の出典</b>（v168 で足した材・処理。いずれも代表的な一般値で、図面・熱処理指示が優先）<br>
+      ・SUS410 の焼入れ焼戻し HRC 38〜45・SUS440C 58〜60 … <a href="https://atimaterials.com/Products/Documents/datasheets/stainless-specialty-steel/martensitic/ati_410_420_425_mod_440a_440c_tds_en4_v2.pdf" target="_blank" rel="noopener">ATI のデータシート</a><br>
+      ・SUS630 の析出硬化 H900 HRC 40〜48・H1025 33〜42・H1150 26〜36（ASTM A693 の参考値）… <a href="https://www.daido.co.jp/common/pdf/pages/products/powder/additive/sus630.pdf" target="_blank" rel="noopener">大同特殊鋼の資料</a><br>
+      ・SUS420J2 の焼入れ焼戻し HRC 51〜55 … <a href="https://www.punch.co.jp/assets/documents/english/product/special/heat_treatment.pdf" target="_blank" rel="noopener">パンチ工業の熱処理条件表</a><br>
+      ・SKH51 相当 HRC 61〜64 … <a href="https://jp.misumi-ec.com/pdf/press/1-015-2025.pdf" target="_blank" rel="noopener">ミスミのカタログ</a>／SKH51 の焼入れ 1190〜1230℃・焼戻し 500〜600℃、SKD11・SKD61 の用途 … <a href="https://monoist.itmedia.co.jp/mn/spv/2607/06/news126_3.html" target="_blank" rel="noopener">MONOist「工具鋼の基礎知識」</a><br>
+      ・SKD11 は空気・真空炉のガスで焼入れでき、曲がりを抑えられる … <a href="https://aichi-steel.co.jp/ENGLISH/products/hagane_company/tool_steel/cold/" target="_blank" rel="noopener">愛知製鋼</a>／真空焼入れのガス冷却は、焼きの入りにくい低合金鋼では硬さが出きらないことがある … <a href="https://kintekfurnace.com/faqs/what-is-vacuum-hardening" target="_blank" rel="noopener">KINTEK</a><br>
+      ・無電解ニッケル HV500・硬質クロム HV1000（膜厚 10〜30µm）… <a href="https://sg.misumi-ec.com/tech-info/categories/technical_data/td05/a0091.html" target="_blank" rel="noopener">ミスミの技術資料</a>／無電解ニッケル 熱処理なし HV605、400℃ 熱処理後 HV1030（NiWP）、硬質クロム HV1019 … <a href="https://www.pref.saitama.lg.jp/documents/25603/507885.pdf" target="_blank" rel="noopener">埼玉県産業技術総合センター</a><br>
+      ・硬質アルマイト HV400〜450・膜厚 30〜60µm … <a href="https://mono.ipros.com/product/detail/2000790362" target="_blank" rel="noopener">イプロス掲載の処理会社</a>／PVD の膜は 1〜5µm で、マイクロビッカースの値は試験力と下地に左右される … <a href="https://www.monotaro.com/note/readingseries/kouguhyomensyori/0103/" target="_blank" rel="noopener">モノタロウ「工具の表面処理」</a>／DLC（a-C:H）HV1500〜3000 … <a href="https://kindle-tech.com/faqs/what-is-the-hardness-of-dlc-coating" target="_blank" rel="noopener">KINTEK</a><br>
+      ・SCM440・SNCM439 の調質、工具鋼の焼なまし、アルミ（O 材・T6）、FCD450 などは、資料で確かめた値ではなく<b>一般的な目安</b>です。図面と成績書の値を優先してください。<br>
+      ・<b>測り方の比べ</b>（v169）：ブリネルは大きなくぼみで鋳物・鍛造品の平均的な硬さ、ロックウェルは部品表面の硬さ、ビッカースは表面硬化材・被膜の断面、圧痕はブリネル＞ロックウェル＞ビッカース＞マイクロビッカースの順に小さい … <a href="https://www.pref.niigata.lg.jp/uploaded/attachment/430819.pdf" target="_blank" rel="noopener">新潟県工業技術総合研究所の資料</a>。圧痕の大きさはビッカース d=√(1.8544F/HV)、ブリネル（JIS Z 2243・HBW は 650 まで）、ロックウェル（JIS Z 2245・深さ C：(100−HRC)×0.002mm）の定義からの計算で、直径は圧子の形から出した<b>目安</b>です。窒化の HR15N、鋳鉄・アルミの使い分けは<b>一般的な目安</b>で、図面に測り方の指定があればそれが優先です。
+    </div>
     <div class="gx">
       <h4>例 ── HRC 50 を換算</h4>
       <div class="gxin">
@@ -299,13 +377,58 @@
         </div>
       </div>
     </div>
+    <div class="gx">
+      <h4>例2 ── SUS440C を真空焼入れした部品が届いた</h4>
+      <div class="gxin">
+        <div class="gfig"><svg viewBox="0 0 120 120" role="img" aria-label="SUS440Cの真空焼入れの期待硬さHV653〜750にHRC59が入る図">
+          <rect x="14" y="52" width="92" height="14" rx="5" fill="#EEF2F4"/>
+          <rect x="44" y="52" width="46" height="14" rx="5" fill="#D9EDE0"/>
+          <text x="44" y="46" font-size="7.5" fill="#1F6B3A" text-anchor="middle">653</text>
+          <text x="90" y="46" font-size="7.5" fill="#1F6B3A" text-anchor="middle">750</text>
+          <line x1="58" y1="44" x2="58" y2="74" stroke="#D63426" stroke-width="1.6"/>
+          <text x="58" y="86" font-size="8" fill="#D63426" text-anchor="middle" font-weight="700">HRC59（HV674）</text>
+          <text x="60" y="22" font-size="8" fill="#1F3341" text-anchor="middle">期待される硬さ（HV）</text>
+          <text x="60" y="104" font-size="7.5" fill="#5B707E" text-anchor="middle">範囲の中＝緑</text>
+        </svg></div>
+        <div class="gtxt">
+          <p>材質 SUS440C、処理 真空焼入れ を選ぶと、期待される硬さ <b>HV653〜750</b>（HRC 58〜62 前後）と、真空焼入れの目的（曲がり・酸化を避ける）が出ます。</p>
+          <p class="gset">① SUS440C ／ ② 真空焼入れ ／ ③ HRC 59</p>
+          <p class="gread">読み方：HV≈<b>674</b> で、<b>期待の範囲の中</b>（緑）。410 で作られていれば HRC 40 前後にしかならず、範囲から下に外れます。</p>
+          <button class="gbtn" type="button" data-ex='{"set":[{"click":"#swm-SUS440C"},{"click":"#swp-vq"},{"id":"fV","v":59}]}' onclick="tryExample(this)">この例を試す</button>
+        </div>
+      </div>
+    </div>
   </div>
 </details>
 
 
 
-  <!-- ノモグラム -->
-  <div class="sheet">
+  <!-- ★v168：まず材質と処理（公差判定 v164 と同じ作り：分類ごとの行・左に分類名・同じ大きさのマス）。
+       ここが決まると、期待される硬さと測り方（機器・試験力）、なぜその処理をするのか（新人向け）が出る。
+       ★合否は言わない（v133）。硬さだけでは受渡しの合否は決まらないため。
+       材質が分からないこともあるので「不明」を必ず置く（先頭）。 -->
+  <div class="why">
+    <b>硬さを測るのは、なぜ？</b>
+    熱処理や表面処理が<b>図面どおりに入っているか</b>を、部品を壊さずに確かめるいちばん手軽な方法だからです。
+    材質と処理が決まると、<b>出るはずの硬さ</b>が決まります。そこから外れたら、処理の入れ忘れ・材質違い・測り方のどれかを疑います。
+  </div>
+  <div class="swlab">① 材質（分からなければ「不明」）</div>
+  <div class="pgrid" id="matChips"></div>
+  <div class="info" id="mInfo" style="display:none"></div>
+  <div class="swlab">② 熱処理・表面処理（硬さを上げる処置）</div>
+  <div class="pleg" id="tzLeg"><span><b class="lk">★</b>主流</span><span><b class="lo">□</b>できる</span><span><b class="lw">△</b>気をつけること付き</span><span><b class="lx">×</b>一般にしない</span></div>
+  <div class="pgrid" id="tzChips"></div>
+  <div class="info" id="pInfo"></div>
+  <div class="tx" id="txBox" style="display:none"><span class="txt" id="txTxt"></span></div>
+  <!-- v169：測り方の比べ（推奨・どちらでもよい・非推奨と、その理由・注意・圧痕の大きさ） -->
+  <div class="mbox" id="mBox" style="display:none"></div>
+  <details class="mxbox">
+    <summary>材質 × 処理の早見表（★主流 ○できる △注意 ×一般にしない）</summary>
+    <div class="mxwrap" id="mxTbl"></div>
+  </details>
+
+  <!-- ノモグラム（v168 で材質・処理の下へ。公差判定と同じく「選ぶ → 図 → 入れる → 結果」の順） -->
+  <div class="sheet" style="margin-top:12px">
     <div class="sheet-inner">
       <svg id="dwg" viewBox="0 0 340 250" role="img" aria-label="HRC・HV・HBの3本の目盛と現在値を結ぶ換算ノモグラム">
         <g id="axes"></g>
@@ -318,16 +441,6 @@
       </div>
     </div>
   </div>
-
-  <!-- ★まず材質と熱処理（v130）。ここが決まると、期待される硬さと
-       測り方（機器・試験力）が決まり、実測値を<その範囲と見比べられる>ようになる。
-       ★合否は言わない（v133）。硬さだけでは受渡しの合否は決まらないため。
-       材質が分からないこともあるので「不明」を必ず置く。 -->
-  <div class="swlab">① 材質（分からなければ「不明」）</div>
-  <div class="chips" id="matChips"></div>
-  <div class="swlab">② 熱処理・表面処理</div>
-  <div class="chips" id="tzChips"></div>
-  <div class="tx" id="txBox" style="display:none"><span class="txt" id="txTxt"></span></div>
 
   <!-- ★層の厚さは、どの入れ方でも効く共通の入力（v133）。ここに1つだけ置く。
        対角長モードの中にもう1つ置くと二重入力になり、どちらが効いたか分からない。
@@ -450,6 +563,7 @@
     受渡し・合否判定は図面指定の試験方法で行い、運用前に手元の換算表と数点照合してください。<br>
     HRB域(生材〜調質・HV107〜240)も扱いますが、こちらは<b>目安</b>です。<br>
     生材／焼入れの見立ては代表的な鋼種の一般値による<b>目安</b>で、材料指定の代わりにはなりません。<br>
+    アルミは鋼の換算表が使えません（HV かブリネル 500kgf で測った値をそのまま見比べます）。<br>
     対角長からの硬さは <b>HV = 1.8544 × F(kgf) ÷ d(mm)²</b>、圧痕深さは <b>d ÷ 7</b>(圧子136°)です。
   
     <div class="crnote">© 2026 まるちゃん ｜ 許諾なく転載・複製・再配布・改変することを禁じます。本ツールは著作権法により保護されています。</div>
@@ -685,21 +799,121 @@
     });
   }
 
-  /* ── 材質 × 熱処理（v130）──
-     ★ここが決まって初めて<期待される硬さ>が言え、合否が言える。
+  /* ── 材質 × 熱処理・表面処理（v130 → v168 で作り直し）──
+     ★ここが決まって初めて<期待される硬さ>が言え、範囲と見比べられる。
      数字はいずれも代表的な一般値（HV）。図面・熱処理指示が優先。
-     null は「その材質にその処理は一般に成立しない」。理由を必ず持たせる。 */
-  var PROC=[
-    {k:'raw', n:'なし（生材）'},
-    {k:'nrm', n:'焼ならし'},
-    {k:'qt',  n:'調質'},
-    {k:'qc',  n:'焼入れのみ'},
-    {k:'hq',  n:'高周波焼入れ'},
-    {k:'cb',  n:'浸炭焼入れ'},
-    {k:'nit', n:'窒化'},
-    {k:'sn',  n:'軟窒化(イソナイト)'},
-    {k:'cr',  n:'硬質クロムメッキ'}
+     v168：ムギさん「SUS440C が入っていない。足りない材質も入れて。見にくいので公差判定のように見やすく。
+       硬さを上げる処置の目的・何に使うか・この材質ではこれが主流、を新人でも分かるように。
+       真空焼入れ、アモルファス（無電解ニッケル・DLC）、クロムめっきなど特殊なものも」。
+     ★g … 分類（画面の行）。s … ボタンに出す短い名前。n … 文の中で使う名前（v130 からの名前を変えない） */
+  var PGROUPS=[
+    ['base','処理なし・整える'],
+    ['whole','全体を硬くする（熱処理）'],
+    ['surf','表面だけ硬くする（熱処理）'],
+    ['coat','硬い膜をつける（めっき・皮膜）']
   ];
+  var PROC=[
+    {k:'raw', n:'なし（生材）', s:'生材', g:'base'},
+    {k:'nrm', n:'焼ならし', s:'焼ならし', g:'base'},
+    {k:'qt',  n:'調質', s:'調質', g:'whole'},
+    {k:'qc',  n:'焼入れ焼戻し', s:'焼入れ焼戻し', g:'whole'},
+    {k:'vq',  n:'真空焼入れ', s:'真空焼入れ', g:'whole'},
+    {k:'ph',  n:'析出硬化（時効）', s:'析出硬化', g:'whole'},
+    {k:'hq',  n:'高周波焼入れ', s:'高周波', g:'surf'},
+    {k:'cb',  n:'浸炭焼入れ', s:'浸炭', g:'surf'},
+    {k:'nit', n:'窒化', s:'窒化', g:'surf'},
+    {k:'sn',  n:'軟窒化(イソナイト)', s:'軟窒化', g:'surf'},
+    {k:'cr',  n:'硬質クロムメッキ', s:'硬質クロム', g:'coat'},
+    {k:'enp', n:'無電解ニッケル', s:'無電解Ni', g:'coat'},
+    {k:'enph',n:'無電解ニッケル＋熱処理', s:'無電解Ni＋熱処理', g:'coat'},
+    {k:'pvd', n:'PVD（TiN・CrN など）', s:'PVD', g:'coat'},
+    {k:'dlc', n:'DLC', s:'DLC', g:'coat'},
+    {k:'ha',  n:'硬質アルマイト', s:'硬質アルマイト', g:'coat'}
+  ];
+  /* ★処理の説明（新人向け）。why＝なぜやる／how＝何をする／where＝よく使う部品／hard＝どこがどれだけ硬くなる／tip＝つまずきやすい所 */
+  var PEXP={
+    raw:{why:'熱処理をしない、買ったままの材。削りやすく、安い。硬さが要らない部品はこれで十分です。',
+         how:'製鋼所で圧延・引抜きしたままの状態（材によっては焼なましてあります）。',
+         where:'カバー・ブラケット・フレーム・スペーサーなど、力や摩耗の少ない部品。',
+         hard:'全体が同じ硬さ。軟らかい（鋼で HV100〜250 前後）。',
+         tip:'HRC では軟らかすぎて読めません。HRB かブリネルで測ります。'},
+    nrm:{why:'圧延や鍛造でばらついた組織をそろえ、性質を均一にします。硬くするための処理ではありません。',
+         how:'少し高い温度まで加熱し、空気中で冷まします。',
+         where:'鍛造品・大物の素材。調質や焼入れの前の下ごしらえ。',
+         hard:'全体が同じ。生材とほぼ同じか、少し硬いくらい。',
+         tip:'図面に「焼ならし」とあれば、目的は硬さより組織をそろえること。'},
+    qt: {why:'強さと粘り（割れにくさ）を両方ほしいとき。折れては困る軸・ボルト・歯車の素材の基本です。',
+         how:'焼入れで硬くしたあと、高い温度（おおむね 500℃ 以上）で焼戻して粘りを戻します。',
+         where:'シャフト・ボルト・ナット・歯車の素材・金型のホルダー。',
+         hard:'全体が同じ。HRC 20〜35 前後の、硬すぎない硬さ。',
+         tip:'焼入れ焼戻しより軟らかいのが正常です。HRC が低いからといって焼き不足とは限りません。'},
+    qc: {why:'摩耗に強く、へこまない硬さがほしいとき。',
+         how:'高い温度から急に冷やして（焼入れ）硬くし、低い温度（150〜200℃ 前後）で焼戻して割れにくくします。',
+         where:'刃物・ピン・ガイド・ゲージ・軸受・金型。',
+         hard:'全体（太い物は芯まで入らないこともあります）。HRC 50〜65 前後。',
+         tip:'焼入れのままは割れやすいので、ふつうは焼戻しまでします。図面の「焼入れ」はふつう焼入れ焼戻しのこと。'
+           +'焼入れのあと −70℃ 前後まで冷やす<b>サブゼロ処理</b>を足すと、硬さと寸法が安定します（SKD11・SUS440C など）。'},
+    vq: {why:'焼入れで表面を酸化・脱炭させず、曲がりも少なくしたいとき。仕上げに近い精密部品や金型に使います。',
+         how:'真空の炉で加熱し、窒素などのガスを吹きつけて冷やします（油や水に入れません）。表面がきれい（光輝）なまま。',
+         where:'金型・パンチ・ダイ（SKD11・SKD61・SKH51）、精密なステンレス部品（SUS440C・SUS420J2）、ゲージ。',
+         hard:'焼入れ焼戻しと同じ（材で決まります）。',
+         tip:'ガスで冷やすので、油・水より冷え方がゆるやか。<b>焼きが入りやすい合金の多い鋼向け</b>で、S45C のような炭素鋼には向きません（硬さが出にくい）。'},
+    ph: {why:'焼入れをせず、中くらいの温度で強く硬くします。曲がりが少ない。',
+         how:'溶体化（高温から急冷）で軟らかい状態にしたあと、中くらいの温度で時間をかけて保つと、細かい粒が析出して硬くなります。',
+         where:'SUS630（17-4PH）のポンプ・バルブの軸・強度部品。アルミ 6061・7075 の T6 材（買うときすでにこの状態）。',
+         hard:'全体。SUS630 は記号で違い、H900 は HRC 40〜48、H1150 は 26〜36 前後。',
+         tip:'SUS630 は図面の記号（H900・H1025・H1075・H1150）で硬さが違います。アルミの 5052 は熱処理で硬くなりません。'},
+    hq: {why:'表面だけ硬くして摩耗に強くし、中は粘りを残します。',
+         how:'コイルで表面だけを電気で急に加熱し、水などで急冷します。',
+         where:'シャフトの軸受け部・ピン・歯車の歯・ローラー・機械の摺動面。',
+         hard:'表面だけ（深さ 1〜数 mm）。HRC 50〜60 前後。',
+         tip:'炭素の多い鋼（S45C・SCM440 など）向け。SS400 のような低炭素鋼は硬くなりません。'},
+    cb: {why:'表面は硬く、中は粘り強く。歯車のように、表面の摩耗と根元の折れの両方に耐えたいとき。',
+         how:'炭素の少ない鋼の表面に、高温で炭素をしみこませてから焼入れします。',
+         where:'歯車・カム・ピン・ローラー。',
+         hard:'表面だけ（深さ 0.5〜1.5mm 前後。図面の指示による）。HV 650〜800 前後。',
+         tip:'炭素の少ない鋼（SCM415・SNCM220）用。S45C のように炭素の多い鋼にはしません。層が薄いと HRC は下地に沈むので HR15N で。'},
+    nit:{why:'焼入れより低い温度で表面を硬くするので、曲がりがほとんど出ません。摩耗とかじりに強い。',
+         how:'500〜550℃ 前後で、表面に窒素をしみこませます（ガス・イオンなど）。',
+         where:'ダイカスト型・ギヤ・シリンダー・精密な軸・スピンドル。',
+         hard:'表面だけ（化合物層 数〜20µm と、その下の拡散層）。HV 600〜1200（鋼種で大きく違う）。',
+         tip:'Cr・Mo・Al を含む鋼でよく硬くなります（SACM645 は窒化用の鋼）。低温で焼戻した工具鋼は、窒化の熱で軟らかくなります。'},
+    sn: {why:'窒化より短い時間・安い費用で、表面に硬い層を作ります。錆びにくさも少し上がります。',
+         how:'570℃ 前後で、窒素と炭素を同時にしみこませます（塩浴・ガス）。',
+         where:'シャフト・ピン・クランク・金型の部品・ブラケット。',
+         hard:'表面だけ（化合物層 10〜20µm）。HV 400〜1100（鋼種で違う）。',
+         tip:'炭素鋼（S45C・SS400）にもできます。層がとても薄いので HRC では測れません。'},
+    cr: {why:'摩耗に強く、すべりのよい硬い膜をつけます。すり減った軸を太らせて直すのにも使います。',
+         how:'電気めっきで、クロムの膜を厚くつけます。',
+         where:'油圧シリンダーのロッド・ロール・シャフト・摺動部品。',
+         hard:'膜だけ（厚さ 10〜30µm 前後。厚いものもあります）。HV 800〜1000。下地は硬くなりません。',
+         tip:'膜の厚さが足りないと<b>下地を拾って軟らかく出ます</b>。上の「層の厚さ」に入れて、使える試験力を確かめます。'},
+    enp:{why:'形が複雑でも、穴の中まで同じ厚さの膜がつきます（電気を使わないため）。錆びにくく、摩耗にもそこそこ強い。',
+         how:'薬品の中で、ニッケルとリンを化学反応で析出させます。リンの多い膜は<b>アモルファス</b>（結晶になっていない）。',
+         where:'精密部品・金型・穴の中まで膜がほしい部品。アルミやステンレスの防錆にも。',
+         hard:'膜だけ（厚さ 5〜25µm 前後。指定できる）。めっきのままで HV 450〜600。',
+         tip:'熱処理をすると硬くなります（次の「無電解Ni＋熱処理」）。図面にどちらと書いてあるかを見ます。'},
+    enph:{why:'無電解ニッケルの膜を、硬質クロムに近い硬さまで上げます。',
+         how:'めっきのあと 400℃ 前後で加熱すると、膜の中にリン化ニッケルが析出して硬くなります。',
+         where:'摩耗の多い精密部品・金型。',
+         hard:'膜だけ。HV 850〜1000 前後。',
+         tip:'400℃ の熱で、低い温度で焼戻した下地（焼入れ品）やアルミは軟らかくなることがあります。錆びにくさは少し落ちることがあります。'},
+    pvd:{why:'とても硬い薄い膜で、刃物や金型の寿命をのばします。',
+         how:'真空の中で金属を蒸発させ、窒素などと反応させて膜にします（窒化チタン TiN は金色）。',
+         where:'切削工具・パンチ・金型・摺動部品。',
+         hard:'膜だけ（厚さ 1〜5µm）。HV 1800〜3000 前後。',
+         tip:'膜が薄く、多くは最小 10gf でも下地を拾います。膜の硬さは<b>メーカーの成績書</b>か、専門の機関（ナノインデンテーション）で確かめます。処理の熱で下地が焼戻されないかも確かめます。'},
+    dlc:{why:'とても硬く、すべりがよい（摩擦が小さい）膜。相手を傷つけにくい。',
+         how:'真空の中で炭素の膜をつけます。ダイヤモンドに近い結合を含む<b>アモルファス</b>（結晶になっていない）炭素。',
+         where:'摺動部品・金型・アルミを削る刃物・エンジン部品。',
+         hard:'膜だけ（厚さ 1〜3µm 前後）。HV 1500〜3000（種類で大きく違う）。',
+         tip:'膜がとても薄く、表面からのビッカースでは測れません。膜の硬さは<b>成績書</b>か専門の機関で確かめます。'},
+    ha: {why:'軟らかいアルミの表面を、硬く摩耗に強い膜に変えます。',
+         how:'アルミを電気分解して、表面そのものを硬い酸化アルミの膜に変えます（上に載せるめっきとは違います）。',
+         where:'アルミのシリンダー・ピストン・ガイド・治具・摺動部品。',
+         hard:'膜だけ（厚さ 30〜60µm 前後）。HV 400〜450 前後（合金で違う）。',
+         tip:'アルミの処理です。膜はおよそ半分が内側に食いこみ、半分が外へ太ります（寸法が変わる）。下地は軟らかいので、大きな試験力では沈みます。'}
+  };
   /* 層の厚さの目安(µm)と測り方。処理で決まる（材質では変わらない） */
   /* dev: 使う機器 ／ set: ★推奨設定（圧子・試験力・保持時間） ／ note: 気をつけること
      ★「マイクロビッカース」だけでは設定できない。圧子と試験力と保持時間まで書く。 */
@@ -716,6 +930,12 @@
     qc: {t:0,   dev:'ロックウェルC',
          set:'HRC … ダイヤ円錐120°・150kgf（初試験力 10kgf）・保持 4〜6秒',
          note:'全体が同じ硬さです'},
+    vq: {t:0,   dev:'ロックウェルC',
+         set:'HRC … ダイヤ円錐120°・150kgf（初試験力 10kgf）・保持 4〜6秒',
+         note:'全体が同じ硬さです。表面は光輝（酸化していない）のまま測れます'},
+    ph: {t:0,   dev:'ロックウェルC（アルミはブリネルか HV）',
+         set:'HRC … ダイヤ円錐120°・150kgf（SUS630）／アルミ … ブリネル 球 φ10mm・500kgf か HV10',
+         note:'全体が同じ硬さです'},
     hq: {t:2000,dev:'ロックウェルC（表面からそのまま）',
          set:'HRC … ダイヤ円錐120°・150kgf・保持 4〜6秒。<b>有効硬化層深さ</b>を出すなら断面で HV0.3（300gf）・0.1mm 間隔',
          note:'硬化層が mm 単位あるので表面から測れます'},
@@ -730,67 +950,291 @@
          note:'化合物層 10〜20µm。表面から測れるかは試験力しだいです'},
     cr: {t:20,  dev:'マイクロビッカース',
          set:'HV0.05〜HV0.1（50〜100gf）・保持 10〜15秒。膜が薄ければ断面で',
-         note:'膜厚の幅が広い処理です。厚めなら表面から、薄ければ断面で'}
+         note:'膜厚の幅が広い処理です。厚めなら表面から、薄ければ断面で'},
+    enp:{t:15,  dev:'マイクロビッカース',
+         set:'HV0.05〜HV0.1（50〜100gf）・保持 10〜15秒。膜が薄ければ断面で',
+         note:'膜厚を指定できる処理です。図面の膜厚を確かめてから試験力を決めます'},
+    enph:{t:15, dev:'マイクロビッカース',
+         set:'HV0.05〜HV0.1（50〜100gf）・保持 10〜15秒。膜が薄ければ断面で',
+         note:'膜厚を指定できる処理です。図面の膜厚を確かめてから試験力を決めます'},
+    pvd:{t:3,   dev:'成績書・専門の機関（ナノインデンテーション）',
+         set:'膜が 1〜5µm と薄く、多くは最小 10gf でも下地を拾います（厚い膜なら届くこともあります。下の計算を見てください）',
+         note:'受入れでは、膜の色むら・はがれ・成績書（膜厚・硬さ）を見ます'},
+    dlc:{t:2,   dev:'成績書・専門の機関（ナノインデンテーション）',
+         set:'膜が 1〜3µm と薄く、表面からのビッカースでは下地を拾います',
+         note:'受入れでは、膜のはがれ・色むら・成績書（膜厚・硬さ）を見ます'},
+    ha: {t:40,  dev:'マイクロビッカース（正確には断面）',
+         set:'HV0.05〜HV0.1（50〜100gf）・保持 10〜15秒。膜が厚ければ表面からも',
+         note:'下地のアルミは軟らかいので、大きな試験力では膜ごと沈みます'}
   };
   /* どの機器にも共通する置き方（v131） */
   var COMMON='試験面は平らに、荷重の向きと直角に。圧痕どうしは<b>圧痕径の3倍以上</b>、端からは<b>2.5倍以上</b>離す。'
     +'<b>3〜5点</b>測って中央の値を採ります。';
-  var PTHIN={nit:[5,20], sn:[10,20], cr:[5,50]};   /* 薄い層の厚さの目安 */
+  var PTHIN={nit:[5,20], sn:[10,20], cr:[5,50], enp:[5,25], enph:[5,25], pvd:[1,5], dlc:[1,3], ha:[30,60]};   /* 薄い層の厚さの目安 */
 
-  /* 材質ごとの期待硬さ(HV)。x は成立しない組み合わせとその理由。 */
+  /* 材質ごとの期待硬さ(HV)。
+     [下,上] … できる ／ [下,上,'注意'] … できるが気をつけること ／ X('理由') … 一般に成立しない。
+     ★main … その材質で主流の処理（ボタンに★）。use … 何に使う材か。why … なぜその処理が主流か（新人向け）。
+     ★g … 分類。al は鋼ではない（鋼の換算表が使えない）。 */
   function X(r){ return {x:r}; }
+  var MGROUPS=[['cs','炭素鋼'],['case','肌焼き鋼'],['alloy','合金鋼'],['tool','工具鋼・軸受鋼'],['ss','ステンレス'],['ci','鋳鉄'],['al','アルミ']];
+  var SOFT='下地が軟らかいと、膜が割れやすい（卵の殻）。焼入れした下地に向きます';
+  var TEMPER='処理の熱で、低い温度で焼戻した下地が軟らかくなることがあります';
+  var NOSTEEL='鋼の処理です（アルミにはしません）';
+  var ALUONLY='アルミの処理です';
   var MAT=[
     {n:'不明', any:true},
-    {n:'SS400', raw:[110,160], nrm:[110,170],
+    {n:'SS400', g:'cs', main:['raw'],
+     use:'フレーム・ブラケット・板金・架台。いちばん一般的な構造用の鋼。',
+     why:'炭素が少なく焼きが入らないので、熱処理せずに使います。摩耗が気になる所だけ、浸炭・軟窒化・めっきで表面を守ります。',
+     raw:[110,160], nrm:[110,170],
      qt:X('炭素が少なく（0.2%以下）焼きが入りません'),
      qc:X('炭素が少なく焼きが入りません'),
+     vq:X('炭素が少なく焼きが入りません'), ph:X('析出硬化する材ではありません'),
      hq:X('炭素が少なく高周波では硬化しません'),
-     cb:[600,750], nit:X('窒化用鋼ではありません'), sn:[400,550], cr:[800,1000]},
-    {n:'S45C', raw:[170,210], nrm:[180,230], qt:[200,270], qc:[600,700], hq:[550,650],
+     cb:[600,750], nit:X('窒化用鋼ではありません'), sn:[400,550], cr:[800,1000],
+     enp:[450,600], enph:[850,1000], pvd:[1800,3000,SOFT], dlc:[1500,3000,SOFT], ha:X(ALUONLY)},
+    {n:'S45C', g:'cs', main:['raw','qt','hq'],
+     use:'軸・ピン・ボルト・歯車・カラー。機械部品でいちばん使われる炭素鋼。',
+     why:'そのまま削って使うか、強さが要れば調質、摩耗する所だけ高周波焼入れ、が定番です。',
+     raw:[170,210], nrm:[180,230], qt:[200,270], qc:[600,700],
+     vq:X('焼きが入りにくい炭素鋼で、真空炉のガス冷却では冷え方が足りません（水・油で焼入れします）'),
+     ph:X('析出硬化する材ではありません'), hq:[550,650],
      cb:X('炭素が多く、肌焼き（浸炭）には向きません'),
-     nit:X('窒化用鋼ではありません（軟窒化なら可）'), sn:[500,650], cr:[800,1000]},
-    {n:'S50C', raw:[180,220], nrm:[190,240], qt:[210,280], qc:[620,720], hq:[570,670],
-     cb:X('炭素が多く、肌焼きには向きません'), nit:X('窒化用鋼ではありません'), sn:[500,650], cr:[800,1000]},
-    {n:'SCM435', raw:[200,250], nrm:[200,260], qt:[230,330], qc:[600,700], hq:[550,650],
-     cb:X('炭素が多く、肌焼きには向きません'), nit:[600,750], sn:[500,700], cr:[800,1000]},
-    {n:'SCM415', raw:[140,200], nrm:[150,210], qt:[200,260],
+     nit:X('窒化用鋼ではありません（軟窒化なら可）'), sn:[500,650], cr:[800,1000],
+     enp:[450,600], enph:[850,1000], pvd:[1800,3000,SOFT], dlc:[1500,3000,SOFT], ha:X(ALUONLY)},
+    {n:'S50C', g:'cs', main:['qt','hq'],
+     use:'S45C より少し硬くしたい軸・歯車・カム。',
+     why:'炭素が少し多く、焼入れでやや硬くなります。調質か高周波で使うのが定番です。',
+     raw:[180,220], nrm:[190,240], qt:[210,280], qc:[620,720],
+     vq:X('焼きが入りにくい炭素鋼で、真空炉のガス冷却では冷え方が足りません（水・油で焼入れします）'),
+     ph:X('析出硬化する材ではありません'), hq:[570,670],
+     cb:X('炭素が多く、肌焼きには向きません'), nit:X('窒化用鋼ではありません'), sn:[500,650], cr:[800,1000],
+     enp:[450,600], enph:[850,1000], pvd:[1800,3000,SOFT], dlc:[1500,3000,SOFT], ha:X(ALUONLY)},
+    {n:'SCM435', g:'alloy', main:['qt','hq'],
+     use:'高強度ボルト・軸・歯車。',
+     why:'Cr・Mo で焼きが入りやすい鋼。調質で強さと粘りを出し、摩耗する所は高周波で。',
+     raw:[200,250], nrm:[200,260], qt:[230,330], qc:[600,700],
+     vq:[600,700,'太い品は、ガス冷却では芯まで焼きが入りにくいことがあります'],
+     ph:X('析出硬化する材ではありません'), hq:[550,650],
+     cb:X('炭素が多く、肌焼きには向きません'), nit:[600,750], sn:[500,700], cr:[800,1000],
+     enp:[450,600], enph:[850,1000,TEMPER], pvd:[1800,3000,SOFT], dlc:[1500,3000], ha:X(ALUONLY)},
+    {n:'SCM415', g:'case', main:['cb'],
+     use:'歯車・ピン・カムなど、表面は硬く、中は粘り強くしたい部品。',
+     why:'炭素の少ない「肌焼き鋼」。浸炭して表面だけを硬くする前提の鋼です。',
+     raw:[140,200], nrm:[150,210], qt:[200,260],
      qc:X('炭素が少なく、単独の焼入れでは硬くなりません'),
+     vq:X('炭素が少なく、単独の焼入れでは硬くなりません'), ph:X('析出硬化する材ではありません'),
      hq:X('炭素が少なく高周波では硬化しません'),
-     cb:[650,800], nit:X('窒化用鋼ではありません'), sn:[450,600], cr:[800,1000]},
-    {n:'SNCM220', raw:[150,210], nrm:[160,220], qt:[210,270],
+     cb:[650,800], nit:X('窒化用鋼ではありません'), sn:[450,600], cr:[800,1000],
+     enp:[450,600], enph:[850,1000], pvd:[1800,3000,SOFT], dlc:[1500,3000,SOFT], ha:X(ALUONLY)},
+    {n:'SNCM220', g:'case', main:['cb'],
+     use:'強さの要る歯車・軸（自動車・建設機械）。',
+     why:'SCM415 より焼きが入りやすい肌焼き鋼。太い歯車でも中まで粘り強くできます。',
+     raw:[150,210], nrm:[160,220], qt:[210,270],
      qc:X('炭素が少なく、単独の焼入れでは硬くなりません'),
+     vq:X('炭素が少なく、単独の焼入れでは硬くなりません'), ph:X('析出硬化する材ではありません'),
      hq:X('炭素が少なく高周波では硬化しません'),
-     cb:[650,800], nit:X('窒化用鋼ではありません'), sn:[450,600], cr:[800,1000]},
-    {n:'SUJ2', raw:[180,220], nrm:[190,230], qt:[650,750], qc:[700,800],
+     cb:[650,800], nit:X('窒化用鋼ではありません'), sn:[450,600], cr:[800,1000],
+     enp:[450,600], enph:[850,1000], pvd:[1800,3000,SOFT], dlc:[1500,3000,SOFT], ha:X(ALUONLY)},
+    {n:'SUJ2', g:'tool', main:['qc'],
+     use:'軸受（ベアリング）の玉・輪、ガイド、ゲージ、ピン。',
+     why:'炭素と Cr が多く、焼入れ焼戻しで高い硬さにして使う軸受鋼です。',
+     raw:[180,220], nrm:[190,230], qt:[650,750], qc:[700,800],
+     vq:[700,800,'太い品は、ガス冷却では芯まで焼きが入りにくいことがあります'],
+     ph:X('析出硬化する材ではありません'),
      hq:X('軸受鋼は全体焼入れが普通です'), cb:X('もともと高炭素で浸炭は不要'),
-     nit:X('一般には行いません'), sn:[600,750], cr:[800,1000]},
-    {n:'SK95(SK4)', raw:[180,230], nrm:[190,240], qt:[600,700], qc:[700,850], hq:[600,750],
-     cb:X('もともと高炭素で浸炭は不要'), nit:X('一般には行いません'), sn:[600,750], cr:[800,1000]},
-    {n:'SACM645', raw:[200,250], nrm:[210,260], qt:[250,320], qc:[600,700],
+     nit:X('一般には行いません'), sn:[600,750], cr:[800,1000],
+     enp:[450,600], enph:[850,1000,TEMPER], pvd:[1800,3000,TEMPER], dlc:[1500,3000], ha:X(ALUONLY)},
+    {n:'SK95(SK4)', g:'tool', main:['qc'],
+     use:'刃物・ゲージ・ばね・ピン。',
+     why:'炭素の多い工具鋼。焼入れ焼戻しで硬くして使います。焼きが入りにくいので、水・油で急に冷やします。',
+     raw:[180,230], nrm:[190,240], qt:[600,700], qc:[700,850],
+     vq:X('焼きが入りにくい炭素工具鋼で、ガス冷却では硬さが出にくい（水・油で焼入れします）'),
+     ph:X('析出硬化する材ではありません'), hq:[600,750],
+     cb:X('もともと高炭素で浸炭は不要'), nit:X('一般には行いません'), sn:[600,750], cr:[800,1000],
+     enp:[450,600], enph:[850,1000,TEMPER], pvd:[1800,3000,TEMPER], dlc:[1500,3000], ha:X(ALUONLY)},
+    {n:'SACM645', g:'alloy', main:['nit'],
+     use:'窒化して使う精密な軸・シリンダー・スピンドル。',
+     why:'Al を含む窒化用の鋼。調質してから窒化すると、表面がとても硬くなります（HV900 以上）。',
+     raw:[200,250], nrm:[210,260], qt:[250,320], qc:[600,700],
+     vq:X('窒化して使う鋼です（調質してから窒化します）'), ph:X('析出硬化する材ではありません'),
      hq:X('窒化して使う鋼です'), cb:X('窒化用鋼で、浸炭はしません'),
-     nit:[900,1100], sn:[700,900], cr:[800,1000]},
-    {n:'SUS304', raw:[150,200], nrm:[150,200],
+     nit:[900,1100], sn:[700,900], cr:[800,1000],
+     enp:[450,600], enph:[850,1000], pvd:[1800,3000], dlc:[1500,3000], ha:X(ALUONLY)},
+    {n:'SUS304', g:'ss', main:['raw'],
+     use:'食品機械・水回り・カバー・タンク。いちばん使われるステンレス。',
+     why:'熱処理では硬くなりません（加工すると硬くなる＝加工硬化）。表面を硬くしたいときは、めっき・PVD・DLC で。',
+     raw:[150,200], nrm:[150,200],
      qt:X('オーステナイト系ステンレスは焼入れで硬化しません'),
      qc:X('オーステナイト系ステンレスは焼入れで硬化しません'),
+     vq:X('オーステナイト系ステンレスは焼入れで硬化しません'),
+     ph:X('析出硬化する材ではありません（析出硬化は SUS630）'),
      hq:X('焼入れで硬化しません'), cb:X('一般には行いません'),
-     nit:X('一般には行いません（低温窒化を除く）'), sn:X('一般には行いません'), cr:[800,1000]},
-    {n:'SUS420J2', raw:[200,250], nrm:[200,260], qt:[450,550], qc:[500,600],
-     hq:[450,550], cb:X('もともと高炭素で浸炭は不要'), nit:[900,1100], sn:[600,800], cr:[800,1000]},
-    {n:'FC250(鋳鉄)', raw:[190,250], nrm:[190,250],
+     nit:X('一般には行いません（低温窒化を除く）'), sn:X('一般には行いません'), cr:[800,1000],
+     enp:[450,600], enph:[850,1000], pvd:[1800,3000], dlc:[1500,3000], ha:X(ALUONLY)},
+    {n:'SUS420J2', g:'ss', main:['qc','vq'],
+     use:'刃物・ノズル・ポンプの軸・プラスチック金型。',
+     why:'SUS410 より炭素が多く、焼入れ焼戻しで HRC 50 台まで硬くなるステンレスです。',
+     raw:[200,250], nrm:[200,260], qt:[450,550], qc:[500,600], vq:[500,600],
+     ph:X('析出硬化する材ではありません'),
+     hq:[450,550], cb:X('もともと高炭素で浸炭は不要'), nit:[900,1100], sn:[600,800], cr:[800,1000],
+     enp:[450,600], enph:[850,1000,TEMPER], pvd:[1800,3000,TEMPER], dlc:[1500,3000], ha:X(ALUONLY)},
+    {n:'FC250(鋳鉄)', g:'ci', main:['raw'],
+     use:'機械のベッド・ケース・ブラケット・プーリー。',
+     why:'鋳物のまま使うのがふつう。摩耗する摺動面だけ高周波で硬くすることがあります。',
+     raw:[190,250], nrm:[190,250],
      qt:X('鋳鉄は一般に調質しません'), qc:X('一般には行いません'),
+     vq:X('一般には行いません'), ph:X('析出硬化する材ではありません'),
      hq:[400,500], cb:X('一般には行いません'), nit:X('一般には行いません'),
-     sn:[400,550], cr:[800,1000]}
+     sn:[400,550], cr:[800,1000],
+     enp:[450,600], enph:[850,1000], pvd:X('一般には行いません'), dlc:X('一般には行いません'), ha:X(ALUONLY)},
+    /* ── ここから v168 で足した材 ── */
+    {n:'SCM440', g:'alloy', main:['qt','hq'],
+     use:'強い力のかかる軸・歯車・ボルト・金型のホルダー。',
+     why:'焼きが入りやすく、太くても芯まで強くできる合金鋼。調質で使い、摩耗する所は高周波で。',
+     raw:[200,260], nrm:[210,270], qt:[300,370], qc:[510,600],
+     vq:[510,600,'太い品は、ガス冷却では芯まで焼きが入りにくいことがあります'],
+     ph:X('析出硬化する材ではありません'), hq:[520,650],
+     cb:X('炭素が多く、肌焼きには向きません'), nit:[600,750], sn:[500,700], cr:[800,1000],
+     enp:[450,600], enph:[850,1000,TEMPER], pvd:[1800,3000,SOFT], dlc:[1500,3000], ha:X(ALUONLY)},
+    {n:'SNCM439', g:'alloy', main:['qt'],
+     use:'大きな力・衝撃のかかる軸・歯車・クランク。',
+     why:'Ni を含み、太くても芯まで焼きが入り、粘りが強い合金鋼。調質で使うのが定番です。',
+     raw:[220,280], nrm:[230,290], qt:[300,370], qc:[510,600], vq:[510,600],
+     ph:X('析出硬化する材ではありません'), hq:[520,650],
+     cb:X('炭素が多く、肌焼きには向きません'), nit:[550,700], sn:[500,700], cr:[800,1000],
+     enp:[450,600], enph:[850,1000,TEMPER], pvd:[1800,3000,SOFT], dlc:[1500,3000], ha:X(ALUONLY)},
+    {n:'SKS3', g:'tool', main:['qc'],
+     use:'ゲージ・プレスの抜き型・刃物。',
+     why:'油で焼入れする合金工具鋼。炭素工具鋼（SK）より焼きが入りやすく、曲がりが少ない。',
+     raw:[180,230], nrm:X('工具鋼は焼なまし材で買い、焼入れ焼戻しで使います'),
+     qt:X('高い硬さで使う鋼で、一般に調質はしません'), qc:[697,800],
+     vq:[697,800,'油で焼入れする鋼で、ガス冷却では硬さが出にくいことがあります'],
+     ph:X('析出硬化する材ではありません'), hq:X('一般には行いません（全体を焼入れして使います）'),
+     cb:X('もともと高炭素で浸炭は不要'), nit:X('低い温度で焼戻す鋼で、窒化の熱で軟らかくなります'),
+     sn:X('低い温度で焼戻す鋼で、軟窒化の熱で軟らかくなります'), cr:[800,1000],
+     enp:[450,600], enph:[850,1000,TEMPER], pvd:[1800,3000,TEMPER], dlc:[1500,3000], ha:X(ALUONLY)},
+    {n:'SKD11', g:'tool', main:['qc','vq'],
+     use:'プレス金型・パンチ・ダイ・せん断刃・転造ダイス。',
+     why:'焼きがとても入りやすく、空気やガスでも焼入れできる冷間金型用の鋼。曲がりを嫌うので<b>真空焼入れ</b>が多い。サブゼロを足すことも多い。',
+     raw:[210,270], nrm:X('工具鋼は焼なまし材で買い、焼入れ焼戻しで使います'),
+     qt:X('高い硬さで使う鋼で、一般に調質はしません'), qc:[653,750], vq:[653,750],
+     ph:X('析出硬化する材ではありません'), hq:X('一般には行いません（全体を焼入れして使います）'),
+     cb:X('もともと高炭素で浸炭は不要'),
+     nit:[900,1200,'高い温度（500℃ 以上）で焼戻した材に。低い温度で焼戻した材は、窒化の熱で軟らかくなります'],
+     sn:[900,1100,'高い温度（500℃ 以上）で焼戻した材に。低い温度で焼戻した材は、軟窒化の熱で軟らかくなります'],
+     cr:[800,1000], enp:[450,600], enph:[850,1000,TEMPER], pvd:[1800,3000,TEMPER], dlc:[1500,3000], ha:X(ALUONLY)},
+    {n:'SKD61', g:'tool', main:['vq','nit'],
+     use:'ダイカスト型・熱間鍛造型・押出し型。',
+     why:'熱に強い熱間金型用の鋼。焼入れ焼戻しで粘りを残した硬さにし、窒化で表面を守ることが多い。',
+     raw:[200,250], nrm:X('工具鋼は焼なまし材で買い、焼入れ焼戻しで使います'),
+     qt:X('一般には調質と言わず、焼入れ焼戻し（高い温度で焼戻す）で使います'), qc:[446,560], vq:[446,560],
+     ph:X('析出硬化する材ではありません'), hq:X('一般には行いません（全体を焼入れして使います）'),
+     cb:X('一般には行いません'), nit:[1000,1200], sn:[900,1100], cr:[800,1000],
+     enp:[450,600], enph:[850,1000], pvd:[1800,3000], dlc:[1500,3000], ha:X(ALUONLY)},
+    {n:'SKH51', g:'tool', main:['vq','pvd'],
+     use:'ドリル・タップ・エンドミル・パンチ。高速度工具鋼（ハイス）。',
+     why:'とても高い温度で焼入れし、500〜600℃ で焼戻すとさらに硬くなる鋼。真空焼入れがふつうで、工具は PVD の膜をつけることが多い。',
+     raw:[210,270], nrm:X('工具鋼は焼なまし材で買い、焼入れ焼戻しで使います'),
+     qt:X('高い硬さで使う鋼で、一般に調質はしません'), qc:[720,830], vq:[720,830],
+     ph:X('析出硬化する材ではありません'), hq:X('一般には行いません（全体を焼入れして使います）'),
+     cb:X('もともと高炭素で浸炭は不要'), nit:[1000,1300,'工具の表面を薄く窒化することがあります'],
+     sn:X('一般には行いません'), cr:[800,1000], enp:[450,600], enph:[850,1000],
+     pvd:[1800,3000], dlc:[1500,3000], ha:X(ALUONLY)},
+    {n:'SUS316', g:'ss', main:['raw'],
+     use:'塩分・薬品のある所（海水・食品・薬品）。',
+     why:'SUS304 に Mo を足して錆びにくくした材。熱処理では硬くなりません。表面を硬くしたいときは、めっき・PVD・DLC で。',
+     raw:[150,200], nrm:[150,200],
+     qt:X('オーステナイト系ステンレスは焼入れで硬化しません'),
+     qc:X('オーステナイト系ステンレスは焼入れで硬化しません'),
+     vq:X('オーステナイト系ステンレスは焼入れで硬化しません'),
+     ph:X('析出硬化する材ではありません（析出硬化は SUS630）'),
+     hq:X('焼入れで硬化しません'), cb:X('一般には行いません'),
+     nit:X('一般には行いません（低温窒化を除く）'), sn:X('一般には行いません'), cr:[800,1000],
+     enp:[450,600], enph:[850,1000], pvd:[1800,3000], dlc:[1500,3000], ha:X(ALUONLY)},
+    {n:'SUS410', g:'ss', main:['qc'],
+     use:'ボルト・ポンプの軸・バルブ部品・安価な刃物。',
+     why:'焼入れで硬くなるステンレスの基本。焼入れ焼戻しで HRC 38〜45 前後まで。',
+     raw:[150,210], nrm:X('ステンレスは焼ならしをせず、焼なまし材で買います'),
+     qt:[230,300], qc:[372,446], vq:[372,446],
+     ph:X('析出硬化する材ではありません'), hq:X('一般には行いません'),
+     cb:X('一般には行いません'), nit:[900,1200,'窒化すると錆びにくさが落ちます'],
+     sn:[600,800,'軟窒化すると錆びにくさが落ちます'], cr:[800,1000],
+     enp:[450,600], enph:[850,1000,TEMPER], pvd:[1800,3000], dlc:[1500,3000], ha:X(ALUONLY)},
+    {n:'SUS440C', g:'ss', main:['qc','vq'],
+     use:'ステンレスの軸受（ベアリング）・バルブの弁座・ノズル・刃物・ゲージ。',
+     why:'ステンレスでいちばん硬くなる材（焼入れ焼戻しで HRC 58 以上）。曲がりと錆を嫌うので<b>真空焼入れ</b>が多く、サブゼロを足すことも多い。',
+     raw:[230,280], nrm:X('ステンレスは焼ならしをせず、焼なまし材で買います'),
+     qt:X('高い硬さで使う材で、一般に調質はしません'), qc:[653,750], vq:[653,750],
+     ph:X('析出硬化する材ではありません'), hq:X('一般には行いません'),
+     cb:X('もともと高炭素で浸炭は不要'), nit:[900,1200,'窒化すると錆びにくさが落ちます。焼戻しの温度より高い熱で軟らかくなることもあります'],
+     sn:X('一般には行いません'), cr:[800,1000],
+     enp:[450,600], enph:[850,1000,TEMPER], pvd:[1800,3000,TEMPER], dlc:[1500,3000], ha:X(ALUONLY)},
+    {n:'SUS630', g:'ss', main:['ph'],
+     use:'ポンプ・バルブの軸・化学機械や航空の強度部品（17-4PH）。',
+     why:'焼入れではなく<b>析出硬化</b>（H900〜H1150）で強くするステンレス。図面の記号で硬さが違います。',
+     raw:[280,380], nrm:X('ステンレスは焼ならしをしません'),
+     qt:X('析出硬化で強くする材です'), qc:X('析出硬化で強くする材です'), vq:X('析出硬化で強くする材です'),
+     ph:[270,490,'記号で硬さが違います（H900 は HRC 40〜48、H1150 は 26〜36 前後）。図面の記号の範囲で見てください'],
+     hq:X('一般には行いません'), cb:X('一般には行いません'), nit:X('一般には行いません'), sn:X('一般には行いません'),
+     cr:[800,1000], enp:[450,600], enph:[850,1000], pvd:[1800,3000], dlc:[1500,3000], ha:X(ALUONLY)},
+    {n:'FCD450', g:'ci', main:['raw'],
+     use:'強さの要る鋳物（ハウジング・レバー・歯車やプーリーの素材）。',
+     why:'黒鉛が丸い鋳鉄（ダクタイル鋳鉄）で、FC より粘りがあります。鋳物のまま使うことが多い。',
+     raw:[145,220], nrm:[180,270],
+     qt:X('一般には行いません'), qc:X('一般には行いません'), vq:X('一般には行いません'),
+     ph:X('析出硬化する材ではありません'), hq:[450,600], cb:X('一般には行いません'),
+     nit:X('一般には行いません'), sn:[400,600], cr:[800,1000],
+     enp:[450,600], enph:[850,1000], pvd:X('一般には行いません'), dlc:X('一般には行いません'), ha:X(ALUONLY)},
+    {n:'A5052', g:'al', nonsteel:true, main:['raw','ha'],
+     use:'板金・カバー・タンク・治具のベース。',
+     why:'熱処理で硬くならない合金（加工して強くする）。摩耗する所は<b>硬質アルマイト</b>で守ります。',
+     raw:[45,80], nrm:X('アルミは焼ならしをしません'),
+     qt:X('アルミは焼入れでは硬くなりません'), qc:X('アルミは焼入れでは硬くなりません'), vq:X('アルミは焼入れでは硬くなりません'),
+     ph:X('5052 は熱処理で硬くならない合金です（加工で強くします）'),
+     hq:X(NOSTEEL), cb:X(NOSTEEL), nit:X(NOSTEEL), sn:X(NOSTEEL),
+     cr:[800,1000,'アルミへの硬質クロムは前処理が難しく、あまりしません'], enp:[450,600],
+     enph:[850,1000,'400℃ の熱で、アルミが軟らかくなることがあります'],
+     pvd:[1800,3000,SOFT], dlc:[1500,3000,SOFT], ha:[350,450]},
+    {n:'A6061', g:'al', nonsteel:true, main:['ph','ha'],
+     use:'治具・フレーム・ブロック・継手。',
+     why:'T6（溶体化・時効＝析出硬化）の状態で買うのがふつう。摩耗する所は硬質アルマイトで。',
+     raw:[30,40,'熱処理していない O 材の硬さです。ふつうは T6 材（析出硬化）で買います'],
+     nrm:X('アルミは焼ならしをしません'),
+     qt:X('アルミは焼入れでは硬くなりません'), qc:X('アルミは焼入れでは硬くなりません'), vq:X('アルミは焼入れでは硬くなりません'),
+     ph:[95,120], hq:X(NOSTEEL), cb:X(NOSTEEL), nit:X(NOSTEEL), sn:X(NOSTEEL),
+     cr:[800,1000,'アルミへの硬質クロムは前処理が難しく、あまりしません'], enp:[450,600],
+     enph:[850,1000,'400℃ の熱で、T6 のアルミが軟らかくなります'],
+     pvd:[1800,3000,SOFT], dlc:[1500,3000,SOFT], ha:[350,450]},
+    {n:'A7075', g:'al', nonsteel:true, main:['ph','ha'],
+     use:'強さの要る治具・構造部品・航空機部品。',
+     why:'アルミでいちばん強い系統。T6（析出硬化）の状態で買うのがふつう。',
+     raw:[60,75,'熱処理していない O 材の硬さです。ふつうは T6 材（析出硬化）で買います'],
+     nrm:X('アルミは焼ならしをしません'),
+     qt:X('アルミは焼入れでは硬くなりません'), qc:X('アルミは焼入れでは硬くなりません'), vq:X('アルミは焼入れでは硬くなりません'),
+     ph:[160,190], hq:X(NOSTEEL), cb:X(NOSTEEL), nit:X(NOSTEEL), sn:X(NOSTEEL),
+     cr:[800,1000,'アルミへの硬質クロムは前処理が難しく、あまりしません'], enp:[450,600],
+     enph:[850,1000,'400℃ の熱で、T6 のアルミが軟らかくなります'],
+     pvd:[1800,3000,SOFT], dlc:[1500,3000,SOFT], ha:[300,450,'Zn・Cu の多い合金は、膜が硬くなりにくいことがあります']}
   ];
-  /* 材質不明のときの、その処理で見かける幅（各材質の最小〜最大） */
+  /* ★画面に並べる順（分類ごと）。MAT の並び（＝記録や旧版の検算の番号）は変えない。 */
+  function slug(n){ return String(n).replace(/\(.*$/,'').replace(/[^A-Za-z0-9]/g,''); }
+  /* 材質不明のときの、その処理で見かける幅（各材質の最小〜最大）。
+     ★鋼の幅を先に見る。アルミの処理（硬質アルマイト）のように鋼に無いものだけ、アルミから取る。 */
   function anyRange(k){
-    var lo=null, hi=null, i, r;
-    for(i=1;i<MAT.length;i++){
-      r=MAT[i][k];
-      if(!r||r.x) continue;
-      if(lo===null||r[0]<lo) lo=r[0];
-      if(hi===null||r[1]>hi) hi=r[1];
+    function over(steel){
+      var lo=null, hi=null, i, r;
+      for(i=1;i<MAT.length;i++){
+        if(!!MAT[i].nonsteel===steel) continue;
+        r=MAT[i][k];
+        if(!r||r.x) continue;
+        if(lo===null||r[0]<lo) lo=r[0];
+        if(hi===null||r[1]>hi) hi=r[1];
+      }
+      return (lo===null)? null : [lo,hi];
     }
-    return (lo===null)? null : [lo,hi];
+    return over(true)||over(false);
   }
   var mat=0, tz=-1;      /* 選んでいる材質／処理。tz=-1 は未選択 */
   function expected(){
@@ -800,39 +1244,136 @@
     var e=MAT[mat][k];
     if(!e) return null;
     if(e.x) return {ng:e.x};
-    return {r:e};
+    return {r:[e[0],e[1]], w:e[2]||''};
   }
-  /* 材質の中で、その硬さが<どの状態に相当するか>を探す（不合格のときの見立て） */
+  /* 材質の中で、その硬さが<どの状態に相当するか>を探す（範囲の外のときの見立て）
+     ★膜（めっき・皮膜）と真空焼入れ（焼入れ焼戻しと同じ硬さ）は見立てに使わない。
+       下地を測ったのに「無電解ニッケル相当」と言っても手がかりにならない。 */
   function stateOf(hv){
     if(MAT[mat].any) return null;
     var i, k, r, best=null;
     for(i=0;i<PROC.length;i++){
       k=PROC[i].k; r=MAT[mat][k];
+      if(PROC[i].g==='coat'||k==='vq') continue;
       if(!r||r.x) continue;
       if(hv>=r[0]-10&&hv<=r[1]+10) best=PROC[i].n;
     }
     return best;
   }
+  /* その材質で、その処理がどういう扱いか：main（主流）／ok（できる）／w（注意）／x（一般にしない） */
+  function stOf(mi,k){
+    var m=MAT[mi], e;
+    if(m.any) return '';
+    e=m[k];
+    if(!e||e.x) return 'x';
+    if(e[2]) return (m.main&&m.main.indexOf(k)>=0)?'mainw':'w';
+    return (m.main&&m.main.indexOf(k)>=0)?'main':'ok';
+  }
+  var STMARK={main:'★', mainw:'★', w:'△', x:'×', ok:'', '':''};
+  var STNAME={main:'主流', mainw:'主流', w:'注意', x:'一般にしない', ok:'できる'};
+  function hesc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
+  /* ★公差判定（v164）と同じ作り：分類ごとの行・左に分類名・同じ大きさのマス */
   function buildMat(){
     var box=$('matChips'); box.innerHTML='';
-    MAT.forEach(function(m,i){
-      var b=document.createElement('button');
-      b.type='button'; b.className='chip'+(i===mat?' on':'');
-      b.textContent=m.n;
-      b.addEventListener('click',function(){ mat=i; buildMat(); recalc(); });
-      box.appendChild(b);
+    /* 不明は先頭に1つ（分からないこともある） */
+    var top=document.createElement('div'); top.className='prow';
+    top.innerHTML='<div class="pl">分からない</div>';
+    var cells=document.createElement('div'); cells.className='pcs';
+    cells.appendChild(matBtn(0)); top.appendChild(cells); box.appendChild(top);
+    MGROUPS.forEach(function(g){
+      var row=document.createElement('div'); row.className='prow';
+      row.innerHTML='<div class="pl">'+g[1]+'</div>';
+      var cs=document.createElement('div'); cs.className='pcs';
+      MAT.forEach(function(m,i){ if(m.g===g[0]) cs.appendChild(matBtn(i)); });
+      row.appendChild(cs); box.appendChild(row);
     });
+  }
+  function matBtn(i){
+    var m=MAT[i], b=document.createElement('button');
+    b.type='button'; b.className='chip pc'+(i===mat?' on':'');
+    b.id='swm-'+(m.any?'any':slug(m.n));
+    b.setAttribute('data-k',m.n);
+    b.textContent=m.n;
+    b.addEventListener('click',function(){ mat=i; buildMat(); buildTz(); drawInfo(); recalc(); });
+    return b;
   }
   function buildTz(){
     var box=$('tzChips'); box.innerHTML='';
-    PROC.forEach(function(z,i){
-      var b=document.createElement('button');
-      b.type='button'; b.className='chip'+(i===tz?' on':'');
-      b.textContent=z.n;
-      b.addEventListener('click',function(){ tz=(tz===i)?-1:i; buildTz(); recalc(); });
-      box.appendChild(b);
+    PGROUPS.forEach(function(g){
+      var row=document.createElement('div'); row.className='prow';
+      row.innerHTML='<div class="pl">'+g[1]+'</div>';
+      var cs=document.createElement('div'); cs.className='pcs';
+      PROC.forEach(function(z,i){
+        if(z.g!==g[0]) return;
+        var st=stOf(mat,z.k), b=document.createElement('button');
+        b.type='button'; b.className='chip pc st-'+(st||'free')+(i===tz?' on':'');
+        b.id='swp-'+z.k;
+        b.setAttribute('data-k',z.k);
+        b.setAttribute('title',z.n+(st?'（'+STNAME[st]+'）':''));
+        b.innerHTML=(STMARK[st]?'<span class="mk">'+STMARK[st]+'</span>':'')+hesc(z.s);
+        b.addEventListener('click',function(){ tz=(tz===i)?-1:i; buildTz(); drawInfo(); recalc(); });
+        cs.appendChild(b);
+      });
+      row.appendChild(cs); box.appendChild(row);
     });
+    $('tzLeg').style.display=MAT[mat].any?'none':'';
+  }
+  /* ── 新人向けの説明（材質・処理） ── */
+  function drawInfo(){
+    var m=MAT[mat], mb=$('mInfo'), pb=$('pInfo'), h, i, k, st;
+    if(m.any){ mb.style.display='none'; mb.innerHTML=''; }
+    else{
+      h='<div class="ih"><span class="it">材質</span><b>'+hesc(m.n)+'</b></div><dl class="il">'
+        +'<dt>何に使う</dt><dd>'+m.use+'</dd>'
+        +'<dt>主流の処理</dt><dd class="mains">';
+      for(i=0;i<m.main.length;i++){ k=m.main[i]; h+='<button type="button" class="mainb" data-p="'+k+'">★'+hesc(procOf(k).n)+'</button>'; }
+      h+='</dd><dt>なぜ</dt><dd>'+m.why+'</dd></dl>';
+      if(m.nonsteel) h+='<p class="inote">アルミは<b>鋼の換算表（HRC・HB の換算）が使えません</b>。HV かブリネル（球 φ10mm・500kgf）で測った値を、そのまま期待の範囲と比べてください。</p>';
+      mb.innerHTML=h; mb.style.display='';
+    }
+    if(tz<0){
+      pb.innerHTML='<p class="ihint">処理を選ぶと、<b>なぜその処理をするのか</b>・何に使うか・どこが硬くなるか・測り方が出ます。'
+        +(m.any?'':'★は '+hesc(m.n)+' で主流の処理、△は気をつけること付き、×は一般にしない組み合わせです。')+'</p>';
+      return;
+    }
+    k=PROC[tz].k; var x=PEXP[k]; st=stOf(mat,k);
+    h='<div class="ih"><span class="it">処理</span><b>'+hesc(PROC[tz].n)+'</b>'
+      +(st?'<span class="ist s-'+st+'">'+(STMARK[st]?STMARK[st]+' ':'')+STNAME[st]+'</span>':'')+'</div><dl class="il">'
+      +'<dt>なぜやる</dt><dd>'+x.why+'</dd>'
+      +'<dt>何をする</dt><dd>'+x.how+'</dd>'
+      +'<dt>よく使う部品</dt><dd>'+x.where+'</dd>'
+      +'<dt>どこが硬くなる</dt><dd>'+x.hard+'</dd>'
+      +'<dt>気をつけること</dt><dd>'+x.tip+'</dd></dl>';
+    pb.innerHTML=h;
+  }
+  function procOf(k){ for(var i=0;i<PROC.length;i++) if(PROC[i].k===k) return PROC[i]; return null; }
+  function procIdx(k){ for(var i=0;i<PROC.length;i++) if(PROC[i].k===k) return i; return -1; }
+  /* 材質の説明の「主流の処理」を押すと、その処理を選ぶ */
+  $('mInfo').addEventListener('click',function(e){
+    var b=e.target; while(b&&b!==this&&!(b.getAttribute&&b.getAttribute('data-p')))b=b.parentNode;
+    if(!b||b===this)return;
+    tz=procIdx(b.getAttribute('data-p')); buildTz(); drawInfo(); recalc();
+  });
+  /* ── 早見表：材質 × 処理（★主流 ○できる △注意 ×一般にしない）── */
+  function buildMx(){
+    var h='<table class="mx"><thead><tr><th class="c0">材質＼処理</th>', i, j, g, st;
+    for(j=0;j<PROC.length;j++) h+='<th><span>'+hesc(PROC[j].s)+'</span></th>';
+    h+='</tr></thead><tbody>';
+    for(g=0;g<MGROUPS.length;g++){
+      h+='<tr class="mg"><td class="c0" colspan="'+(PROC.length+1)+'">'+MGROUPS[g][1]+'</td></tr>';
+      for(i=1;i<MAT.length;i++){
+        if(MAT[i].g!==MGROUPS[g][0]) continue;
+        h+='<tr><th class="c0">'+hesc(MAT[i].n)+'</th>';
+        for(j=0;j<PROC.length;j++){
+          st=stOf(i,PROC[j].k);
+          h+='<td class="s-'+st+'">'+(st==='ok'?'○':STMARK[st])+'</td>';
+        }
+        h+='</tr>';
+      }
+    }
+    h+='</tbody></table>';
+    $('mxTbl').innerHTML=h;
   }
   /* ★この機械で出せるいちばん小さい試験力（v133）。実機で確認した値。
      計算そのものには使わない。<勧める試験力の下限>としてだけ使う。
@@ -872,8 +1413,161 @@
     return Math.sqrt(1.8544*(Fgf/1000)/hv)*1000*1.5;
   }
   /* ② 測り方の案内（材質×処理が決まったら出す） */
+  /* ── 測り方の比べ（v169）──
+     ムギさん：「ロックウェルと出ていたら推奨ということ？ 傷をつけたくないときはビッカースをよく使う。
+       ビッカースの測り方も出して。推奨・どちらでもよい・非推奨と、非推奨の方の注意点も」。
+     ★上の「推奨の測り方」はいちばん一般的なもの。ここでは、ほかの測り方も並べて
+       <推奨／どちらでもよい／非推奨>と、その理由・注意を出す。
+     ★圧痕の大きさは、期待される硬さの真ん中で計算した目安（傷をどれだけ残すかの比べ）。
+       ビッカース d=√(1.8544×F÷HV)、ブリネル d=√(D²−(D−2F/(πD·HB))²)、
+       ロックウェルの深さ C:(100−HRC)×0.002mm／B:(130−HRB)×0.002mm（規格の定義そのもの）。 */
+  var MK={
+    HRC:{n:'ロックウェルC（HRC）', set:'ダイヤ円錐120°・150kgf（初試験力 10kgf）・保持 4〜6秒'},
+    HRB:{n:'ロックウェルB（HRB）', set:'鋼球 φ1.5875mm・100kgf（初試験力 10kgf）'},
+    N15:{n:'表面ロックウェル（HR15N）', set:'ダイヤ円錐・15kgf（初試験力 3kgf）'},
+    HV10:{n:'ビッカース（HV10）', set:'ダイヤ四角錐136°・10kgf・保持 10〜15秒。仕上げた面なら HV1（1kgf）でさらに小さく'},
+    HV1:{n:'ビッカース（HV1）', set:'ダイヤ四角錐136°・1kgf・保持 10〜15秒'},
+    HVM:{n:'マイクロビッカース（HV0.05〜HV0.1）', set:'50〜100gf・保持 10〜15秒。膜厚から試験力を絞る（上の「層の厚さ」）'},
+    HB:{n:'ブリネル', set:'超硬球 φ10mm・3000kgf（小物は φ5mm・750kgf）・保持 10〜15秒'},
+    HBA:{n:'ブリネル（アルミ）', set:'球 φ10mm・500kgf・保持 10〜15秒'},
+    NANO:{n:'成績書・ナノインデンテーション', set:'膜のメーカーの成績書（膜厚・硬さ）か、専門の機関で'}
+  };
+  /* 処理ごとの並び：[推奨の有無, 測り方, 理由・注意] */
+  var LV3={'推奨':'p1','どちらでも':'p2','非推奨':'p3'};
+  var SOFTSTEEL=[
+    ['推奨','HRB','軟らかい鋼の定番。手早く、表面の仕上げもあまり要りません'],
+    ['どちらでも','HV10','<b>傷を小さくしたいとき</b>に。面を磨き、対角線を読む手間がかかります。圧痕が小さいぶん、表面の粗さ・汚れで値が散ります'],
+    ['どちらでも','HB','大物・粗い素材の段階なら。<b>凹みが大きい</b>ので、仕上げた面・見える面には使いません'],
+    ['非推奨','HRC','軟らかすぎて、HRC 20 を下回る域は規格の外。値が当てになりません']
+  ];
+  var HARDSTEEL=[
+    ['推奨','HRC','焼入れ品の定番。手早く、表面の仕上げもあまり要りません。<b>目で見える凹みが残る</b>ので、機能面・見える面は避け、端や捨て面で'],
+    ['どちらでも','HV10','<b>傷を小さくしたいとき</b>に（凹みが目立たない）。面を磨き、対角線を読む手間がかかります。仕上げた面なら HV1 でさらに小さく'],
+    ['非推奨','HB','焼入れ品には向きません。超硬球でも HBW 650 までで、<b>凹みが大きく（直径 数mm）</b>製品に残ります']
+  ];
+  var THIN=[
+    ['推奨','HVM','層・膜だけを測るには、小さな試験力のビッカースで。凹みも小さい'],
+    ['非推奨','HRC','150kgf で層・膜を突き抜け、<b>下地（芯）の硬さを測ってしまいます</b>。値が低く出て「処理が入っていない」と誤ります'],
+    ['非推奨','N15','15kgf でも、薄い層・膜には深すぎます。下地を拾いやすい'],
+    ['非推奨','HB','層・膜を押しつぶし、下地を測ります。凹みも大きい']
+  ];
+  var METH={
+    raw:SOFTSTEEL, nrm:SOFTSTEEL,
+    qt:[
+      ['推奨','HRC','調質品の定番（HRC 20〜38 前後）。HRC 20 を下回るなら HRB で。凹みは目で見える大きさ'],
+      ['どちらでも','HV10','<b>傷を小さくしたいとき</b>に。面を磨き、対角線を読む手間がかかります。仕上げた面なら HV1'],
+      ['どちらでも','HB','大物・素材の段階なら。凹みが大きいので仕上げた面には使いません']
+    ],
+    qc:HARDSTEEL, vq:HARDSTEEL, ph:HARDSTEEL,
+    hq:[
+      ['推奨','HRC','硬化層が mm 単位あるので、表面から測れます。凹みは目で見える大きさ'],
+      ['どちらでも','HV10','<b>傷を小さくしたいとき</b>に。<b>有効硬化層深さ</b>を出すなら、断面で HV0.3・0.1mm 間隔（切断するので抜き取り）'],
+      ['非推奨','HB','3000kgf の大きな球は<b>硬化層の下（芯）まで押し</b>、層の硬さになりません。凹みも大きい']
+    ],
+    cb:[
+      ['推奨','HRC','有効硬化層が 0.8mm 以上なら。凹みは目で見える大きさ'],
+      ['どちらでも','N15','層が 0.8mm 未満なら HRC より HR15N（HRC は下地に沈む）'],
+      ['どちらでも','HV1','<b>傷を小さくしたいとき</b>・層が薄いときに。層の深さは断面で HV0.3'],
+      ['非推奨','HB','大きな球が<b>浸炭層の下（芯）まで押し</b>、層の硬さになりません。凹みも大きい']
+    ],
+    nit:[
+      ['推奨','HVM','化合物層（白層）・拡散層の硬さは、小さな試験力のビッカースで（多くは断面）。凹みも小さい'],
+      ['どちらでも','N15','<b>拡散層が 0.2mm 以上</b>ある窒化（ガス窒化など）なら、表面硬さを HR15N で見ることも。図面に HR15N の指定があればそれで'],
+      ['非推奨','HRC','150kgf で層を突き抜け、<b>芯の硬さを測ってしまいます</b>。値が低く出て「窒化が入っていない」と誤ります'],
+      ['非推奨','HB','層を押しつぶし、芯を測ります。凹みも大きい']
+    ],
+    sn:THIN, cr:THIN, enp:THIN, enph:THIN, ha:THIN,
+    pvd:[
+      ['推奨','NANO','膜が 1〜5µm と薄く、手持ちの機器では膜だけを測れないことが多い'],
+      ['非推奨','HVM','最小 10gf でも<b>下地を拾う</b>ことが多い（厚い膜なら届くこともある。上の計算を見てください）'],
+      ['非推奨','HRC','膜を突き抜け、下地を測ってしまいます']
+    ],
+    dlc:[
+      ['推奨','NANO','膜が 1〜3µm と薄く、手持ちの機器では膜だけを測れません'],
+      ['非推奨','HVM','最小 10gf でも<b>下地を拾います</b>'],
+      ['非推奨','HRC','膜を突き抜け、下地を測ってしまいます']
+    ]
+  };
+  /* 材質でかわるところ：鋳鉄（黒鉛）・アルミ（軟らかい・鋼の換算表が使えない） */
+  var METH_CI=[
+    ['推奨','HB','鋳鉄は黒鉛が混じるので、<b>大きな球でならして</b>測るのが定番'],
+    ['どちらでも','HRB','小物で、凹みを小さくしたいとき'],
+    ['非推奨','HV10','圧痕が小さく、<b>黒鉛に当たると値が大きく外れます</b>。測るなら場所を変えて数を増やす'],
+    ['非推奨','HRC','軟らかすぎて測れません']
+  ];
+  var METH_AL=[
+    ['推奨','HBA','厚みのあるアルミの定番。<b>鋼用の 3000kgf は使いません</b>'],
+    ['どちらでも','HV10','<b>傷を小さくしたいとき</b>に（HV5〜HV10）。面を磨く手間がかかります'],
+    ['どちらでも','HRB','T6 の 6061・7075 なら。軟らかい O 材・5052 は HRE・HRF か HV で'],
+    ['非推奨','HRC','軟らかすぎて測れません']
+  ];
+  function methOf(k){
+    var g=MAT[mat].g;
+    if(g==='ci'&&(k==='raw'||k==='nrm')) return METH_CI;
+    if(g==='al'&&(k==='raw'||k==='nrm'||k==='ph')) return METH_AL;
+    return METH[k]||[];
+  }
+  /* 圧痕の大きさ（この硬さでの目安）
+     ★ロックウェルは規格の定義が<深さ>。直径は圧子の形から深さで出した値で、
+       弾性の戻りがあるぶん実物はやや大きい → 「以上」と書く。
+       HRC：先端 R0.2mm の球＋120°円錐（深さ 0.1mm までが球）。HRB：φ1.5875mm の鋼球。 */
+  function fmtLen(mm){ return mm>=0.1? '約'+mm.toFixed(2)+'mm' : '約'+Math.round(mm*1000)+'µm'; }
+  function capD(R,h){ return 2*Math.sqrt(Math.max(0,2*R*h-h*h)); }
+  function hrcDia(h){ return h<=0.1? capD(0.2,h) : 2*(0.2*Math.cos(Math.PI/6)+(h-0.1)*Math.tan(Math.PI/3)); }
+  function dentOf(key,hv){
+    if(!(hv>0)) return '';
+    var r=convert(1,hv), hb, F, k;
+    if(key==='HV10') return '対角線 '+fmtLen(Math.sqrt(1.8544*10/hv))+'（HV1 なら '+fmtLen(Math.sqrt(1.8544*1/hv))+'）';
+    if(key==='HV1') return '対角線 '+fmtLen(Math.sqrt(1.8544*1/hv));
+    if(key==='HVM') return '対角線 '+fmtLen(Math.sqrt(1.8544*0.1/hv))+'（100gf）';
+    if(key==='HRC'){ if(!r||r.c==null) return ''; k=(100-r.c)*0.002;
+      return '深さ '+fmtLen(k)+'・直径 '+fmtLen(hrcDia(k))+' 以上（HRC'+r.c.toFixed(0)+'）'; }
+    if(key==='HRB'){ if(!r||r.rb==null) return ''; k=(130-r.rb)*0.002;
+      return '深さ '+fmtLen(k)+'・直径 '+fmtLen(capD(1.5875/2,k))+' 以上（HRB'+r.rb.toFixed(0)+'）'; }
+    if(key==='HB'||key==='HBA'){
+      F=(key==='HB')?3000:500;
+      hb=(key==='HBA'||!(r&&r.b!=null))?hv*0.95:r.b;
+      if(key==='HB'&&hb>650) return '';
+      k=2*F/(Math.PI*10*hb);
+      if(k>=10) return '';
+      return '直径 '+fmtLen(Math.sqrt(100-(10-k)*(10-k)));
+    }
+    return '';
+  }
+  /* 上の「推奨の測り方」の名前（比べの<推奨>と食い違わないように、比べから取る） */
+  function methTop(k){
+    var list=methOf(k), a=[], i;
+    for(i=0;i<list.length;i++) if(list[i][0]==='推奨') a.push(MK[list[i][1]]);
+    return a;
+  }
+  function drawMeth(){
+    var box=$('mBox'), e=expected(), list, hvm, h, i, row, mk, dn, fv;
+    if(tz<0||!e||e.ng||!e.r){ box.style.display='none'; box.innerHTML=''; return; }
+    list=methOf(PROC[tz].k);
+    if(!list.length){ box.style.display='none'; box.innerHTML=''; return; }
+    hvm=Math.round((e.r[0]+e.r[1])/2);
+    h='<div class="mh">測り方の比べ<span>推奨・どちらでもよい・非推奨（圧痕はこの硬さ HV'+hvm+' での目安）</span></div><ul class="ml">';
+    for(i=0;i<list.length;i++){
+      row=list[i]; mk=MK[row[1]];
+      dn=MAT[mat].nonsteel&&(row[1]==='HRC'||row[1]==='HRB'||row[1]==='HB')?'':dentOf(row[1],hvm);
+      h+='<li class="'+LV3[row[0]]+'"><div class="mt"><span class="lv">'+(row[0]==='どちらでも'?'どちらでもよい':row[0])+'</span><b>'+mk.n+'</b></div>'
+        +'<div class="md">'+row[2]+'</div>'
+        +'<div class="ms">設定：'+mk.set+(dn?'<br>圧痕：'+dn:'')+'</div></li>';
+    }
+    /* ★膜・層の処理（ビッカースの HV10・HV1 が並ばない）は、傷の話が違う。
+       もともと小さな試験力で測るので圧痕は小さいが、膜を破ればそこが傷・さびの起点になる。 */
+    for(i=0,fv=false;i<list.length;i++) if(list[i][1]==='HV10'||list[i][1]==='HV1') fv=true;
+    h+='</ul><p class="mfoot"><b>傷をつけたくないとき</b>は、'+(fv
+      ? 'ビッカースの試験力を下げるほど圧痕は小さくなります（この硬さなら HV1 で対角線 '+fmtLen(Math.sqrt(1.8544/hvm))+'）。'
+        +'そのかわり、面を磨き、対角線を読む手間がかかり、値も散りやすくなります。'
+        +'ロックウェルは手早い反面、目で見える凹みが残るので、機能面・見える面は避けます。'
+      : '膜・層はもともと小さな試験力で測るので、圧痕は目に見えにくい大きさです。ただし<b>膜を破った圧痕は、そこが傷・さびの起点</b>になります。'
+        +'機能面は避けるか、同じロットの試験片（テストピース）で測ります。')+'</p>';
+    box.innerHTML=h; box.style.display='';
+  }
   function showTz(){
     var box=$('txBox'), t=$('txTxt'), e=expected(), s;
+    drawMeth();
     if(tz<0){ box.style.display='none'; t.innerHTML=''; return; }
     box.style.display='';
     var k=PROC[tz].k, pi=PINFO[k];
@@ -887,9 +1581,16 @@
     s='<b>'+MAT[mat].n+' ＋ '+PROC[tz].n+'</b>';
     if(e&&e.r){
       s+='<br>期待される硬さ <b>HV'+e.r[0]+'〜'+e.r[1]+'</b>'+(e.any?'（材質不明なので幅を広くとっています）':'');
+      if(e.w) s+='<br><span class="wn">△ '+e.w+'</span>';
     }
-    s+='<br>測り方：<b>'+pi.dev+'</b>'
-      +'<br>推奨設定：'+pi.set
+    /* ★v169：名前は下の「測り方の比べ」の<推奨>から取る（上と下で食い違わないように）。
+       鋳鉄・アルミは処理ごとの設定（鋼の前提）ではなく、比べの<推奨>の設定を出す。 */
+    var top=methTop(k), nm=[], j, ov=(methOf(k)!==METH[k]);
+    for(j=0;j<top.length;j++) nm.push(top[j].n);
+    s+='<br>推奨の測り方：<b>'+(nm.length?nm.join(' / '):pi.dev)+'</b>'
+      +(nm.length?'<span style="font-weight:400">（ほかの測り方と注意は、下の「測り方の比べ」）</span>':'')
+      +'<br>推奨設定：'+((ov&&top.length)?top[0].set:pi.set)
+      +(MAT[mat].nonsteel?'<br><span class="ng">アルミは鋼の換算表（HRC・HB の換算）が使えません。ブリネルは 球 φ10mm・500kgf（鋼用の 3000kgf は使わない）か HV で。測った値を、そのまま期待の範囲と比べてください</span>':'')
       +'<br>'+pi.note
       +'<br><span style="font-weight:400">'+COMMON+'</span>';
     /* ★安全側で見る。硬さが低いほど圧痕は大きくなり、要る層厚も増える。
@@ -942,7 +1643,7 @@
         b.className='band inr';
         b.innerHTML='HV'+Math.round(hv)+'　<b>期待 HV'+lo+'〜'+hi+' の中</b>'
           +'<small>'+MAT[mat].n+' の '+PROC[tz].n+' として、ありうる硬さの範囲です'
-          +(e.any?'（材質不明のため幅は広めです）':'')+'　／　合否は図面の指示と測り方で判断してください</small>';
+          +(e.any?'（材質不明のため幅は広めです）':'')+(MAT[mat].nonsteel?'（アルミは HV で見比べています。HRC・HB の換算値は使えません）':'')+'　／　合否は図面の指示と測り方で判断してください</small>';
         return;
       }
       b.className='band outr';
@@ -1164,6 +1865,18 @@
     var val=num($('fV').value);
     lastRes=null;
     var res=isNaN(val)?null:convert(sc,val);
+    /* ★v168：アルミは鋼の換算表が使えない。HV で入れたときは、表の範囲の外でも HV のまま見比べる */
+    if(!isNaN(val)&&val>0&&sc===1&&MAT[mat].nonsteel){
+      ['vC','vB'].forEach(function(id){$(id).textContent='―';$(id).className='v dim'});
+      $('vV').textContent=String(Math.round(val)); $('vV').className='v dim';
+      $('vTs').textContent='―';
+      drawMark(null);
+      $('statusTxt').textContent='アルミは鋼の換算表を使わず、HV のまま期待の範囲と見比べます（HRC・HB の換算値は出しません）';
+      $('statusTxt').className='statusTxt';
+      showBand(val); showDepth(0,0,0);
+      if($('tblWrap').classList.contains('show'))buildTable(null);
+      return;
+    }
     if(!res){
       ['vC','vV','vB'].forEach(function(id){$(id).textContent='―';$(id).className='v dim'});
       $('vTs').textContent='―';
@@ -1195,6 +1908,8 @@
         ? '換算表の上（HV940超）です。窒化・硬質クロムメッキ・超硬の域で、HRC・HB の換算はありません'
         : ((res.b==null)?'この硬さ域ではHB試験は一般に非適用です(圧子が持たない領域)':'表の中間値は直線補間しています'));
     $('statusTxt').className='statusTxt';
+    /* ★v168：アルミを選んでいるときは、鋼の換算値は当てにならないと添える */
+    if(MAT[mat].nonsteel){ $('statusTxt').textContent='アルミを選んでいます。HRC・HB は鋼の換算表による値で、アルミには使えません。HV で見比べてください'; $('statusTxt').className='statusTxt err'; }
     drawMark(res.c!=null?res:null);
     showBand(res.v);
     /* ★硬さと試験力から、圧痕の大きさを逆に出す（v133・現場の依頼）。
@@ -1235,6 +1950,8 @@
   buildLoads();
   buildMat();
   buildTz();
+  buildMx();
+  drawInfo();
   recalc();
 })();
 </script>

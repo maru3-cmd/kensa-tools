@@ -223,6 +223,41 @@
   .kbox.ok{background:#ECF5EF;border:1px solid #A9CDB8;border-left:3px solid #0B6B3A;color:#1E4530}
   .kbox.ng{background:#FBECEA;border:1px solid #E7B7B0;border-left:3px solid #B23B2E;color:#5A2A24}
   .kbox b{font-weight:700}
+  /* v171：軸穴とキー溝 */
+  #keyH{margin-top:18px}
+  h2 small{font-size:10.5px;font-weight:400;color:#8FA2AF;letter-spacing:.04em;margin-left:4px}
+  .kgrp{margin-bottom:8px}
+  .klbl{display:block;font-size:11px;color:#5B707E;margin:2px 2px 4px;letter-spacing:.04em}
+  .kgrp .trow{display:flex;flex-wrap:wrap;gap:6px}
+  .kgrp .trow button{flex:0 0 auto;padding:8px 10px;font-size:12.5px;font-weight:700;background:var(--sheet);color:var(--ink);
+    border:1.5px solid var(--line);border-radius:8px;cursor:pointer;-webkit-appearance:none;appearance:none}
+  .kgrp .trow button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .kfig{margin-top:10px;background:var(--sheet);border:1px solid #D5DDE2;border-radius:10px;padding:4px}
+  .kfig svg{display:block;width:100%;height:auto}
+  #keyOut .kbox{margin-top:9px;background:#EEF3F6;border:1px solid #C9D3DA;color:#1F3341}
+  .ksub{font-size:11.5px;color:#5B707E;margin-top:4px;line-height:1.6}
+  #keyOut .hint{font-size:11px;color:#5B707E;line-height:1.75;margin-top:8px;padding:0 2px}
+  /* v172：キー溝の大きさを大きく・表で／ボタンの意味 */
+  .kexp{margin-top:8px;padding:9px 11px;background:#F7F9FA;border:1px solid #DCE3E7;border-left:3px solid #1F3341;border-radius:8px;font-size:12px;line-height:1.75;color:#1F3341}
+  .kall{margin-top:8px;background:var(--sheet);border:1px solid #D5DDE2;border-radius:10px}
+  .kall>summary{list-style:none;cursor:pointer;padding:10px 12px;font-size:12px;font-weight:700;color:#3A5060;position:relative;padding-right:28px}
+  .kall>summary::-webkit-details-marker{display:none}
+  .kall>summary::after{content:'›';position:absolute;right:12px;top:7px;font-size:17px;color:#B7C3CA}
+  .kall[open]>summary::after{transform:rotate(90deg)}
+  .kallb{padding:2px 12px 10px;font-size:11.5px;line-height:1.8;color:#1F3341}
+  .kallb p{margin:6px 0}
+  .kallb ul{padding-left:1.2em;margin:4px 0}
+  .ksize{margin-top:10px;background:var(--dro-bg);border-radius:12px;padding:12px 16px;color:#fff}
+  .ksl{font-size:12px;color:#9FB0B8;font-weight:700;letter-spacing:.06em}
+  .ksv{font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;font-size:34px;font-weight:700;color:var(--dro-red);text-align:right;letter-spacing:.02em;text-shadow:0 0 10px rgba(255,90,72,.35)}
+  .kss{font-size:11.5px;color:#C9D3DA;line-height:1.7}
+  .kss b{color:#fff}
+  .ktbl{width:100%;border-collapse:collapse;margin-top:9px;font-size:11.5px;background:var(--sheet);font-variant-numeric:tabular-nums}
+  .ktbl th,.ktbl td{border:1px solid #C9D3DA;padding:5px 6px;text-align:right;line-height:1.45}
+  .ktbl th{background:#EDF1F3;font-weight:700;text-align:center;font-size:10.5px}
+  .ktbl td:first-child{text-align:left;font-weight:700}
+  .ktbl td:last-child{white-space:nowrap}
+  .kexh{font-size:10.5px;font-weight:700;color:#5B707E;letter-spacing:.06em;margin-bottom:3px}
 </style>
 </head>
 <body>
@@ -241,6 +276,7 @@
       <li>いちばん上に出る<b>歯先円直径（外径）が、ノギスやマイクロメータで実際に測る値</b>です。ピッチ円直径は測れません。</li>
       <li><b>実測</b>を入れると、規格の許容差に対して合否が出ます。</li>
       <li>下の表に<b>ピッチ誤差・振れ・外径差・平行度</b>の公差も出します。図面に指定が無いときの目安に使ってください。</li>
+      <li>いちばん下の<b>「軸穴とキー溝」</b>に穴径を入れると、<b>キー溝の大きさ（幅 × 深さ）</b>と、穴・キー溝の合格範囲が JIS B 1301 から出ます。ボタン（新JIS・旧JIS など）の意味もそこで読めます。</li>
     </ol>
     <h4>いちばん間違えやすいところ</h4>
     <div class="gline">
@@ -271,7 +307,7 @@
       ・<b>歯数の下限</b>は表にあるものを警告に使っています（台形歯形：MXL・XXL・XL・L は10、H は14、XH・XXH は18。
       　S形：S2M・S3M・S5M は14、S8M は18、S14M は28）。
       　これは<b>その歯数から下は規格の表に無い</b>という意味で、作れないという意味ではありません。<br>
-      ・<b>フランジ・ボス・軸穴</b>はメーカーで変わるので入れていません。<br>
+      ・<b>フランジ・ボス</b>はメーカーで変わるので入れていません。<b>軸穴とキー溝</b>は、穴径を入れると JIS B 1301 の表から出します（新JIS 普通形 Js9・締込み形 P9・滑動形 D10、旧JIS E9・F7）。「適用する軸径」は JIS でも参考なので、図面に b×t₂ があれば図面が正です。<br>
     </div>
     <h4>型番から入れる</h4>
     <div class="gline">
@@ -328,6 +364,17 @@
       </div>
     </div>
 
+    <div class="gx">
+      <h4>例 ── 穴径 15 のプーリのキー溝（新JIS 普通形）</h4>
+      <div class="gxin">
+        <div class="gtxt">
+          <p>穴径 15 のプーリ。キー溝はいくつで作られているはずか。</p>
+          <p class="gset">穴径 15 ／ 新JIS 普通形（Js9）／ H7</p>
+          <p class="gread">読み方：キー溝の大きさは <b>5 × 2.3</b>（幅 × 深さ。キーは 5×5）。キー溝の幅 <b>4.985 〜 5.015</b>、穴の反対側から溝の底まで <b>17.300 〜 17.400</b>（d＋t₂）、穴 <b>15.000 〜 15.018</b>。</p>
+          <button class="gbtn" type="button" data-ex='{"set":[{"click":"#swk-js9"},{"click":"#swh-H7"},{"id":"fBore","v":"15"}]}' onclick="tryExample(this)">この例を試す</button>
+        </div>
+      </div>
+    </div>
     <div class="gx">
       <h4>例 ── H・30歯を実測 119.85 で測った</h4>
       <div class="gxin">
@@ -397,11 +444,43 @@
   </div>
   <div id="extra"></div>
 
+  <!-- v171：軸穴とキー溝（タイミングプーリと既製歯車で同じもの）／v172：大きさを数字で・ボタンの意味・実測の欄を外す -->
+  <h2 id="keyH">軸穴とキー溝<small>穴径から JIS B 1301 のキー溝</small></h2>
+  <div class="inputs">
+    <div class="row">
+      <span class="badge">d</span>
+      <label for="fBore">穴径（軸穴の内径）<small>図面・カタログの呼び</small></label>
+      <input id="fBore" type="text" inputmode="decimal" autocomplete="off" placeholder="16">
+      <span class="unit">mm</span>
+    </div>
+  </div>
+  <div class="tchips" id="kChips"></div>
+  <div id="keySize"></div>
+  <div class="kfig" id="kFigWrap" style="display:none"><svg id="kFig" viewBox="0 0 320 190" role="img" aria-label="軸穴とキー溝の図。キー溝の幅・深さと、穴の反対側から溝の底まで（d＋t₂）"></svg></div>
+  <div id="keyOut"></div>
+  <div class="kexp" id="kExp"></div>
+  <details class="kall">
+    <summary>ボタンの意味（新JIS・旧JIS・普通形・締込み形・滑動形・H7・H8）</summary>
+    <div class="kallb">
+      <p><b>新JIS と 旧JIS</b>：キー溝の決まり（JIS B 1301）は途中で作り直されています。<b>新JIS＝今の決まり</b>（ISO に合わせたもの）、<b>旧JIS＝昔の決まり</b>（JIS B 1301-1959）。
+        同じ穴径でも<b>キーの大きさと溝の深さが違います</b>（φ25：新 8×3.3、旧 7×3.0）。図面・カタログに「旧JIS」と書いていなければ<b>新JIS</b>です。</p>
+      <p><b>普通形・締込み形・滑動形</b>（新JIS の中の3つ）：キーの留め方の違いで、<b>溝の大きさは同じ</b>、<b>幅の公差だけが違います</b>。</p>
+      <ul>
+        <li><b>普通形（Js9）</b>…いちばん多い。歯車・プーリ側の溝は <b>基準の ± に同じだけ</b>。KHK の J・ミスミなど既製品の追加工はたいていこれ。</li>
+        <li><b>締込み形（P9）</b>…キーを打ち込んで固く留める。溝は <b>基準より少し狭い</b>（マイナス側）。</li>
+        <li><b>滑動形（D10）</b>…歯車・プーリが軸の上を滑って動く。溝は <b>基準より広い</b>（プラス側）。</li>
+      </ul>
+      <p><b>旧JIS（E9）・旧JIS（F7）</b>：昔の決まりの2種と1種。溝の大きさは同じで、幅の公差が E9（広め）か F7（少し広め）。</p>
+      <p><b>穴の公差 H7・H8</b>：穴径の許容差の記号。<b>H は「基準より小さくならない（0 〜 ＋）」</b>、数字は等級で<b>小さいほど厳しい</b>。既製品の穴はふつう <b>H7</b>、KHK の J は φ50 を超えると <b>H8</b>。</p>
+      <p><b>Js9・P9・D10 などの記号</b>：英字が<b>基準からどちらにずらすか</b>（Js ＝ 上下に同じだけ、P ＝ 狭い側、D・E・F ＝ 広い側、H ＝ 0 から広い側、N ＝ ほぼ 0 から狭い側）、数字が<b>幅の大きさ（等級）</b>です。</p>
+    </div>
+  </details>
+
   <button class="clearBtn" type="button" onclick="armClear(this)">すべて消去</button>
 
   <footer>
     検査ミニポータル｜計算はすべてこの端末の中で行われます。入力値は端末のブラウザ内にのみ保存され、消去ボタンで完全に削除できます。<br>
-    台形歯形の値は JIS B 1856:2018 による。S形はメーカーの寸法表から確かめた径のみで、許容差は入っていません。HTD・GT・P形には使えません。
+    台形歯形の値は JIS B 1856:2018 による。S形はメーカーの寸法表から確かめた径のみで、許容差は入っていません。HTD・GT・P形には使えません。キー溝は JIS B 1301。
   
     <div class="crnote">© 2026 まるちゃん ｜ 許諾なく転載・複製・再配布・改変することを禁じます。本ツールは著作権法により保護されています。</div>
   </footer>
@@ -721,11 +800,216 @@
       +'</span></div>';
     buildChips(); recalc();
   }
+  /* ══════ 軸穴とキー溝（v171：タイミングプーリと既製歯車で同じもの／v172：大きさを数字で見せる・ボタンの意味・実測の欄を外す）══════
+     ムギさん（v172）：「キー溝の大きさがわかりにくい。実測部分は要らない。新JIS などのボタンが何を意味しているか分からないので解説を」。
+     ★大きさは KHK のカタログと同じ「幅 × 深さ（b₂ × t₂）」で大きく出し、図にも<その数字>を書く。
+       合格範囲は表（基準・公差・範囲）にまとめる。ボタンは選んだものの意味をすぐ下に出し、全部の意味は開いて読めるようにする。
+     ムギさん：「プーリとギヤの両方に、内径からくるキー溝のサイズも表示できるようにしたい」。
+     ★内径（軸穴径）からキー溝が決まるのは JIS B 1301 の表で、「適用する軸径」は<参考>。
+       キーは伝わるトルクで選ぶので、図面に b×t₂ があれば図面が正。ここは図面が無いときの当たり。
+     ★受入れで測るのはボス側（穴側）：穴径・キー溝の幅 b₂・穴の反対側からキー溝の底まで（d＋t₂）。
+       軸側（t₁・b₁）とキーの大きさは参考に出す。 */
+
+  /* 新JIS（JIS B 1301:2009 平行キー）。推奨の呼び寸法だけ（括弧付きの (7×7)・(15×10) などは新しい設計に使わない）。
+     [適用する軸径 下, 上, b, h, t₁, t₂, t₁・t₂ の許容差（＋側）]
+     ★区分は「下を超え上以下」。最初の行だけ「6以上」。t₁・t₂ の許容差は 2×2〜6×6 が +0.1、8×7〜32×18 が +0.2、36×20 から +0.3。 */
+  var KW_NEW=[
+    [6,8,2,2,1.2,1.0,0.1],[8,10,3,3,1.8,1.4,0.1],[10,12,4,4,2.5,1.8,0.1],[12,17,5,5,3.0,2.3,0.1],[17,22,6,6,3.5,2.8,0.1],
+    [22,30,8,7,4.0,3.3,0.2],[30,38,10,8,5.0,3.3,0.2],[38,44,12,8,5.0,3.3,0.2],[44,50,14,9,5.5,3.8,0.2],[50,58,16,10,6.0,4.3,0.2],
+    [58,65,18,11,7.0,4.4,0.2],[65,75,20,12,7.5,4.9,0.2],[75,85,22,14,9.0,5.4,0.2],[85,95,25,14,9.0,5.4,0.2],[95,110,28,16,10.0,6.4,0.2],
+    [110,130,32,18,11.0,7.4,0.2],[130,150,36,20,12.0,8.4,0.3],[150,170,40,22,13.0,9.4,0.3],[170,200,45,25,15.0,10.4,0.3],[200,230,50,28,17.0,11.4,0.3],
+    [230,260,56,32,20.0,12.4,0.3],[260,290,63,32,20.0,12.4,0.3],[290,330,70,36,22.0,14.4,0.3],[330,380,80,40,25.0,15.4,0.3],[380,440,90,45,28.0,17.4,0.3],
+    [440,500,100,50,31.0,19.5,0.3]
+  ];
+  /* 旧JIS（JIS B 1301-1959）。古い図面・プーリ・スプロケットに残っている。[下, 上, b, h, t₁, t₂]
+     ★深さの許容差はこの表に持っていない（図面・メーカーで）。最初の行だけ「10以上」。 */
+  var KW_OLD=[
+    [10,13,4,4,2.5,1.5],[13,20,5,5,3.0,2.0],[20,30,7,7,4.0,3.0],[30,40,10,8,4.5,3.5],[40,50,12,8,4.5,3.5],
+    [50,60,15,10,5.0,5.0],[60,70,18,12,6.0,6.0],[70,80,20,13,7.0,6.0],[80,95,24,16,8.0,8.0],[95,110,28,18,9.0,9.0],
+    [110,125,32,20,10.0,10.0],[125,140,35,22,11.0,11.0],[140,160,38,24,12.0,12.0],[160,180,42,26,13.0,13.0],[180,200,45,28,14.0,14.0],
+    [200,224,50,31.5,16.0,15.5],[224,250,56,35.5,18.0,17.5]
+  ];
+  /* 幅の公差（JIS B 0401・ISO 286）。区分は「を超え〜以下」の上限 mm。値は [上, 下] µm。 */
+  var KW_B=[3,6,10,18,30,50,80,120];
+  var KW_T={
+    Js9:[[12.5,-12.5],[15,-15],[18,-18],[21.5,-21.5],[26,-26],[31,-31],[37,-37],[43.5,-43.5]],
+    P9:[[-6,-31],[-12,-42],[-15,-51],[-18,-61],[-22,-74],[-26,-88],[-32,-106],[-37,-124]],
+    D10:[[60,20],[78,30],[98,40],[120,50],[149,65],[180,80],[220,100],[260,120]],
+    N9:[[-4,-29],[0,-30],[0,-36],[0,-43],[0,-52],[0,-62],[0,-74],[0,-87]],
+    H9:[[25,0],[30,0],[36,0],[43,0],[52,0],[62,0],[74,0],[87,0]],
+    H8:[[14,0],[18,0],[22,0],[27,0],[33,0],[39,0],[46,0],[54,0]],
+    E9:[[39,14],[50,20],[61,25],[75,32],[92,40],[112,50],[134,60],[159,72]],
+    F7:[[16,6],[22,10],[28,13],[34,16],[41,20],[50,25],[60,30],[71,36]]
+  };
+  /* 穴の公差 H7・H8（基本公差 IT7・IT8）。区分の上限 mm と µm。 */
+  var KH_B=[3,6,10,18,30,50,80,120,180,250,315,400,500];
+  var KH_T={H7:[10,12,15,18,21,25,30,35,40,46,52,57,63], H8:[14,18,22,27,33,39,46,54,63,72,81,89,97]};
+  /* キー溝の決め方。hub … ボス（穴）側の幅、shaft … 軸側の幅（参考）、tbl … 表 */
+  var KSTD=[
+    {k:'js9', n:'新JIS 普通形',  hub:'Js9', shaft:'N9', tbl:KW_NEW, s:'JIS B 1301 普通形・いちばん多い',
+     e:'<b>今の JIS のキー溝で、いちばん多い形</b>。キーを軸の溝にしっかり入れ、歯車・プーリ側（穴の溝）は<b>ほどよいはめあい</b>（Js9 ＝ 基準の上下に同じだけ ±）。'
+      +'<b>KHK の J（追加工品）、ミスミのプーリなど、既製品の追加工はたいていこれ</b>。迷ったらこれ。'},
+    {k:'p9',  n:'新JIS 締込み形', hub:'P9',  shaft:'P9', tbl:KW_NEW, s:'JIS B 1301 締込み形・キーを打ち込む',
+     e:'<b>キーを打ち込んで、ガタなく固く留める形</b>。溝の幅は P9 ＝ <b>基準より少し狭い</b>（マイナス側だけ）。逆転や衝撃がかかる所に使う。図面に「P9」「締込み」とあるとき。'},
+    {k:'d10', n:'新JIS 滑動形',  hub:'D10', shaft:'H9', tbl:KW_NEW, s:'JIS B 1301 滑動形・ボスが軸の上を動く',
+     e:'<b>歯車・プーリが軸に沿って滑って動く</b>（軸方向に位置を変える）ための形。溝の幅は D10 ＝ <b>基準より広い</b>（プラス側だけ）。図面に「D10」「滑動」とあるとき。'},
+    {k:'e9',  n:'旧JIS（E9）',   hub:'E9',  shaft:'H9', tbl:KW_OLD, old:1, s:'JIS B 1301-1959 の2種。古い図面・プーリ・スプロケットに多い',
+     e:'<b>昔の JIS（JIS B 1301-1959）</b>のキー溝。<b>キーの大きさと溝の深さそのものが今の JIS と違う</b>（φ25 なら 今 8×3.3、旧 7×3.0）。'
+      +'E9 はその2種の幅の公差で、<b>基準より広い</b>。古い図面や、スプロケット・プーリのカタログで「旧JIS」と書いてあるときだけ使う。'},
+    {k:'f7',  n:'旧JIS（F7）',   hub:'F7',  shaft:'H8', tbl:KW_OLD, old:1, s:'JIS B 1301-1959 の1種',
+     e:'<b>昔の JIS の1種</b>。寸法は旧JIS（E9）と同じで、溝の幅の公差が F7（<b>基準より少し広い</b>、E9 より狭い範囲）。図面に「旧JIS」「F7」とあるときだけ。'}
+  ];
+  var KHOLE={H7:'<b>穴の公差 H7</b>：穴径の許容差（JIS のはめあいの記号）。<b>H ＝ 基準より小さくはならない（0 〜 ＋）</b>、7 は等級（数字が小さいほど厳しい）。既製品の穴はふつう H7。',
+             H8:'<b>穴の公差 H8</b>：H7 より少しゆるい（＋側が広い）。KHK の J は <b>φ50 を超える穴が H8</b>。樹脂の歯車や大きい穴に使われる。'};
+  var kStd=0, kHole='H7', kJ=null;   /* kJ … 既製歯車で KHK の J が読めたときの穴径（J は普通形 Js9） */
+  function kBand(b,list){ var i; for(i=0;i<list.length;i++) if(b<=list[i]+1e-9) return i; return -1; }
+  function kRow(tbl,d){
+    var i;
+    for(i=0;i<tbl.length;i++){
+      if(i===0? (d>=tbl[i][0]-1e-9&&d<=tbl[i][1]+1e-9) : (d>tbl[i][0]+1e-9&&d<=tbl[i][1]+1e-9)) return i;
+    }
+    return -1;
+  }
+  function f4(x){ return (Math.round(x*10000)/10000).toFixed(4).replace(/(\.\d{3})0$/,'$1'); }
+  /* µm → mm の符号つき（+0.0125 ／ −0.015 ／ 0） */
+  function tolS(v){ if(Math.abs(v)<1e-9) return '0'; return (v>0?'+':'−')+(Math.abs(v)/1000).toFixed(4).replace(/0$/,''); }
+  function kSig(lo,hi){ return tolS(hi)+' ／ '+tolS(lo); }
+  /* 公差の範囲。基準 n と [上, 下] µm から下限・上限 */
+  function kRange(n,t){ return [n+t[1]/1000, n+t[0]/1000]; }
+  function kIn(v,r){ return v>=r[0]-1e-9&&v<=r[1]+1e-9; }
+  function kChips(){
+    var h='',i;
+    h+='<div class="kgrp"><span class="klbl">キー溝の決まり</span><div class="trow">';
+    for(i=0;i<KSTD.length;i++) h+='<button type="button" id="swk-'+KSTD[i].k+'" class="'+(i===kStd?'on':'')+'" data-k="'+i+'">'+KSTD[i].n+'</button>';
+    h+='</div></div><div class="kgrp"><span class="klbl">穴の公差</span><div class="trow">';
+    h+='<button type="button" id="swh-H7" class="'+(kHole==='H7'?'on':'')+'" data-h="H7">H7</button>';
+    h+='<button type="button" id="swh-H8" class="'+(kHole==='H8'?'on':'')+'" data-h="H8">H8</button>';
+    h+='</div></div>';
+    $('kChips').innerHTML=h;
+  }
+  function kPaint(){
+    var bs=$('kChips').getElementsByTagName('button'),j,a;
+    for(j=0;j<bs.length;j++){
+      a=bs[j].getAttribute('data-k');
+      if(a!==null) bs[j].className=(Number(a)===kStd?'on':'');
+      else bs[j].className=(bs[j].getAttribute('data-h')===kHole?'on':'');
+    }
+  }
+  /* 外から決める（既製歯車の型番で J が読めたとき：KHK の J は H7（φ50 を超えると H8）・普通形 Js9） */
+  function keySet(std,hole){
+    var i; if(std) for(i=0;i<KSTD.length;i++) if(KSTD[i].k===std) kStd=i;
+    if(hole) kHole=hole;
+    kPaint();
+  }
+  /* 図：穴とキー溝。b₂ と d＋t₂ がどこかを見せる */
+  /* 図：穴とキー溝。<実際の数字>を書く（b₂・t₂・d・d＋t₂） */
+  function kDraw(d,b,t2){
+    var W=320,H=190,cx=112,cy=104,R=56,s=R/(d/2);
+    var hb=Math.max(8,b*s/2), dep=Math.max(9,t2*s), top=cy-(R+dep), yb=cy-Math.sqrt(Math.max(0,R*R-hb*hb));
+    function n1(x){ var t=String(Math.round(x*100)/100); return t; }
+    var g='<rect x="0" y="0" width="'+W+'" height="'+H+'" fill="#FBFCFC"/>';
+    g+='<path d="M '+(cx-hb).toFixed(1)+' '+yb.toFixed(1)+' A '+R+' '+R+' 0 1 0 '+(cx+hb).toFixed(1)+' '+yb.toFixed(1)
+      +' L '+(cx+hb).toFixed(1)+' '+top.toFixed(1)+' L '+(cx-hb).toFixed(1)+' '+top.toFixed(1)+' Z" fill="#fff" stroke="#1F3341" stroke-width="2"/>';
+    g+='<rect x="'+(cx-hb).toFixed(1)+'" y="'+top.toFixed(1)+'" width="'+(2*hb).toFixed(1)+'" height="'+(cy-R-top+2).toFixed(1)+'" fill="#FCE9E7"/>';
+    g+='<line x1="'+(cx-R-10)+'" y1="'+cy+'" x2="'+(cx+R+10)+'" y2="'+cy+'" stroke="#8FA2AF" stroke-width="0.8" stroke-dasharray="6 2 1 2"/>';
+    g+='<line x1="'+cx+'" y1="'+(top-8).toFixed(1)+'" x2="'+cx+'" y2="'+(cy+R+10)+'" stroke="#8FA2AF" stroke-width="0.8" stroke-dasharray="6 2 1 2"/>';
+    /* 幅 b₂（上） */
+    var yw=top-14;
+    g+='<line x1="'+(cx-hb).toFixed(1)+'" y1="'+(top-2).toFixed(1)+'" x2="'+(cx-hb).toFixed(1)+'" y2="'+(yw-4).toFixed(1)+'" stroke="#D63426" stroke-width="0.8"/>';
+    g+='<line x1="'+(cx+hb).toFixed(1)+'" y1="'+(top-2).toFixed(1)+'" x2="'+(cx+hb).toFixed(1)+'" y2="'+(yw-4).toFixed(1)+'" stroke="#D63426" stroke-width="0.8"/>';
+    g+='<line x1="'+(cx-hb).toFixed(1)+'" y1="'+yw.toFixed(1)+'" x2="'+(cx+hb).toFixed(1)+'" y2="'+yw.toFixed(1)+'" stroke="#D63426" stroke-width="1.6"/>';
+    g+='<text x="'+(cx-hb-6).toFixed(1)+'" y="'+(yw+5).toFixed(1)+'" font-size="13" font-weight="700" fill="#D63426" text-anchor="end">幅 '+n1(b)+'</text>';
+    /* 深さ t₂（左） */
+    var xt=cx-hb-34;
+    g+='<line x1="'+(xt-4)+'" y1="'+top.toFixed(1)+'" x2="'+(cx-hb).toFixed(1)+'" y2="'+top.toFixed(1)+'" stroke="#D63426" stroke-width="0.6" stroke-dasharray="2 2"/>';
+    g+='<line x1="'+(xt-4)+'" y1="'+(cy-R).toFixed(1)+'" x2="'+(cx-hb).toFixed(1)+'" y2="'+(cy-R).toFixed(1)+'" stroke="#D63426" stroke-width="0.6" stroke-dasharray="2 2"/>';
+    g+='<line x1="'+xt+'" y1="'+top.toFixed(1)+'" x2="'+xt+'" y2="'+(cy-R).toFixed(1)+'" stroke="#D63426" stroke-width="1.6"/>';
+    g+='<text x="'+(xt-6)+'" y="'+((top+cy-R)/2+4).toFixed(1)+'" font-size="13" font-weight="700" fill="#D63426" text-anchor="end">深さ '+n1(t2)+'</text>';
+    /* 穴径 d */
+    g+='<line x1="'+(cx-R)+'" y1="'+(cy+24)+'" x2="'+(cx+R)+'" y2="'+(cy+24)+'" stroke="#1F3341" stroke-width="1"/>';
+    g+='<text x="'+cx+'" y="'+(cy+19)+'" font-size="12.5" font-weight="700" fill="#1F3341" text-anchor="middle">穴径 '+n1(d)+'</text>';
+    /* d＋t₂（右） */
+    var xd=cx+R+26;
+    g+='<line x1="'+(cx+hb+2).toFixed(1)+'" y1="'+top.toFixed(1)+'" x2="'+(xd+6)+'" y2="'+top.toFixed(1)+'" stroke="#1F3341" stroke-width="0.7"/>';
+    g+='<line x1="'+(cx+4)+'" y1="'+(cy+R)+'" x2="'+(xd+6)+'" y2="'+(cy+R)+'" stroke="#1F3341" stroke-width="0.7"/>';
+    g+='<line x1="'+xd+'" y1="'+top.toFixed(1)+'" x2="'+xd+'" y2="'+(cy+R)+'" stroke="#1F3341" stroke-width="1.4"/>';
+    g+='<text x="'+(xd+8)+'" y="'+(cy-4)+'" font-size="13" font-weight="700" fill="#1F3341">'+n1(d+t2)+'</text>';
+    g+='<text x="'+(xd+8)+'" y="'+(cy+11)+'" font-size="10" fill="#5B707E">穴の反対側から</text>';
+    g+='<text x="'+(xd+8)+'" y="'+(cy+24)+'" font-size="10" fill="#5B707E">溝の底まで</text>';
+    g+='<text x="'+(xd+8)+'" y="'+(cy+37)+'" font-size="10" fill="#5B707E">（d＋t₂）</text>';
+    $('kFig').innerHTML=g;
+  }
+  /* 選んだボタンの意味 */
+  function kExplain(){
+    $('kExp').innerHTML='<div class="kexh">いま選んでいるボタン：'+KSTD[kStd].n+' ・ '+kHole+'</div>'+KSTD[kStd].e+'<br>'+KHOLE[kHole];
+  }
+  function kTr(lbl,base,tol,rng){
+    return '<tr><td>'+lbl+'</td><td>'+base+'</td><td>'+tol+'</td><td><b>'+rng+'</b></td></tr>';
+  }
+  function keyCalc(){
+    kPaint(); kExplain();
+    var box=$('keyOut'), raw=$('fBore').value.trim(), st=KSTD[kStd];
+    function none(msg){ box.innerHTML=msg; $('keySize').innerHTML=''; $('kFig').innerHTML=''; $('kFigWrap').style.display='none'; }
+    if(raw===''){ none('<div class="kbox">穴径（軸穴の内径）を入れると、<b>キー溝の大きさ（幅 × 深さ）</b>と、<b>穴・キー溝の合格範囲</b>が出ます。</div>'); return; }
+    var d=num(raw);
+    if(isNaN(d)||d<=0){ none('<div class="warnbox">穴径は数字で入れてください。</div>'); return; }
+    var ri=kRow(st.tbl,d), hb=kBand(d,KH_B), h='', ds=f4(d).replace(/\.?0+$/,'');
+    var hr=null; if(hb>=0) hr=[d, d+KH_T[kHole][hb]/1000];
+    if(ri<0){
+      none('<div class="ngbox"><b>穴径 '+ds+' は '+st.n+' の表の外です。</b>'
+        +(st.old?'旧JIS の表は 10〜250 です。':'新JIS の表は 6〜500 です。')+'図面の指定で確かめてください。'
+        +(hr?'<br>穴（φ'+ds+' '+kHole+'）は '+f4(hr[0])+' 〜 '+f4(hr[1])+'。':'')+'</div>');
+      return;
+    }
+    var r=st.tbl[ri], b=r[2], kh=r[3], t1=r[4], t2=r[5], tt=st.old?null:r[6];
+    var wb=kBand(b,KW_B), wt=KW_T[st.hub][wb], st2=KW_T[st.shaft][wb];
+    var br=kRange(b,wt), dr=[d+t2, d+t2+(tt===null?0:tt)];
+    var rng=(ri===0?r[0]+'以上':r[0]+'を超え')+r[1]+'以下';
+    /* ① 大きさ（KHK のカタログと同じ「幅 × 深さ」） */
+    var hs='<div class="ksize"><div class="ksl">キー溝の大きさ（幅 × 深さ）</div>'
+      +'<div class="ksv">'+b+' × '+t2.toFixed(1)+'</div>'
+      +'<div class="kss">穴径 '+ds+' の'+esc(st.n)+'。入るキーは <b>'+b+'×'+kh+'</b>（幅 × 高さ）。'
+      +'カタログでは「'+b+'×'+t2.toFixed(1)+'」のように<b>幅 × 深さ</b>で書かれます。</div></div>';
+    $('keySize').innerHTML=hs;
+    /* ② 合格範囲の表 */
+    h='<table class="ktbl"><thead><tr><th>どこ</th><th>基準</th><th>公差</th><th>合格範囲</th></tr></thead><tbody>'
+      +(hr?kTr('穴径（φ'+ds+' '+kHole+'）',ds,kHole+' '+kSig(0,KH_T[kHole][hb]),f4(hr[0])+' 〜 '+f4(hr[1])):'')
+      +kTr('キー溝の幅 b₂',String(b),st.hub+' '+kSig(wt[1],wt[0]),f4(br[0])+' 〜 '+f4(br[1]))
+      +kTr('キー溝の深さ t₂',t2.toFixed(1),(tt===null?'表に無い':'＋'+tt.toFixed(1)+' ／ 0'),(tt===null?f4(t2)+'（図面で）':f4(t2)+' 〜 '+f4(t2+tt)))
+      +kTr('穴の反対側から溝の底まで d＋t₂',f4(d+t2).replace(/\.?0+$/,''),(tt===null?'表に無い':'＋'+tt.toFixed(1)+' ／ 0'),(tt===null?f4(d+t2)+'（図面で）':f4(dr[0])+' 〜 '+f4(dr[1])))
+      +'</tbody></table>'
+      +'<div class="ksub">入るキー <b>'+b+'×'+kh+'</b>（幅 × 高さ）。軸側（参考）：溝の深さ t₁ ＝ '+t1.toFixed(1)+'、幅 '+b+' '+st.shaft+'（'+kSig(st2[1],st2[0])+'）。適用する軸径 '+rng+'。</div>';
+    if(Math.abs(d-r[1])<1e-9||Math.abs(d-r[0])<1e-9){
+      h+='<div class="warnbox"><b>穴径 '+ds+' は区分の境目です。</b>JIS は「'+rng+'」なので <b>'+b+'×'+kh+'</b> になります。'
+        +'隣の区分の大きさで作られていることもあるので、<b>図面の幅 × 深さ</b>と突き合わせてください。</div>';
+    }
+    if(kJ!==null&&st.k!=='js9') h+='<div class="warnbox"><b>KHK の J（追加工品）のキー溝は 新JIS 普通形（Js9）です。</b>いまは「'+st.n+'」で計算しています。</div>';
+    if(st.old) h+='<div class="warnbox"><b>旧JIS は新JIS と寸法が違います</b>（例 φ25：新JIS 8×3.3、旧JIS 7×3.0）。図面・カタログに「旧JIS」と書いてあるときだけ使ってください。深さの許容差は図面・メーカーの値で見てください。</div>';
+    h+='<div class="hint">★<b>キー溝の大きさは JIS の表で穴径から決まります</b>が、JIS でもこの対応は「参考」です（キーは伝わる力で選ぶため）。'
+      +'<b>図面に幅 × 深さが書いてあれば図面が正</b>です。測るときは、幅をキー溝ゲージ（栓ゲージ）か内側マイクロで、'
+      +'深さは<b>穴の反対側から溝の底まで（d＋t₂）</b>をノギスの内側用ジョウかキー溝深さゲージで測ります（t₂ は直接は測りにくいため）。</div>';
+    box.innerHTML=h;
+    $('kFigWrap').style.display='';
+    kDraw(d,b,t2);
+  }
+  function keyInit(){
+    kChips();
+    $('kChips').addEventListener('click',function(e){
+      var t=e.target; while(t&&t!==this&&t.tagName!=='BUTTON') t=t.parentNode;
+      if(!t||t===this) return;
+      if(t.getAttribute('data-k')!==null) kStd=Number(t.getAttribute('data-k'));
+      else if(t.getAttribute('data-h')) kHole=t.getAttribute('data-h');
+      keyCalc();
+    });
+    $('fBore').addEventListener('input',keyCalc);
+    keyCalc();
+  }
   $('fKata').addEventListener('input',kataRun);
   $('fZ').addEventListener('input',recalc);
   $('fMeas').addEventListener('input',recalc);
   buildChips();
   recalc();
+  keyInit();
 })();
 </script>
 
