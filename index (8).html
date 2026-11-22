@@ -1,0 +1,2777 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1F3341">
+<meta name="description" content="弦(スパン)と矢高から円弧の半径Rを計算。R既知なら期待矢高の逆算も。Rと開き角から周長・弦と角度指示の穴の割り出し(円弧カバー)にも対応。両端に直線の付いたカバーを定盤に置いたときの先端の高さ・全長・高さ推移も出せます。板の角の大きなRを、曲がり尺（直角定規）を当てて角から円弧までのいちばん短い距離から求めることもできます。計算は端末内で完結し、入力値はどこにも送信されません。">
+<title>弦・矢高とR | 検査計算ツール</title>
+<style>
+  :root{
+    --paper:#F2F4F5;
+    --sheet:#FFFFFF;
+    --ink:#1F3341;
+    --line:#8FA2AF;
+    --red:#D63426;
+    --dro-bg:#15181A;
+    --dro-red:#FF5A48;
+    --dro-dim:#9FB0B8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI",sans-serif;
+    background:var(--paper);color:var(--ink);
+    min-height:100dvh;display:flex;flex-direction:column;align-items:center;
+    padding:0 12px calc(16px + env(safe-area-inset-bottom));
+  }
+  .wrap{width:100%;max-width:480px}
+
+  header{display:flex;align-items:baseline;justify-content:space-between;padding:14px 2px 10px}
+  header h1{font-size:16px;font-weight:700;letter-spacing:.04em}
+  header h1 small{display:block;font-size:11px;font-weight:400;color:#5B707E;letter-spacing:.08em;margin-top:2px}
+  header a{font-size:12px;color:#5B707E;text-decoration:none}
+
+  .sheet{background:var(--sheet);border:2px solid var(--ink);padding:5px}
+  .sheet-inner{border:1px solid var(--ink)}
+  .sheet svg{display:block;width:100%;height:auto}
+  .titleblock{display:flex;border-top:1px solid var(--ink);font-size:9px;letter-spacing:.06em}
+  .titleblock div{padding:3px 8px;border-right:1px solid var(--ink)}
+  .titleblock div:last-child{border-right:none;margin-left:auto}
+  .titleblock b{font-weight:700}
+
+
+  /* 並び入力（v66）: 1行に1つ。区切り文字を打つ必要をなくす */
+  .lst{margin-top:4px}
+  .lrow{display:flex;align-items:center;gap:5px;margin-bottom:5px}
+  .lrow input{flex:1;min-width:0}
+  .lno{flex:none;width:16px;text-align:right;font-size:12px;color:#8FA2AF}
+  .lbtn{flex:none;width:30px;height:32px;border:1px solid #C9D3DA;background:#fff;
+    border-radius:7px;font:inherit;font-size:14px;line-height:1;cursor:pointer;color:#1F3341}
+  .lbtn.del{color:#D63426}
+  .lbtn:active{background:#E8EDF0}
+  .ladd{width:100%;min-height:34px;border:1px dashed #C9D3DA;background:#fff;border-radius:8px;
+    font:inherit;font-size:12.5px;font-weight:700;color:#5B707E;cursor:pointer}
+  .ladd:active{background:#E8EDF0}
+  .hint{margin-top:12px;font-size:12px;color:#5B707E;line-height:1.6;padding:0 2px}
+  .hint b{color:var(--red);font-weight:700}
+
+  .inputs{margin-top:10px;display:flex;flex-direction:column;gap:10px}
+  .row{
+    display:grid;grid-template-columns:26px 1fr 130px 34px;
+    align-items:center;gap:8px;
+    background:var(--sheet);border:1px solid #D5DDE2;border-radius:10px;
+    padding:10px 12px;
+  }
+  .badge{
+    width:22px;height:22px;border-radius:50%;
+    background:var(--ink);color:#fff;font-size:12px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .row label{font-size:13px;font-weight:600}
+  .row label small{display:block;font-size:10px;font-weight:400;color:#5B707E}
+  .row input{
+    width:100%;font-size:20px;font-weight:600;text-align:right;
+    font-variant-numeric:tabular-nums;
+    border:none;border-bottom:2px solid var(--ink);
+    background:transparent;color:var(--ink);
+    padding:2px 4px;border-radius:0;outline:none;
+  }
+  .row input:focus{border-bottom-color:var(--red)}
+  .row input.computed{color:var(--red)}
+  .unit{font-size:12px;color:#5B707E}
+
+  .dro{
+    margin-top:16px;background:var(--dro-bg);border-radius:12px;
+    padding:14px 16px 12px;box-shadow:inset 0 2px 8px rgba(0,0,0,.5);
+  }
+  .dro-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  .cellv{display:flex;flex-direction:column;align-items:flex-end;padding:6px 8px;border-radius:8px}
+  .cellv:active{background:#1e2327}
+  .cellv .k{color:#7d8a91;font-size:12px;font-weight:700;letter-spacing:.1em;align-self:flex-start}
+  .cellv .v{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:21px;font-weight:600;letter-spacing:.01em;
+  }
+  .cellv .v.led{color:var(--dro-red);text-shadow:0 0 9px rgba(255,90,72,.35)}
+  .cellv .v.dim{color:var(--dro-dim)}
+  .cellv .s{color:#5d6a71;font-size:11px}
+  .dro-sub{
+    text-align:right;color:#7d8a91;font-size:12px;margin-top:8px;
+    font-variant-numeric:tabular-nums;
+  }
+  .dro-foot{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-top:10px;border-top:1px solid #2a3034;padding-top:9px;gap:8px;
+  }
+  .statusTxt{color:#5d6a71;font-size:11px;letter-spacing:.02em}
+  .statusTxt.err{color:#FF8A7E}
+
+  footer{margin-top:18px;font-size:11px;color:#5B707E;line-height:1.7;text-align:center;letter-spacing:.03em}
+  /* ── 使い方ガイド（全ツール共通） ── */
+  .guide{background:#FFFFFF;border:1px solid #D5DDE2;border-radius:12px;margin:0 0 12px;overflow:hidden}
+  .guide>summary{list-style:none;cursor:pointer;padding:12px 14px;font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.04em;display:flex;align-items:center;gap:7px}
+  .guide>summary::-webkit-details-marker{display:none}
+  .guide>summary::before{content:"?";display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#1F3341;color:#fff;font-size:11px;font-weight:700;flex:none}
+  .guide[open]>summary{border-bottom:1px solid #E3E9EC}
+  .guide .gb{padding:2px 14px 14px}
+  .guide .gb h4{font-size:11px;letter-spacing:.07em;color:#5B707E;font-weight:700;margin:13px 0 6px}
+  .guide .gb ol{margin:0;padding-left:1.2em;font-size:11.5px;line-height:1.75;color:#1F3341}
+  .guide .gb ol b{color:#1F3341}
+  .guide .gx{border-top:1px dashed #E3E9EC;margin-top:11px;padding-top:8px}
+  .guide .gx h4{margin-top:6px}
+  .guide .gxin{display:flex;gap:12px;align-items:flex-start;margin-top:4px}
+  .guide .gfig{flex:none}
+  .guide .gfig svg{width:112px;height:112px;display:block;background:#FBFCFC;border:1px solid #EDF1F3;border-radius:8px}
+  .guide .gtxt{flex:1;font-size:11.5px;line-height:1.6;color:#1F3341}
+  .guide .gtxt p{margin:0 0 7px}
+  .guide .gset{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;background:#F2F6F8;border:1px solid #E3E9EC;border-radius:6px;padding:6px 8px;color:#3A5060;line-height:1.5}
+  .guide .gread b{color:#D63426}
+  .guide .gbtn{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;font:inherit;font-size:11.5px;font-weight:600;border:1px solid #1F3341;border-radius:6px;background:#fff;color:#1F3341;cursor:pointer;margin-top:2px}
+  .guide .gbtn:active{transform:translateY(1px)}
+  @media(max-width:360px){.guide .gxin{flex-direction:column}.guide .gfig svg{width:128px;height:128px}}
+  /* ── R・角度から割り出し（v30 追加タブ） ── */
+  .tabbar{display:flex;gap:6px;margin:0 0 12px}
+  .tabbar button{flex:1;font:inherit;font-size:12.5px;font-weight:700;padding:9px 6px;border:1.5px solid #1F3341;border-radius:9px;background:#fff;color:#1F3341;cursor:pointer}
+  .tabbar button.on{background:#1F3341;color:#fff}
+  .achips{display:flex;gap:6px;margin:10px 0 8px}
+  .achips button{font:inherit;font-size:12px;font-weight:700;padding:7px 11px;border:1.5px solid #1F3341;border-radius:8px;background:#fff;color:#1F3341;cursor:pointer}
+  .achips button.on{background:#1F3341;color:#fff}
+  .htblwrap{overflow-x:auto}
+  .htbl{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:10px}
+  .htbl th{font-size:10px;color:#5B707E;letter-spacing:.05em;text-align:right;padding:4px 6px;border-bottom:1.5px solid #1F3341;white-space:nowrap}
+  .htbl th:first-child,.htbl td:first-child{text-align:center}
+  .htbl td{padding:6px;border-bottom:1px solid #E3E9EC;text-align:right;font-family:ui-monospace,Menlo,monospace;white-space:nowrap}
+  .htbl td.warn{color:#B23B2E;font-weight:700}
+  /* 一括消去ボタン（v37 / 全ツール共通の見た目） */
+  .topclear{display:flex;justify-content:flex-end;margin:2px 2px 10px}
+  .topclear button{font-size:12px;font-weight:700;color:#B23B2E;background:#FBECEA;border:1px solid #E7B7B0;border-radius:9px;padding:7px 14px;cursor:pointer}
+  .topclear button:active{background:#F6DAD5}
+  .topclear button.arm{background:#B23B2E;color:#fff;border-color:#B23B2E}
+  .clearBtn{width:100%;font-size:13px;font-weight:700;padding:12px 4px;border:1.5px solid #C9D3DA;border-radius:10px;background:var(--sheet);color:#5B707E;letter-spacing:.05em;margin-bottom:6px;cursor:pointer}
+  .clearBtn.arm{border-color:var(--red);color:var(--red);background:#FCF0EF}
+  /* 一覧へ戻る導線：スマホで押しやすいよう、消去ボタンと同じ高さの左端に置く */
+  .topclear,.topClear{justify-content:space-between !important;align-items:center;gap:8px}
+  .topclear button,.topClear button{min-height:38px}
+  .backlink{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:8px 14px;
+    font-size:12px;font-weight:700;color:#5B707E;background:#FFFFFF;border:1px solid #C9D3DA;border-radius:9px;
+    text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
+  .backlink:active{background:#EEF2F4}
+  @media print{.backlink{display:none}}
+  .dimsw{display:flex;gap:6px;padding:0 2px;margin:0 0 8px}
+  .dimsw button{flex:1;min-height:38px;padding:8px 6px;font:inherit;font-size:12px;font-weight:700;
+    border:1px solid #C9D3DA;background:#fff;color:#5B707E;border-radius:9px;cursor:pointer}
+  .dimsw button.on{background:#1F3341;color:#fff;border-color:#1F3341}
+  .src{margin:10px 0 0;padding:9px 11px;background:#F4F7F9;border:1px solid #D5DDE2;border-left:3px solid #5B707E;
+    border-radius:8px;font-size:11.5px;line-height:1.75;color:#3D515F}
+  .src b{color:#1F3341}
+  .src code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#fff;border:1px solid #E3E9EC;border-radius:4px;padding:0 3px}
+  /* v177: 角のR（曲がり尺で測る） */
+  .ktips{margin-top:12px;padding:10px 12px;background:#FFFBEF;border:1px solid #EAD9A6;border-radius:10px;font-size:12px;line-height:1.7;color:#3D515F}
+  .ktips>b{color:#7A5410}
+  .ktips ol{margin:4px 0 0;padding-left:1.3em}
+  .ktips li{margin:3px 0}
+  .ktips li b{color:#1F3341}
+  .kalt{background:#fff;border:1px solid #D5DDE2;border-radius:12px;margin:12px 0 0;overflow:hidden}
+  .kalt>summary{list-style:none;cursor:pointer;padding:12px 14px;font-size:12.5px;font-weight:700;color:#1F3341;display:flex;align-items:center;gap:8px}
+  .kalt>summary::-webkit-details-marker{display:none}
+  .kalt>summary::before{content:"\FF0B";display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:6px;background:#1F3341;color:#fff;font-size:12px;flex:none}
+  .kalt[open]>summary::before{content:"\FF0D"}
+  .kalt[open]>summary{border-bottom:1px solid #E3E9EC}
+  .kalt .kaltb{padding:10px 12px 12px}
+  .kalt .kaltb svg{display:block;width:100%;height:auto;background:#fff;border:1px solid #E3E9EC;border-radius:8px}
+  .statusTxt.okc{color:#5CD6A0}
+  /* タブが4つになったので、スマホ幅では2段（2×2）に。1段のままだと「R・角度割り出し」が途中で折れる */
+  @media(max-width:460px){.tabbar{display:grid;grid-template-columns:1fr 1fr}}
+  /* v151: 著作権表示。フッターの末尾に置く（全ページ共通の見た目） */
+  .crnote{margin-top:8px;padding-top:7px;border-top:1px solid rgba(143,162,175,.45);
+    font-size:11px;line-height:1.7;color:inherit;opacity:.92}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>弦・矢高とR<small>弦・矢高⇔R ／ R・開き角→周長・穴割り出し ／ 板の角のR</small></h1>
+  </header>
+
+  <div class="topclear"><a class="backlink" href="../index.html">≡ ツール一覧</a><button type="button" aria-label="入力をすべて消去して最初から始める" onclick="armClear(this)">すべて消去</button></div>
+
+<details class="guide noprint">
+  <summary>使い方と例を見る</summary>
+  <div class="gb">
+    <h4>使い方</h4>
+    <ol>
+      <li>直定規やゲージを円弧面に当て、<b>弦 c</b>（当て幅）と<b>矢高 h</b>（弦の中央から円弧までの高さ）を測ります。</li>
+      <li>c・h・R の<b>どれか2つ</b>を入れると、残りが赤字で出ます。</li>
+      <li>図面のRと定規のスパン c から「合格時の矢高 h」を逆算することもできます。</li>
+      <li>円弧カバーなど「<b>R と開き角</b>」の図面は、上の<b>「R・角度から割り出し」タブ</b>へ。周長・弦と、角度指示の穴の<b>左端からの周長・弦</b>が出ます（開き角は「117 30」＝117°30′のように度・分でも可）。</li>
+      <li>そのタブの<b>「定盤に置いて測る」</b>は、両端に直線の付いたカバーを<b>片方の直線を定盤に密着させて置き</b>、反対の先端の高さをハイトゲージで測るとき用です。
+        <b>先端の高さ</b>・<b>定盤上の全長</b>・<b>展開長</b>と、水平位置ごとの<b>高さ推移表</b>が出ます。
+        <b>この測り方は実質「角度ゲージ」です。</b>角度には非常に敏感（1°で数mm動く）ですが、<b>R にはほとんど反応しません</b>。この置き方で R の良否は判定できないと考えてください。</li>
+          <li><b>割り部品</b>のタブは、割った片側だけを測るとき用です。<b>半径</b>と<b>割の隙間</b>を入れると、
+        割面での<b>弦</b>と<b>矢高</b>が出ます（隙間のぶんを電卓で引く必要はありません）。
+        <b>中心から端面まで</b>も入れると、実際に測れる<b>端面から円の底まで</b>が公差つきで出ます。</li>
+      <li><b>角のR</b>のタブは、板の四隅などの<b>大きな角の R</b>（R ゲージや R の型に無い大きさ）を、<b>曲がり尺（直角定規）</b>で測るとき用です。
+        尺の内側の2辺を板の2辺にぴったり当て、<b>尺の内側の角から円弧までのいちばん短い距離 d</b> を測って入れると R が出ます。
+        <b>図面の R</b> を入れると、測ったときに出るはずの d と、公差の範囲も出ます。</li>
+</ol>
+    <div class="src">
+      <b>計算のしかた</b><br>
+      弦 c・矢高 h・半径 R の関係はひとつの式で結ばれていて、2つ入れれば残りが決まります。<br>
+      ・<code>R = (c²/4 + h²) / (2h)</code>　　・<code>h = R − √(R² − c²/4)</code>　　・<code>c = 2·√(2Rh − h²)</code><br>
+      ・★R と c から矢高を出すときに出しているのは<b>小さいほうの弧（半円以下）の矢高</b>です。
+      同じ弦と半径には、反対側に <code>h = R + √(R² − c²/4)</code> という<b>大きいほうの弧</b>もあります。
+      半円を越える円弧を測っているときは、この画面の値ではありません。<br>
+      ・開き角 … <code>θ = 2·asin( c / (2R) )</code>　　・弧長 … <code>弧 = R × θ</code>（θ はラジアン）<br>
+      ・直径で入れたときは <code>R = φ/2</code> に直してから同じ式を使っています（内部は常に半径）。<br>
+      ・穴の割り出し（R・角度から）… 穴の位置は <code>配置半径 × (sin・cos)</code> で出し、弦・弧に直しています。<br>
+      当て板（弦）を長くとるほど矢高の読み取り誤差が R に効きにくくなります。<b>c が小さいと R が跳ねる</b>のは式の形（分母が 2h）によるもので、測定の腕ではありません。
+      ・<b>割り部品</b> … 割った片側だけを測るとき、割面は円の中心を通っていません。
+        この部品の割面が中心からずれている量を a とすると<br>
+        　<code>弦 c = 2·√(R² − a²)</code>　<code>矢高 h = R − a</code>　<code>開き角 = 2·acos(a ÷ R)</code><br>
+        隙間を「合計」で入れたときは <code>a = 隙間 ÷ 2</code>、「この部品ぶん」で入れたときは <code>a = 隙間</code> です。
+        <b>片割れどうしで大きさが違う部品</b>があるため切り替えられるようにしています。
+        割面が中心を越えて反対側にある（半円より大きい）部品は、「この部品ぶん」に <b>マイナス</b>で入れてください。<br>
+      ・<b>端面から円の底まで</b> … <code>H − R</code>（H は割の中心から端面までの距離）。
+        中心そのものはノギスやハイトゲージで当てられないので、実際に測れる寸法に置きかえたものです。
+        公差は H に付いたものをそのまま移しています。<b>穴径にも公差がある場合は、その半分ぶんだけ別に振れます。</b><br>
+      ・<b>定盤に置いて測る</b> … 定盤に付けた直線を水平にとり、弧の始まりを原点として順に足しています。
+        弧は中心が真上（高さ R の位置）にあるので、開き角 θ まで回したときの<br>
+        　<code>弧の終わりの高さ = R(1 − cos θ)</code>　<code>弧の終わりの水平 = R sin θ</code><br>
+        そこから先端側の直線 L₂ を θ の向きに伸ばして<br>
+        　<code>先端の高さ = R(1 − cos θ) + L₂ sin θ</code>　<code>定盤上の全長 = L₁ + R sin θ + L₂ cos θ</code><br>
+        <b>定盤に付けた側の直線 L₁ は高さに効きません</b>（寝ているだけなので）。効くのは全長のほうです。<br>
+      ・<b>板厚と面の向き</b> … 定盤に接するのは弧の<b>外面</b>です（中心が上にあるため）。
+        図面のRが<b>内面</b>基準のときは <code>外面R = 内R + 板厚</code> に直してから上の式に入れています。
+        ハイトゲージが当たるのは<b>上面</b>なので、先端では <code>板厚 × cos θ</code> ぶん高く出ます。
+        上面の弧は<b>下面と同じ中心で半径が板厚ぶん小さい弧</b>なので、途中の高さは <code>R − √((R−板厚)² − 水平²)</code> です。
+        上面は板厚のぶんだけ手前で終わる（<code>板厚 × sin θ</code>）ので、表のいちばん先の行は「―」になることがあります。<br>
+      ・<b>展開長</b> … <code>L₁ + R θ + L₂</code>（θ はラジアン）で、<b>図面のRが指している面に沿った長さ</b>です。
+        材料の切り出し長さは普通<b>中立面</b>（板厚の中心）で取るので、板厚のあるものはそのぶん違います。<br>
+      ・<b>感度</b> … 高さを θ で微分すると <code>R sin θ + L₂ cos θ</code>（1°あたりはこれ×π/180）、
+        R で微分すると <code>1 − cos θ</code>、L₂ で微分すると <code>sin θ</code> です。
+        θ が浅いほど <code>1 − cos θ</code> は小さく、<b>R の効きだけが極端に鈍くなります</b>。
+        開き角の公差を入れると、上下限を上の式にそのまま入れ直した高さの管理値を出します（近似ではありません）。<br>
+      ・開き角が<b>90°を超える</b>と定盤の上で倒れるため、この計算は 90° までにしてあります。<br>
+      ・<b>弧の反る向き</b> … 定盤に付けた直線から弧が立ち上がる以上、
+        <b>弧の中心は必ず真上</b>にあります（中心が下にあると弧は定盤の中へもぐってしまいます）。
+        向きを選ぶ余地はないので、<b>反対側の直線を定盤に付けたいときは入れ替えボタン</b>を使ってください。
+        図面の弧が下にふくらんで見えるときは、その部品は<b>ひっくり返して置く</b>ことになります。<br>
+      ・<b>角のR</b> … 尺の内側の2辺を板の2辺に当てると、尺の内側の角は<b>板の2辺を延ばした線の交わる所</b>になります。
+        角が直角なら、円弧の中心はそこから縦・横に R ずつ入った所にあり、尺の角から中心までは <code>R√2</code>。
+        円弧のいちばん近い点はその線の上（<b>45°の向き</b>）にあるので<br>
+        　<code>d = R√2 − R = R(√2 − 1) ≈ 0.4142 × R</code>　<code>R = d(√2 + 1) ≈ 2.4142 × d</code><br>
+        d の読み違いは<b>約 2.4 倍</b>になって R に出ます（0.5 違うと R は 1.2 違う）。
+        いっぽう<b>向きのずれには鈍く</b>、45°から 2° ずれても R245 で d は 0.09 しか変わりません（いちばん短い所を読んでいるため。5° で 0.55）。<br>
+        R の始まり（板が尺から離れはじめる所）は尺の角から R の所ですが、まっすぐな辺と円弧が<b>なめらかにつながっていて見分けにくい</b>ので、そこを読むより d を測るほうが確かです。<br>
+      ・<b>別の測り方（目盛りの所のすき間）</b> … 尺の目盛り a の所で尺から板までのすき間 g を測ると、その点は円弧の上にあるので
+        <code>(a − R)² + (g − R)² = R²</code>。大きいほうの答えが R で <code>R = a + g + √(2ag)</code>（小さいほうは、その点が円弧に乗らない答え）。
+        図面の R から、目盛り a の所のすき間は <code>g = R − √(R² − (R − a)²)</code>（a が R より先なら、板は尺に当たっていてすき間 0）。<br>
+</div>
+    <div class="gx">
+      <h4>例 ── 弦100・矢高10 の大きなR</h4>
+      <div class="gxin">
+        <div class="gfig"><svg viewBox="0 0 120 120" role="img" aria-label="弦cと矢高hから半径Rを求める図">
+          <path d="M20,85 Q60,35 100,85" fill="none" stroke="#1F3341" stroke-width="1.6"/>
+          <line x1="20" y1="85" x2="100" y2="85" stroke="#8FA2AF" stroke-width="1.1" stroke-dasharray="3 2"/>
+          <line x1="20" y1="82" x2="20" y2="88" stroke="#8FA2AF" stroke-width="1"/>
+          <line x1="100" y1="82" x2="100" y2="88" stroke="#8FA2AF" stroke-width="1"/>
+          <line x1="60" y1="85" x2="60" y2="60" stroke="#D63426" stroke-width="1.5"/>
+          <text x="60" y="99" font-size="8.5" fill="#1F3341" text-anchor="middle">c = 弦</text>
+          <text x="66" y="76" font-size="8.5" fill="#D63426">h</text>
+          <text x="60" y="30" font-size="8" fill="#5B707E" text-anchor="middle">R</text>
+        </svg></div>
+        <div class="gtxt">
+          <p>弦 c=100、矢高 h=10 を測ったときの半径 R は？</p>
+          <p class="gset">弦 c 100 ／ 矢高 h 10</p>
+          <p class="gread">読み方：R =(c²+4h²)/(8h)=(100²+4×10²)/(8×10)= <b>130.000mm</b>。</p>
+          <button class="gbtn" type="button" data-ex='{"set":[{"click":"#tCH"},{"id":"fR","v":""},{"id":"fC","v":100},{"id":"fH","v":10}]}' onclick="tryExample(this)">この例を試す</button>
+        </div>
+      </div>
+    </div>
+    <div class="gx">
+      <h4>例 ── R200・開き角90°のカバー、穴3つの割り出し</h4>
+      <div class="gxin">
+        <div class="gfig"><svg viewBox="0 0 120 120" role="img" aria-label="開き角90°の円弧カバーと3つの穴の図">
+          <path d="M 21.1 61.1 A 55 55 0 0 1 98.9 61.1" fill="none" stroke="#1F3341" stroke-width="2"/>
+          <line x1="21.1" y1="61.1" x2="98.9" y2="61.1" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="3 2"/>
+          <line x1="21.1" y1="61.1" x2="26.6" y2="66.6" stroke="#1F3341" stroke-width="1.2"/>
+          <line x1="98.9" y1="61.1" x2="93.4" y2="66.6" stroke="#1F3341" stroke-width="1.2"/>
+          <circle cx="32.5" cy="52.4" r="3" fill="#fff" stroke="#D63426" stroke-width="1.4"/>
+          <circle cx="60"   cy="45"   r="3" fill="#fff" stroke="#D63426" stroke-width="1.4"/>
+          <circle cx="87.5" cy="52.4" r="3" fill="#fff" stroke="#D63426" stroke-width="1.4"/>
+          <text x="16" y="75" font-size="7.5" fill="#5B707E">左端</text>
+          <text x="60" y="110" font-size="7.5" fill="#5B707E" text-anchor="middle">R200・開き90°</text>
+        </svg></div>
+        <div class="gtxt">
+          <p>R200・開き角90°のカバー。穴が左端から 15°・45°・75°。テープで測る位置は？</p>
+          <p class="gset">R・角度から割り出し ／ R 200 ／ θ 90 ／ 穴 15 45 75</p>
+          <p class="gread">読み方：周長 <b>314.159</b>・弦 <b>282.843</b>。穴2は左端から周長 <b>157.080</b>（弦 153.073）、隣の穴とは周長 104.720（弦 103.528）。</p>
+          <button class="gbtn" type="button" data-ex='{"set":[{"click":"#tArc"},{"id":"fAR","v":200},{"id":"fATh","v":90},{"id":"fAHr","v":""},{"id":"fAAngs","v":"15 45 75"}]}' onclick="tryExample(this)">この例を試す</button>
+        </div>
+      </div>
+    <div class="gx">
+      <h4>例 ── R1000・15°、両端に100の直線のカバーを定盤に置く</h4>
+      <div class="gxin">
+        <div class="gfig"><svg viewBox="0 0 120 120" role="img" aria-label="片方の直線を定盤に付けて置いたカバーと先端の高さの図">
+          <line x1="6" y1="95" x2="116" y2="95" stroke="#1F3341" stroke-width="1.8"/>
+          <path d="M12,95 L36,95 A 112 112 0 0 0 88.6,81.9 L109.8,70.6" fill="none" stroke="#1F3341" stroke-width="2"/>
+          <line x1="109.8" y1="70.6" x2="109.8" y2="95" stroke="#D63426" stroke-width="1.4"/>
+          <text x="99" y="66" font-size="8" fill="#D63426">H</text>
+          <text x="26" y="107" font-size="7.5" fill="#5B707E">定盤</text>
+        </svg></div>
+        <div class="gtxt">
+          <p>R1000・開き角15°の弧の両端に100の直線。片方の直線を定盤に付けたとき、反対の先端の高さは？</p>
+          <p class="gset">定盤に置いて測る ／ R 1000 ／ θ 15 ／ 定盤側の直線 100 ／ 先端側の直線 100</p>
+          <p class="gread">読み方：先端の高さは <b>59.956</b>（≒60.0）、定盤上の全長は <b>455.412</b>、展開長は <b>461.799</b>。
+            高さ推移表の値をハイトゲージで拾えば、途中の形も見られます。
+            <b>1°ずれると6.2mm動く</b>ので、これは角度の検査です。R が±10 違っても 0.34 しか動きません。</p>
+          <button class="gbtn" type="button" data-ex='{"set":[{"click":"#tArc"},{"click":"#pmPlate"},{"click":"#prOut"},{"id":"fAR","v":1000},{"id":"fATh","v":15},{"id":"fPL1","v":100},{"id":"fPL2","v":100},{"id":"fPT","v":""},{"id":"fPTol","v":""},{"id":"fPStep","v":""}]}' onclick="tryExample(this)">この例を試す</button>
+        </div>
+      </div>
+    </div>
+        <div class="gx">
+      <h4>例 ── φ80 の穴を隙間0.4で割った下側、中心高さ50±0.1</h4>
+      <div class="gxin">
+        <div class="gtxt">
+          <p class="gset">割り部品 ／ 半径 40 ／ 隙間 0.4（合計） ／ 中心から端面まで 50 ／ ±0.1</p>
+          <p class="gread">読み方：割面での弦は <b>79.999</b>、矢高は <b>39.800</b>（半径40より 0.2 浅い）。
+            端面から円の底までは <b>10.000</b> で、許容は <b>9.900〜10.100</b>。
+            この 10.000 がハイトゲージで実際に当てる寸法です。</p>
+          <button class="gbtn" type="button" data-ex='{"set":[{"click":"#tSplit"},{"id":"fSR","v":40},{"id":"fSGap","v":0.4},{"id":"fSH","v":50},{"id":"fSTol","v":0.1}]}' onclick="tryExample(this)">この例を試す</button>
+        </div>
+      </div>
+    </div>
+    <div class="gx">
+      <h4>例 ── 大きな板の四隅が R245（±1）。R の型に 245 が無い</h4>
+      <div class="gxin">
+        <div class="gfig"><svg viewBox="0 0 120 120" role="img" aria-label="板の角に曲がり尺を当て、尺の内側の角から円弧までの距離dを測る図">
+          <path d="M 18 84 A 66 66 0 0 1 84 18 L 116 18 L 116 116 L 18 116 Z" fill="#EEF2F4"/>
+          <path d="M 18 116 L 18 84 A 66 66 0 0 1 84 18 L 116 18" fill="none" stroke="#1F3341" stroke-width="1.8"/>
+          <path d="M 10 10 L 110 10 L 110 18 L 18 18 L 18 110 L 10 110 Z" fill="#F4EBCB" stroke="#8A6A1E" stroke-width="1"/>
+          <line x1="18" y1="18" x2="37.3" y2="37.3" stroke="#D63426" stroke-width="1.8"/>
+          <circle cx="18" cy="18" r="2.2" fill="#D63426"/>
+          <text x="22" y="44" font-size="10" font-weight="700" fill="#D63426">d</text>
+          <text x="104" y="104" font-size="8" fill="#5B707E" text-anchor="end">R245</text>
+        </svg></div>
+        <div class="gtxt">
+          <p>曲がり尺を角に当て、尺の内側の角から円弧までのいちばん短い所を測ったら 101.5 だった。R は？</p>
+          <p class="gset">角のR ／ 距離 d 101.5 ／ 図面の R 245 ／ ±1</p>
+          <p class="gread">読み方：R = 101.5 × 2.4142 = <b>245.043</b>（図面より +0.043）。
+            図面の R245 なら d は <b>101.482</b>、R244〜246 なら d は <b>101.068〜101.897</b> の間に入ります。</p>
+          <button class="gbtn" type="button" data-ex='{"set":[{"click":"#tCorner"},{"id":"fKD","v":101.5},{"id":"fKR","v":245},{"id":"fKTol","v":1},{"id":"fKA","v":""},{"id":"fKG","v":""}]}' onclick="tryExample(this)">この例を試す</button>
+        </div>
+      </div>
+    </div>
+</div>
+  </div>
+</details>
+
+
+
+  <div class="tabbar noprint">
+    <button type="button" id="tCH" class="on">弦・矢高⇔R</button>
+    <button type="button" id="tArc">R・角度割り出し</button>
+    <button type="button" id="tSplit">割り部品</button>
+    <button type="button" id="tCorner">角のR</button>
+  </div>
+
+  <div class="dimsw" id="cdSw" role="group" aria-label="半径で入れるか直径で入れるか">
+    <button type="button" id="cdR" class="on">半径 R で</button>
+    <button type="button" id="cdD">直径 φ で</button>
+  </div>
+
+  <section id="paneCH">
+  <!-- 図面シート -->
+  <div class="sheet">
+    <div class="sheet-inner">
+      <svg viewBox="0 0 340 250" role="img" aria-label="円弧に弦を当て、弦の長さcと矢高hから半径Rを求める関係図">
+        <defs>
+          <marker id="ar" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L8,3 L0,6 z" fill="#1F3341"/>
+          </marker>
+          <marker id="arRed" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L8,3 L0,6 z" fill="#D63426"/>
+          </marker>
+        </defs>
+
+        <!-- 中心線(鉛直) -->
+        <line x1="170" y1="42" x2="170" y2="246" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="12 3 2 3"/>
+
+        <!-- 部品の円弧面(実線=測定面) -->
+        <path d="M 22.1 140.4 A 170.8 170.8 0 0 1 317.9 140.4" fill="none" stroke="#1F3341" stroke-width="2.4"/>
+        <line x1="22.1" y1="140.4" x2="22.1" y2="178" stroke="#C9D3DA" stroke-width="1.2"/>
+        <line x1="317.9" y1="140.4" x2="317.9" y2="178" stroke="#C9D3DA" stroke-width="1.2"/>
+
+        <!-- 弦の接点 -->
+        <circle cx="40" cy="115" r="2.6" fill="#1F3341"/>
+        <circle cx="300" cy="115" r="2.6" fill="#1F3341"/>
+
+        <!-- 弦 c(寸法兼用) -->
+        <line id="dimC" x1="40" y1="115" x2="300" y2="115" stroke="#1F3341" stroke-width="1.3"
+              marker-start="url(#ar)" marker-end="url(#ar)"/>
+        <text id="svgC" x="122" y="109" font-size="12" fill="#1F3341" text-anchor="middle"
+              stroke="#fff" stroke-width="3.5" paint-order="stroke">c</text>
+        <circle cx="145" cy="105" r="8.5" fill="#1F3341" stroke="#fff" stroke-width="2"/>
+        <text x="145" y="109" font-size="10.5" font-weight="700" fill="#fff" text-anchor="middle">1</text>
+
+        <!-- 矢高 h -->
+        <line id="dimH" x1="170" y1="55" x2="170" y2="115" stroke="#1F3341" stroke-width="1.3"
+              marker-start="url(#ar)" marker-end="url(#ar)"/>
+        <text id="svgH" x="178" y="88" font-size="12" fill="#1F3341" text-anchor="start"
+              stroke="#fff" stroke-width="3.5" paint-order="stroke">h</text>
+        <circle cx="166" cy="84" r="8.5" fill="#1F3341" stroke="#fff" stroke-width="2"/>
+        <text x="166" y="88" font-size="10.5" font-weight="700" fill="#fff" text-anchor="middle">2</text>
+
+        <!-- 半径 R(中心→円弧) -->
+        <line id="dimR" x1="170" y1="225.8" x2="49.2" y2="105" stroke="#1F3341" stroke-width="1.3"
+              marker-end="url(#ar)"/>
+        <text id="svgR" x="118.1" y="156.9" font-size="12" fill="#1F3341" text-anchor="middle"
+              stroke="#fff" stroke-width="3.5" paint-order="stroke"
+              transform="rotate(45 118.1 156.9)">R</text>
+        <circle cx="60" cy="140" r="8.5" fill="#1F3341" stroke="#fff" stroke-width="2"/>
+        <text x="60" y="144" font-size="10.5" font-weight="700" fill="#fff" text-anchor="middle">3</text>
+
+        <!-- 円弧中心 -->
+        <line x1="140" y1="225.8" x2="200" y2="225.8" stroke="#8FA2AF" stroke-width="1" stroke-dasharray="9 3 2 3"/>
+        <circle cx="170" cy="225.8" r="2.5" fill="#1F3341"/>
+        <text x="180" y="240" font-size="10" fill="#5B707E">円弧の中心</text>
+      </svg>
+      <div class="titleblock">
+        <div><b>品名</b> 弦・矢高とR</div>
+        <div><b>方式</b> 弦・矢高法</div>
+        <div>TOOL-04</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hint">直定規やゲージを円弧面に当て、弦 c と矢高 h を測ると R が出ます。①〜③のうち<b>どれか2つ</b>を入力すると、残り(<b>赤字</b>)を自動計算します。図面のRと定規のスパンcから「合格時のh」の逆算もできます。</div>
+
+  <!-- 入力 -->
+  <div class="inputs">
+    <div class="row">
+      <span class="badge">1</span>
+      <label for="fC">弦 c<small>当て幅(接点間の直線距離)</small></label>
+      <input id="fC" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row">
+      <span class="badge">2</span>
+      <label for="fH">矢高 h<small>弦の中央から円弧までの高さ</small></label>
+      <input id="fH" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row">
+      <span class="badge">3</span>
+      <label for="fR">半径 R<small>円弧の半径</small></label>
+      <input id="fR" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+    </div>
+  </div>
+
+  <!-- 結果 -->
+  <div class="dro">
+    <div class="dro-grid">
+      <div class="cellv" id="cC"><span class="k">c</span><span class="v dim" id="vC">―</span><span class="s">mm</span></div>
+      <div class="cellv" id="cH"><span class="k">h</span><span class="v dim" id="vH">―</span><span class="s">mm</span></div>
+      <div class="cellv" id="cR"><span class="k">R</span><span class="v dim" id="vR">―</span><span class="s">mm</span></div>
+    </div>
+    <div class="dro-sub" id="subTxt">φ(直径)= ― | 中心角 = ―</div>
+    <div class="dro-foot">
+      <span class="statusTxt" id="statusTxt">入力待ち(2つ入力してください)</span>
+      
+    </div>
+  </div>
+
+  </section>
+
+  <section id="paneSplit" hidden>
+  <div class="sheet">
+    <div class="sheet-inner">
+      <svg id="figSplit" viewBox="0 0 340 250" role="img" aria-label="割り部品の断面。割面は円の中心から隙間のぶんずれており、割面での弦と、端面から円の底までの寸法を示す図"></svg>
+      <div class="titleblock">
+        <div><b>品名</b> 弦・矢高とR</div>
+        <div><b>方式</b> 割り部品</div>
+        <div>TOOL-04</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hint">割った片側だけを測るときに使います。<b>割面は円の中心を通っていない</b>ので、弦も矢高も隙間のぶんだけ変わります。
+    中心そのものは測れないので、<b>端面から円の底まで</b>に置きかえた値も出します。</div>
+
+  <div class="inputs">
+    <div class="row">
+      <span class="badge">1</span>
+      <label for="fSR" id="lbSR">半径 R<small>穴（円弧）の半径</small></label>
+      <input id="fSR" type="text" inputmode="decimal" autocomplete="off" placeholder="例 40">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row">
+      <span class="badge">2</span>
+      <label for="fSGap">割の隙間<small>図面値。下の切替に注意</small></label>
+      <input id="fSGap" type="text" inputmode="decimal" autocomplete="off" placeholder="例 0.4">
+      <span class="unit">mm</span>
+    </div>
+    <div class="dimsw" role="group" aria-label="隙間の入れ方" style="margin:2px 0 8px 34px">
+      <button type="button" id="gpBoth" class="on">合計（半分ずつ）</button>
+      <button type="button" id="gpOne">この部品ぶん</button>
+    </div>
+    <div class="row">
+      <span class="badge">3</span>
+      <label for="fSH">中心から端面まで<small>円の底がある側の端面まで</small></label>
+      <input id="fSH" type="text" inputmode="decimal" autocomplete="off" placeholder="例 50">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row">
+      <span class="badge">±</span>
+      <label for="fSTol">その公差 ±<small>空欄可</small></label>
+      <input id="fSTol" type="text" inputmode="decimal" autocomplete="off" placeholder="例 0.1">
+      <span class="unit">mm</span>
+    </div>
+  </div>
+
+  <div class="dro">
+    <div class="dro-grid">
+      <div class="cellv"><span class="k">弦 c</span><span class="v dim" id="vSC">―</span><span class="s">mm</span></div>
+      <div class="cellv"><span class="k">矢高 h</span><span class="v dim" id="vSH">―</span><span class="s">mm</span></div>
+      <div class="cellv"><span class="k">端面→底</span><span class="v dim" id="vSE">―</span><span class="s">mm</span></div>
+    </div>
+    <div class="dro-sub" id="subSplit">割面のずれ = ― | 開き角 = ―</div>
+    <div class="dro-sub" id="tolSplit"></div>
+    <div class="dro-foot">
+      <span class="statusTxt" id="statusSplit">入力待ち(半径と隙間を入れてください)</span>
+      
+    </div>
+  </div>
+  </section>
+
+  <section id="paneArc" hidden>
+  <div class="sheet">
+    <div class="sheet-inner">
+      <svg id="figArc" viewBox="0 0 340 250" role="img" aria-label="Rと開き角の円弧カバーと角度指示の穴の図"></svg>
+      <div class="titleblock">
+        <div><b>品名</b> 弦・矢高とR</div>
+        <div><b>方式</b> R・角度割り出し</div>
+        <div>TOOL-04</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hint">円弧カバーなど「<b>R と開き角</b>」で描かれた図面用です。周長・弦が出て、<b>角度で指示された穴</b>を、左端からの<b>周長（テープ・スケールで測る値）</b>と<b>弦（ノギスで測る値）</b>に割り出します。</div>
+
+  <div class="inputs">
+    <div class="row">
+      <span class="badge">1</span>
+      <label for="fAR">半径 R<small>測る面の円弧の半径</small></label>
+      <input id="fAR" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row">
+      <span class="badge">2</span>
+      <label for="fATh">開き角 θ<small>端から端まで。「117 30」=117°30′も可</small></label>
+      <input id="fATh" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">°</span>
+    </div>
+  </div>
+
+  <div class="dimsw" id="arcModeChips" role="group" aria-label="穴を割り出すか、定盤に置いて測るか">
+    <button type="button" id="pmHole" class="on">穴を割り出す</button>
+    <button type="button" id="pmPlate">定盤に置いて測る</button>
+  </div>
+
+  <div id="arcHole">
+  <div class="inputs">
+    <div class="row">
+      <span class="badge">3</span>
+      <label for="fAHr">穴の並ぶ半径<small>空欄なら R と同じ</small></label>
+      <input id="fAHr" type="text" inputmode="decimal" autocomplete="off" placeholder="=R">
+      <span class="unit">mm</span>
+    </div>
+  </div>
+
+  <div class="achips" id="abChips">
+    <button type="button" data-ab="left" class="on">穴の角度は左端から</button>
+    <button type="button" data-ab="center">中央から（±）</button>
+  </div>
+  <div class="inputs">
+    <div class="row">
+      <span class="badge">4</span>
+      <label>穴の角度の並び<small>1行に1つ・度の小数で</small></label>
+      <input id="fAAngs" type="text" inputmode="decimal" autocomplete="off" placeholder="15 45 75">
+      <span class="unit">°</span>
+    </div>
+  </div>
+  </div>
+
+  <div id="arcPlate" hidden>
+  <div class="hint">片方の直線を<b>定盤にぴったり付けて</b>置いたときの、反対の先端の高さを出します。ハイトゲージで読む値です。置く向きを変えるときは<b>入れ替えボタン</b>を押してください。直線が無い（弧だけの）部品は空欄のままで大丈夫です。</div>
+
+  <div class="dimsw" id="prChips" role="group" aria-label="図面のRが外面か内面か">
+    <button type="button" id="prOut" class="on">R は外面（定盤に付く側）</button>
+    <button type="button" id="prIn">R は内面（上側）</button>
+  </div>
+
+  <div class="inputs">
+    <div class="row">
+      <span class="badge">3</span>
+      <label for="fPL1">定盤に付ける直線<small>高さには効きません。全長には効きます</small></label>
+      <input id="fPL1" type="text" inputmode="decimal" autocomplete="off" placeholder="0">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row">
+      <span class="badge">4</span>
+      <label for="fPL2">先端側の直線<small>高さに効きます。空欄は0</small></label>
+      <input id="fPL2" type="text" inputmode="decimal" autocomplete="off" placeholder="0">
+      <span class="unit">mm</span>
+    </div>
+    <div class="achips" id="pSwapWrap">
+      <button type="button" id="pSwap">↕ 定盤に付ける側を入れ替える</button>
+    </div>
+    <div class="row">
+      <span class="badge">5</span>
+      <label for="fPT">板厚<small>空欄なら0。ゲージが読む上面の高さに効きます</small></label>
+      <input id="fPT" type="text" inputmode="decimal" autocomplete="off" placeholder="0">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row">
+      <span class="badge">6</span>
+      <label for="fPTol">開き角の公差 ±<small>空欄可。先端の高さの管理値に直します</small></label>
+      <input id="fPTol" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">°</span>
+    </div>
+    <div class="row">
+      <span class="badge">7</span>
+      <label for="fPStep">測る間隔<small>定盤に沿った水平の間隔。空欄なら弧を5等分</small></label>
+      <input id="fPStep" type="text" inputmode="decimal" autocomplete="off" placeholder="=弧÷5">
+      <span class="unit">mm</span>
+    </div>
+  </div>
+
+  <div class="dro">
+    <div class="dro-grid">
+      <div class="cellv"><span class="k">先端の高さ</span><span class="v dim" id="vPH">―</span><span class="s">mm 上面</span></div>
+      <div class="cellv"><span class="k">定盤上の全長</span><span class="v dim" id="vPX">―</span><span class="s">mm</span></div>
+      <div class="cellv"><span class="k">展開長</span><span class="v dim" id="vPD">―</span><span class="s">mm</span></div>
+    </div>
+    <div class="dro-sub" id="pSub">下面 = ― | 弧の終わり = ― | 端点間 = ―</div>
+    <div class="dro-sub" id="pTol">　</div>
+    <div class="dro-foot">
+      <span class="statusTxt" id="pStatus">R と開き角 θ を入れてください</span>
+    </div>
+  </div>
+
+  <div class="htblwrap">
+    <table class="htbl" id="pTbl" style="display:none">
+      <thead><tr><th>端から<br>水平</th><th>高さ<br>上面</th><th>高さ<br>下面</th><th>位置</th></tr></thead>
+      <tbody id="pBody"></tbody>
+    </table>
+  </div>
+  <div class="hint" id="pNote" style="display:none">「端から」は<b>定盤に付けた側の端</b>からの水平距離です。<b>上面</b>がハイトゲージで読む値、<b>下面</b>は定盤に接する面の形です。板厚が空欄のときは同じ値になります。上面は板厚のぶんだけ手前で終わるので、いちばん先の行は「―」になることがあります。</div>
+  </div>
+
+  <div class="dro">
+    <div class="dro-grid">
+      <div class="cellv" id="cAL"><span class="k">周長</span><span class="v dim" id="vAL">―</span><span class="s">mm</span></div>
+      <div class="cellv" id="cAC"><span class="k">弦</span><span class="v dim" id="vAC">―</span><span class="s">mm</span></div>
+      <div class="cellv" id="cAH"><span class="k">矢高</span><span class="v dim" id="vAH">―</span><span class="s">mm</span></div>
+    </div>
+    <div class="dro-sub" id="aSub">中心角 = ― | 穴の半径 = ―</div>
+    <div class="dro-foot">
+      <span class="statusTxt" id="aStatus">R と開き角を入れてください</span>
+      
+    </div>
+  </div>
+
+  <div id="arcHoleOut">
+  <div class="htblwrap">
+    <table class="htbl" id="aTbl" style="display:none">
+      <thead><tr><th>穴</th><th>左端から<br>角度</th><th>左端から<br>周長</th><th>左端から<br>弦</th><th>隣から<br>周長</th><th>隣から<br>弦</th></tr></thead>
+      <tbody id="aBody"></tbody>
+    </table>
+  </div>
+  <div class="hint" id="aNote" style="display:none">周長・弦は<b>「穴の並ぶ半径」の円弧上</b>の値です（左端＝その円弧の端 0°）。⚠は開き角の外にある穴、隣の⚠は並び順が逆の穴です。</div>
+  </div>
+  </section>
+
+  <section id="paneCorner" hidden>
+  <div class="sheet">
+    <div class="sheet-inner">
+      <svg id="figCorner" viewBox="0 0 340 270" role="img" aria-label="板の角の大きなRに曲がり尺を当てた図。尺の内側の角から円弧までのいちばん短い距離dは45°の向きで、その線を延ばした先に円弧の中心がある。Rの始まりは尺の角からRの所"><defs><marker id="arKR" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L8,3 L0,6 z" fill="#D63426"/></marker><marker id="arKI" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L8,3 L0,6 z" fill="#1F3341"/></marker></defs><path d="M 220 64 L 336 64 L 336 270 L 70 270 L 70 214 A 150 150 0 0 1 220 64 Z" fill="#EEF2F4"/><path d="M 52 46 L 318 46 L 318 64 L 70 64 L 70 258 L 52 258 Z" fill="#F4EBCB" stroke="#8A6A1E" stroke-width="1.2"/><g stroke="#8A6A1E" stroke-width="0.8"><line x1="78" y1="64" x2="78" y2="60"/><line x1="86" y1="64" x2="86" y2="60"/><line x1="94" y1="64" x2="94" y2="60"/><line x1="102" y1="64" x2="102" y2="60"/><line x1="110" y1="64" x2="110" y2="57"/><line x1="118" y1="64" x2="118" y2="60"/><line x1="126" y1="64" x2="126" y2="60"/><line x1="134" y1="64" x2="134" y2="60"/><line x1="142" y1="64" x2="142" y2="60"/><line x1="150" y1="64" x2="150" y2="57"/><line x1="158" y1="64" x2="158" y2="60"/><line x1="166" y1="64" x2="166" y2="60"/><line x1="174" y1="64" x2="174" y2="60"/><line x1="182" y1="64" x2="182" y2="60"/><line x1="190" y1="64" x2="190" y2="57"/><line x1="198" y1="64" x2="198" y2="60"/><line x1="206" y1="64" x2="206" y2="60"/><line x1="214" y1="64" x2="214" y2="60"/><line x1="222" y1="64" x2="222" y2="60"/><line x1="230" y1="64" x2="230" y2="57"/><line x1="238" y1="64" x2="238" y2="60"/><line x1="246" y1="64" x2="246" y2="60"/><line x1="254" y1="64" x2="254" y2="60"/><line x1="262" y1="64" x2="262" y2="60"/><line x1="70" y1="72" x2="66" y2="72"/><line x1="70" y1="80" x2="66" y2="80"/><line x1="70" y1="88" x2="66" y2="88"/><line x1="70" y1="96" x2="66" y2="96"/><line x1="70" y1="104" x2="63" y2="104"/><line x1="70" y1="112" x2="66" y2="112"/><line x1="70" y1="120" x2="66" y2="120"/><line x1="70" y1="128" x2="66" y2="128"/><line x1="70" y1="136" x2="66" y2="136"/><line x1="70" y1="144" x2="63" y2="144"/><line x1="70" y1="152" x2="66" y2="152"/><line x1="70" y1="160" x2="66" y2="160"/><line x1="70" y1="168" x2="66" y2="168"/><line x1="70" y1="176" x2="66" y2="176"/><line x1="70" y1="184" x2="63" y2="184"/><line x1="70" y1="192" x2="66" y2="192"/><line x1="70" y1="200" x2="66" y2="200"/><line x1="70" y1="208" x2="66" y2="208"/><line x1="70" y1="216" x2="66" y2="216"/><line x1="70" y1="224" x2="63" y2="224"/><line x1="70" y1="232" x2="66" y2="232"/><line x1="70" y1="240" x2="66" y2="240"/><line x1="70" y1="248" x2="66" y2="248"/></g><path d="M 220 64 L 336 64" fill="none" stroke="#1F3341" stroke-width="2"/><path d="M 70 214 L 70 270" fill="none" stroke="#1F3341" stroke-width="2"/><path d="M 70 214 A 150 150 0 0 1 220 64" fill="none" stroke="#1F3341" stroke-width="2.8"/><text x="290" y="58.5" font-size="9.5" fill="#7A5410" text-anchor="middle">曲がり尺</text><g stroke="#8FA2AF" stroke-width="0.9" stroke-dasharray="7 3 1.5 3"><line x1="204" y1="214" x2="236" y2="214"/><line x1="220" y1="198" x2="220" y2="230"/></g><circle cx="220" cy="214" r="2.4" fill="#1F3341"/><text x="228" y="234" font-size="9.5" fill="#5B707E">円弧の中心</text><line id="kDimR" x1="220" y1="214" x2="113.93" y2="107.93" stroke="#1F3341" stroke-width="1.3" marker-end="url(#arKI)"/><text id="kfR" x="173.97" y="153.97" font-size="12" fill="#1F3341" text-anchor="middle" stroke="#fff" stroke-width="3.5" paint-order="stroke" transform="rotate(45 173.97 153.97)">R</text><circle cx="152" cy="172" r="8.5" fill="#1F3341" stroke="#fff" stroke-width="2"/><text x="152" y="176" font-size="10.5" font-weight="700" fill="#fff" text-anchor="middle">2</text><path d="M 92 64 A 22 22 0 0 1 85.56 79.56" fill="none" stroke="#8FA2AF" stroke-width="0.9"/><text x="98.64" y="78.86" font-size="8.5" fill="#5B707E" text-anchor="middle">45°</text><line id="kDimD" x1="70" y1="64" x2="113.93" y2="107.93" stroke="#D63426" stroke-width="1.9" marker-start="url(#arKR)" marker-end="url(#arKR)"/><text id="kfD" x="81.97" y="99.97" font-size="13" font-weight="700" fill="#D63426" text-anchor="middle" stroke="#fff" stroke-width="3.5" paint-order="stroke">d</text><circle cx="115" cy="89" r="8.5" fill="#D63426" stroke="#fff" stroke-width="2"/><text x="115" y="93" font-size="10.5" font-weight="700" fill="#fff" text-anchor="middle">1</text><line x1="40" y1="33" x2="67.5" y2="61.5" stroke="#5B707E" stroke-width="0.8"/><circle cx="70" cy="64" r="2.8" fill="#D63426"/><text x="6" y="29" font-size="9.5" fill="#1F3341" font-weight="700">尺の内側の角</text><line x1="220" y1="40" x2="220" y2="61" stroke="#8FA2AF" stroke-width="0.8" stroke-dasharray="2 2"/><circle cx="220" cy="64" r="2.6" fill="#fff" stroke="#1F3341" stroke-width="1.4"/><circle cx="70" cy="214" r="2.6" fill="#fff" stroke="#1F3341" stroke-width="1.4"/><text x="220" y="24" font-size="9.5" fill="#5B707E" text-anchor="middle">R の始まり（角から R）</text><text x="220" y="36" font-size="8.5" fill="#8FA2AF" text-anchor="middle">なめらかで見分けにくい</text><text id="kfV1" x="326" y="112" font-size="11" fill="#1F3341" text-anchor="end">d … 尺の角から円弧まで</text><text id="kfV2" x="326" y="130" font-size="11" fill="#1F3341" text-anchor="end">R … 角の丸みの半径</text><text x="326" y="262" font-size="9.5" fill="#5B707E" text-anchor="end">板（上から見た図）</text></svg>
+      <div class="titleblock">
+        <div><b>品名</b> 弦・矢高とR</div>
+        <div><b>方式</b> 角のR（曲がり尺）</div>
+        <div>TOOL-04</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hint">板の<b>角の大きな R</b>（R ゲージや R の型に無い大きさ）を、<b>曲がり尺（直角定規）</b>で測ります。
+    尺の内側の2辺を板の2辺に当て、<b>尺の内側の角から円弧までのいちばん短い距離 d</b> を入れると R が出ます。
+    図面の R も入れると、比べられます。<b>角が直角（90°）の板</b>のときの計算です。</div>
+
+  <div class="inputs">
+    <div class="row">
+      <span class="badge" style="background:#D63426">1</span>
+      <label for="fKD">角から円弧までの距離 d<small>尺の内側の角から、いちばん近い所</small></label>
+      <input id="fKD" type="text" inputmode="decimal" autocomplete="off" placeholder="例 101.5">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row">
+      <span class="badge">2</span>
+      <label for="fKR">図面の R<small>空欄可。比べるときに</small></label>
+      <input id="fKR" type="text" inputmode="decimal" autocomplete="off" placeholder="例 245">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row">
+      <span class="badge">±</span>
+      <label for="fKTol">R の公差 ±<small>空欄可</small></label>
+      <input id="fKTol" type="text" inputmode="decimal" autocomplete="off" placeholder="例 1">
+      <span class="unit">mm</span>
+    </div>
+  </div>
+
+  <div class="dro">
+    <div class="dro-grid">
+      <div class="cellv"><span class="k">R</span><span class="v dim" id="vKR">―</span><span class="s">mm</span></div>
+      <div class="cellv"><span class="k">図面Rの d</span><span class="v dim" id="vKD0">―</span><span class="s">mm</span></div>
+      <div class="cellv"><span class="k">差</span><span class="v dim" id="vKDiff">―</span><span class="s">mm 測−図</span></div>
+    </div>
+    <div class="dro-sub" id="kSub">R の始まり：―</div>
+    <div class="dro-sub" id="kSens">d が ±0.5 違うと R は ±1.207</div>
+    <div class="dro-sub" id="kTol"></div>
+    <div class="dro-foot">
+      <span class="statusTxt" id="kStatus">入力待ち(尺の角から円弧までの距離 d を入れてください)</span>
+    </div>
+  </div>
+
+  <div class="ktips">
+    <b>測るときのコツ</b>
+    <ol>
+      <li>尺の両方の腕を、<b>R の始まりより先のまっすぐな辺</b>にぴったり当てます。R の始まりは尺の角から R の所なので、<b>腕が R より長い尺</b>を使います（R245 なら、角から 245 より先まで届くもの）。</li>
+      <li>スケールの 0 を<b>尺の内側の角</b>に合わせ、円弧へ向けて<b>少し振って、いちばん短い値</b>を読みます。ほぼ 45° の向きです。いちばん短い所を読めば、向きは少しずれても値はほとんど変わりません。</li>
+      <li>d の読み違いは<b>約 2.4 倍</b>になって R に出ます（0.5 違うと R は 1.2 違う）。きわどいときは、下の「別の測り方」でも確かめてください。</li>
+      <li>R の始まり（板が尺から離れはじめる所）を探して読むやり方は、<b>なめらかにつながっていて見分けにくい</b>ので、ずれやすくなります。</li>
+      <li>角が直角でない板（台形の角など）には使えません。</li>
+    </ol>
+  </div>
+
+  <details class="kalt">
+    <summary>別の測り方：尺の目盛りの所で、すき間を測る</summary>
+    <div class="kaltb">
+      <svg viewBox="30 12 240 150" role="img" aria-label="尺の目盛りaの所で、尺に直角にスケールを当て、尺から板までのすき間gを測る図"><defs><marker id="arKaR" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L8,3 L0,6 z" fill="#D63426"/></marker><marker id="arKaI" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L8,3 L0,6 z" fill="#1F3341"/></marker></defs><path d="M 220 64 L 336 64 L 336 270 L 70 270 L 70 214 A 150 150 0 0 1 220 64 Z" fill="#EEF2F4"/><path d="M 52 46 L 318 46 L 318 64 L 70 64 L 70 258 L 52 258 Z" fill="#F4EBCB" stroke="#8A6A1E" stroke-width="1.2"/><g stroke="#8A6A1E" stroke-width="0.8"><line x1="78" y1="64" x2="78" y2="60"/><line x1="86" y1="64" x2="86" y2="60"/><line x1="94" y1="64" x2="94" y2="60"/><line x1="102" y1="64" x2="102" y2="60"/><line x1="110" y1="64" x2="110" y2="57"/><line x1="118" y1="64" x2="118" y2="60"/><line x1="126" y1="64" x2="126" y2="60"/><line x1="134" y1="64" x2="134" y2="60"/><line x1="142" y1="64" x2="142" y2="60"/><line x1="150" y1="64" x2="150" y2="57"/><line x1="158" y1="64" x2="158" y2="60"/><line x1="166" y1="64" x2="166" y2="60"/><line x1="174" y1="64" x2="174" y2="60"/><line x1="182" y1="64" x2="182" y2="60"/><line x1="190" y1="64" x2="190" y2="57"/><line x1="198" y1="64" x2="198" y2="60"/><line x1="206" y1="64" x2="206" y2="60"/><line x1="214" y1="64" x2="214" y2="60"/><line x1="222" y1="64" x2="222" y2="60"/><line x1="230" y1="64" x2="230" y2="57"/><line x1="238" y1="64" x2="238" y2="60"/><line x1="246" y1="64" x2="246" y2="60"/><line x1="254" y1="64" x2="254" y2="60"/><line x1="262" y1="64" x2="262" y2="60"/><line x1="70" y1="72" x2="66" y2="72"/><line x1="70" y1="80" x2="66" y2="80"/><line x1="70" y1="88" x2="66" y2="88"/><line x1="70" y1="96" x2="66" y2="96"/><line x1="70" y1="104" x2="63" y2="104"/><line x1="70" y1="112" x2="66" y2="112"/><line x1="70" y1="120" x2="66" y2="120"/><line x1="70" y1="128" x2="66" y2="128"/><line x1="70" y1="136" x2="66" y2="136"/><line x1="70" y1="144" x2="63" y2="144"/><line x1="70" y1="152" x2="66" y2="152"/><line x1="70" y1="160" x2="66" y2="160"/><line x1="70" y1="168" x2="66" y2="168"/><line x1="70" y1="176" x2="66" y2="176"/><line x1="70" y1="184" x2="63" y2="184"/><line x1="70" y1="192" x2="66" y2="192"/><line x1="70" y1="200" x2="66" y2="200"/><line x1="70" y1="208" x2="66" y2="208"/><line x1="70" y1="216" x2="66" y2="216"/><line x1="70" y1="224" x2="63" y2="224"/><line x1="70" y1="232" x2="66" y2="232"/><line x1="70" y1="240" x2="66" y2="240"/><line x1="70" y1="248" x2="66" y2="248"/></g><path d="M 220 64 L 336 64" fill="none" stroke="#1F3341" stroke-width="2"/><path d="M 70 214 L 70 270" fill="none" stroke="#1F3341" stroke-width="2"/><path d="M 70 214 A 150 150 0 0 1 220 64" fill="none" stroke="#1F3341" stroke-width="2.8"/><line x1="70" y1="30" x2="70" y2="45" stroke="#8FA2AF" stroke-width="0.8"/><line x1="110" y1="30" x2="110" y2="45" stroke="#8FA2AF" stroke-width="0.8"/><line x1="70" y1="34" x2="110" y2="34" stroke="#1F3341" stroke-width="1.2" marker-start="url(#arKaI)" marker-end="url(#arKaI)"/><text x="90" y="30" font-size="11" font-weight="700" fill="#1F3341" text-anchor="middle">a</text><line x1="110" y1="64" x2="110" y2="112.02" stroke="#D63426" stroke-width="1.9" marker-start="url(#arKaR)" marker-end="url(#arKaR)"/><path d="M 104 70 L 104 70 L 104 64" fill="none" stroke="#5B707E" stroke-width="0.8"/><text x="116" y="92.01" font-size="12" font-weight="700" fill="#D63426" stroke="#fff" stroke-width="3" paint-order="stroke">g</text><circle cx="70" cy="64" r="2.6" fill="#D63426"/><text x="150" y="120" font-size="9.5" fill="#5B707E">板</text></svg>
+      <div class="hint" style="margin-top:8px">尺の目盛り <b>a</b> の所から、尺に<b>直角</b>にスケールを当てて、板までの<b>すき間 g</b> を測ります。
+        a は R の始まりより手前（板が尺から離れている所）で測ります。
+        <b>2か所で測って同じ R</b> になれば、きれいな円弧で、尺もきちんと当たっています。</div>
+      <div class="inputs">
+        <div class="row">
+          <span class="badge">a</span>
+          <label for="fKA">目盛り a<small>尺の内側の角から</small></label>
+          <input id="fKA" type="text" inputmode="decimal" autocomplete="off" placeholder="例 50">
+          <span class="unit">mm</span>
+        </div>
+        <div class="row">
+          <span class="badge" style="background:#D63426">g</span>
+          <label for="fKG">すき間 g<small>尺から板まで・尺に直角に</small></label>
+          <input id="fKG" type="text" inputmode="decimal" autocomplete="off" placeholder="例 96.7">
+          <span class="unit">mm</span>
+        </div>
+      </div>
+      <div class="dro">
+        <div class="dro-grid">
+          <div class="cellv"><span class="k">R</span><span class="v dim" id="vKR2">―</span><span class="s">mm</span></div>
+          <div class="cellv"><span class="k">差</span><span class="v dim" id="vKR2d">―</span><span class="s">mm 上の R と</span></div>
+          <div class="cellv"><span class="k">図面Rの g</span><span class="v dim" id="vKG0">―</span><span class="s">mm 出るはず</span></div>
+        </div>
+        <div class="dro-sub" id="kSub2">g が ±0.5 違うと R は ― 違う</div>
+        <div class="dro-foot">
+          <span class="statusTxt" id="kStatus2">目盛り a とすき間 g を入れてください</span>
+        </div>
+      </div>
+    </div>
+  </details>
+  </section>
+
+  <button class="clearBtn" type="button" onclick="armClear(this)">すべて消去</button>
+
+  <footer>
+    このページは計算のみを行います。<br>
+    入力値の送信・保存は一切ありません(端末内で完結)。
+  
+    <div class="crnote">© 2026 まるちゃん ｜ 許諾なく転載・複製・再配布・改変することを禁じます。本ツールは著作権法により保護されています。</div>
+  </footer>
+</div>
+
+<script>
+/* 半径／直径の切替はタブ1とタブ2の両方から参照するので、共有スコープに置く */
+var CD_DIM='r';                 /* r:半径で入出力 / d:直径で入出力（内部は常に半径）*/
+function CD_K(){ return CD_DIM==='d' ? 2 : 1; }
+</script>
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var queue=[];                       // 'C','H','R'(最大2)
+  var results={C:null,H:null,R:null};
+  var computedSet={};
+  var JP={C:'c',H:'h',R:'R'};
+  function kR(f){ return (f==='R')? CD_K() : 1; }          /* 表示⇔内部の倍率 */
+  function labR(f){ return (f==='R'&&CD_DIM==='d')? '\u03c6' : JP[f]; }
+
+  function num(v){
+    if(v==null)return NaN;
+    v=String(v).replace(/[０-９．]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0)}).replace(/。/g,'.').trim();
+    if(v==='')return NaN;
+    return Number(v);
+  }
+  function readField(f){return num($('f'+f).value)/kR(f)}
+  function fieldEmpty(f){return $('f'+f).value.trim()===''}
+
+  function setFieldValue(f,val){
+    $('f'+f).value=(val*kR(f)).toFixed(3);
+    $('f'+f).classList.add('computed');
+  }
+  function clearComputedMark(f){$('f'+f).classList.remove('computed')}
+  function blankField(f){$('f'+f).value='';clearComputedMark(f)}
+
+  function solve(a,av,b,bv){
+    var m={};m[a]=av;m[b]=bv;
+    if(m.C!=null&&m.C<=0)return{err:'c は正の値で入力してください'};
+    if(m.H!=null&&m.H<=0)return{err:'h は正の値で入力してください'};
+    if(m.R!=null&&m.R<=0)return{err:'R は正の値で入力してください'};
+    var C,H,R;
+    var key=[a,b].sort().join('');
+    if(key==='CH'){
+      C=m.C;H=m.H;
+      R=(C*C+4*H*H)/(8*H);
+    }else if(key==='CR'){
+      C=m.C;R=m.R;
+      if(R<C/2)return{err:'R は c÷2 以上の値が必要です'};
+      H=R-Math.sqrt(R*R-C*C/4);
+    }else if(key==='HR'){
+      H=m.H;R=m.R;
+      if(H>=2*R)return{err:'h は 2R より小さい値が必要です'};
+      C=2*Math.sqrt(H*(2*R-H));
+    }else{
+      return{err:'計算できない組合せです'};
+    }
+    return {C:C,H:H,R:R};
+  }
+
+  function updateDro(){
+    ['C','H','R'].forEach(function(f){
+      var v=$('v'+f), val=results[f];
+      if(val==null){v.textContent='―';v.className='v dim'}
+      else{
+        v.textContent=(val*kR(f)).toFixed(3);
+        v.className=computedSet[f]?'v led':'v dim';
+      }
+    });
+    if(results.C!=null&&results.R!=null&&results.H!=null){
+      var D=2*results.R;
+      var arg=results.C/(2*results.R);
+      if(arg>1)arg=1;
+      var th=2*Math.asin(arg)*180/Math.PI;
+      if(results.H>results.C/2)th=360-th;   // 半円を超える弧
+      $('subTxt').textContent='φ(直径)= '+D.toFixed(3)+' | 中心角 = '+th.toFixed(2)+'°';
+    }else{
+      $('subTxt').textContent='φ(直径)= ― | 中心角 = ―';
+    }
+  }
+
+  function updateSvg(){
+    ['C','H','R'].forEach(function(f){
+      var t=$('svg'+f), val=results[f];
+      if(val==null){
+        t.textContent=labR(f);
+        t.setAttribute('fill','#1F3341');t.setAttribute('font-weight','400');
+      }else{
+        t.textContent=labR(f)+' = '+(val*kR(f)).toFixed(3);
+        if(computedSet[f]){t.setAttribute('fill','#D63426');t.setAttribute('font-weight','700')}
+        else{t.setAttribute('fill','#1F3341');t.setAttribute('font-weight','400')}
+      }
+      var dim=$('dim'+f);
+      var red=computedSet[f]&&val!=null;
+      dim.setAttribute('stroke',red?'#D63426':'#1F3341');
+      if(dim.hasAttribute('marker-start'))dim.setAttribute('marker-start',red?'url(#arRed)':'url(#ar)');
+      if(dim.hasAttribute('marker-end'))dim.setAttribute('marker-end',red?'url(#arRed)':'url(#ar)');
+    });
+  }
+
+  function setStatus(msg,isErr){
+    var s=$('statusTxt');
+    s.textContent=msg;
+    s.className='statusTxt'+(isErr?' err':'');
+  }
+
+  function recalc(){
+    queue=queue.filter(function(f){return !fieldEmpty(f)});
+    results={C:null,H:null,R:null};
+    computedSet={};
+
+    queue.forEach(function(f){
+      var v=readField(f);
+      if(!isNaN(v))results[f]=v;
+    });
+
+    if(queue.length<2){
+      ['C','H','R'].forEach(function(f){
+        if(queue.indexOf(f)<0&&$('f'+f).classList.contains('computed'))blankField(f);
+      });
+      setStatus('入力待ち(あと'+(2-queue.length)+'つ入力してください)',false);
+      updateDro();updateSvg();
+      return;
+    }
+
+    var a=queue[queue.length-2], b=queue[queue.length-1];
+    var av=readField(a), bv=readField(b);
+    if(isNaN(av)||isNaN(bv)){
+      setStatus('数値を確認してください',true);
+      updateDro();updateSvg();
+      return;
+    }
+
+    var r=solve(a,av,b,bv);
+    if(r.err){
+      ['C','H','R'].forEach(function(f){if(f!==a&&f!==b)blankField(f)});
+      setStatus(r.err,true);
+      updateDro();updateSvg();
+      return;
+    }
+
+    ['C','H','R'].forEach(function(f){
+      results[f]=r[f];
+      if(f!==a&&f!==b){
+        computedSet[f]=true;
+        setFieldValue(f,r[f]);
+      }else{
+        clearComputedMark(f);
+      }
+    });
+    setStatus('入力: '+JP[a]+'・'+JP[b]+' → 計算: '+
+      ['C','H','R'].filter(function(f){return computedSet[f]}).map(function(f){return JP[f]}).join('・'),false);
+    updateDro();updateSvg();
+  }
+
+  function onEdit(f){
+    return function(){
+      if(fieldEmpty(f)){
+        queue=queue.filter(function(q){return q!==f});
+      }else{
+        clearComputedMark(f);
+        queue=queue.filter(function(q){return q!==f});
+        queue.push(f);
+        while(queue.length>2)queue.shift();
+      }
+      recalc();
+    };
+  }
+  function syncDim(){
+    var d=(CD_DIM==='d');
+    $('cdR').classList.toggle('on',!d);
+    $('cdD').classList.toggle('on',d);
+    $('fR').previousElementSibling.innerHTML = d? '直径 \u03c6<small>円弧の直径</small>' : '半径 R<small>円弧の半径</small>';
+    $('fAR').previousElementSibling.innerHTML = d? '直径 \u03c6<small>測る面の円弧の直径</small>' : '半径 R<small>測る面の円弧の半径</small>';
+    $('lbSR').innerHTML = d? '直径 \u03c6<small>穴（円弧）の直径</small>' : '半径 R<small>穴（円弧）の半径</small>';
+    if(window.__splitCalc) window.__splitCalc();   /* 割り部品は別スクリプトのため window 経由 */
+    $('fAHr').previousElementSibling.innerHTML = d? '穴の並ぶ直径<small>空欄なら \u03c6 と同じ</small>' : '穴の並ぶ半径<small>空欄なら R と同じ</small>';
+    var kk=$('cR').getElementsByClassName('k')[0]; if(kk) kk.textContent = d?'\u03c6':'R';
+    recalc(); if(window.__arcRecalc) window.__arcRecalc();
+  }
+  $('cdR').addEventListener('click',function(){ CD_DIM='r'; syncDim(); });
+  $('cdD').addEventListener('click',function(){ CD_DIM='d'; syncDim(); });
+  $('fC').addEventListener('input',onEdit('C'));
+  $('fH').addEventListener('input',onEdit('H'));
+  $('fR').addEventListener('input',onEdit('R'));
+
+  })();
+</script>
+
+<script>
+/* ═══ R・角度から割り出し（v30 追加タブ）════════════════════════
+   円弧カバー等「R＋開き角＋角度指示の穴」の図面 → 周長・弦・穴の割り出し。
+   既存タブ（弦・矢高⇔R）の計算・DOMには一切触れていない。 */
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var RAD=Math.PI/180;
+  var abMode='left';
+  var lastRows=null, lastHead=null;
+
+  /* ── タブ切替 ── */
+
+  /* ══════ 割り部品（v60） ══════
+     割った片側だけを測るとき、割面は円の中心を通っていない。
+     この部品の割面が中心からずれている量を a とすると
+        弦 c = 2·√(R² − a²)      割面での開き
+        矢高 h = R − a           割面から円の底まで
+        開き角 θ = 2·acos(a/R)
+     さらに、中心そのものは測れないので
+        端面から円の底 = H − R   （H は中心から端面までの距離）
+     片割れどうしで大きさが違う部品があるため、隙間は
+     「合計（半分ずつ）」と「この部品ぶん」を切り替えられるようにしている。   */
+  var GAP_BOTH = true;   /* true=入れた値は合計 / false=この部品ぶん */
+
+  function splitOffset(){
+    var g = numA($('fSGap').value);
+    if(!isFinite(g)) return NaN;
+    return GAP_BOTH ? g/2 : g;
+  }
+  function splitR(){
+    var v = numA($('fSR').value);
+    if(!isFinite(v) || v<=0) return NaN;
+    return (CD_DIM==='d') ? v/2 : v;
+  }
+  function syncGapMode(){
+    $('gpBoth').classList.toggle('on', GAP_BOTH);
+    $('gpOne').classList.toggle('on', !GAP_BOTH);
+    splitCalc();
+  }
+  $('gpBoth').addEventListener('click',function(){ GAP_BOTH=true;  syncGapMode(); });
+  $('gpOne').addEventListener('click',function(){ GAP_BOTH=false; syncGapMode(); });
+  ['fSR','fSGap','fSH','fSTol'].forEach(function(id){
+    $(id).addEventListener('input', splitCalc);
+  });
+
+  window.__splitCalc = splitCalc;
+  function splitCalc(){
+    var R = splitR();
+    var a = splitOffset();
+    var H = numA($('fSH').value);
+    var tol = numA($('fSTol').value);
+    var msg='', c=NaN, h=NaN, e=NaN, th=NaN;
+
+    if(isFinite(R) && isFinite(a)){
+      if(Math.abs(a) >= R){
+        msg = '隙間が大きすぎます(割面が円から外れています)';
+      }else{
+        c  = 2*Math.sqrt(R*R - a*a);
+        h  = R - a;
+        th = 2*Math.acos(a/R)*180/Math.PI;
+      }
+    }
+    if(isFinite(R) && isFinite(H)){
+      e = H - R;
+      if(e < 0) msg = '中心から端面までが半径より小さいため、端面が穴の中に入っています';
+    }
+
+    $('vSC').textContent = isFinite(c)? c.toFixed(3) : '―';
+    $('vSH').textContent = isFinite(h)? h.toFixed(3) : '―';
+    $('vSE').textContent = isFinite(e)? e.toFixed(3) : '―';
+
+    $('subSplit').textContent =
+      '割面のずれ a = ' + (isFinite(a)? a.toFixed(3):'―') +
+      ' | 開き角 = ' + (isFinite(th)? th.toFixed(2)+'\u00b0':'―') +
+      ' | 半円との差 = ' + (isFinite(h)&&isFinite(R)? (h-R>=0?'+':'')+(h-R).toFixed(3):'―');
+
+    if(isFinite(e) && isFinite(tol) && tol>0){
+      $('tolSplit').textContent =
+        '端面→底の許容 : ' + (e-tol).toFixed(3) + ' 〜 ' + (e+tol).toFixed(3) +
+        '  ( ' + e.toFixed(3) + ' \u00b1' + tol.toFixed(3) + ' )';
+    }else $('tolSplit').textContent = '';
+
+    if(msg) $('statusSplit').textContent = msg;
+    else if(!isFinite(R)) $('statusSplit').textContent = 'あと 半径 を入れてください';
+    else if(!isFinite(a)) $('statusSplit').textContent = 'あと 割の隙間 を入れてください';
+    else if(!isFinite(H)) $('statusSplit').textContent = '中心から端面までを入れると「端面→底」も出ます';
+    else $('statusSplit').textContent = '計算しました';
+
+    drawSplit(R,a,H,c,h,e);
+  }
+
+  function drawSplit(R,a,H,c,h,e){
+    var el=$('figSplit'); if(!el) return;
+    if(!isFinite(R)||!isFinite(a)||Math.abs(a)>=R){
+      el.innerHTML='<text x="170" y="128" font-size="11" fill="#8FA2AF" text-anchor="middle">半径と隙間を入れてください</text>';
+      return;
+    }
+    var CX=150, TOP=52, s=110/R;                 /* 割面を y=TOP に置く */
+    if(isFinite(H) && H>R) s=Math.min(s, 150/H);
+    var cy = TOP - a*s;                          /* 円の中心 */
+    var bot = cy + R*s;                          /* 円の底 */
+    var hx = Math.sqrt(R*R-a*a)*s;               /* 弦の半分 */
+    var end = isFinite(H)? (cy + H*s) : (bot+26);
+    var L=CX-128, Rt=CX+128;
+    var g='';
+    g+='<path d="M '+L+' '+TOP+' L '+(CX-hx)+' '+TOP+' A '+(R*s)+' '+(R*s)+' 0 '+(a<0?1:0)+' 0 '+(CX+hx)+' '+TOP+
+       ' L '+Rt+' '+TOP+' L '+Rt+' '+end+' L '+L+' '+end+' Z" fill="#EEF2F4" stroke="#1F3341" stroke-width="1.2"/>';
+    g+='<line x1="'+(CX-136)+'" y1="'+cy+'" x2="'+(CX+140)+'" y2="'+cy+'" stroke="#8FA2AF" stroke-width="0.8" stroke-dasharray="7 3 1.5 3"/>';
+    g+='<line x1="'+CX+'" y1="28" x2="'+CX+'" y2="'+(end+10)+'" stroke="#8FA2AF" stroke-width="0.8" stroke-dasharray="7 3 1.5 3"/>';
+    g+='<circle cx="'+CX+'" cy="'+cy+'" r="2" fill="#1F3341"/>';
+    /* 弦 */
+    g+='<line x1="'+(CX-hx)+'" y1="'+TOP+'" x2="'+(CX+hx)+'" y2="'+TOP+'" stroke="#D63426" stroke-width="1.6" marker-start="url(#ar)" marker-end="url(#ar)"/>';
+    g+='<text x="'+(CX-hx/2)+'" y="'+(TOP+15)+'" font-size="10" fill="#D63426" text-anchor="middle">c '+c.toFixed(2)+'</text>';
+    /* 矢高 */
+    g+='<line x1="'+CX+'" y1="'+TOP+'" x2="'+CX+'" y2="'+bot+'" stroke="#D63426" stroke-width="1.4" marker-start="url(#ar)" marker-end="url(#ar)"/>';
+    g+='<text x="'+(CX+6)+'" y="'+((TOP+bot)/2)+'" font-size="10" fill="#D63426">h '+h.toFixed(2)+'</text>';
+    /* 端面→底 */
+    if(isFinite(e)&&e>=0){
+      var dx=Rt+16;
+      g+='<line x1="'+dx+'" y1="'+bot+'" x2="'+dx+'" y2="'+end+'" stroke="#0F6E56" stroke-width="1.6" marker-start="url(#ar)" marker-end="url(#ar)"/>';
+      g+='<line x1="'+(CX+hx)+'" y1="'+bot+'" x2="'+(dx+6)+'" y2="'+bot+'" stroke="#8FA2AF" stroke-width="0.6" stroke-dasharray="3 2"/>';
+      g+='<line x1="'+Rt+'" y1="'+end+'" x2="'+(dx+6)+'" y2="'+end+'" stroke="#8FA2AF" stroke-width="0.6" stroke-dasharray="3 2"/>';
+      g+='<text x="'+(dx+9)+'" y="'+((bot+end)/2)+'" font-size="10" fill="#0F6E56">'+e.toFixed(2)+'</text>';
+    }
+    g+='<text x="'+(L+3)+'" y="'+(TOP-5)+'" font-size="9.5" fill="#5B707E">割面</text>';
+    g+='<text x="'+(L+3)+'" y="'+(end-5)+'" font-size="9.5" fill="#5B707E">端面</text>';
+    el.innerHTML=g;
+  }
+
+  function setTab(w){
+    $('tCH').className    = (w==='ch')  ? 'on' : '';
+    $('tArc').className   = (w==='arc') ? 'on' : '';
+    $('tSplit').className = (w==='spl') ? 'on' : '';
+    $('tCorner').className= (w==='cor') ? 'on' : '';
+    $('paneCH').hidden    = (w!=='ch');
+    $('paneArc').hidden   = (w!=='arc');
+    $('paneSplit').hidden = (w!=='spl');
+    $('paneCorner').hidden= (w!=='cor');
+    /* v177: 角のRは半径だけで扱う（角の丸みは R で指示される）。半径／直径の切替は隠す。
+       .dimsw は display:flex を持つので hidden 属性では消えない → style で消す */
+    $('cdSw').style.display = (w==='cor') ? 'none' : '';
+    if(w==='spl') splitCalc();
+    if(w==='cor' && window.__cornerCalc) window.__cornerCalc();
+  }
+  $('tCH').addEventListener('click',function(){ setTab('ch'); });
+  $('tArc').addEventListener('click',function(){ setTab('arc'); });
+  $('tSplit').addEventListener('click',function(){ setTab('spl'); });
+  $('tCorner').addEventListener('click',function(){ setTab('cor'); });
+
+  /* ── 数値まわり ── */
+  function numA(v){
+    if(v==null) return NaN;
+    v=String(v).replace(/[０-９．]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0)}).replace(/。/g,'.').trim();
+    if(v==='') return NaN;
+    return Number(v);
+  }
+  /* 開き角：「117 30」=117°30′、「117 30 15」=117°30′15″、小数も可 */
+  function parseAng(v){
+    if(v==null) return NaN;
+    v=String(v).replace(/[０-９．]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0)}).replace(/。/g,'.').trim();
+    if(v==='') return NaN;
+    var t=v.split(/\s+/), d=Number(t[0]);
+    if(isNaN(d)) return NaN;
+    var s=(d<0||t[0].charAt(0)==='-')?-1:1, a=Math.abs(d);
+    if(t.length>1){ var m=Number(t[1]); if(isNaN(m)) return NaN; a+=m/60; }
+    if(t.length>2){ var sec=Number(t[2]); if(isNaN(sec)) return NaN; a+=sec/3600; }
+    return s*a;
+  }
+  function parseList(v){
+    var t=String(v||'').split(/[\s,、，]+/), out=[], i, x;
+    for(i=0;i<t.length;i++){
+      if(t[i]==='') continue;
+      x=numA(t[i]);
+      if(isNaN(x)) return null;      /* 1つでも数値でなければエラー */
+      out.push(x);
+    }
+    return out;
+  }
+  function fmt(x){ return x.toFixed(3); }
+  function fa(x){ return String(Math.round(x*1000)/1000); }   /* 角度の表示 */
+
+
+  function setSt(msg,isErr){
+    var s=$('aStatus'); s.textContent=msg;
+    s.className='statusTxt'+(isErr?' err':'');
+  }
+  function clearOut(){
+    ['vAL','vAC','vAH'].forEach(function(id){ var e=$(id); e.textContent='―'; e.className='v dim'; });
+    $('aSub').textContent='中心角 = ― | 穴の半径 = ―';
+    $('aTbl').style.display='none'; $('aNote').style.display='none';
+    $('aBody').innerHTML=''; lastRows=null;
+    $('figArc').innerHTML='';
+  }
+
+  /* ── 図 ── */
+  function drawArc(R,th,rh,holes){
+    var pts=[], i, a, g, r2;
+    function mp(r,aL){ var gg=(aL-th/2)*RAD; return [r*Math.sin(gg), -r*Math.cos(gg)]; }
+    for(i=0;i<=60;i++) pts.push(mp(R,th*i/60));
+    for(i=0;i<holes.length;i++) pts.push(mp(rh,holes[i]));
+    pts.push(mp(R,0)); pts.push(mp(R,th));
+    if(th>=120) pts.push([0,0]);
+    var mnx=1e9,mxx=-1e9,mny=1e9,mxy=-1e9;
+    for(i=0;i<pts.length;i++){ if(pts[i][0]<mnx)mnx=pts[i][0]; if(pts[i][0]>mxx)mxx=pts[i][0]; if(pts[i][1]<mny)mny=pts[i][1]; if(pts[i][1]>mxy)mxy=pts[i][1]; }
+    var pad=30, k=Math.min((340-2*pad)/((mxx-mnx)||1),(250-2*pad)/((mxy-mny)||1));
+    if(!isFinite(k)||k<=0) k=1;
+    var ox=pad+(340-2*pad-(mxx-mnx)*k)/2 - mnx*k;
+    var oy=pad+(250-2*pad-(mxy-mny)*k)/2 - mny*k;
+    function P(r,aL){ var q=mp(r,aL); return [(ox+q[0]*k), (oy+q[1]*k)]; }
+    var p0=P(R,0), p1=P(R,th), laf=(th>180)?1:0, h='';
+    /* 弦 */
+    h+='<line x1="'+p0[0].toFixed(1)+'" y1="'+p0[1].toFixed(1)+'" x2="'+p1[0].toFixed(1)+'" y2="'+p1[1].toFixed(1)+'" stroke="#8FA2AF" stroke-width="1.1" stroke-dasharray="4 3"/>';
+    /* 穴の半径の円弧（R と違うとき） */
+    if(Math.abs(rh-R)>1e-9){
+      var q0=P(rh,0), q1=P(rh,th);
+      h+='<path d="M '+q0[0].toFixed(1)+' '+q0[1].toFixed(1)+' A '+(rh*k).toFixed(1)+' '+(rh*k).toFixed(1)+' 0 '+laf+' 1 '+q1[0].toFixed(1)+' '+q1[1].toFixed(1)+'" fill="none" stroke="#C9D3DA" stroke-width="1.1" stroke-dasharray="5 3"/>';
+    }
+    /* 円弧本体＋端の立ち下げ */
+    h+='<path d="M '+p0[0].toFixed(1)+' '+p0[1].toFixed(1)+' A '+(R*k).toFixed(1)+' '+(R*k).toFixed(1)+' 0 '+laf+' 1 '+p1[0].toFixed(1)+' '+p1[1].toFixed(1)+'" fill="none" stroke="#1F3341" stroke-width="2.4"/>';
+    for(i=0;i<2;i++){
+      a=(i===0)?0:th; r2=R*0.9;
+      var e1=P(R,a), e2=P(r2,a);
+      h+='<line x1="'+e1[0].toFixed(1)+'" y1="'+e1[1].toFixed(1)+'" x2="'+e2[0].toFixed(1)+'" y2="'+e2[1].toFixed(1)+'" stroke="#1F3341" stroke-width="1.4"/>';
+    }
+    /* 左端ラベル */
+    var lb=P(R*1.06,0);
+    h+='<text x="'+lb[0].toFixed(1)+'" y="'+lb[1].toFixed(1)+'" font-size="9.5" fill="#5B707E" text-anchor="middle">左端 0°</text>';
+    /* 穴 */
+    for(i=0;i<holes.length;i++){
+      var hp=P(rh,holes[i]);
+      h+='<circle cx="'+hp[0].toFixed(1)+'" cy="'+hp[1].toFixed(1)+'" r="4.6" fill="#fff" stroke="#D63426" stroke-width="1.6"/>';
+      var tp=P(rh*0.88,holes[i]);
+      h+='<text x="'+tp[0].toFixed(1)+'" y="'+(tp[1]+3).toFixed(1)+'" font-size="9" font-weight="700" fill="#D63426" text-anchor="middle">'+(i+1)+'</text>';
+    }
+    /* 中心 */
+    if(th>=120){
+      var c0=P(0,0);
+      h+='<circle cx="'+c0[0].toFixed(1)+'" cy="'+c0[1].toFixed(1)+'" r="2.4" fill="#1F3341"/>';
+    }
+    $('figArc').innerHTML=h;
+  }
+
+  /* ── 本体 ── */
+  function calcArc(){
+    var rTxt=$('fAR').value.trim(), tTxt=$('fATh').value.trim();
+    if(rTxt===''||tTxt===''){ clearOut(); setSt('入力待ち(R と開き角 θ を入れてください)',false); return; }
+    var R=numA(rTxt)/CD_K(), th=parseAng(tTxt);
+    if(isNaN(R)||R<=0){ clearOut(); setSt('R は正の値で入力してください',true); return; }
+    if(isNaN(th)||th<=0){ clearOut(); setSt('θ は正の値で入力してください(「117 30」=117°30′も可)',true); return; }
+    if(th>360){ clearOut(); setSt('θ は 360° 以下で入力してください',true); return; }
+    var rhRaw=$('fAHr').value.trim();
+    var rh=(rhRaw==='')? R : numA(rhRaw)/CD_K();
+    if(isNaN(rh)||rh<=0){ clearOut(); setSt('穴の並ぶ半径は正の値で(空欄なら R と同じ)',true); return; }
+
+    var L=R*th*RAD, C=2*R*Math.sin(th/2*RAD), H=R*(1-Math.cos(th/2*RAD));
+    $('vAL').textContent=fmt(L); $('vAL').className='v led';
+    $('vAC').textContent=fmt(C); $('vAC').className='v led';
+    $('vAH').textContent=fmt(H); $('vAH').className='v led';
+    $('aSub').textContent='中心角 = '+fa(th)+'° | 穴の半径 = '+fmt(rh)+(rhRaw===''?' (=R)':'');
+    lastHead={L:L,C:C,H:H};
+
+    var list=parseList($('fAAngs').value);
+    if(list===null){ $('aTbl').style.display='none'; $('aNote').style.display='none'; lastRows=null;
+      setSt('穴の角度は「15 45 75」のように度の小数で入れてください',true); drawArc(R,th,rh,[]); return; }
+    if(!list.length){
+      $('aTbl').style.display='none'; $('aNote').style.display='none'; lastRows=null;
+      setSt('周長・弦を計算しました(穴の角度を入れると割り出し表が出ます)',false);
+      drawArc(R,th,rh,[]); return;
+    }
+    var rows=[], i, aL, prev=null, warnAny=false;
+    for(i=0;i<list.length;i++){
+      aL=(abMode==='center')? th/2+list[i] : list[i];
+      var w1=(aL<-1e-9||aL>th+1e-9);
+      var s=rh*aL*RAD, cd=2*rh*Math.sin(aL/2*RAD);
+      var da=null, dArc=null, dCd=null, w2=false;
+      if(prev!==null){
+        da=aL-prev; dArc=rh*da*RAD; dCd=2*rh*Math.sin(Math.abs(da)/2*RAD);
+        if(da<=1e-12) w2=true;   /* 並びが逆・同角 */
+      }
+      if(w1||w2) warnAny=true;
+      rows.push({n:i+1, aL:aL, s:s, cd:cd, dArc:dArc, dCd:dCd, warn:w1, warn2:w2});
+      prev=aL;
+    }
+    var h='';
+    for(i=0;i<rows.length;i++){
+      var r0=rows[i];
+      h+='<tr><td>'+r0.n+'</td>'
+        +'<td'+(r0.warn?' class="warn"':'')+'>'+fa(r0.aL)+'°'+(r0.warn?' ⚠':'')+'</td>'
+        +'<td'+(r0.warn?' class="warn"':'')+'>'+fmt(r0.s)+'</td>'
+        +'<td'+(r0.warn?' class="warn"':'')+'>'+fmt(r0.cd)+'</td>'
+        +'<td'+(r0.warn2?' class="warn"':'')+'>'+(r0.dArc===null?'―':fmt(r0.dArc)+(r0.warn2?' ⚠':''))+'</td>'
+        +'<td'+(r0.warn2?' class="warn"':'')+'>'+(r0.dCd===null?'―':fmt(r0.dCd))+'</td></tr>';
+    }
+    $('aBody').innerHTML=h;
+    $('aTbl').style.display=''; $('aNote').style.display='';
+    lastRows=rows;
+    setSt('計算しました（穴 '+rows.length+' 個'+(warnAny?'・⚠あり':'')+'）',false);
+    drawArc(R,th,rh,rows.map(function(r){return r.aL;}));
+  }
+
+  ['fAR','fATh','fAHr','fAAngs'].forEach(function(id){
+    $(id).addEventListener('input',calcArc);
+  });
+  $('abChips').addEventListener('click',function(e){
+    var b=e.target.closest? e.target.closest('button[data-ab]') : null;
+    if(!b) return;
+    abMode=b.getAttribute('data-ab');
+    var bs=$('abChips').querySelectorAll('button');
+    for(var i=0;i<bs.length;i++) bs[i].className=(bs[i]===b)?'on':'';
+    calcArc();
+  });
+
+
+  /* ══════ 定盤に置いて測る（v143） ══════════════════════════════════
+     片方の直線を定盤に密着させて置いたときの、反対の先端の高さを出す。
+     ・定盤に付く面＝弧の外面（中心は上にあるので、外面が下になる）。
+       図面のRが内面基準なら 外面R ＝ 内R ＋ 板厚 に直してから計算する。
+     ・下面（定盤に接する面）を基準に組み立て、上面は中心側へ板厚ぶん寄せる。
+         下面の弧  … 中心(L1, Rb)・半径 Rb
+         上面の弧  … 中心(L1, Rb)・半径 Rb−t   （同じ中心の内側の弧）
+       よって上面の弧は「高さ Rb から 半径 Rb−t ぶん下りた」形になる。
+     ・θ>90° は定盤に置くと倒れるので受け付けない（幾何の破綻ではなく物として）。 */
+  var arcMode='hole', prMode='out';
+
+  function optNum(id){                       /* 空欄＝0。負や数字でないものは null */
+    var v=$(id).value.trim();
+    if(v==='') return 0;
+    var x=numA(v);
+    if(isNaN(x)||x<0) return null;
+    return x;
+  }
+  function setPSt(msg,isErr){
+    var s=$('pStatus'); s.textContent=msg;
+    s.className='statusTxt'+(isErr?' err':'');
+  }
+  function clearPOut(){
+    ['vPH','vPX','vPD'].forEach(function(id){ var e=$(id); e.textContent='―'; e.className='v dim'; });
+    $('pSub').textContent='下面 = ― | 弧の終わり = ― | 端点間 = ―';
+    $('pTol').innerHTML='&#12288;';
+    $('pTbl').style.display='none'; $('pNote').style.display='none';
+    $('pBody').innerHTML='';
+    $('figArc').innerHTML='';
+  }
+  function paintPr(){
+    $('prOut').className=(prMode==='out')?'on':'';
+    $('prIn').className =(prMode==='in') ?'on':'';
+  }
+  function paintArcMode(){
+    $('pmHole').className =(arcMode==='hole') ?'on':'';
+    $('pmPlate').className=(arcMode==='plate')?'on':'';
+    $('arcHole').hidden   =(arcMode!=='hole');
+    $('arcHoleOut').hidden=(arcMode!=='hole');
+    $('arcPlate').hidden  =(arcMode!=='plate');
+  }
+  function setArcMode(m){
+    arcMode=m; paintArcMode();
+    if(m==='plate') calcPlate(); else calcArc();
+  }
+
+  /* ── 図（定盤の上に寝かせた姿） ── */
+  function drawPlate(Rb,th,L1,L2,tk){
+    var thR=th*RAD, s=Math.sin(thR), c=Math.cos(thR), Ru=Rb-tk;
+    var aX=L1+Rb*s, aY=Rb*(1-c);               /* 下面の弧の終わり */
+    var tX=aX+L2*c, tY=aY+L2*s;                /* 下面の先端 */
+    var uX=L1+Ru*s, uY=Rb-Ru*c;                /* 上面の弧の終わり */
+    var vX=tX-tk*s, vY=tY+tk*c;                /* 上面の先端 */
+    var W=340, HH=250, padL=26, padR=52, padT=24, padB=48;
+    var mxx=Math.max(tX,vX,aX), mxy=Math.max(tY,vY);
+    var k=Math.min((W-padL-padR)/(mxx||1),(HH-padT-padB)/(mxy||1));
+    if(!isFinite(k)||k<=0) k=1;
+    var ox=padL, oy=HH-padB;
+    function X(x){ return ox+x*k; }
+    function Y(y){ return oy-y*k; }
+    function n(v){ return v.toFixed(1); }
+    var g='<defs><marker id="arP" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L8,3 L0,6 z" fill="#1F3341"/></marker>'
+          +'<marker id="arPr" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L8,3 L0,6 z" fill="#D63426"/></marker></defs>';
+    /* 定盤 */
+    var pl0=X(0)-16, pl1=X(mxx)+18;
+    g+='<line x1="'+n(pl0)+'" y1="'+n(oy)+'" x2="'+n(pl1)+'" y2="'+n(oy)+'" stroke="#1F3341" stroke-width="2.2"/>';
+    var xh;
+    for(xh=pl0;xh<pl1;xh+=9){
+      g+='<line x1="'+n(xh)+'" y1="'+n(oy)+'" x2="'+n(xh-5)+'" y2="'+n(oy+5)+'" stroke="#8FA2AF" stroke-width="1"/>';
+    }
+    g+='<text x="'+n(pl0)+'" y="'+n(oy+16)+'" font-size="9" fill="#5B707E">定盤</text>';
+    /* 部品 */
+    var rk=(Rb*k).toFixed(1), uk=(Ru*k).toFixed(1);
+    var body='M '+n(X(0))+' '+n(Y(0))+' L '+n(X(L1))+' '+n(Y(0))
+           +' A '+rk+' '+rk+' 0 0 0 '+n(X(aX))+' '+n(Y(aY))
+           +' L '+n(X(tX))+' '+n(Y(tY));
+    if(tk>0){
+      body+=' L '+n(X(vX))+' '+n(Y(vY))+' L '+n(X(uX))+' '+n(Y(uY))
+          + ' A '+uk+' '+uk+' 0 0 1 '+n(X(L1))+' '+n(Y(tk))
+          + ' L '+n(X(0))+' '+n(Y(tk))+' Z';
+      g+='<path d="'+body+'" fill="#DCE5EA" stroke="#1F3341" stroke-width="2"/>';
+    }else{
+      g+='<path d="'+body+'" fill="none" stroke="#1F3341" stroke-width="2.4"/>';
+    }
+    /* 弧の始まり・終わりの目印 */
+    g+='<line x1="'+n(X(L1))+'" y1="'+n(Y(0)-4)+'" x2="'+n(X(L1))+'" y2="'+n(Y(0)+4)+'" stroke="#8FA2AF" stroke-width="1.2"/>';
+    g+='<circle cx="'+n(X(aX))+'" cy="'+n(Y(aY))+'" r="2.2" fill="#8FA2AF"/>';
+    /* 先端の高さ（上面）の寸法 */
+    var hy=Math.max(tY,vY), hx=X(mxx)+16;
+    g+='<line x1="'+n(X(vX))+'" y1="'+n(Y(hy))+'" x2="'+n(hx+6)+'" y2="'+n(Y(hy))+'" stroke="#D63426" stroke-width="0.9" stroke-dasharray="3 2"/>';
+    g+='<line x1="'+n(hx)+'" y1="'+n(oy)+'" x2="'+n(hx)+'" y2="'+n(Y(hy))+'" stroke="#D63426" stroke-width="1.5" marker-start="url(#arPr)" marker-end="url(#arPr)"/>';
+    g+='<text x="'+n(hx+5)+'" y="'+n((oy+Y(hy))/2)+'" font-size="10" font-weight="700" fill="#D63426">H</text>';
+    /* 定盤上の全長 */
+    var dy=oy+26;
+    g+='<line x1="'+n(X(0))+'" y1="'+n(dy)+'" x2="'+n(X(tX))+'" y2="'+n(dy)+'" stroke="#1F3341" stroke-width="1.2" marker-start="url(#arP)" marker-end="url(#arP)"/>';
+    g+='<line x1="'+n(X(0))+'" y1="'+n(oy)+'" x2="'+n(X(0))+'" y2="'+n(dy+4)+'" stroke="#8FA2AF" stroke-width="0.8"/>';
+    g+='<line x1="'+n(X(tX))+'" y1="'+n(Y(tY))+'" x2="'+n(X(tX))+'" y2="'+n(dy+4)+'" stroke="#8FA2AF" stroke-width="0.8" stroke-dasharray="3 2"/>';
+    g+='<text x="'+n((X(0)+X(tX))/2)+'" y="'+n(dy+13)+'" font-size="9.5" fill="#1F3341" text-anchor="middle">定盤上の全長</text>';
+    $('figArc').innerHTML=g;
+  }
+
+  /* ── 本体 ── */
+  function calcPlate(){
+    if(arcMode!=='plate') return;
+    var rTxt=$('fAR').value.trim(), tTxt=$('fATh').value.trim();
+    if(rTxt===''||tTxt===''){ clearPOut(); setPSt('入力待ち(R と開き角 θ を入れてください)',false); return; }
+    var Rin=numA(rTxt)/CD_K(), th=parseAng(tTxt);
+    if(isNaN(Rin)||Rin<=0){ clearPOut(); setPSt('R は正の値で入力してください',true); return; }
+    if(isNaN(th)||th<=0){ clearPOut(); setPSt('θ は正の値で入力してください(「7 30」=7°30′も可)',true); return; }
+    if(th>90){ clearPOut(); setPSt('開き角が90°を超えると定盤の上で倒れます。この計算は90°までです',true); return; }
+    var L1=optNum('fPL1'), L2=optNum('fPL2'), tk=optNum('fPT');
+    if(L1===null||L2===null||tk===null){ clearPOut(); setPSt('直線の長さと板厚は0以上の数で入れてください',true); return; }
+    var Rb=(prMode==='in')? Rin+tk : Rin;      /* 定盤に接する外面の半径 */
+    var Ru=Rb-tk;                              /* 上面の弧の半径 */
+    if(Ru<=0){ clearPOut(); setPSt('板厚が半径以上です。R と板厚を見直してください',true); return; }
+
+    var thR=th*RAD, s=Math.sin(thR), c=Math.cos(thR);
+    var aX=L1+Rb*s, aY=Rb*(1-c);               /* 弧の終わり（下面） */
+    var tX=aX+L2*c, tY=aY+L2*s;                /* 先端（下面） */
+    var uX=L1+Ru*s;                            /* 弧の終わり（上面）の水平 */
+    var vX=tX-tk*s, vY=tY+tk*c;                /* 先端（上面） */
+    var diag=Math.sqrt(tX*tX+tY*tY);
+    var dev=L1+Rin*thR+L2;                     /* 展開長は図面のRの面で */
+
+    $('vPH').textContent=fmt(vY); $('vPH').className='v led';
+    $('vPX').textContent=fmt(tX); $('vPX').className='v led';
+    $('vPD').textContent=fmt(dev); $('vPD').className='v led';
+    $('pSub').textContent='下面 = '+fmt(tY)+' | 弧の終わり = 高さ '+fmt(aY)+'・水平 '+fmt(aX)+' | 端点間 = '+fmt(diag);
+
+    /* 開き角の公差 → 先端の高さの管理値 */
+    function hTopAt(deg){
+      var r=deg*RAD;
+      if(r<0) r=0;
+      return Rb*(1-Math.cos(r))+L2*Math.sin(r)+tk*Math.cos(r);
+    }
+    var tolTxt=$('fPTol').value.trim();
+    if(tolTxt===''){
+      $('pTol').innerHTML='&#12288;';
+    }else{
+      var tol=numA(tolTxt);
+      if(isNaN(tol)||tol<0){
+        $('pTol').textContent='公差は0以上の数で入れてください';
+      }else{
+        var loD=th-tol; if(loD<0) loD=0;
+        var hiD=th+tol; if(hiD>90) hiD=90;
+        $('pTol').textContent='開き角 ±'+fa(tol)+'° → 先端の高さ '+fmt(hTopAt(loD))+' 〜 '+fmt(hTopAt(hiD));
+      }
+    }
+
+    /* 高さ推移（ハイトゲージ用） */
+    var stTxt=$('fPStep').value.trim(), step;
+    if(stTxt===''){ step=(Rb*s)/5; }
+    else{
+      step=numA(stTxt);
+      if(isNaN(step)||step<=0){
+        $('pTbl').style.display='none'; $('pNote').style.display='none'; $('pBody').innerHTML='';
+        setPSt('測る間隔は0より大きい数で入れてください(空欄なら弧を5等分)',true);
+        drawPlate(Rb,th,L1,L2,tk); return;
+      }
+    }
+    if((tX-L1)/step>60){
+      $('pTbl').style.display='none'; $('pNote').style.display='none'; $('pBody').innerHTML='';
+      setPSt('測る間隔が細かすぎます(行が60を超えます)。もう少し広げてください',true);
+      drawPlate(Rb,th,L1,L2,tk); return;
+    }
+    var xs=[], x=L1, guard=0;
+    while(x<tX-1e-9 && guard<200){ xs.push(x); x+=step; guard++; }
+    xs.push(tX);
+    /* 弧の終わりの行を必ず入れる */
+    var i, hasArcEnd=false;
+    for(i=0;i<xs.length;i++){ if(Math.abs(xs[i]-aX)<1e-7){ hasArcEnd=true; break; } }
+    if(!hasArcEnd){
+      for(i=0;i<xs.length;i++){ if(xs[i]>aX){ xs.splice(i,0,aX); break; } }
+    }
+    function yBot(xx){                          /* 下面の高さ（無ければ null） */
+      if(xx<-1e-9||xx>tX+1e-7) return null;
+      if(xx<=L1+1e-9) return 0;
+      if(xx<=aX+1e-9){ var q=xx-L1; return Rb-Math.sqrt(Math.max(0,Rb*Rb-q*q)); }
+      return aY+(xx-aX)*(s/c);
+    }
+    function yTop(xx){                           /* 上面の高さ（無ければ null） */
+      if(xx<-1e-9||xx>vX+1e-7) return null;
+      if(xx<=L1+1e-9) return tk;
+      if(xx<=uX+1e-9){ var q=xx-L1; return Rb-Math.sqrt(Math.max(0,Ru*Ru-q*q)); }
+      return (Rb-Ru*c)+(xx-uX)*(s/c);
+    }
+    var rows='', yb, yt, tag;
+    for(i=0;i<xs.length;i++){
+      yb=yBot(xs[i]); yt=yTop(xs[i]);
+      tag='';
+      if(Math.abs(xs[i]-L1)<1e-7) tag='弧の始まり';
+      if(Math.abs(xs[i]-aX)<1e-7) tag=tag?tag+'／弧の終わり':'弧の終わり';
+      if(Math.abs(xs[i]-tX)<1e-7) tag=tag?tag+'／先端':'先端';
+      rows+='<tr><td>'+fmt(xs[i])+'</td>'
+           +'<td>'+(yt===null?'―':fmt(yt))+'</td>'
+           +'<td>'+(yb===null?'―':fmt(yb))+'</td>'
+           +'<td>'+tag+'</td></tr>';
+    }
+    $('pBody').innerHTML=rows;
+    $('pTbl').style.display=''; $('pNote').style.display='';
+    setPSt('計算しました（'+xs.length+'行'+(prMode==='in'?'・R は内面として外面Rに直しました':'')+'）',false);
+    drawPlate(Rb,th,L1,L2,tk);
+  }
+
+  $('pSwap').addEventListener('click',function(){
+    var a=$('fPL1').value, b=$('fPL2').value;
+    $('fPL1').value=b; $('fPL2').value=a;
+    calcPlate();
+  });
+  $('pmHole').addEventListener('click',function(){ setArcMode('hole'); });
+  $('pmPlate').addEventListener('click',function(){ setArcMode('plate'); });
+  $('prOut').addEventListener('click',function(){ prMode='out'; paintPr(); calcPlate(); });
+  $('prIn').addEventListener('click',function(){ prMode='in';  paintPr(); calcPlate(); });
+  ['fAR','fATh','fPL1','fPL2','fPT','fPTol','fPStep'].forEach(function(id){
+    $(id).addEventListener('input',calcPlate);
+  });
+  /* 直径切替（別スクリプト）から呼べるように出しておく。
+     v142 まで syncDim の中の typeof calcArc は別IIFEのため常に undefined で、
+     半径⇔直径を切り替えても割り出しタブが古い値のままだった。 */
+  window.__arcRecalc=function(){ calcArc(); calcPlate(); };
+
+
+})();
+</script>
+
+<script>
+/* ═══ 角のR（v177 追加タブ）═══════════════════════════════════════
+   板の角の大きな R を、曲がり尺（直角定規）で測る。
+   ・尺の内側の2辺を板の2辺に当てると、尺の内側の角は「板の2辺を延ばした線の交点」になる。
+   ・角が直角なら、円弧の中心はその交点から (R, R) の所。交点から中心までは R√2。
+   ・交点から円弧までのいちばん近い点は、中心へ向かう線（45°）の上にある。
+        d = R√2 − R = R(√2 − 1)   →   R = d(√2 + 1) ≈ 2.414 d
+   ・別の測り方：尺の目盛り a の所で、尺から板までのすき間 g を測る。点 (a, g) が円弧の上にあるので
+        (a − R)² + (g − R)² = R²  →  R² − 2R(a + g) + a² + g² = 0
+        大きいほうの根  R = a + g + √(2ag)  （小さいほうは a・g より小さく、点が円弧に乗らない）
+   ・図は R によらず相似なので固定。文字だけ書きかえる（形と数字が食い違うことはない）。
+   ・他のタブの計算・DOM には触れない。半径／直径の切替（CD_DIM）は見ない（常に半径）。 */
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var K=Math.SQRT2-1;                          /* d = K × R */
+  var EPS=1e-9;
+
+  function numK(v){
+    if(v==null) return NaN;
+    v=String(v).replace(/[０-９．]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0)}).replace(/。/g,'.').trim();
+    if(v==='') return NaN;
+    return Number(v);
+  }
+  function fmt(x){ return x.toFixed(3); }
+  function sgn(x){ var t=x.toFixed(3); if(t==='-0.000') t='0.000'; return (x>0 && t!=='0.000' ? '+' : '')+t; }
+  function cell(id,val,led,txt){
+    var e=$(id);
+    if(val==null || !isFinite(val)){ e.textContent='―'; e.className='v dim'; return; }
+    e.textContent = txt!=null ? txt : fmt(val);
+    e.className = led ? 'v led' : 'v dim';
+  }
+  function setSt(id,msg,isErr){
+    var s=$(id); s.textContent=msg; s.className='statusTxt'+(isErr?' err':'');
+  }
+  /* 欄を読む：空欄は NaN、数字でない・範囲外は null（＝入力の誤り） */
+  function readPos(id, allowZero){
+    var t=$(id).value.trim();
+    if(t==='') return NaN;
+    var x=numK(t);
+    if(isNaN(x) || (allowZero ? x<0 : x<=0)) return null;
+    return x;
+  }
+  function paintFig(d,R,Rd,d0){
+    var v1=$('kfV1'), v2=$('kfV2'), tD=$('kfD'), tR=$('kfR');
+    if(isFinite(d)){ v1.textContent='測った d = '+fmt(d); v1.setAttribute('fill','#1F3341'); }
+    else if(isFinite(d0)){ v1.textContent='図面 R なら d = '+fmt(d0); v1.setAttribute('fill','#D63426'); }
+    else { v1.textContent='d … 尺の角から円弧まで'; v1.setAttribute('fill','#1F3341'); }
+    if(isFinite(R)){ v2.textContent='R = '+fmt(R); v2.setAttribute('fill','#D63426'); }
+    else if(isFinite(Rd)){ v2.textContent='図面 R = '+fmt(Rd); v2.setAttribute('fill','#1F3341'); }
+    else { v2.textContent='R … 角の丸みの半径'; v2.setAttribute('fill','#1F3341'); }
+    v1.setAttribute('font-weight', (isFinite(d)||isFinite(d0)) ? '700' : '400');
+    v2.setAttribute('font-weight', (isFinite(R)||isFinite(Rd)) ? '700' : '400');
+    tR.setAttribute('fill', isFinite(R) ? '#D63426' : '#1F3341');
+    tR.setAttribute('font-weight', isFinite(R) ? '700' : '400');
+    $('kDimR').setAttribute('stroke', isFinite(R) ? '#D63426' : '#1F3341');
+    $('kDimR').setAttribute('marker-end', isFinite(R) ? 'url(#arKR)' : 'url(#arKI)');
+  }
+
+  function calcCorner(){
+    var d=readPos('fKD',false), Rd=readPos('fKR',false), t=readPos('fKTol',true);
+    var err='';
+    if(d===null){ err='距離 d は正の数で入れてください'; d=NaN; }
+    if(Rd===null){ err=err||'図面の R は正の数で入れてください'; Rd=NaN; }
+    if(t===null){ err=err||'公差は 0 以上の数で入れてください'; t=NaN; }
+    if(isFinite(Rd) && isFinite(t) && t>=Rd){ err=err||'公差が R 以上になっています'; t=NaN; }
+
+    var R  = isFinite(d)  ? d/K  : NaN;           /* 測った d から */
+    var d0 = isFinite(Rd) ? Rd*K : NaN;           /* 図面の R なら出るはずの d */
+    var df = (isFinite(R) && isFinite(Rd)) ? R-Rd : NaN;
+
+    cell('vKR', R, true);
+    cell('vKD0', d0, true);
+    cell('vKDiff', df, true, isFinite(df) ? sgn(df) : null);
+
+    var Rs = isFinite(R) ? R : Rd;
+    $('kSub').textContent = 'R の始まり：' + (isFinite(Rs) ? '尺の角から '+fmt(Rs)+(isFinite(R)?'':'（図面）') : '―');
+    $('kSens').textContent = 'd が ±0.5 違うと R は ±' + (0.5/K).toFixed(3);
+
+    var tolTxt='', judge=null;
+    if(isFinite(Rd) && isFinite(t) && t>0){
+      var lo=Rd-t, hi=Rd+t;
+      tolTxt='R '+fmt(lo)+'〜'+fmt(hi)+' なら d は '+fmt(lo*K)+'〜'+fmt(hi*K);
+      if(isFinite(R)) judge = (R>=lo-EPS && R<=hi+EPS);
+    }
+    $('kTol').textContent=tolTxt;
+
+    if(err) setSt('kStatus', err, true);
+    else if(!isFinite(d) && !isFinite(Rd)) setSt('kStatus','入力待ち(尺の角から円弧までの距離 d を入れてください)',false);
+    else if(!isFinite(d)) setSt('kStatus','図面の R から、測ったときに出るはずの d を出しました',false);
+    else if(!isFinite(Rd)) setSt('kStatus','R を出しました（図面の R を入れると比べられます）',false);
+    else if(judge===false) setSt('kStatus','範囲外です。尺の当たりと読みを確かめ、もう一度測ってください',true);
+    else if(judge===true){ setSt('kStatus','範囲内です（R '+fmt(Rd-t)+'〜'+fmt(Rd+t)+'）',false); $('kStatus').className+=' okc'; }
+    else setSt('kStatus','測った R と図面の R の差を出しました（公差を入れると範囲も出ます）',false);
+
+    paintFig(d,R,Rd,d0);
+    calcAlt(R,Rd);
+  }
+
+  /* 別の測り方：目盛り a のすき間 g */
+  var lastR=NaN, lastRd=NaN;
+  function calcAlt(R,Rd){
+    if(arguments.length){ lastR=R; lastRd=Rd; } else { R=lastR; Rd=lastRd; }
+    var a=readPos('fKA',false), g=readPos('fKG',false), err='';
+    if(a===null){ err='目盛り a は正の数で入れてください'; a=NaN; }
+    if(g===null){ err=err||'すき間 g は正の数で入れてください'; g=NaN; }
+    var R2 = (isFinite(a) && isFinite(g)) ? a+g+Math.sqrt(2*a*g) : NaN;
+    var dd = (isFinite(R2) && isFinite(R)) ? R2-R : NaN;
+    var g0 = NaN, beyond=false;
+    if(isFinite(a) && isFinite(Rd)){
+      if(a < Rd) g0 = Rd - Math.sqrt(Rd*Rd - (Rd-a)*(Rd-a));
+      else beyond = true;
+    }
+    cell('vKR2', R2, true);
+    cell('vKR2d', dd, true, isFinite(dd) ? sgn(dd) : null);
+    cell('vKG0', beyond ? 0 : g0, true);   /* a が R より先なら すき間 0（板が尺に当たる）。理由は下の文で知らせる */
+    $('kSub2').textContent = (isFinite(a) && isFinite(g))
+      ? 'g が ±0.5 違うと R は ±' + (0.5*(1+Math.sqrt(a/(2*g)))).toFixed(3) + ' 違う'
+      : 'g が ±0.5 違うと R は ― 違う';
+    if(err) setSt('kStatus2', err, true);
+    else if(beyond && !isFinite(g)) setSt('kStatus2','目盛り a が図面の R より先です。そこでは板が尺に当たり、すき間は 0 です（a を小さく）',true);
+    else if(!isFinite(a)) setSt('kStatus2','目盛り a とすき間 g を入れてください',false);
+    else if(!isFinite(g)) setSt('kStatus2','すき間 g を入れてください'+(isFinite(g0)?'（図面の R なら '+fmt(g0)+'）':''),false);
+    else if(isFinite(dd)) setSt('kStatus2','R を出しました。上の d から出した R と比べられます',false);
+    else setSt('kStatus2','R を出しました',false);
+  }
+
+  ['fKD','fKR','fKTol'].forEach(function(id){ $(id).addEventListener('input',calcCorner); });
+  ['fKA','fKG'].forEach(function(id){ $(id).addEventListener('input',function(){ calcAlt(); }); });
+  window.__cornerCalc = calcCorner;
+  calcCorner();
+})();
+</script>
+
+<!-- ═══ 数字入力の補助（共通スニペット / 全ツール同一） ═══
+     ・数字キーパッド固定（inputmode）／全角数字・句点の自動半角化
+     ・数字以外（かな・英字・記号）の混入を自動で除去
+     ・± ボタン … 数字キーパッドに無いマイナスを入力
+     ・✕ ボタン … 欄をまとめて消去
+     ・「5 43」のような度分秒のスペース区切りはそのまま通します
+     ・DOM構造は変更しません（再描画するツールでも壊れません）        -->
+<style>
+  /* ═══ 自前キーボード（v72 / 全ツール共通）═══ */
+  /* ★v100まで、ここに<セレクタの無い断片>が残っていた（v72からの取りこぼし）。
+     CSSは「{ が来るまでがセレクタ」なので、その断片が次の規則まで飲み込み、
+     body.kbon .kt-aid ごと無効にしていた。v101で断片を削除。
+     ±の浮動バーは inputmode="none" のせいで元々作られず実害は無かったが、
+     規則が効かない状態は残さない。 */
+  body.kbon .kt-aid{display:none!important}   /* 共通の±浮動ボタンは重複するので隠す */
+
+  .kpad{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#EDF1F3;
+    border-top:2px solid var(--ink);padding:6px 6px calc(6px + env(safe-area-inset-bottom));
+    display:none;-webkit-user-select:none;user-select:none;
+    box-shadow:0 -6px 18px rgba(31,51,65,.16)}
+  .kpad.on{display:block}
+  .kpHead{display:flex;align-items:center;gap:6px;padding:2px 2px 6px}
+  .kpName{flex:1;min-width:0;font-size:12px;font-weight:700;color:#1F3341;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .kpHead button.sep{margin-left:8px}
+  .kpHead button{flex:none;width:40px;height:32px;font:inherit;font-size:13px;
+    background:#fff;border:1px solid #C9D3DA;border-radius:7px;color:#1F3341;cursor:pointer}
+  .kpGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+  .kpGrid button{font:inherit;font-size:19px;font-weight:700;color:#1F3341;background:#fff;
+    border:1px solid #C9D3DA;border-radius:9px;min-height:46px;cursor:pointer;
+    -webkit-tap-highlight-color:transparent}
+  .kpGrid button:active{background:#DCE4E8}
+  .kpGrid button.fn{font-size:13px;font-weight:700;color:#5B707E;background:#F7F9FA}
+  .kpGrid button.go{background:var(--ink);color:#fff;border-color:var(--ink);font-size:14px}
+  .kpGrid button.del{color:var(--red)}
+  .kpGrid button.nx{font-size:13px;color:#1F3341;background:#F7F9FA}
+
+  /* ── 電卓（v97）──
+     計算モードのキーと式の帯は、ふだんは出さない。 */
+  .kpHead button.calcBtn{width:auto;padding:0 12px;font-weight:700}
+  .kpHead button.calcBtn[aria-pressed="true"]{background:#1F3341;color:#fff;border-color:#1F3341}
+  .kpCalc{display:none;align-items:baseline;gap:8px;background:#fff;
+    border:1px solid #C9D3DA;border-radius:8px;padding:7px 10px;margin:0 2px 6px;
+    min-height:34px;overflow:hidden}
+  .kpad.calcon .kpCalc{display:flex}
+    /* ★v97 は direction:rtl を入れていた。長い式で右端(いま打った側)を
+     見せるつもりだったが、この指定は<式の並びそのもの>を右から左にする。
+     100÷2 が 2÷100 に見え、割り算で取り違える。実機で発覚(v98)。
+     並びは必ず左から右。長い式は JS で右端へスクロールさせる。 */
+  .kpExp{flex:1;min-width:0;font-size:17px;font-weight:700;color:#1F3341;
+    text-align:left;white-space:nowrap;overflow-x:auto;overflow-y:hidden;
+    -webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .kpExp::-webkit-scrollbar{display:none}
+  .kpEq{flex:none;font-size:12px;color:#5B707E}
+  .kpEq.bad{color:#B23B2E;font-weight:700}
+  .kpGrid button.cop{display:none}
+  .kpad.calcon .kpGrid button.cop{display:block}
+  .kpad.calcon .kpGrid button.ceq{grid-column:span 4;background:var(--ink);color:#fff;
+    border-color:var(--ink);font-size:14px}
+  .kpad.calcon .kpGrid button.ceq:disabled{background:#C9D3DA;border-color:#C9D3DA;color:#F2F6F8}
+  .kpGrid button.cop{font-size:20px;font-weight:700;color:#1F3341;background:#F7F9FA}
+  /* v99: 計算モードのあいだだけ意味が変わるキー */
+  .kpGrid button.ceq2{font-size:22px;font-weight:700;color:#fff;background:var(--ink);
+    border-color:var(--ink)}
+  .kpGrid button.ceq2:disabled{background:#C9D3DA;border-color:#C9D3DA;color:#F2F6F8}
+  .kpHead button.paren{font-size:20px;font-weight:700;color:#1F3341}
+
+  /* ── 計算モードは<色＋文字＋形>の3つで示す（v100）──
+     色だけに頼らない。手袋・明るい工場・画面の見え方は人によって違う。
+       色 … キーボードの帯全体を濃紺にする
+       文字 … 見出しに「電卓」、「計算」ボタンが反転、式の帯が出る
+       形 … ＝ と ( ) が現れる（キーの並びが変わる） */
+  .kpad.calcon{background:#1F3341;border-top-color:#0E1B24}
+  .kpad.calcon .kpHead{color:#F2F6F8}
+  .kpad.calcon .kpName{color:#F2F6F8}
+  .kpad.calcon .kpHead button{background:#33506A;border-color:#4A6B87;color:#F2F6F8}
+  .kpad.calcon .kpHead button.calcBtn[aria-pressed="true"]{background:#F2F6F8;color:#1F3341;border-color:#F2F6F8}
+  .kpad.calcon .kpHead button.paren{color:#fff}
+  .kpad.calcon .kpCalc{border-color:#4A6B87}
+  .kpad.calcon .kpGrid button{border-color:#4A6B87}
+  .kpad.calcon .kpGrid button.cop{background:#33506A;color:#fff;border-color:#4A6B87}
+
+  /* ── 電卓を常に出しておくボタン（v98）──
+     置き場所はトップの設定で選ぶ。キーボードが開いているあいだは隠す
+     （キーボードの上にも「計算」があるので二重になり、指の下にも来る）。 */
+  .calcFab{position:fixed;z-index:55;display:none;align-items:center;gap:6px;
+    font:inherit;font-size:13px;font-weight:700;color:#fff;background:#1F3341;
+    border:2px solid #fff;border-radius:999px;padding:11px 16px;min-height:48px;
+    box-shadow:0 3px 12px rgba(31,51,65,.28);cursor:pointer;
+    -webkit-tap-highlight-color:transparent}
+  .calcFab:active{background:#33506A}
+  .calcFab.br{display:flex;right:14px;bottom:calc(14px + env(safe-area-inset-bottom))}
+  .calcFab.bl{display:flex;left:14px;bottom:calc(14px + env(safe-area-inset-bottom))}
+  .calcFab.tr{display:flex;right:14px;top:14px}
+  .calcFab.tl{display:flex;left:14px;top:14px}
+  /* 下のバー: 画面いっぱいの帯。body の下余白は JS で確保する。 */
+  .calcFab.bar{display:flex;left:0;right:0;bottom:0;justify-content:center;
+    border-radius:0;border:none;border-top:2px solid #33506A;
+    padding:13px 16px calc(13px + env(safe-area-inset-bottom));box-shadow:0 -4px 14px rgba(31,51,65,.18)}
+  .calcFab .cfIco{font-size:16px;line-height:1}
+  body.kbon-open .calcFab, .kpad.on ~ .calcFab{display:none !important}
+  @media print{.calcFab{display:none !important}}
+
+  /* 大きさの切替（v70／v74で見直し）。押しやすさは端末と手袋で変わるので端末ごとに選ぶ。
+     v74: 40px の「小」は手袋で押しにくく使われないため廃止し、上に「特大」を足した。
+          中=46px(旧 中) / 大=56px(旧 大) / 特大=66px(新規)。
+          保存値 "s" は loadSize() で "m" に引き上げる(端末に残っていても小に戻らない)。 */
+  .kpad.kp-m .kpGrid{gap:5px}
+  .kpad.kp-m .kpGrid button{min-height:46px;font-size:19px}
+  .kpad.kp-l .kpGrid{gap:6px}
+  .kpad.kp-l .kpGrid button{min-height:56px;font-size:22px}
+  .kpad.kp-l .kpGrid button.fn,.kpad.kp-l .kpGrid button.nx{font-size:14px}
+  .kpad.kp-l .kpGrid button.go{font-size:15px}
+  .kpad.kp-l .kpHead button{height:36px;width:44px}
+  .kpad.kp-l .kpName{font-size:13px}
+  .kpad.kp-xl .kpGrid{gap:7px}
+  .kpad.kp-xl .kpGrid button{min-height:66px;font-size:26px;border-radius:11px}
+  .kpad.kp-xl .kpGrid button.fn,.kpad.kp-xl .kpGrid button.nx{font-size:15px}
+  .kpad.kp-xl .kpGrid button.go{font-size:16px}
+  .kpad.kp-xl .kpHead button{height:40px;width:48px;font-size:15px}
+  .kpad.kp-xl .kpName{font-size:14px}
+  .kt-aid{
+    position:absolute;z-index:9998;display:none;gap:4px;
+    background:#1F3341;border-radius:8px;padding:3px;
+    box-shadow:0 3px 10px rgba(0,0,0,.28);
+  }
+  .kt-aid.on{display:flex}
+  .kt-aid button{
+    -webkit-appearance:none;appearance:none;border:none;
+    background:#2C4353;color:#fff;font:inherit;font-size:14px;font-weight:700;
+    line-height:1;padding:8px 12px;border-radius:5px;cursor:pointer;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  .kt-aid button:active{background:#D63426}
+  @media print{.kt-aid{display:none !important}}
+  .dimsw{display:flex;gap:6px;padding:0 2px;margin:0 0 8px}
+  .dimsw button{flex:1;min-height:38px;padding:8px 6px;font:inherit;font-size:12px;font-weight:700;
+    border:1px solid #C9D3DA;background:#fff;color:#5B707E;border-radius:9px;cursor:pointer}
+  .dimsw button.on{background:#1F3341;color:#fff;border-color:#1F3341}
+</style>
+<script>
+(function(){
+  "use strict";
+
+  /* ── 対象の判定 ── */
+  function mode(el){
+    return (el && el.tagName==="INPUT" && !el.readOnly && !el.disabled)
+      ? (el.getAttribute("inputmode")||"") : "";
+  }
+  function isNum(el){ var m=mode(el); return m==="decimal"||m==="numeric"; }
+  function isDec(el){ return mode(el)==="decimal"; }
+
+  /* ── 全角→半角（かなキーボードで打たれた場合の救済） ── */
+  function toHalf(v){
+    return v
+      .replace(/[０-９]/g, function(c){ return String.fromCharCode(c.charCodeAt(0)-65248); })
+      .replace(/[．。･・]/g, ".")
+      .replace(/[－−―ーｰ‐–—]/g, "-")
+      .replace(/[\u3000]/g, " ");
+  }
+
+  /* ── 数字だけに整える（空白区切りは温存＝度分秒入力を壊さない） ── */
+  function clean(v, dec){
+    var toks = toHalf(v).split(" "), out = [], i, t, neg, k;
+    for(i=0;i<toks.length;i++){
+      t = toks[i];
+      neg = (i===0) && t.charAt(0)==="-";
+      t = t.replace(/[^0-9.]/g, "");
+      if(!dec) t = t.replace(/\./g, "");
+      else {
+        k = t.indexOf(".");
+        if(k>=0) t = t.slice(0,k+1) + t.slice(k+1).replace(/\./g,"");
+      }
+      out.push((neg?"-":"") + t);
+    }
+    return out.join(" ");
+  }
+
+  /* ── 入力の監視（捕捉フェーズ＝各ツールの計算処理より先に整える） ── */
+  document.addEventListener("input", function(e){
+    var el = e.target;
+    if(!isNum(el)) return;
+    var v = el.value, c = clean(v, isDec(el));
+    if(c === v) return;
+    var p = el.selectionStart, d = v.length - c.length;
+    el.value = c;
+    try{ el.setSelectionRange(Math.max(0,p-d), Math.max(0,p-d)); }catch(err){}
+  }, true);
+
+  /* ── ± / ✕ の浮動ボタン（DOMを包まないので再描画に強い） ── */
+  var bar=null, cur=null, sign=null;
+
+  function notify(el){
+    var ev;
+    try{ ev = new Event("input", {bubbles:true}); }
+    catch(err){ ev = document.createEvent("Event"); ev.initEvent("input", true, false); }
+    el.dispatchEvent(ev);
+    try{ ev = new Event("change", {bubbles:true}); }
+    catch(err){ ev = document.createEvent("Event"); ev.initEvent("change", true, false); }
+    el.dispatchEvent(ev);
+  }
+  /* 押した瞬間に実行する。既定動作を止めることで入力欄のフォーカス（＝
+     数字キーパッド）を保ったまま操作でき、ゴーストクリックも防げる。   */
+  function act(e){
+    e.preventDefault();
+    var b = e.target, a, v;
+    while(b && b !== bar && b.tagName !== "BUTTON") b = b.parentNode;
+    if(!b || b === bar || !cur) return;
+    a = b.getAttribute("data-a");
+    if(a === "clr") cur.value = "";
+    else {
+      v = cur.value;
+      cur.value = (v.charAt(0) === "-") ? v.slice(1) : ("-" + v);
+    }
+    notify(cur);
+    try{ cur.focus(); }catch(err){}
+    place();
+  }
+
+  function build(){
+    bar = document.createElement("div");
+    bar.className = "kt-aid";
+    bar.innerHTML =
+      '<button type="button" data-a="sign" aria-label="符号を反転">±</button>'+
+      '<button type="button" data-a="clr" aria-label="この欄を消去">✕</button>';
+    document.body.appendChild(bar);
+    sign = bar.querySelector('[data-a="sign"]');
+    if(window.PointerEvent){
+      bar.addEventListener("pointerdown", act);
+    } else {
+      bar.addEventListener("mousedown", act);
+      bar.addEventListener("touchstart", act, {passive:false});
+    }
+  }
+
+  function hide(){ if(bar) bar.className = "kt-aid"; cur = null; }
+
+  function place(){
+    if(!cur || !bar) return;
+    if(!document.contains(cur)){ hide(); return; }   /* 再描画で消えた場合 */
+    bar.className = "kt-aid on";
+    var r = cur.getBoundingClientRect();
+    var bw = bar.offsetWidth, bh = bar.offsetHeight;
+    var top = r.top - bh - 6;
+    if(top < 4) top = r.bottom + 6;
+    var left = r.right - bw;
+    if(left < 4) left = 4;
+    bar.style.left = (left + (window.pageXOffset||0)) + "px";
+    bar.style.top  = (top  + (window.pageYOffset||0)) + "px";
+  }
+
+  document.addEventListener("focusin", function(e){
+    if(!isNum(e.target)){ hide(); return; }
+    cur = e.target;
+    if(!bar) build();
+    sign.style.display = isDec(cur) ? "" : "none";   /* 整数欄には ± を出さない */
+    place();
+  });
+  document.addEventListener("focusout", function(){
+    setTimeout(function(){ if(document.activeElement !== cur) hide(); }, 0);
+  });
+  window.addEventListener("scroll", function(){ if(cur) place(); }, true);
+  window.addEventListener("resize", function(){ if(cur) place(); });
+})();
+</script>
+<script>
+(function(){
+  function fire(el,t){
+    try{ el.dispatchEvent(new Event(t,{bubbles:true})); }
+    catch(e){ var ev=document.createEvent('Event'); ev.initEvent(t,true,true); el.dispatchEvent(ev); }
+  }
+  function clickText(within,text){
+    var cont = within ? document.querySelector(within) : document;
+    if(!cont) return;
+    var all=cont.querySelectorAll('button,[class*="chip"],span,a,div,li'), target=String(text), j,e;
+    for(j=0;j<all.length;j++){
+      e=all[j];
+      if(e.textContent.trim()===target && (e.children.length===0 || e.tagName==='BUTTON')){ e.click(); return; }
+    }
+  }
+  window.tryExample=function(btn){
+    var raw=btn.getAttribute('data-ex'); if(!raw) return;
+    var cfg; try{ cfg=JSON.parse(raw); }catch(e){ return; }
+    var steps=cfg.set||[], i, it, el, k, fns, f, fn;
+    for(i=0;i<steps.length;i++){
+      it=steps[i];
+      if(it.click){ var c=document.querySelector(it.click); if(c) c.click(); continue; }
+      if(it.clickText){ clickText(it.within, it.clickText); continue; }
+      if(it.setState){ if(window.S){ for(k in it.setState){ window.S[k]=it.setState[k]; } }
+        fns=(it.apply||'').split(';'); for(f=0;f<fns.length;f++){ fn=fns[f].replace(/^\s+|\s+$/g,''); if(fn && typeof window[fn]==='function'){ try{ window[fn](); }catch(e){} } }
+        continue; }
+      el = it.sel ? document.querySelector(it.sel) : document.getElementById(it.id);
+      if(!el) continue;
+      el.value=String(it.v);
+      fire(el, el.tagName==='SELECT' ? 'change' : 'input');
+    }
+    var gd=btn; while(gd && !(gd.classList && gd.classList.contains('guide'))) gd=gd.parentNode;
+    if(gd) gd.open=false;
+    var fig=document.querySelector('svg#fig, svg#dwg, figure svg, #fig, #dwg');
+    if(fig && fig.scrollIntoView) fig.scrollIntoView({behavior:'smooth',block:'center'});
+  };
+})();
+</script>
+
+<script>
+/* ═══ 一括消去の共通処理（全ツール共通 / 確認ダイアログは使いません）═══
+     1回目 … ボタンが「もう一度押すと消去」に変わります（3秒で自動解除）
+     2回目 … 最初の状態に戻します
+     ※ 確認ポップアップ（ダイアログ）はPWA等で無効化されるため使いません      */
+(function(){
+  "use strict";
+  var KEY = "";   /* このツールは保存を持たないため、再読み込みだけで初期状態に戻ります */
+  window.armClear = function(btn){
+    if(!btn || !btn.getAttribute) return;
+    if(!btn.getAttribute("data-armed")){
+      btn.setAttribute("data-armed","1");
+      if(!btn.getAttribute("data-lbl")) btn.setAttribute("data-lbl", btn.textContent);
+      btn.textContent = "もう一度押すと消去";
+      if(btn.classList) btn.classList.add("arm");
+      setTimeout(function(){
+        if(btn.getAttribute("data-armed")){
+          btn.removeAttribute("data-armed");
+          btn.textContent = btn.getAttribute("data-lbl");
+          if(btn.classList) btn.classList.remove("arm");
+        }
+      }, 3000);
+      return;
+    }
+    btn.removeAttribute("data-armed");
+    if(btn.classList) btn.classList.remove("arm");
+    if(btn.getAttribute("data-lbl")) btn.textContent = btn.getAttribute("data-lbl");
+    if(KEY){ try{ localStorage.removeItem(KEY); }catch(e){} }
+    try{ location.reload(); }catch(e){}
+  };
+})();
+</script>
+<style>
+/* ═══ 記入例（薄字）を入力値と見分ける（v57 / 全ツール共通）═══
+     薄字が入力値と同じ書体（太字・大きめ・右寄せ）で出ていたため、
+     入力済みに見えていた。色の濃さだけだと現場の照明や斜めからの視認で差が消えるので、
+     太さ・大きさ・傾きも変えて別物にする。                                    */
+::placeholder{color:#AEBBC4;font-weight:400;font-size:.82em;font-style:italic;opacity:1}
+::-webkit-input-placeholder{color:#AEBBC4;font-weight:400;font-size:.82em;font-style:italic;opacity:1}
+::-moz-placeholder{color:#AEBBC4;font-weight:400;font-size:.82em;font-style:italic;opacity:1}
+/* 未入力の欄は下線を破線に（入っている欄＝実線）。入力中は元の色を邪魔しない。 */
+input.kt-empty:not(:focus){border-bottom-style:dashed !important;border-bottom-color:#C2CED6 !important}
+td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3DA !important}
+</style>
+<script>
+/* ═══ 未入力の欄に印をつける（v57 / 全ツール共通）═══
+     数字を入れる欄（inputmode 付き）だけを対象にする。
+     行を作り直すツールがあるので、DOMの変化も見張って付け直す。            */
+(function(){
+  "use strict";
+  function hasCls(el){ return (" "+(el.className||"")+" ").indexOf(" kt-empty ")>=0; }
+  function mark(el){
+    if(!el||el.tagName!=="INPUT") return;
+    if(!el.getAttribute("inputmode")) return;
+    if(el.readOnly||el.disabled) return;
+    var empty=((el.value||"").replace(/\s/g,"")==="");
+    var has=hasCls(el);
+    if(empty&&!has) el.className=((el.className||"")+" kt-empty").replace(/^\s+/,"");
+    else if(!empty&&has) el.className=(" "+el.className+" ").replace(" kt-empty "," ").replace(/^\s+|\s+$/g,"");
+  }
+  function scan(){
+    var ns=document.getElementsByTagName("input"),i;
+    for(i=0;i<ns.length;i++) mark(ns[i]);
+  }
+  /* 捕捉フェーズ＝打った欄をすぐ反映。浮上フェーズ＝ツールが行を作り直した後に拾う。 */
+  document.addEventListener("input",function(e){ mark(e.target); },true);
+  document.addEventListener("input",scan,false);
+  document.addEventListener("change",scan,false);
+  document.addEventListener("click",scan,false);
+  if(window.MutationObserver){
+    try{
+      new MutationObserver(scan).observe(document.body,{childList:true,subtree:true});
+    }catch(e){}
+  }
+  scan();
+  setTimeout(scan,0);
+})();
+</script>
+
+<script>
+/* ═══ 並び入力を「1行に1つ」にする（v66）═══
+   Android の数字キーパッドにはスペースキーが無い機種があり、
+   「スペース区切りで並べる」入力が打てないという声があったため。
+   ・元の <input> は hidden として残し、値は今までどおりスペース連結の文字列。
+     → 保存データ・例ボタン・parseNums など下流は一切変更しなくてよい。
+   ・value のセッターを差し替えているので、既存の el.value = "..." が
+     そのまま行の再描画になる（呼び出し側を書き換えていない）。 */
+(function(){
+  "use strict";
+  function toHalf(v){
+    return String(v==null?"":v)
+      .replace(/[\uFF10-\uFF19]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0)})
+      .replace(/[\u3002\uFF0E]/g,".")
+      .replace(/[\uFF0D\u30FC\uFF70\u2212]/g,"-");
+  }
+  function clean(v){ return toHalf(v).replace(/[^0-9.\-]/g,""); }
+  function fire(el){
+    var ev;
+    try{ ev=new Event("input",{bubbles:true}); }
+    catch(e){ ev=document.createEvent("Event"); ev.initEvent("input",true,false); }
+    el.dispatchEvent(ev);
+  }
+  function build(id, ph, max){
+    var inp=document.getElementById(id); if(!inp) return;
+    var proto=window.HTMLInputElement && window.HTMLInputElement.prototype;
+    var d=proto && Object.getOwnPropertyDescriptor(proto,"value");
+    if(!d || !d.get || !d.set) return;            /* 使えない環境では元の欄のまま */
+    var LIM=max||40;
+    var host=document.createElement("div");
+    host.className="lst"; host.id="lst_"+id;
+    inp.parentNode.insertBefore(host, inp.nextSibling);
+    inp.setAttribute("type","hidden");
+    /* inputmode を外すのが重要。残すと共通スニペットが hidden 欄も
+       「数値欄」とみなして掃除し、2つ目以降のマイナスを消してしまう。 */
+    inp.removeAttribute("inputmode");
+    var vals=[];
+    function fromHidden(){
+      var t=String(d.get.call(inp)||"").split(/[\s,\u3001\uFF0C]+/), out=[], i;
+      for(i=0;i<t.length;i++) if(t[i]!=="") out.push(t[i]);
+      return out;
+    }
+    function toHidden(){
+      var out=[], i, v;
+      for(i=0;i<vals.length;i++){ v=String(vals[i]).replace(/\s/g,""); if(v!=="") out.push(v); }
+      d.set.call(inp, out.join(" "));
+      fire(inp);
+    }
+    function render(focus){
+      var h="", i, v;
+      for(i=0;i<vals.length;i++){
+        v=String(vals[i]).replace(/"/g,"&quot;");
+        h+='<div class="lrow">'
+          +'<button type="button" class="lbtn ins" data-i="'+i+'" aria-label="ここに1つ差し込む" title="ここに1つ差し込む">\u21B0</button>'
+          +'<span class="lno">'+(i+1)+'</span>'
+          +'<input type="text" inputmode="decimal" autocomplete="off" enterkeyhint="next" data-i="'+i+'" placeholder="'+ph+'" value="'+v+'">'
+          +'<button type="button" class="lbtn del" data-i="'+i+'" aria-label="この行を消す" title="この行を消す">\u00D7</button>'
+          +'</div>';
+      }
+      h+='<button type="button" class="ladd">\uFF0B 1\u3064\u8FFD\u52A0</button>';
+      host.innerHTML=h;
+      if(typeof focus==="number"){
+        var els=host.querySelectorAll(".lrow input");
+        if(els[focus]){ els[focus].focus(); try{ els[focus].select(); }catch(e){} }
+      }
+    }
+    function sync(){ vals=fromHidden(); if(!vals.length) vals=[""]; render(); }
+    /* 外から el.value = "..." されたら行を作り直す */
+    try{
+      Object.defineProperty(inp,"value",{
+        configurable:true,
+        get:function(){ return d.get.call(inp); },
+        set:function(v){ d.set.call(inp,v); sync(); }
+      });
+    }catch(e){}
+    host.addEventListener("input",function(e){
+      var el=e.target;
+      if(!el || el.tagName!=="INPUT") return;
+      var c=clean(el.value);
+      if(c!==el.value){
+        var p=(el.selectionStart||0)-(el.value.length-c.length);
+        el.value=c;
+        try{ el.setSelectionRange(p,p); }catch(e2){}
+      }
+      vals[parseInt(el.getAttribute("data-i"),10)]=el.value;
+      toHidden();
+    });
+    host.addEventListener("keydown",function(e){
+      if(e.key!=="Enter" && e.keyCode!==13) return;
+      var el=e.target; if(!el || el.tagName!=="INPUT") return;
+      e.preventDefault();
+      var i=parseInt(el.getAttribute("data-i"),10);
+      if(i < vals.length-1){ render(i+1); return; }
+      if(String(el.value).replace(/\s/g,"")==="" || vals.length>=LIM){ el.blur(); return; }
+      vals.push(""); render(vals.length-1);
+    });
+    host.addEventListener("click",function(e){
+      var b=e.target && e.target.closest ? e.target.closest("button") : null;
+      if(!b) return;
+      var i=b.getAttribute("data-i")==null ? -1 : parseInt(b.getAttribute("data-i"),10);
+      if(b.className.indexOf("ins")>=0){
+        if(vals.length>=LIM) return;
+        vals.splice(i,0,""); toHidden(); render(i);
+      }else if(b.className.indexOf("del")>=0){
+        vals.splice(i,1); if(!vals.length) vals=[""];
+        toHidden(); render();
+      }else if(b.className.indexOf("ladd")>=0){
+        if(vals.length>=LIM) return;
+        vals.push(""); toHidden(); render(vals.length-1);
+      }
+    });
+    sync();
+  }
+  window.__buildList=build;
+})();
+</script>
+<script>
+(function(){
+  if(!window.__buildList) return;
+  window.__buildList("fAAngs","\u4F8B 45",40);
+})();
+</script>
+
+<!-- 電卓を常に出しておくボタン（v98）。置き場所はトップの設定で選ぶ。 -->
+<button type="button" class="calcFab off" id="calcFab" aria-label="電卓を開く">
+  <span class="cfIco">🖩</span><span class="cfTxt">電卓</span>
+</button>
+
+<div class="kpad" id="kpad" aria-hidden="true">
+  <div class="kpHead">
+    <span class="kpName" id="kpName">—</span>
+    <button type="button" data-a="left" aria-label="1つ左へ">←</button>
+    <button type="button" data-a="right" aria-label="1つ右へ">→</button>
+    <button type="button" data-a="prev" class="sep" aria-label="前の欄">▲</button>
+    <button type="button" data-a="next" aria-label="次の欄">▼</button>
+    <button type="button" data-a="calc" id="kpCalcBtn" class="sep calcBtn" aria-pressed="false" aria-label="電卓を使う">計算</button>
+  </div>
+  <!-- 計算モードの式（v97）。ここに出るあいだ、欄の数字は変わらない。 -->
+  <div class="kpCalc" id="kpCalc" aria-live="polite">
+    <span class="kpExp" id="kpExp">0</span>
+    <span class="kpEq" id="kpEqv"></span>
+  </div>
+  <div class="kpGrid" id="kpGrid">
+    <button type="button" data-a="d" data-v="7">7</button>
+    <button type="button" data-a="d" data-v="8">8</button>
+    <button type="button" data-a="d" data-v="9">9</button>
+    <button type="button" data-a="bs" class="fn del">⌫</button>
+    <button type="button" data-a="d" data-v="4">4</button>
+    <button type="button" data-a="d" data-v="5">5</button>
+    <button type="button" data-a="d" data-v="6">6</button>
+    <button type="button" data-a="clr" class="fn">C</button>
+    <button type="button" data-a="d" data-v="1">1</button>
+    <button type="button" data-a="d" data-v="2">2</button>
+    <button type="button" data-a="d" data-v="3">3</button>
+    <button type="button" data-a="next" class="fn nx">次へ ▼</button>
+    <button type="button" data-a="sign" class="fn">±</button>
+    <button type="button" data-a="d" data-v="0">0</button>
+    <button type="button" data-a="d" data-v=".">.</button>
+    <button type="button" data-a="done" class="go">閉じる</button>
+    <!-- 計算モードのときだけ出る（v97） -->
+    <button type="button" data-a="op" data-v="÷" class="cop">÷</button>
+    <button type="button" data-a="op" data-v="×" class="cop">×</button>
+    <button type="button" data-a="op" data-v="-" class="cop">−</button>
+    <button type="button" data-a="op" data-v="+" class="cop">＋</button>
+    <button type="button" data-a="eq" class="cop ceq">＝ この欄に入れる</button>
+  </div>
+</div>
+<script>
+/* ═══ 自前キーボード（v72 / 全ツール共通）═══
+   狙い: 機種やOSでキーボードが違う問題をなくす。押しやすい大きさにする。
+        「空白」キーを自分で置けるので、度分入力（5 43）も打てる。
+   要点:
+   ・OS のキーボードを出さないために inputmode="none" にする。
+     元の inputmode は data-im に退避し、OS標準へ戻すときに復元する。
+   ・押した瞬間に preventDefault してフォーカスを奪わない
+     （奪うと欄が閉じてしまう。共通の±浮動ボタンと同じ考え方）。
+   ・穴の欄は後から増えるので、focusin の委譲で拾う。
+   ・入力後に input イベントを投げる（oninput="calc()" を動かすため）。 */
+(function(){
+  "use strict";
+  /* 保存キーはツール名を含めない＝<全ツール共通>。
+     キーの大きさも使う／使わないも、手と手袋と端末で決まるもので、
+     ツールごとに変わる理由がない。同じサイト内なら保存先は共通なので、
+     このキー名にしておけば他ツールへ広げたとき移行作業が要らない。 */
+  var KEY="kensa-kbd";
+  var ZKEY="kensa-kbd-size";
+  var OLDKEY="kensa-kbd-27", OLDZKEY="kensa-kbd-27-size";   /* v70以前からの引き継ぎ */
+  /* 切替のボタンはこのツールには無い。設定はポータル(トップ)の一番下でまとめて行う。
+     一度きりの設定のために全ツールの画面を長くしないため（v72）。 */
+  var pad=document.getElementById("kpad");
+  var grid=document.getElementById("kpGrid");
+  var head=pad?pad.querySelector(".kpHead"):null;
+  var nameEl=document.getElementById("kpName");
+  if(!pad||!grid) return;
+  var cur=null, on=true, size="m";
+
+  /* ── キーの音（v73／音量は v76）──
+     Web Audio で端末の中だけで作る短い電子音（音声ファイルなし・送信なし）。
+     既定は鳴らさない。設定はトップの「キーボードの設定」（保存キー kensa-kbd-snd、
+     音も「人と端末」の性質なのでツール名は含めない）。
+     AudioContext はユーザー操作の中で初回に作る（iOS の自動再生制限のため）。
+     注意: iOS はマナーモード中は Web Audio ごと消音される（仕様。故障ではない）。 */
+  var SKEY="kensa-kbd-snd";
+  /* 保存値は "0"=鳴らさない / "s"=小 / "m"=中 / "l"=大（v76）。
+     v75以前の "1"（＝鳴らす。音が小さいという指摘があった）は「大」として読む。
+     数字と英字で世代が見分けられるので、新旧の取り違えが起きない。 */
+  var SVOL={s:0.20,m:0.40,l:0.70};
+  var svol=0;
+  try{
+    var sv0=localStorage.getItem(SKEY);
+    if(sv0==="1") svol=SVOL.l;                 /* v75以前からの引き継ぎ */
+    else if(SVOL[sv0]) svol=SVOL[sv0];
+  }catch(e){}
+  var sndCtx=null;
+  function beep(){
+    if(!svol) return;
+    try{
+      var AC=window.AudioContext||window.webkitAudioContext;
+      if(!AC) return;
+      if(!sndCtx) sndCtx=new AC();
+      if(sndCtx.state==="suspended"&&sndCtx.resume) sndCtx.resume();
+      var t=sndCtx.currentTime;
+      var o=sndCtx.createOscillator(), gg=sndCtx.createGain();
+      /* 三角波（v76）。サイン波は倍音がなく、スマホの小さいスピーカーでは
+         同じ振幅でも小さく聞こえるため差し替えた。高さは従来どおり C6。 */
+      o.type="triangle"; o.frequency.value=1046.5;
+      gg.gain.setValueAtTime(0.0001,t);
+      gg.gain.exponentialRampToValueAtTime(svol,t+0.006);
+      gg.gain.exponentialRampToValueAtTime(0.0001,t+0.090);   /* 90ms */
+      o.connect(gg); gg.connect(sndCtx.destination);
+      o.start(t); o.stop(t+0.105);
+    }catch(e){}
+  }
+
+
+  function load(){
+    try{
+      var v=localStorage.getItem(KEY);
+      if(v===null){                        /* 旧キーがあれば引き継ぐ */
+        var o=localStorage.getItem(OLDKEY);
+        if(o!==null){ localStorage.setItem(KEY,o); localStorage.removeItem(OLDKEY); v=o; }
+      }
+      return v===null? true : v==="1";
+    }catch(e){ return true; }
+  }
+  function save(){ try{ localStorage.setItem(KEY,on?"1":"0"); }catch(e){} }
+  function loadSize(){
+    try{
+      var v=localStorage.getItem(ZKEY);
+      if(v===null){                        /* 旧キーがあれば引き継ぐ */
+        var o=localStorage.getItem(OLDZKEY);
+        if(o!==null){ localStorage.setItem(ZKEY,o); localStorage.removeItem(OLDZKEY); v=o; }
+      }
+      if(v==="s"){ v="m"; localStorage.setItem(ZKEY,v); }   /* v74: 小は廃止→中へ */
+      return (v==="m"||v==="l"||v==="xl")? v : "m";
+    }catch(e){ return "m"; }
+  }
+  function saveSize(){ try{ localStorage.setItem(ZKEY,size); }catch(e){} }
+  function applySize(){
+    pad.className=(pad.className.indexOf("on")>=0? "kpad on ":"kpad ")+"kp-"+size+
+      (pad.className.indexOf("calcon")>=0? " calcon":"");
+    /* 高さが変わるので、開いているなら下の余白を取り直す */
+    if(pad.className.indexOf("on")>=0) document.body.style.paddingBottom=(pad.offsetHeight+12)+"px";
+  }
+
+  function targets(){
+    var all=document.querySelectorAll("input"), out=[], i, el, im;
+    for(i=0;i<all.length;i++){
+      el=all[i];
+      /* 退避した data-im を先に見る。inputmode は "none" に差し替わっているため、
+         先に読むと対象が1つも見つからず、▲▼ の移動ができなくなる。 */
+      im=el.getAttribute("data-im")||el.getAttribute("inputmode")||"";
+      if((im==="decimal"||im==="numeric") && !el.disabled && !el.readOnly && el.offsetParent!==null) out.push(el);
+    }
+    return out;
+  }
+  /* OS のキーボードを止める／戻す */
+  function apply(){
+    var all=document.querySelectorAll("input"), i, el, im;
+    for(i=0;i<all.length;i++){
+      el=all[i];
+      im=el.getAttribute("inputmode");
+      if(on){
+        if(im==="decimal"||im==="numeric"){
+          el.setAttribute("data-im",im);
+          el.setAttribute("inputmode","none");
+        }
+      }else{
+        if(el.getAttribute("data-im")){
+          el.setAttribute("inputmode",el.getAttribute("data-im"));
+          el.removeAttribute("data-im");
+        }
+      }
+    }
+    document.body.className=on? "kbon":"";
+    if(!on) hide();
+  }
+  /* 穴の欄は後から作られるので、開くたびに掛け直す */
+  function reapply(){ if(on) apply(); }
+
+  function labelOf(el){
+    var d=el.parentNode, l=d?d.querySelector("label.f"):null;
+    if(l) return l.textContent;
+    var th, tb=el.closest? el.closest("td"):null;
+    if(tb) return "\u8868\u306e\u6b04";
+    return "\u6570\u5024";
+  }
+  function show(el){
+    /* 別の欄に移ったら計算はやめる。式はその欄の数字から始めるものなので、
+       持ち越すと「どの欄の計算か」が分からなくなる。 */
+    if(cur!==el&&calcOn) calcSet(false);
+    cur=el;
+    nameEl.textContent=labelOf(el);
+    pad.className="kpad on kp-"+size+(calcOn?" calcon":"");
+    pad.setAttribute("aria-hidden","false");
+    setTimeout(function(){ fabPaint(); },0);
+    document.body.style.paddingBottom=(pad.offsetHeight+12)+"px";
+    try{ el.scrollIntoView({block:"center",behavior:"smooth"}); }catch(e){}
+  }
+  function hide(){
+    calcOn=false; expr="";
+    /* ★入力モードの切り替え（apply→hide）でもここを通る。
+       戻しておかないと ＝ ( ) の文字が残ったままになる(v99)。 */
+    calcKeys(false);
+    setTimeout(function(){ fabPaint(); },0);
+    if(calcBtn) calcBtn.setAttribute("aria-pressed","false");
+    pad.className="kpad kp-"+size;
+    pad.setAttribute("aria-hidden","true");
+    document.body.style.paddingBottom="";
+    cur=null;
+  }
+  function fire(el){
+    var ev;
+    try{ ev=new Event("input",{bubbles:true}); }
+    catch(e){ ev=document.createEvent("Event"); ev.initEvent("input",true,false); }
+    el.dispatchEvent(ev);
+  }
+  function caret(el){
+    var a,b;
+    try{ a=el.selectionStart; b=el.selectionEnd; }catch(e){}
+    if(typeof a!=="number"){ a=el.value.length; b=a; }
+    return [a,b];
+  }
+  function put(el,txt){
+    var c=caret(el), v=el.value;
+    el.value=v.slice(0,c[0])+txt+v.slice(c[1]);
+    var p=c[0]+txt.length;
+    try{ el.setSelectionRange(p,p); }catch(e){}
+    fire(el);
+  }
+  function backsp(el){
+    var c=caret(el), v=el.value, p;
+    if(c[0]!==c[1]){ el.value=v.slice(0,c[0])+v.slice(c[1]); p=c[0]; }
+    else if(c[0]>0){ el.value=v.slice(0,c[0]-1)+v.slice(c[0]); p=c[0]-1; }
+    else return;
+    try{ el.setSelectionRange(p,p); }catch(e){}
+    fire(el);
+  }
+  function sign(el){
+    var v=el.value;
+    el.value=(v.charAt(0)==="-")? v.slice(1) : ("-"+v);
+    fire(el);
+  }
+  function move(step){
+    if(!cur) return;
+    var t=targets(), i=-1, k;
+    for(k=0;k<t.length;k++) if(t[k]===cur){ i=k; break; }
+    if(i<0) return;
+    var n=t[i+step];
+    if(!n){ return; }
+    n.focus();
+    try{ n.setSelectionRange(n.value.length,n.value.length); }catch(e){}
+    show(n);
+  }
+
+  /* ══ 電卓（v97）══
+     狙い: 「半分にする」ような計算のために電卓アプリへ移らなくて済むように。
+     ★ここで組み立てている式は<電卓の中だけ>のもの。＝を押すまで欄は変えない。
+       途中の数字を欄へ書くと、ツールがその値で計算し直してしまう。
+     ★右端スワイプで出す案は採らなかった。iOS Safari も Android Chrome も
+       端からのスワイプが「戻る／進む」で、取り合いになるため。 */
+  var calcOn=false, expr="";
+  var expEl=document.getElementById("kpExp");
+  var eqEl=document.getElementById("kpEqv");
+  var calcBtn=document.getElementById("kpCalcBtn");
+
+  /* 式の読み取り（v99でかっこに対応）。
+     戻り値は {v:数} か {err:理由}。理由が分かれば断り書きを分けられる。
+     ★eval は使わない。読み取りは <式→項→因子> の形。
+       因子 … 数 / (式) / −因子
+       項   … 因子 を × ÷ でつなぐ
+       式   … 項 を + − でつなぐ
+     組み込む前に dev/calc_probe2.js で43項目を単体で確かめてある。 */
+  function calcTok(s){
+    var t=[], num="", i, c;
+    for(i=0;i<s.length;i++){
+      c=s.charAt(i);
+      if(c>="0"&&c<="9"){ num+=c; continue; }
+      /* ★小数点が2つある数(1.2.3)は parseFloat が 1.2 として通してしまう。
+         打ち間違いが静かに別の数になるので弾く。 */
+      if(c==="."){ if(num.indexOf(".")>=0) return null; num+=c; continue; }
+      if(c===" ") continue;
+      if(num!==""){ if(num===".") return null; t.push(parseFloat(num)); num=""; }
+      if("+-×÷()".indexOf(c)<0) return null;
+      t.push(c);
+    }
+    if(num!==""){ if(num===".") return null; t.push(parseFloat(num)); }
+    return t;
+  }
+  function calcParen(s){
+    var i, c, n=0;
+    for(i=0;i<s.length;i++){
+      c=s.charAt(i);
+      if(c==="(") n++;
+      else if(c===")"){ n--; if(n<0) return "extra"; }
+    }
+    return n>0? "open" : "ok";
+  }
+  function calcRun(s){
+    if(s==="") return {err:"empty"};
+    if(calcParen(s)!=="ok") return {err:"paren"};
+    var t=calcTok(s);
+    if(t===null) return {err:"partial"};
+    var p=0, div0=false;
+    function peek(){ return p<t.length? t[p] : null; }
+    function factor(){
+      var c=peek(), v;
+      if(c===null) return null;
+      if(c==="-"){ p++; v=factor(); return v===null? null : -v; }
+      /* ★頭の「＋」は受け付けない。1++2 が 1+(+2)=3 として通ってしまい、
+         二度押しの打ち間違いが黙って計算される。負の数のための「−」だけ許す。 */
+      if(c==="("){ p++; v=expr(); if(v===null) return null;
+                   if(peek()!==")") return null; p++; return v; }
+      if(typeof c==="number"){ p++; return c; }
+      return null;
+    }
+    function term(){
+      var v=factor(), op, r;
+      if(v===null) return null;
+      while(peek()==="×"||peek()==="÷"){
+        op=t[p++]; r=factor();
+        if(r===null) return null;
+        if(op==="÷"){ if(r===0){ div0=true; return null; } v=v/r; }
+        else v=v*r;
+      }
+      return v;
+    }
+    function expr(){
+      var v=term(), op, r;
+      if(v===null) return null;
+      while(peek()==="+"||peek()==="-"){
+        op=t[p++]; r=term();
+        if(r===null) return null;
+        v=(op==="+")? v+r : v-r;
+      }
+      return v;
+    }
+    var v=expr();
+    if(div0) return {err:"div0"};
+    if(v===null||p!==t.length) return {err:"partial"};
+    if(!isFinite(v)) return {err:"partial"};
+    return {v:Math.round(v*1e6)/1e6};   /* mm の桁として6桁あれば足りる */
+  }
+  function calcEval(s){ var r=calcRun(s); return ("v" in r)? r.v : null; }
+  function paintCalc(){
+    if(!expEl) return;
+    expEl.textContent = expr===""? "0" : expr;
+    /* 長い式では、いま打っている右端が見えるようにする。
+       CSS の direction:rtl でこれをやると<並びが逆に見える>ので使わない(v98)。 */
+    try{ expEl.scrollLeft = expEl.scrollWidth; }catch(e){}
+    var res=calcRun(expr);
+    var v=("v" in res)? res.v : null;
+    var eqBtn=pad.querySelector("button.ceq");
+    var gridEq=pad.querySelector("#kpGrid button.nx");
+    if(v===null){
+      /* 直し方が違うので、理由ごとに分けて出す。まとめると何を直せばよいか
+         分からない（0で割ったのに「途中です」と出ると数字を足そうとする）。 */
+      var msg="";
+      if(res.err==="paren") msg="かっこが閉じていません";
+      else if(res.err==="div0") msg="0では割れません";
+      else if(res.err!=="empty") msg="式が途中です";
+      eqEl.textContent=msg;
+      eqEl.className="kpEq"+(msg?" bad":"");
+      if(eqBtn) eqBtn.disabled=true;
+      if(gridEq) gridEq.disabled=true;
+    }else{
+      eqEl.textContent="= "+v;
+      eqEl.className="kpEq";
+      if(eqBtn) eqBtn.disabled=false;
+      if(gridEq) gridEq.disabled=false;
+    }
+    /* ＝が何をするかは、欄を選んでいるかで変わる。押す前に分かるようにする。 */
+    if(eqBtn) eqBtn.textContent= cur? "＝ この欄に入れる" : "＝ 計算する";
+  }
+  /* 計算モードのあいだだけキーの意味を差し替える（v99・ムギさん依頼）。
+       グリッドの「次へ▼」 → 「＝」（計算するだけ。続けて計算できる）
+       上の行の「▲」「▼」  → 「(」「)」
+     ふだんは元の文字に戻す。 */
+  var lblGridNext=null, lblPrev=null, lblNext=null;
+  function calcKeys(onoff){
+    var g=pad.querySelector("#kpGrid button.nx");
+    var hp=pad.querySelector('.kpHead button[data-a="prev"]');
+    var hn=pad.querySelector('.kpHead button[data-a="next"]');
+    if(lblGridNext===null){
+      lblGridNext=g? g.innerHTML : "";
+      lblPrev=hp? hp.innerHTML : "";
+      lblNext=hn? hn.innerHTML : "";
+    }
+    if(g){
+      g.innerHTML= onoff? "＝" : lblGridNext;
+      g.className= onoff? "nx ceq2" : "nx";
+      g.setAttribute("aria-label", onoff? "計算する" : "次の欄へ");
+      if(!onoff) g.disabled=false;
+    }
+    if(hp){
+      hp.innerHTML= onoff? "(" : lblPrev;
+      hp.className= onoff? "sep paren" : "sep";
+      hp.setAttribute("aria-label", onoff? "かっこを開く" : "前の欄");
+    }
+    if(hn){
+      hn.innerHTML= onoff? ")" : lblNext;
+      hn.className= onoff? "paren" : "";
+      hn.setAttribute("aria-label", onoff? "かっこを閉じる" : "次の欄");
+    }
+  }
+  /* 計算するだけ（欄には入れない）。答えが式に残るので続けて計算できる。 */
+  function calcResult(){
+    var r=calcRun(expr);
+    if(!("v" in r)) return;
+    expr=String(r.v);
+    paintCalc();
+  }
+  function calcSet(v){
+    calcOn=!!v;
+    pad.className=(pad.className.replace(/\s*calcon/g,""))+(calcOn?" calcon":"");
+    if(calcBtn) calcBtn.setAttribute("aria-pressed",calcOn?"true":"false");
+    calcKeys(calcOn);
+    if(calcOn){
+      /* いま欄にある数字を式の先頭に置く。100 が入っていれば ÷ 2 ＝ で 50。
+         度分入力(「60 30」)のように数字でないものは、空から始める。 */
+      var v0=cur? String(cur.value||"") : "";
+      expr=/^-?\d*\.?\d+$/.test(v0)? v0 : "";
+    }else{ expr=""; }
+    paintCalc();
+    /* 高さが変わるので下の余白を取り直す */
+    if(pad.className.indexOf("on")>=0) document.body.style.paddingBottom=(pad.offsetHeight+12)+"px";
+  }
+  function calcPut(t){ expr+=t; paintCalc(); }
+  function calcBack(){ expr=expr.slice(0,-1); paintCalc(); }
+  function calcSign(){
+    /* 式の最後の数のプラスマイナスを入れ替える。
+       かっこで終わっているときは、どの数を指すか決まらないので何もしない。 */
+    if(/[)(]$/.test(expr)) return;
+    var m=expr.match(/(-?)(\d*\.?\d*)$/);
+    if(!m||m[2]==="") return;
+    var head=expr.slice(0,expr.length-m[0].length);
+    expr=head+((m[1]==="-")? m[2] : ("-"+m[2]));
+    paintCalc();
+  }
+  function calcEnter(){
+    var v=calcEval(expr);
+    if(v===null) return;
+    if(!cur){
+      /* 欄を選んでいないとき（電卓ボタンから開いたとき）は、
+         答えを式の場所に残す。そのまま次の計算に使える。 */
+      expr=String(v); paintCalc();
+      return;
+    }
+    cur.value=String(v);
+    try{ cur.setSelectionRange(cur.value.length,cur.value.length); }catch(e){}
+    fire(cur);
+    calcSet(false);            /* ＝のあとは数字キーに戻る（ムギさん判断） */
+  }
+
+  /* 押した瞬間に処理し、既定動作を止めてフォーカスを保つ */
+  function act(e){
+    var b=e.target;
+    while(b && b!==pad && b.tagName!=="BUTTON") b=b.parentNode;
+    if(!b || b===pad) return;
+    e.preventDefault();
+    beep();
+    var a=b.getAttribute("data-a");
+    if(a==="calc"){
+      /* ★欄を選ばずに開いた電卓で「計算」を切ると、入力先が無いのに数字キー
+         だけが残る。どこにも入らず、電卓でもない行き止まりになる(v99)。
+         欄が無いときは切らずに閉じる。 */
+      if(calcOn&&!cur){ hide(); return; }
+      calcSet(!calcOn); return;
+    }
+    if(a==="done"){ if(calcOn) calcSet(false); if(cur) cur.blur(); hide(); return; }
+    /* 計算モードのあいだは、数字も⌫もCも±も<式のほう>へ向ける。
+       欄は＝を押すまで変えない。 */
+    if(calcOn){
+      if(a==="op"){ calcPut(b.getAttribute("data-v")); return; }
+      if(a==="eq"){ calcEnter(); return; }
+      if(a==="d"){ calcPut(b.getAttribute("data-v")); return; }
+      if(a==="bs"){ calcBack(); return; }
+      if(a==="clr"){ expr=""; paintCalc(); return; }
+      if(a==="sign"){ calcSign(); return; }
+      if(a==="left"||a==="right") return;    /* 欄の中の移動は計算中は使わない */
+      /* ★グリッドの「次へ」は計算モードでは ＝（計算するだけ）。
+         上の行の ▲▼ は ( ) 。どちらも先に見分ける。 */
+      if(a==="next"&&b.className.indexOf("nx")>=0){ calcResult(); return; }
+      if(a==="prev"){ calcPut("("); return; }
+      if(a==="next"){ calcPut(")"); return; }
+    }
+    if(a==="prev"){ move(-1); return; }
+    if(a==="next"){ move(1); return; }
+    /* ←→: 数字の中でカーソルを1文字ずつ動かす。
+       欄をタップして点滅位置を狙い撃ちしなくても、これで寄せられる。
+       上段は「横＝数字の中を動く、縦＝欄の間を動く」で意味をそろえてある。 */
+    if(a==="left"||a==="right"){
+      if(!cur) return;
+      var c2=caret(cur), p2;
+      if(a==="left")  p2=(c2[0]===c2[1])? c2[0]-1 : c2[0];
+      else            p2=(c2[0]===c2[1])? c2[1]+1 : c2[1];
+      if(p2<0)p2=0;
+      if(p2>cur.value.length)p2=cur.value.length;
+      try{ cur.setSelectionRange(p2,p2); }catch(e2){}
+      return;
+    }
+    if(!cur) return;
+    if(a==="d") put(cur,b.getAttribute("data-v"));
+    else if(a==="bs") backsp(cur);
+    else if(a==="clr"){ cur.value=""; fire(cur); }
+    else if(a==="sign") sign(cur);
+  }
+  pad.addEventListener("mousedown",act);
+  pad.addEventListener("touchstart",act,{passive:false});
+
+  /* 欄に入ったら開く（穴の欄は後から増えるので委譲で拾う） */
+  document.addEventListener("focusin",function(e){
+    if(!on) return;
+    var el=e.target;
+    if(!el||el.tagName!=="INPUT") return;
+    var im=el.getAttribute("data-im")||el.getAttribute("inputmode")||"";
+    if(im!=="decimal"&&im!=="numeric"&&im!=="none") { hide(); return; }
+    if(!el.getAttribute("data-im")) reapply();
+    show(el);
+  });
+  document.addEventListener("focusout",function(e){
+    setTimeout(function(){
+      var a=document.activeElement;
+      if(!a || a.tagName!=="INPUT") { if(cur===e.target) hide(); }
+    },80);
+  });
+
+
+  /* 穴の欄は後から作られる。作られた「その場で」inputmode を止めないと、
+     最初の1回だけOSのキーボードが一瞬出てしまう。
+     クリック後の掛け直しでは間に合わないので、DOM の変化を見て掛ける。 */
+  if(window.MutationObserver){
+    var timer=null;
+    var mo=new MutationObserver(function(){
+      if(timer) return;
+      timer=setTimeout(function(){ timer=null; reapply(); },0);
+    });
+    mo.observe(document.body,{childList:true,subtree:true});
+  }else{
+    document.addEventListener("click",function(){ setTimeout(reapply,0); },false);
+  }
+
+  /* ══ 電卓を常に出しておくボタン（v98）══
+     置き場所は全ツール共通の設定（トップで選ぶ）。 */
+  var FKEY="kensa-calcbtn";
+  var fab=document.getElementById("calcFab");
+  function fabPos(){
+    try{
+      var v=localStorage.getItem(FKEY);
+      if(v===null) return "br";                    /* 既定は右下 */
+      return (v==="br"||v==="bl"||v==="tr"||v==="tl"||v==="bar"||v==="off")? v : "br";
+    }catch(e){ return "br"; }
+  }
+  function fabPaint(){
+    if(!fab) return;
+    var p=fabPos();
+    var open=(pad.className.indexOf("on")>=0);
+    fab.className="calcFab"+((p==="off"||open)? " off":(" "+p));
+    /* 下のバーは画面の下を占めるので、その分の余白を空ける。
+       キーボードが開いているときはキーボード側が余白を決める。 */
+    if(p==="bar"&&!open){ document.body.style.paddingBottom=(fab.offsetHeight+10)+"px"; }
+    else if(!open&&document.body.style.paddingBottom){ document.body.style.paddingBottom=""; }
+  }
+  /* 欄を選んでいなくても開ける。選んでいればその欄に入れる。 */
+  function calcOpen(){
+    var a=document.activeElement, im;
+    if(a&&a.tagName==="INPUT"){
+      im=a.getAttribute("data-im")||a.getAttribute("inputmode")||"";
+      if(im==="decimal"||im==="numeric"||im==="none"){ show(a); calcSet(true); fabPaint(); return; }
+    }
+    /* どの欄も選んでいないとき: 電卓だけを開く。cur は null のまま。 */
+    cur=null;
+    if(nameEl) nameEl.textContent="電卓";
+    pad.className="kpad on kp-"+size;
+    pad.setAttribute("aria-hidden","false");
+    /* ★ここで pad.className を自分で組み立てていたため calcSet を通らず、
+       キーの文字を差し替える calcKeys() が呼ばれていなかった。
+       「次へ▼」「▲」「▼」のままなのに、押すと ＝ ( ) として働いていた(v99)。
+       calcSet に任せる。 */
+    calcSet(true);
+    document.body.style.paddingBottom=(pad.offsetHeight+12)+"px";
+    fabPaint();
+  }
+  if(fab){
+    fab.addEventListener("click",function(e){ e.preventDefault(); calcOpen(); });
+  }
+  /* ★設定はトップの画面で変える。ふつうはツールを開き直すので読み直されるが、
+     開いたままのときは on が古いまま残る。すると欄は inputmode="none" のまま
+     なのに自前キーボードが出ない＝<どこにも入力できない>状態になりうる。
+     設定の変更を拾って当て直す。 */
+  window.addEventListener("storage",function(e){
+    if(!e) return;
+    if(e.key===FKEY){ fabPaint(); return; }
+    if(e.key===KEY){ on=load(); apply(); return; }
+    if(e.key===ZKEY){ size=loadSize(); applySize(); return; }
+  });
+
+  on=load();
+  size=loadSize();
+  apply();
+  applySize();
+  fabPaint();
+  window.__kbd={ apply:apply, targets:targets, isOn:function(){return on;},
+                 size:function(){return size;}, applySize:applySize,
+                 show:show, hide:hide, pad:pad, cur:function(){return cur;},
+                 calc:{ set:calcSet, evalExpr:calcEval,
+                        isOn:function(){return calcOn;},
+                        expr:function(){return expr;},
+                        open:calcOpen, fabPos:fabPos, fabPaint:fabPaint,
+                        run:calcRun, result:calcResult } };
+})();
+</script>
+</body>
+</html>

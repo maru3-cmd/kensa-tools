@@ -1,0 +1,3507 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1F3341">
+<meta name="description" content="鋼の硬さ換算(HRC・HV・HB)。規格系の換算表を内蔵し、中間値は補間。引張強さの目安も表示。計算は端末内で完結します。">
+<title>硬さ換算 | 検査計算ツール</title>
+<style>
+  :root{
+    --paper:#F2F4F5;
+    --sheet:#FFFFFF;
+    --ink:#1F3341;
+    --line:#8FA2AF;
+    --red:#D63426;
+    --dro-bg:#15181A;
+    --dro-red:#FF5A48;
+    --dro-dim:#9FB0B8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI",sans-serif;
+    background:var(--paper);color:var(--ink);
+    min-height:100dvh;display:flex;flex-direction:column;align-items:center;
+    padding:0 12px calc(16px + env(safe-area-inset-bottom));
+  }
+  .wrap{width:100%;max-width:480px}
+
+  header{display:flex;align-items:baseline;justify-content:space-between;padding:14px 2px 10px}
+  header h1{font-size:16px;font-weight:700;letter-spacing:.04em}
+  header h1 small{display:block;font-size:11px;font-weight:400;color:#5B707E;letter-spacing:.08em;margin-top:2px}
+  header a{font-size:12px;color:#5B707E;text-decoration:none}
+
+  .sheet{background:var(--sheet);border:2px solid var(--ink);padding:5px}
+  .sheet-inner{border:1px solid var(--ink)}
+  .sheet svg{display:block;width:100%;height:auto}
+  .titleblock{display:flex;border-top:1px solid var(--ink);font-size:9px;letter-spacing:.06em}
+  .titleblock div{padding:3px 8px;border-right:1px solid var(--ink)}
+  .titleblock div:last-child{border-right:none;margin-left:auto}
+  .titleblock b{font-weight:700}
+
+  /* ★折り返しは必須（v132）。flex-wrap が無いと、SNCM220・SUS420J2 など
+     <折り返せない英数字>の材質チップ13個が一列に並び、ページの最小幅が
+     約870px（画面の約2倍）になる。ページが横に広がると、left:0/right:0 の
+     自前キーボードもその幅になり、右半分が画面の外へ出て打てなくなる。
+     .chip は flex:1（基準0）のままだと全部が1行に入る扱いになり折り返さない。
+     基準を中身の幅（auto）にして、入らない分を次の行へ落とす。 */
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+  .chip{
+    flex:1 1 auto;font-size:14px;font-weight:700;padding:10px 4px;
+    border:1.5px solid var(--ink);border-radius:8px;
+    background:var(--sheet);color:var(--ink);
+  }
+  .chip.on{background:var(--ink);color:#fff}
+  /* ── v168：材質・処理の選び方（公差判定 v164 と同じ作り：分類ごとの行・同じ大きさのマス） ── */
+  .why{background:#EEF4F7;border:1px solid #C9DAE3;border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.75;color:#3A5060;margin:2px 0 4px}
+  .why>b:first-child{display:block;color:#1F3341;font-size:12.5px;margin-bottom:2px}
+  .pgrid{display:flex;flex-direction:column;gap:6px}
+  .prow{display:grid;grid-template-columns:64px 1fr;gap:6px;align-items:start}
+  .pl{font-size:10.5px;font-weight:700;color:#5B707E;line-height:1.35;padding-top:8px;min-width:0}
+  .pcs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;min-width:0}
+  .chip.pc{flex:none;min-width:0;font-size:12.5px;padding:9px 3px;min-height:40px;line-height:1.25;position:relative;overflow-wrap:anywhere;cursor:pointer}
+  .chip.pc .mk{position:absolute;top:2px;right:4px;font-size:10px;line-height:1}
+  .chip.pc.st-main,.chip.pc.st-mainw{border-width:2px}
+  .chip.pc.st-main .mk,.chip.pc.st-mainw .mk{color:#D63426}
+  .chip.pc.st-w .mk{color:#B26B00}
+  .chip.pc.st-x{border:1.5px dashed #C9D3DA;color:#AEBBC4;background:#F7F9FA;font-weight:400}
+  .chip.pc.st-x .mk{color:#AEBBC4}
+  .chip.pc.on .mk{color:#fff}
+  .chip.pc.st-x.on{background:#8FA2AF;border:1.5px solid #8FA2AF;color:#fff}
+  .pleg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:10.5px;color:#5B707E;margin:0 2px 6px}
+  .pleg b{margin-right:3px}
+  .pleg .lk{color:#D63426} .pleg .lw{color:#B26B00} .pleg .lx{color:#AEBBC4} .pleg .lo{color:#1F3341}
+  .info{margin-top:8px;background:var(--sheet);border:1px solid #D5DDE2;border-radius:10px;padding:10px 12px}
+  .ih{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:7px;font-size:14px}
+  .it{font-size:10.5px;font-weight:700;color:#fff;background:#3A5060;border-radius:4px;padding:1px 7px}
+  .ist{font-size:11px;font-weight:700;border-radius:999px;padding:1px 9px;border:1px solid #C9D3DA;color:#3A5060}
+  .ist.s-main,.ist.s-mainw{color:#D63426;border-color:#E9A79F}
+  .ist.s-w{color:#8A5300;border-color:#EACB92}
+  .ist.s-x{color:#5B707E;border-style:dashed}
+  .il{display:grid;grid-template-columns:78px 1fr;gap:6px 8px;font-size:12px;line-height:1.7}
+  .il dt{font-size:10.5px;font-weight:700;color:#5B707E;padding-top:2px}
+  .il dd{color:#1F3341;min-width:0}
+  .mains{display:flex;flex-wrap:wrap;gap:5px}
+  .mainb{font:inherit;font-size:11.5px;font-weight:700;padding:4px 9px;border-radius:7px;border:1.5px solid #D63426;background:#fff;color:#D63426;cursor:pointer}
+  .inote{margin-top:8px;font-size:11.5px;line-height:1.65;color:#7A4E00;background:#FFF4E5;border:1px solid #F0D7A8;border-radius:8px;padding:7px 9px}
+  .ihint{font-size:11.5px;color:#5B707E;line-height:1.7}
+  .tx .wn{color:#8A5300}
+  .mxbox{margin-top:10px;background:var(--sheet);border:1px solid #D5DDE2;border-radius:10px}
+  .mxbox>summary{cursor:pointer;padding:10px 12px;font-size:12px;font-weight:700;color:#3A5060}
+  .mxwrap{overflow-x:auto;padding:0 8px 10px}
+  .mx{border-collapse:collapse;font-size:11px}
+  .mx th,.mx td{border:1px solid #E3E9EC;padding:3px 4px;text-align:center;white-space:nowrap}
+  .mx thead th{vertical-align:bottom;height:96px}
+  .mx thead th span{writing-mode:vertical-rl;display:inline-block;font-weight:700;color:#3A5060}
+  .mx .c0{position:sticky;left:0;background:#fff;text-align:left;z-index:1}
+  .mx tr.mg td{background:#EEF2F4;font-weight:700;color:#5B707E;text-align:left}
+  .mx td.s-main,.mx td.s-mainw{color:#D63426;font-weight:700}
+  .mx td.s-w{color:#B26B00;font-weight:700}
+  .mx td.s-x{color:#C9D3DA}
+  /* ── v169：測り方の比べ（推奨・どちらでもよい・非推奨） ── */
+  .mbox{margin:0 0 10px;background:var(--sheet);border:1px solid #D5DDE2;border-radius:10px;padding:10px 12px}
+  .mh{font-size:13px;font-weight:700;color:#1F3341;margin-bottom:8px}
+  .mh span{display:block;font-size:10.5px;font-weight:400;color:#5B707E;margin-top:1px}
+  .ml{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+  .ml li{border:1px solid #E3E9EC;border-left:4px solid #C9D3DA;border-radius:8px;padding:7px 9px;background:#fff}
+  .mt{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:12.5px;color:#1F3341}
+  .lv{font-size:10.5px;font-weight:700;border-radius:999px;padding:1px 8px;white-space:nowrap}
+  .ml li.p1{border-left-color:#1F6B3A}
+  .ml li.p1 .lv{background:#1F6B3A;color:#fff}
+  .ml li.p2{border-left-color:#8FA2AF}
+  .ml li.p2 .lv{background:#EEF2F4;color:#3A5060;border:1px solid #C9D3DA}
+  .ml li.p3{border-left-color:#D63426;background:#FFFAF9}
+  .ml li.p3 .lv{background:#fff;color:#9E2B20;border:1px solid #E7C3BE}
+  .md{font-size:12px;line-height:1.7;color:#3A5060;margin-top:4px}
+  .ml li.p3 .md{color:#7E2A20}
+  .ms{font-size:11px;line-height:1.6;color:#5B707E;margin-top:4px;padding-top:4px;border-top:1px dotted #E3E9EC}
+  .mfoot{margin:8px 0 0;font-size:11.5px;line-height:1.7;color:#3A5060;background:#EEF4F7;border-radius:8px;padding:7px 9px}
+
+  .inputs{margin-top:10px}
+  .row{
+    display:grid;grid-template-columns:26px 1fr 130px 40px;
+    align-items:center;gap:8px;
+    background:var(--sheet);border:1px solid #D5DDE2;border-radius:10px;
+    padding:10px 12px;
+  }
+  .badge{
+    width:22px;height:22px;border-radius:50%;
+    background:var(--ink);color:#fff;font-size:12px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .row label{font-size:13px;font-weight:600}
+  .row label small{display:block;font-size:10px;font-weight:400;color:#5B707E}
+  .row input{
+    width:100%;font-size:22px;font-weight:600;text-align:right;
+    font-variant-numeric:tabular-nums;
+    border:none;border-bottom:2px solid var(--ink);
+    background:transparent;color:var(--ink);
+    padding:2px 4px;border-radius:0;outline:none;
+  }
+  .row input:focus{border-bottom-color:var(--red)}
+  .unit{font-size:12px;color:#5B707E}
+
+  .dro{
+    margin-top:14px;background:var(--dro-bg);border-radius:12px;
+    padding:14px 16px 12px;box-shadow:inset 0 2px 8px rgba(0,0,0,.5);
+  }
+  .dro-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  .cellv{display:flex;flex-direction:column;align-items:flex-end;padding:6px 8px;border-radius:8px;
+    min-width:0;overflow-wrap:anywhere}   /* 長い値でも3列を押し広げない */
+  .cellv:active{background:#1e2327}
+  .cellv .k{color:#7d8a91;font-size:12px;font-weight:700;letter-spacing:.1em;align-self:flex-start}
+  .cellv .v{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:24px;font-weight:600;letter-spacing:.01em;
+  }
+  .cellv .v.led{color:var(--dro-red);text-shadow:0 0 9px rgba(255,90,72,.35)}
+  .cellv .v.dim{color:var(--dro-dim)}
+  .dro-sub{
+    text-align:right;color:#7d8a91;font-size:13px;margin-top:10px;
+    font-variant-numeric:tabular-nums;border-top:1px solid #2a3034;padding-top:10px;
+  }
+  .dro-sub b{color:var(--dro-dim);font-family:ui-monospace,Consolas,monospace;font-size:16px}
+  .dro-foot{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-top:10px;border-top:1px solid #2a3034;padding-top:9px;gap:8px;
+  }
+  .statusTxt{color:#5d6a71;font-size:11px;letter-spacing:.02em}
+  .statusTxt.err{color:#FF8A7E}
+
+  /* 入れ方の切り替え（v128）。★入力の意味が変わるので ID は sw で始める。 */
+  .dimsw{display:flex;gap:6px;margin:0 0 10px}
+  .dimsw button{flex:1;min-height:38px;border-radius:9px;border:1.5px solid #C9D3DA;
+    background:var(--sheet);color:#5B707E;font-size:12.5px;font-weight:700;cursor:pointer}
+  .dimsw button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .row.opt{border-style:dashed}
+  .swlab{font-size:11px;font-weight:700;color:#5B707E;letter-spacing:.04em;margin:14px 2px 6px}
+  /* 多段測定の表（v131） */
+  #mTbl{overflow-x:auto}   /* 表が広くなってもページは横に伸ばさない（v132） */
+  .mtbl{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+  .mtbl th,.mtbl td{border:1px solid #D5DDE2;padding:5px 6px;text-align:right;
+    font-variant-numeric:tabular-nums}
+  .mtbl th{background:#EFF2F4;color:#3A5060;font-weight:700;text-align:center;font-size:11px}
+  .mtbl td.st{text-align:center;font-weight:700}
+  .mtbl tr.base td{background:#F0F7F2}
+  .mtbl tr.dev td{background:#FDF3F2;color:#9E2B20}
+  .mrow{display:flex;gap:6px;align-items:center;margin-top:6px}
+  .mrow span{font-size:11px;color:#5B707E;flex:none;width:26px}
+  .mrow input{flex:1;min-width:0;font-size:16px;font-weight:600;text-align:right;
+    border:none;border-bottom:2px solid var(--ink);background:transparent;color:var(--ink);padding:4px 6px;outline:none}
+  .mres{margin-top:10px;border-radius:9px;padding:9px 11px;font-size:12.5px;font-weight:700;
+    line-height:1.7;background:#F4F7F9;border:1px solid #D5DDE2;color:#3A5060}
+  .mres.ng{background:#FDF3F2;border-color:#E7C3BE;color:#9E2B20}
+  .mres b{color:#1F3341}
+  /* 生材か焼入れかの帯（v128） */
+  .band{margin-top:10px;border-radius:9px;padding:9px 11px;font-size:13px;font-weight:700;
+    line-height:1.6;background:#252b2f;color:#c9d2d7}
+  .band.raw{background:#1B2A33;color:#8FC7E8}
+  .band.qt{background:#20301F;color:#A8DC8A}
+  .band.hard{background:#3A2A14;color:#E8B34B}
+  .band.coat{background:#301B2E;color:#E39AD8}
+  /* ★合否は出さない（v133・現場の指摘）。硬さだけでは受渡しの合否は決まらない。
+     出すのは「期待の範囲に入っているか」だけ。緑＝範囲の中／オレンジ＝範囲の外。
+     赤は「不合格」に見えるので使わない。 */
+  .band.inr{background:#12301F;color:#7FE0A6}
+  .band.outr{background:#3A2A14;color:#E8B34B}
+  .band.warn{background:#3A2A14;color:#E8B34B}
+  .band small{display:block;font-size:11px;font-weight:400;opacity:.85;margin-top:2px}
+  /* 表面処理の早見（v129） */
+  .tx{margin:0 0 10px;background:var(--sheet);border:1px dashed #C9D3DA;border-radius:10px;padding:10px 12px}
+  .tx .txt{font-size:12px;font-weight:700;color:#3A5060;line-height:1.7}
+  .tx .txt b{color:#1F3341}
+  .tx .ng{color:#9E2B20}
+  .tx .ok{color:#1F6B3A}
+  /* 圧痕の深さ・使える荷重（v128） */
+  .depth{margin-top:10px;border-top:1px solid #2a3034;padding-top:9px;
+    font-size:12px;color:#c9d2d7;line-height:1.7}
+  .depth .iso{display:block;margin-top:6px;font-weight:400;color:#7A4E00;background:#FFF4E5;border:1px solid #E8B34B;border-radius:8px;padding:6px 8px}
+  .depth b{color:#fff}
+  .depth .ng{color:#FF8A7E}
+  .depth .ok{color:#7FE0A6}
+  .tbl-btn{
+    margin-top:14px;width:100%;
+    font-size:13px;font-weight:700;padding:11px 4px;
+    border:1.5px solid var(--ink);border-radius:9px;
+    background:var(--sheet);color:var(--ink);letter-spacing:.05em;
+  }
+  .tbl-btn:active{background:var(--ink);color:#fff}
+  .tblWrap{margin-top:10px;display:none;overflow-x:auto}
+  .tblWrap.show{display:block}
+  table.tol{
+    width:100%;border-collapse:collapse;background:var(--sheet);
+    border:2px solid var(--ink);font-size:13px;
+    font-variant-numeric:tabular-nums;
+  }
+  table.tol th,table.tol td{border:1px solid var(--ink);padding:5px 8px;text-align:right}
+  table.tol th{background:#E8EDF0;font-size:11px;font-weight:700;text-align:center}
+  table.tol tr.hit td{background:#FCE9E7;font-weight:700}
+
+  footer{margin-top:16px;font-size:11px;color:#5B707E;line-height:1.7;text-align:center;letter-spacing:.03em}
+  /* ── 使い方ガイド（全ツール共通） ── */
+  .guide{background:#FFFFFF;border:1px solid #D5DDE2;border-radius:12px;margin:0 0 12px;overflow:hidden}
+  .guide>summary{list-style:none;cursor:pointer;padding:12px 14px;font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.04em;display:flex;align-items:center;gap:7px}
+  .guide>summary::-webkit-details-marker{display:none}
+  .guide>summary::before{content:"?";display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#1F3341;color:#fff;font-size:11px;font-weight:700;flex:none}
+  .guide[open]>summary{border-bottom:1px solid #E3E9EC}
+  .guide .gb{padding:2px 14px 14px}
+  .guide .gb h4{font-size:11px;letter-spacing:.07em;color:#5B707E;font-weight:700;margin:13px 0 6px}
+  .guide .gb ol{margin:0;padding-left:1.2em;font-size:11.5px;line-height:1.75;color:#1F3341}
+  .guide .gb ol b{color:#1F3341}
+  .guide .gx{border-top:1px dashed #E3E9EC;margin-top:11px;padding-top:8px}
+  .guide .gx h4{margin-top:6px}
+  .guide .gxin{display:flex;gap:12px;align-items:flex-start;margin-top:4px}
+  .guide .gfig{flex:none}
+  .guide .gfig svg{width:112px;height:112px;display:block;background:#FBFCFC;border:1px solid #EDF1F3;border-radius:8px}
+  .guide .gtxt{flex:1;font-size:11.5px;line-height:1.6;color:#1F3341}
+  .guide .gtxt p{margin:0 0 7px}
+  .guide .gset{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;background:#F2F6F8;border:1px solid #E3E9EC;border-radius:6px;padding:6px 8px;color:#3A5060;line-height:1.5}
+  .guide .gread b{color:#D63426}
+  .guide .gbtn{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;font:inherit;font-size:11.5px;font-weight:600;border:1px solid #1F3341;border-radius:6px;background:#fff;color:#1F3341;cursor:pointer;margin-top:2px}
+  .guide .gbtn:active{transform:translateY(1px)}
+  @media(max-width:360px){.guide .gxin{flex-direction:column}.guide .gfig svg{width:128px;height:128px}}
+  /* 一括消去ボタン（v37 / 全ツール共通の見た目） */
+  .topclear{display:flex;justify-content:flex-end;margin:2px 2px 10px}
+  .topclear button{font-size:12px;font-weight:700;color:#B23B2E;background:#FBECEA;border:1px solid #E7B7B0;border-radius:9px;padding:7px 14px;cursor:pointer}
+  .topclear button:active{background:#F6DAD5}
+  .topclear button.arm{background:#B23B2E;color:#fff;border-color:#B23B2E}
+  .clearBtn{width:100%;font-size:13px;font-weight:700;padding:12px 4px;border:1.5px solid #C9D3DA;border-radius:10px;background:var(--sheet);color:#5B707E;letter-spacing:.05em;margin-bottom:6px;cursor:pointer}
+  .clearBtn.arm{border-color:var(--red);color:var(--red);background:#FCF0EF}
+  /* 一覧へ戻る導線：スマホで押しやすいよう、消去ボタンと同じ高さの左端に置く */
+  .topclear,.topClear{justify-content:space-between !important;align-items:center;gap:8px}
+  .topclear button,.topClear button{min-height:38px}
+  .backlink{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:8px 14px;
+    font-size:12px;font-weight:700;color:#5B707E;background:#FFFFFF;border:1px solid #C9D3DA;border-radius:9px;
+    text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:rgba(31,51,65,.15)}
+  .backlink:active{background:#EEF2F4}
+  @media print{.backlink{display:none}}
+  .src{margin:10px 0 0;padding:9px 11px;background:#F4F7F9;border:1px solid #D5DDE2;border-left:3px solid #5B707E;
+    border-radius:8px;font-size:11.5px;line-height:1.75;color:#3D515F}
+  .src b{color:#1F3341}
+  .src code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#fff;border:1px solid #E3E9EC;border-radius:4px;padding:0 3px}
+  /* v151: 著作権表示。フッターの末尾に置く（全ページ共通の見た目） */
+  .crnote{margin-top:8px;padding-top:7px;border-top:1px solid rgba(143,162,175,.45);
+    font-size:11px;line-height:1.7;color:inherit;opacity:.92}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>硬さ換算<small>HRC ⇔ HV ⇔ HB(鋼)</small></h1>
+  </header>
+
+  <div class="topclear"><a class="backlink" href="../index.html">≡ ツール一覧</a><button type="button" aria-label="入力をすべて消去して最初から始める" onclick="armClear(this)">すべて消去</button></div>
+
+<details class="guide noprint">
+  <summary>使い方と例を見る</summary>
+  <div class="gb">
+    <h4>使い方</h4>
+    <ol>
+      <li><b>①材質</b>と<b>②熱処理・表面処理</b>を選びます（材質が分からなければ「不明」で構いません。幅を広くとって判定します）。<b>期待される硬さ</b>と<b>測り方（機器・試験力）</b>が出ます。</li>
+      <li>材質を選ぶと、処理のボタンに印が付きます。<b>★＝その材質で主流</b>／<b>△＝できるが気をつけること付き</b>／<b>点線（×）＝一般にしない組み合わせ</b>。材質と処理の説明（<b>何に使うか・なぜその処理をするのか・どこが硬くなるか</b>）も出るので、新人の方はまずここを読んでください。全体は「材質 × 処理の早見表」で見渡せます。</li>
+      <li>その下の<b>「測り方の比べ」</b>に、ロックウェル・ビッカース・ブリネルなどを<b>推奨／どちらでもよい／非推奨</b>で並べます。<b>傷を小さくしたいとき</b>はビッカースの行を、非推奨の行は<b>なぜ使わないか</b>を見てください。圧痕の大きさ（この硬さでの目安）も出ます。</li>
+      <li><b>組み合わせが成立しないとき</b>は、測る前に止めます（SS400 に高周波焼入れ、SUS304 に調質など）。図面の指示を確かめてください。</li>
+      <li><b>③測った値</b>を入れると、<b>期待される硬さの範囲に入っているか</b>を色で示します（<b>緑＝範囲の中</b>／<b>オレンジ＝範囲の外</b>）。<b>合格・不合格は出しません。</b>硬さだけでは受渡しの合否は決まらないためです。範囲から外れたときは「<b>S45C の調質相当</b>」「<b>生材の可能性があります</b>」のように、いま何に相当する硬さかを出します。</li>
+      <li>期待される硬さの下に、<b>推奨設定</b>（圧子・試験力・保持時間）と、どの機器にも共通する置き方（圧痕の間隔・端からの距離・測る点数）が出ます。</li>
+      <li><b>膜厚が分からないとき</b>は「多段で膜厚を見る」を使います。<b>同じ面の近い場所で、圧痕を重ねずに</b>試験力を変えて2〜4回測り、試験力と対角長を入れると、硬さがずれ始めた境目から<b>膜厚のおよそ</b>が出ます（断面測定の代わりではなく目安です）。</li>
+      <li>上のボタンで入れ方を選びます。<b>硬さの値から</b>… HRC / HV / HB / <b>HRB</b> のどれかを選んで値を入れます。<b>対角長から</b>… マイクロビッカースの<b>試験力と対角長</b>を入れます。</li>
+      <li>値を入れると、残りの硬さと<b>引張強さの目安</b>、それに<b>生材か焼きが入っているかの見立て</b>が出ます。</li>
+      <li>★<b>規格の範囲</b>… ISO 6507-1（JIS Z 2244 系）は、<b>圧痕の対角長 0.020〜1.400mm</b>、
+        表面から測るコーティングは<b>厚さ0.030mm以上</b>を対象にしています。10gf で薄い層を測ると対角長が
+        20µm を下回ることがあり、そのときは<b>規格の範囲の外</b>です。数値は出しますが（社内の目安として使えます）、
+        <b>受渡しの合否には使えません</b>。画面にもその都度出ます。</li>
+      <li><b>層の厚さ</b>は①②のすぐ下にまとめてあります（分かるときだけで構いません）。入れると、<b>使える試験力の上限</b>と、この機械で使う<b>試験力ひとつ</b>まで絞って出します。届かない薄さなら「<b>断面で測ってください</b>」と出ます。</li>
+      <li><b>圧痕の深さ</b>は、<b>対角長から</b>でも<b>硬さの値から</b>でも出ます。硬さの値からのときは<b>試験力</b>を入れてください。硬さと試験力から対角長を逆に計算し（<code>d = √(1.8544×F ÷ HV)</code>）、<b>深さ</b>と<b>その試験力で必要な層の厚さ</b>を出します。</li>
+    </ol>
+    <div class="src">
+      <b>薄い層を測るときの考え方</b>（硬質クロムメッキ・窒化・軟窒化など）<br>
+      ・硬さ … <code>HV = 1.8544 × F(kgf) ÷ d(mm)²</code>（d は対角長。2本入れれば平均を使います）<br>
+      ・圧痕の深さ … <code>h = d ÷ 7</code>（圧子の角度136°から出る比）<br>
+      ・<b>層の厚さは対角長の1.5倍以上</b>必要です（JIS Z 2244）。これを割ると<b>下地を拾って、実際より軟らかく出ます</b>。
+      ★これは<b>必要な条件のひとつ</b>で、満たせば規格に適合するという意味ではありません。下地を拾っていないかの<b>ざっとした見分け</b>に使ってください。<br>
+      　「メッキが無いのでは」「焼きが入っていないのでは」という見立ての多くは、ここが原因です。<br>
+      ・逆に、層の厚さから<b>使える試験力の上限</b>が決まります … <code>F ≦ HV ×(t ÷ 1.5)² ÷ 1.8544</code><br>
+      　例：硬質クロムメッキ 膜厚20µm・HV900 なら <b>85gf まで</b>。常用なら 50gf。100gf では下地を拾います。<br>
+      ・この機械で出せるいちばん小さい試験力は <b>10gf</b> です。それより小さい試験力は勧めません。<br>
+      ・その最小でも足りない薄い層は、<b>断面を切って測る</b>ほかありません。<br>
+      　<b>最小 10gf のとき、表面から測るのに要る層の厚さ</b>… 硬質クロムメッキ(HV900) 約6.8µm ／ 窒化(HV950) 約6.6µm ／ 軟窒化(HV600) 約8.3µm。<br>
+      　<b>10µm 前後の層なら、表面から測れます。</b>ただし <b>5µm 以下</b>の薄い膜は 10gf でも押し切ってしまいます。「メッキが無い」のではなく「表面からは測れていない」ことがあるので、その場合は断面で測ってください。<br>
+      ・<b>表面処理のボタン</b>を押すと、その処理の硬さ・層の厚さの目安と、<b>どの機器で測るか</b>、手持ちの最小試験力で届くかが出ます。
+    </div>
+    <div class="src">
+      <b>出典</b><br>
+      換算値は <b>ASTM E140</b>（金属材料の硬さ換算表）と <b>SAE J417</b> の、<b>鋼（非オーステナイト系）</b>向け代表値から引いています。表の行の間は<b>直線補間</b>しています。<br>
+      ・引張強さも同じ系統の対応値で、あくまで<b>目安</b>です（材質・熱処理で変わります）。<br>
+      ・硬さ換算はそもそも<b>近似</b>で、規格上も「換算値は試験値の代わりにはならない」とされています。<br>
+      測定そのものの規格は <b>JIS Z 2245</b>（ロックウェル）・<b>JIS Z 2244</b>（ビッカース）・<b>JIS Z 2243</b>（ブリネル）です。<b>受渡し・合否は図面が指定した試験方法の実測で判断</b>してください。<br>
+      ・<b>HRB域（HV107〜240）</b>は生材〜調質のところです。ここは<b>目安</b>で、HRC の換算は規格に無いので出していません（HB ≒ HV とみなしています）。<br>
+      ・<b>生材か焼入れかの見立て</b>も、代表的な鋼種の一般値による<b>目安</b>です。材料指定や熱処理指示の代わりにはなりません。
+    </div>
+    <div class="src">
+      <b>材質・処理の硬さと説明の出典</b>（v168 で足した材・処理。いずれも代表的な一般値で、図面・熱処理指示が優先）<br>
+      ・SUS410 の焼入れ焼戻し HRC 38〜45・SUS440C 58〜60 … <a href="https://atimaterials.com/Products/Documents/datasheets/stainless-specialty-steel/martensitic/ati_410_420_425_mod_440a_440c_tds_en4_v2.pdf" target="_blank" rel="noopener">ATI のデータシート</a><br>
+      ・SUS630 の析出硬化 H900 HRC 40〜48・H1025 33〜42・H1150 26〜36（ASTM A693 の参考値）… <a href="https://www.daido.co.jp/common/pdf/pages/products/powder/additive/sus630.pdf" target="_blank" rel="noopener">大同特殊鋼の資料</a><br>
+      ・SUS420J2 の焼入れ焼戻し HRC 51〜55 … <a href="https://www.punch.co.jp/assets/documents/english/product/special/heat_treatment.pdf" target="_blank" rel="noopener">パンチ工業の熱処理条件表</a><br>
+      ・SKH51 相当 HRC 61〜64 … <a href="https://jp.misumi-ec.com/pdf/press/1-015-2025.pdf" target="_blank" rel="noopener">ミスミのカタログ</a>／SKH51 の焼入れ 1190〜1230℃・焼戻し 500〜600℃、SKD11・SKD61 の用途 … <a href="https://monoist.itmedia.co.jp/mn/spv/2607/06/news126_3.html" target="_blank" rel="noopener">MONOist「工具鋼の基礎知識」</a><br>
+      ・SKD11 は空気・真空炉のガスで焼入れでき、曲がりを抑えられる … <a href="https://aichi-steel.co.jp/ENGLISH/products/hagane_company/tool_steel/cold/" target="_blank" rel="noopener">愛知製鋼</a>／真空焼入れのガス冷却は、焼きの入りにくい低合金鋼では硬さが出きらないことがある … <a href="https://kintekfurnace.com/faqs/what-is-vacuum-hardening" target="_blank" rel="noopener">KINTEK</a><br>
+      ・無電解ニッケル HV500・硬質クロム HV1000（膜厚 10〜30µm）… <a href="https://sg.misumi-ec.com/tech-info/categories/technical_data/td05/a0091.html" target="_blank" rel="noopener">ミスミの技術資料</a>／無電解ニッケル 熱処理なし HV605、400℃ 熱処理後 HV1030（NiWP）、硬質クロム HV1019 … <a href="https://www.pref.saitama.lg.jp/documents/25603/507885.pdf" target="_blank" rel="noopener">埼玉県産業技術総合センター</a><br>
+      ・硬質アルマイト HV400〜450・膜厚 30〜60µm … <a href="https://mono.ipros.com/product/detail/2000790362" target="_blank" rel="noopener">イプロス掲載の処理会社</a>／PVD の膜は 1〜5µm で、マイクロビッカースの値は試験力と下地に左右される … <a href="https://www.monotaro.com/note/readingseries/kouguhyomensyori/0103/" target="_blank" rel="noopener">モノタロウ「工具の表面処理」</a>／DLC（a-C:H）HV1500〜3000 … <a href="https://kindle-tech.com/faqs/what-is-the-hardness-of-dlc-coating" target="_blank" rel="noopener">KINTEK</a><br>
+      ・SCM440・SNCM439 の調質、工具鋼の焼なまし、アルミ（O 材・T6）、FCD450 などは、資料で確かめた値ではなく<b>一般的な目安</b>です。図面と成績書の値を優先してください。<br>
+      ・<b>測り方の比べ</b>（v169）：ブリネルは大きなくぼみで鋳物・鍛造品の平均的な硬さ、ロックウェルは部品表面の硬さ、ビッカースは表面硬化材・被膜の断面、圧痕はブリネル＞ロックウェル＞ビッカース＞マイクロビッカースの順に小さい … <a href="https://www.pref.niigata.lg.jp/uploaded/attachment/430819.pdf" target="_blank" rel="noopener">新潟県工業技術総合研究所の資料</a>。圧痕の大きさはビッカース d=√(1.8544F/HV)、ブリネル（JIS Z 2243・HBW は 650 まで）、ロックウェル（JIS Z 2245・深さ C：(100−HRC)×0.002mm）の定義からの計算で、直径は圧子の形から出した<b>目安</b>です。窒化の HR15N、鋳鉄・アルミの使い分けは<b>一般的な目安</b>で、図面に測り方の指定があればそれが優先です。
+    </div>
+    <div class="gx">
+      <h4>例 ── HRC 50 を換算</h4>
+      <div class="gxin">
+        <div class="gfig"><svg viewBox="0 0 120 120" role="img" aria-label="HRC50をHV・HBに換算する3目盛の図">
+          <line x1="25" y1="20" x2="25" y2="100" stroke="#8FA2AF" stroke-width="1"/>
+          <line x1="60" y1="20" x2="60" y2="100" stroke="#8FA2AF" stroke-width="1"/>
+          <line x1="95" y1="20" x2="95" y2="100" stroke="#8FA2AF" stroke-width="1"/>
+          <text x="25" y="14" font-size="8" fill="#5B707E" text-anchor="middle">HRC</text>
+          <text x="60" y="14" font-size="8" fill="#5B707E" text-anchor="middle">HV</text>
+          <text x="95" y="14" font-size="8" fill="#5B707E" text-anchor="middle">HB</text>
+          <line x1="25" y1="58" x2="95" y2="62" stroke="#D63426" stroke-width="1.3"/>
+          <circle cx="25" cy="58" r="2.8" fill="#D63426"/>
+          <circle cx="60" cy="60" r="2.8" fill="#D63426"/>
+          <circle cx="95" cy="62" r="2.8" fill="#D63426"/>
+          <text x="25" y="73" font-size="7.5" fill="#D63426" text-anchor="middle">50</text>
+          <text x="60" y="75" font-size="7.5" fill="#D63426" text-anchor="middle">513</text>
+          <text x="95" y="77" font-size="7.5" fill="#D63426" text-anchor="middle">481</text>
+        </svg></div>
+        <div class="gtxt">
+          <p>硬さ試験で HRC 50 が出たとき、HV・HB に直すと？</p>
+          <p class="gset">入力の種類 HRC ／ 値 50</p>
+          <p class="gread">読み方：HV≈<b>513</b>、HB≈<b>481</b>（引張強さの目安も表示）。</p>
+          <button class="gbtn" type="button" data-ex='{"set":[{"id":"fV","v":50}]}' onclick="tryExample(this)">この例を試す</button>
+        </div>
+      </div>
+    </div>
+    <div class="gx">
+      <h4>例2 ── SUS440C を真空焼入れした部品が届いた</h4>
+      <div class="gxin">
+        <div class="gfig"><svg viewBox="0 0 120 120" role="img" aria-label="SUS440Cの真空焼入れの期待硬さHV653〜750にHRC59が入る図">
+          <rect x="14" y="52" width="92" height="14" rx="5" fill="#EEF2F4"/>
+          <rect x="44" y="52" width="46" height="14" rx="5" fill="#D9EDE0"/>
+          <text x="44" y="46" font-size="7.5" fill="#1F6B3A" text-anchor="middle">653</text>
+          <text x="90" y="46" font-size="7.5" fill="#1F6B3A" text-anchor="middle">750</text>
+          <line x1="58" y1="44" x2="58" y2="74" stroke="#D63426" stroke-width="1.6"/>
+          <text x="58" y="86" font-size="8" fill="#D63426" text-anchor="middle" font-weight="700">HRC59（HV674）</text>
+          <text x="60" y="22" font-size="8" fill="#1F3341" text-anchor="middle">期待される硬さ（HV）</text>
+          <text x="60" y="104" font-size="7.5" fill="#5B707E" text-anchor="middle">範囲の中＝緑</text>
+        </svg></div>
+        <div class="gtxt">
+          <p>材質 SUS440C、処理 真空焼入れ を選ぶと、期待される硬さ <b>HV653〜750</b>（HRC 58〜62 前後）と、真空焼入れの目的（曲がり・酸化を避ける）が出ます。</p>
+          <p class="gset">① SUS440C ／ ② 真空焼入れ ／ ③ HRC 59</p>
+          <p class="gread">読み方：HV≈<b>674</b> で、<b>期待の範囲の中</b>（緑）。410 で作られていれば HRC 40 前後にしかならず、範囲から下に外れます。</p>
+          <button class="gbtn" type="button" data-ex='{"set":[{"click":"#swm-SUS440C"},{"click":"#swp-vq"},{"id":"fV","v":59}]}' onclick="tryExample(this)">この例を試す</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</details>
+
+
+
+  <!-- ★v168：まず材質と処理（公差判定 v164 と同じ作り：分類ごとの行・左に分類名・同じ大きさのマス）。
+       ここが決まると、期待される硬さと測り方（機器・試験力）、なぜその処理をするのか（新人向け）が出る。
+       ★合否は言わない（v133）。硬さだけでは受渡しの合否は決まらないため。
+       材質が分からないこともあるので「不明」を必ず置く（先頭）。 -->
+  <div class="why">
+    <b>硬さを測るのは、なぜ？</b>
+    熱処理や表面処理が<b>図面どおりに入っているか</b>を、部品を壊さずに確かめるいちばん手軽な方法だからです。
+    材質と処理が決まると、<b>出るはずの硬さ</b>が決まります。そこから外れたら、処理の入れ忘れ・材質違い・測り方のどれかを疑います。
+  </div>
+  <div class="swlab">① 材質（分からなければ「不明」）</div>
+  <div class="pgrid" id="matChips"></div>
+  <div class="info" id="mInfo" style="display:none"></div>
+  <div class="swlab">② 熱処理・表面処理（硬さを上げる処置）</div>
+  <div class="pleg" id="tzLeg"><span><b class="lk">★</b>主流</span><span><b class="lo">□</b>できる</span><span><b class="lw">△</b>気をつけること付き</span><span><b class="lx">×</b>一般にしない</span></div>
+  <div class="pgrid" id="tzChips"></div>
+  <div class="info" id="pInfo"></div>
+  <div class="tx" id="txBox" style="display:none"><span class="txt" id="txTxt"></span></div>
+  <!-- v169：測り方の比べ（推奨・どちらでもよい・非推奨と、その理由・注意・圧痕の大きさ） -->
+  <div class="mbox" id="mBox" style="display:none"></div>
+  <details class="mxbox">
+    <summary>材質 × 処理の早見表（★主流 ○できる △注意 ×一般にしない）</summary>
+    <div class="mxwrap" id="mxTbl"></div>
+  </details>
+
+  <!-- ノモグラム（v168 で材質・処理の下へ。公差判定と同じく「選ぶ → 図 → 入れる → 結果」の順） -->
+  <div class="sheet" style="margin-top:12px">
+    <div class="sheet-inner">
+      <svg id="dwg" viewBox="0 0 340 250" role="img" aria-label="HRC・HV・HBの3本の目盛と現在値を結ぶ換算ノモグラム">
+        <g id="axes"></g>
+        <g id="dyn"></g>
+      </svg>
+      <div class="titleblock">
+        <div><b>品名</b> 硬さ換算</div>
+        <div><b>方式</b> 換算表+補間</div>
+        <div>TOOL-16</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ★層の厚さは、どの入れ方でも効く共通の入力（v133）。ここに1つだけ置く。
+       対角長モードの中にもう1つ置くと二重入力になり、どちらが効いたか分からない。
+       ここに入れると、①②の推奨設定が<試験力を1つに絞る>ところまで進む。 -->
+  <div class="inputs" id="boxT" style="margin-top:10px">
+    <div class="row opt">
+      <span class="badge">t</span>
+      <label for="fT">層の厚さ<small>任意。メッキ膜厚・窒化の化合物層など。入れると使える試験力の上限まで出します</small></label>
+      <input id="fT" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">µm</span>
+    </div>
+  </div>
+
+  <div class="swlab">③ 測った値を入れる</div>
+  <!-- ★入れ方の切り替え（v128）。硬さの値そのものを入れるか、
+       マイクロビッカースの対角長から出すか。入力の意味が変わるので sw で始める。 -->
+  <div class="dimsw" id="modeSw" role="group" aria-label="入れ方">
+    <button type="button" id="swVal" class="on">硬さの値から</button>
+    <button type="button" id="swDiag">対角長から</button>
+    <button type="button" id="swMulti">多段で膜厚を見る</button>
+  </div>
+
+  <div id="boxVal">
+    <div class="chips" id="scChips"></div>
+    <div class="inputs">
+      <div class="row">
+        <span class="badge">1</span>
+        <label for="fV" id="inLbl">HRC<small id="inRange">対応範囲: 20 〜 68</small></label>
+        <input id="fV" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+        <span class="unit" id="inUnit"></span>
+      </div>
+      <!-- ★試験力を入れると、硬さから逆に圧痕の大きさが出る（v133・現場の依頼）。
+           d = √(1.8544×F ÷ HV)。そこから深さ h = d÷7、要る層厚 1.5×d。
+           HRC・HB・HRB で入れたときは<換算したHV>からの目安になる。 -->
+      <div class="row opt">
+        <span class="badge">F</span>
+        <label for="fFv">試験力<small>任意。マイクロビッカースで測るときの試験力。入れると圧痕の深さが出ます</small></label>
+        <input id="fFv" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+        <span class="unit">gf</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="boxDiag" style="display:none">
+    <!-- ★手持ちの最小試験力は 10gf 固定（v133）。この機械で出せる下限は決まっていて、
+         毎回入れるものではない。計算そのものには使わず、勧める試験力の下限に使う。 -->
+    <div class="chips" id="loadChips"></div>
+    <div class="inputs">
+      <div class="row">
+        <span class="badge">1</span>
+        <label for="fF">試験力<small>上のボタンで選べます（gf でも kgf でも）</small></label>
+        <input id="fF" type="text" inputmode="decimal" autocomplete="off" placeholder="例 100">
+        <span class="unit">gf</span>
+      </div>
+      <div class="row">
+        <span class="badge">2</span>
+        <label for="fD1">対角長 d1<small>圧痕の対角線。2本の平均を使います</small></label>
+        <input id="fD1" type="text" inputmode="decimal" autocomplete="off" placeholder="例 30.2">
+        <span class="unit">µm</span>
+      </div>
+      <div class="row">
+        <span class="badge">3</span>
+        <label for="fD2">対角長 d2<small>省くと d1 だけで計算します</small></label>
+        <input id="fD2" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+        <span class="unit">µm</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="boxMulti" style="display:none">
+    <div class="tx">
+      <span class="txt">
+        <b>同じ面の近い場所</b>で、試験力を変えて2〜4回測り、それぞれの<b>試験力と対角長</b>を入れてください。<br>
+        ★<b>同じ圧痕の上に重ねて打たないでください。</b>圧痕どうしは圧痕径の3倍以上あけます。<br>
+        小さい試験力では層だけを見ています。大きくすると下地に引っ張られて硬さがずれます。
+        <b>その境目から膜厚のおよそが分かります</b>（断面測定の代わりではなく<b>目安</b>です）。
+      </span>
+    </div>
+    <div class="mrow"><span>①</span>
+      <input id="mF1" type="text" inputmode="decimal" autocomplete="off" placeholder="試験力 gf">
+      <input id="mD1" type="text" inputmode="decimal" autocomplete="off" placeholder="対角長 µm"></div>
+    <div class="mrow"><span>②</span>
+      <input id="mF2" type="text" inputmode="decimal" autocomplete="off" placeholder="試験力 gf">
+      <input id="mD2" type="text" inputmode="decimal" autocomplete="off" placeholder="対角長 µm"></div>
+    <div class="mrow"><span>③</span>
+      <input id="mF3" type="text" inputmode="decimal" autocomplete="off" placeholder="試験力 gf">
+      <input id="mD3" type="text" inputmode="decimal" autocomplete="off" placeholder="対角長 µm"></div>
+    <div class="mrow"><span>④</span>
+      <input id="mF4" type="text" inputmode="decimal" autocomplete="off" placeholder="試験力 gf">
+      <input id="mD4" type="text" inputmode="decimal" autocomplete="off" placeholder="対角長 µm"></div>
+    <div id="mTbl"></div>
+    <div class="mres" id="mRes" style="display:none"></div>
+  </div>
+
+  <!-- 結果 -->
+  <div class="dro">
+    <div class="dro-grid">
+      <div class="cellv" id="cC"><span class="k">HRC</span><span class="v dim" id="vC">―</span></div>
+      <div class="cellv" id="cV"><span class="k">HV</span><span class="v dim" id="vV">―</span></div>
+      <div class="cellv" id="cB"><span class="k">HB</span><span class="v dim" id="vB">―</span></div>
+    </div>
+    <div class="dro-sub">引張強さの目安(≈3.2×HB): <b id="vTs">―</b> MPa</div>
+    <!-- ★生材か焼入れかの帯（v128）。値だけでは現場は判断できない。 -->
+    <div class="band" id="band" style="display:none"></div>
+    <!-- ★圧痕の深さと使える荷重（v128）。薄い層で下地を拾う事故を防ぐ。 -->
+    <div class="depth" id="depth" style="display:none"></div>
+    <div class="dro-foot">
+      <span class="statusTxt" id="statusTxt">入力の硬さ種類を選んで値を入力</span>
+    </div>
+  </div>
+
+  <button class="tbl-btn" type="button" id="tblBtn">▼ 換算表を表示</button>
+  <div class="tblWrap" id="tblWrap"></div>
+
+  <button class="clearBtn" type="button" onclick="armClear(this)">すべて消去</button>
+
+  <footer>
+    このページは計算のみを行います。入力値の送信・保存は一切ありません(端末内で完結)。<br>
+    換算は鋼を対象とした規格系(SAE J417 / ASTM E140)の代表値で、硬さ換算はそもそも近似です。<br>
+    受渡し・合否判定は図面指定の試験方法で行い、運用前に手元の換算表と数点照合してください。<br>
+    HRB域(生材〜調質・HV107〜240)も扱いますが、こちらは<b>目安</b>です。<br>
+    生材／焼入れの見立ては代表的な鋼種の一般値による<b>目安</b>で、材料指定の代わりにはなりません。<br>
+    アルミは鋼の換算表が使えません（HV かブリネル 500kgf で測った値をそのまま見比べます）。<br>
+    対角長からの硬さは <b>HV = 1.8544 × F(kgf) ÷ d(mm)²</b>、圧痕深さは <b>d ÷ 7</b>(圧子136°)です。
+  
+    <div class="crnote">© 2026 まるちゃん ｜ 許諾なく転載・複製・再配布・改変することを禁じます。本ツールは著作権法により保護されています。</div>
+  </footer>
+</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var NS='http://www.w3.org/2000/svg';
+
+  // 換算表(鋼): [HRC, HV, HB(3000kgf) or null]
+  var T=[
+    [68,940,null],[67,900,null],[66,865,null],[65,832,null],[64,800,null],
+    [63,772,null],[62,746,null],[61,720,null],[60,697,null],[59,674,null],
+    [58,653,615],[57,633,595],[56,613,577],[55,595,560],[54,577,543],
+    [53,560,525],[52,544,512],[51,528,496],[50,513,481],[49,498,469],
+    [48,484,455],[47,471,443],[46,458,432],[45,446,421],[44,434,409],
+    [43,423,400],[42,412,390],[41,402,381],[40,392,371],[39,382,362],
+    [38,372,353],[37,363,344],[36,354,336],[35,345,327],[34,336,319],
+    [33,327,311],[32,318,301],[31,310,294],[30,302,286],[29,294,279],
+    [28,286,271],[27,279,264],[26,272,258],[25,266,253],[24,260,247],
+    [23,254,243],[22,248,237],[21,243,231],[20,238,226]
+  ];
+  /* ★HRB域（生材〜調質）を足す（v128）。SS400 の生材は HRB70 前後で、
+     これまでの表（HRC20＝HV238 が下限）では扱えなかった。
+     刻みは 5 ごとの代表値だけ持ち、あいだは直線補間する。
+     ★この域では HB ≒ HV（HB300以下ではほぼ等しい）なので同じ値を使う。
+       細かい差を作り込むより、目安であることをはっきりさせる。 */
+  var TB=[
+    [100,240],[95,210],[90,185],[85,165],[80,150],
+    [75,137],[70,125],[65,116],[60,107]
+  ];
+  var SCALES=[
+    {id:0,n:'HRC',min:20,max:68,dec:1},
+    {id:1,n:'HV', min:238,max:940,dec:0},
+    {id:2,n:'HB', min:226,max:615,dec:0},
+    {id:3,n:'HRB',min:60,max:100,dec:1}
+  ];
+  /* HRB → HV（直線補間）／HV → HRB（逆引き） */
+  function hrbToHv(b){
+    if(b>TB[0][0]||b<TB[TB.length-1][0])return null;
+    for(var i=0;i<TB.length-1;i++){
+      var hi=TB[i], lo=TB[i+1];
+      if(b<=hi[0]&&b>=lo[0]){
+        var t=(hi[0]===lo[0])?0:(b-lo[0])/(hi[0]-lo[0]);
+        return lo[1]+t*(hi[1]-lo[1]);
+      }
+    }
+    return null;
+  }
+  function hvToHrb(v){
+    if(v>TB[0][1]||v<TB[TB.length-1][1])return null;
+    for(var i=0;i<TB.length-1;i++){
+      var hi=TB[i], lo=TB[i+1];
+      if(v<=hi[1]&&v>=lo[1]){
+        var t=(hi[1]===lo[1])?0:(v-lo[1])/(hi[1]-lo[1]);
+        return lo[0]+t*(hi[0]-lo[0]);
+      }
+    }
+    return null;
+  }
+  var sc=0;         // 入力スケール
+  var lastRes=null;
+
+  function num(v){
+    if(v==null)return NaN;
+    v=String(v).replace(/[０-９．]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0)}).replace(/。/g,'.').replace(/[,，、\s]/g,'').trim();
+    if(v==='')return NaN;
+    return Number(v);
+  }
+  function el(name,attrs){
+    var e=document.createElementNS(NS,name);
+    for(var k in attrs)e.setAttribute(k,attrs[k]);
+    return e;
+  }
+
+  // 補間変換: 入力スケールidxの値 → {c,v,b(or null),rb(or null)}
+  function convert(idx,val){
+    /* ★HRB域（v128）。HRC の表には載らない軟らかい側。
+       HRC は出さない（規格の換算が無い域なので、無理に出さない）。 */
+    if(idx===3){
+      var hv=hrbToHv(val);
+      return (hv==null)? null : {c:null,v:hv,b:hv,rb:val,low:true};
+    }
+    if((idx===1&&val<T[T.length-1][1])||(idx===2&&val<226)){
+      var rb=hvToHrb(val);
+      return (rb==null)? null : {c:null,v:val,b:val,rb:rb,low:true};
+    }
+    /* ★換算表の上（HV940超・v128）。窒化 HV900〜1100、硬質クロムメッキ
+       HV800〜1000 はここに入る。<測れている値を「範囲外」で捨てない>。
+       HRC・HB は換算が無いので出さない。 */
+    if(idx===1&&val>T[0][1]&&val<=3000){
+      return {c:null,v:val,b:null,rb:null,high:true};
+    }
+    var rows=(idx===2)?T.filter(function(r){return r[2]!=null}):T;
+    var top=rows[0][idx], bot=rows[rows.length-1][idx];
+    if(val>top||val<bot)return null;
+    for(var i=0;i<rows.length-1;i++){
+      var hi=rows[i], lo=rows[i+1];
+      if(val<=hi[idx]&&val>=lo[idx]){
+        var t=(hi[idx]===lo[idx])?0:(val-lo[idx])/(hi[idx]-lo[idx]);
+        var c=lo[0]+t*(hi[0]-lo[0]);
+        var v=lo[1]+t*(hi[1]-lo[1]);
+        var b=(hi[2]!=null&&lo[2]!=null)?(lo[2]+t*(hi[2]-lo[2])):null;
+        return {c:c,v:v,b:b,rb:hvToHrb(v),low:false};
+      }
+    }
+    return null;
+  }
+
+  /* ── 生材か焼入れかの見立て（v128）──
+     ★値だけでは現場は判断できない。「これは生材の硬さ」「これは焼きが入っている」
+       まで言い切る。ただし<目安>であることを必ず添える。
+     ★帯は HV でそろえる（換算のいちばん芯になる尺度のため）。 */
+  var BANDS=[
+    {hi:115, k:'raw',  t:'かなり軟らかい',
+     s:'焼なましの低炭素鋼・銅合金・アルミ合金の域。鋼の生材としても軟らかいほうです'},
+    {hi:170, k:'raw',  t:'生材の硬さ（一般構造用鋼）',
+     s:'SS400・SPHC など。熱処理が入っていない可能性が高い域です'},
+    {hi:210, k:'raw',  t:'生材の硬さ（機械構造用炭素鋼）',
+     s:'S45C の圧延まま・焼ならし材の域。まだ焼きは入っていません'},
+    {hi:270, k:'qt',   t:'調質の硬さ',
+     s:'S45C の焼入焼戻し（HRC20〜28）あたり。ねばり重視の熱処理です'},
+    {hi:350, k:'qt',   t:'調質の硬さ（合金鋼）',
+     s:'SCM435 などの調質（HRC28〜36）。軸・歯車の芯部によくある硬さです'},
+    {hi:450, k:'qt',   t:'焼入れとしては軟らかい',
+     s:'高温で焼戻したか、炭素の少ない材料。表面処理層なら下地を拾っている疑いもあります'},
+    {hi:600, k:'hard', t:'焼きが入っています（高周波焼入れの域）',
+     s:'HRC45〜55。高周波・炎焼入れの一般的な仕上がりです'},
+    {hi:800, k:'hard', t:'焼きが入っています（浸炭・高硬度）',
+     s:'HRC55〜64。浸炭焼入れや工具鋼の域です'},
+    {hi:1100,k:'coat', t:'表面処理層の硬さです',
+     s:'窒化（HV900〜1100）・硬質クロムメッキ（HV800〜1000）の域。素地ではありません'},
+    {hi:1e9, k:'coat', t:'超硬・セラミック・特殊皮膜の域',
+     s:'鋼の熱処理では出ない硬さです。試験力や測り方も確かめてください'}
+  ];
+  function bandOf(hv){
+    for(var i=0;i<BANDS.length;i++) if(hv<BANDS[i].hi) return BANDS[i];
+    return BANDS[BANDS.length-1];
+  }
+
+  /* ── 対角長からの硬さ（v128）──
+     HV = 1.8544 × F(kgf) ÷ d(mm)²  ／  圧痕深さ h = d ÷ 7（圧子136°）
+     ★層の厚さは対角長の1.5倍以上（JIS Z 2244）。これを割ると下地を拾う。
+       ここから<使える試験力の上限>も出せる： F ≤ HV×(t/1.5)² ÷ 1.8544 */
+  function hvFromDiag(Fgf,dum){
+    if(!(Fgf>0)||!(dum>0))return null;
+    var F=Fgf/1000, d=dum/1000;       /* kgf, mm */
+    return 1.8544*F/(d*d);
+  }
+  function maxLoad(hv,tum){           /* 層厚 t(µm) で使える最大試験力(gf) */
+    if(!(hv>0)||!(tum>0))return null;
+    var d=(tum/1000)/1.5;
+    return hv*d*d/1.8544*1000;
+  }
+
+  /* ---- ノモグラム ---- */
+  var AX=[{x:70,n:'HRC',ticks:[20,30,40,50,60,68]},
+          {x:170,n:'HV',ticks:[238,302,392,513,697,940]},
+          {x:270,n:'HB',ticks:[226,286,371,481,615]}];
+  var TOP=42,BOT=212;
+  function yOf(idx,val){
+    var s=SCALES[idx];
+    return BOT-(val-s.min)/(s.max-s.min)*(BOT-TOP);
+  }
+  function buildAxes(){
+    var g=$('axes');
+    AX.forEach(function(a,idx){
+      g.appendChild(el('line',{x1:a.x,y1:TOP,x2:a.x,y2:BOT,stroke:'#1F3341','stroke-width':1.6}));
+      var t=el('text',{x:a.x,y:TOP-14,'font-size':12,'font-weight':700,fill:'#1F3341','text-anchor':'middle'});
+      t.textContent=a.n;g.appendChild(t);
+      a.ticks.forEach(function(tv){
+        var y=yOf(idx,tv);
+        g.appendChild(el('line',{x1:a.x-4,y1:y,x2:a.x+4,y2:y,stroke:'#1F3341','stroke-width':1}));
+        var lt=el('text',{x:a.x-8,y:y+3.5,'font-size':9,fill:'#5B707E','text-anchor':'end'});
+        lt.textContent=tv;g.appendChild(lt);
+      });
+    });
+    var note=el('text',{x:170,y:240,'font-size':10,fill:'#5B707E','text-anchor':'middle'});
+    note.textContent='硬い ↑ / 軟らかい ↓(HBは615=HRC58相当まで)';
+    g.appendChild(note);
+  }
+  function drawMark(res){
+    var dyn=$('dyn');
+    while(dyn.firstChild)dyn.removeChild(dyn.firstChild);
+    if(!res)return;
+    var pts=[{x:AX[0].x,y:yOf(0,res.c),ok:true},
+             {x:AX[1].x,y:yOf(1,res.v),ok:true},
+             {x:AX[2].x,y:res.b!=null?yOf(2,res.b):TOP,ok:res.b!=null}];
+    // 結線
+    dyn.appendChild(el('line',{x1:pts[0].x,y1:pts[0].y,x2:pts[1].x,y2:pts[1].y,stroke:'#D63426','stroke-width':1.6}));
+    dyn.appendChild(el('line',{x1:pts[1].x,y1:pts[1].y,x2:pts[2].x,y2:pts[2].y,stroke:'#D63426','stroke-width':1.6,'stroke-dasharray':pts[2].ok?'':'4 4'}));
+    pts.forEach(function(p,i){
+      if(p.ok){
+        dyn.appendChild(el('circle',{cx:p.x,cy:p.y,r:4,fill:'#D63426'}));
+      }else{
+        var xt=el('text',{x:p.x,y:p.y+4,'font-size':12,'font-weight':700,fill:'#8FA2AF','text-anchor':'middle'});
+        xt.textContent='×';dyn.appendChild(xt);
+      }
+    });
+    // 値ラベル
+    var labels=[res.c.toFixed(1),Math.round(res.v),res.b!=null?Math.round(res.b):'範囲外'];
+    pts.forEach(function(p,i){
+      var t=el('text',{x:p.x+8,y:p.y-7,'font-size':11,'font-weight':700,fill:p.ok?'#D63426':'#8FA2AF','text-anchor':'start',stroke:'#fff','stroke-width':3.5,'paint-order':'stroke'});
+      t.textContent=labels[i];
+      dyn.appendChild(t);
+    });
+  }
+
+  /* ---- UI ---- */
+  function buildChips(){
+    var box=$('scChips');box.innerHTML='';
+    SCALES.forEach(function(s,i){
+      var b=document.createElement('button');
+      b.type='button';b.className='chip'+(i===sc?' on':'');
+      b.textContent=s.n+'から';
+      b.addEventListener('click',function(){
+        sc=i;buildChips();
+        $('inLbl').childNodes[0].textContent=s.n;
+        if(i===3){
+          $('inRange').textContent='対応範囲: 60 〜 100（生材〜調質）';
+        }else if(i===1){
+          $('inRange').textContent='対応範囲: 107 〜 940';
+        }else if(i===2){
+          $('inRange').textContent='対応範囲: 107 〜 615';
+        }else{
+          $('inRange').textContent='対応範囲: 20 〜 68';
+        }
+        recalc();
+      });
+      box.appendChild(b);
+    });
+  }
+
+  /* ── 材質 × 熱処理・表面処理（v130 → v168 で作り直し）──
+     ★ここが決まって初めて<期待される硬さ>が言え、範囲と見比べられる。
+     数字はいずれも代表的な一般値（HV）。図面・熱処理指示が優先。
+     v168：ムギさん「SUS440C が入っていない。足りない材質も入れて。見にくいので公差判定のように見やすく。
+       硬さを上げる処置の目的・何に使うか・この材質ではこれが主流、を新人でも分かるように。
+       真空焼入れ、アモルファス（無電解ニッケル・DLC）、クロムめっきなど特殊なものも」。
+     ★g … 分類（画面の行）。s … ボタンに出す短い名前。n … 文の中で使う名前（v130 からの名前を変えない） */
+  var PGROUPS=[
+    ['base','処理なし・整える'],
+    ['whole','全体を硬くする（熱処理）'],
+    ['surf','表面だけ硬くする（熱処理）'],
+    ['coat','硬い膜をつける（めっき・皮膜）']
+  ];
+  var PROC=[
+    {k:'raw', n:'なし（生材）', s:'生材', g:'base'},
+    {k:'nrm', n:'焼ならし', s:'焼ならし', g:'base'},
+    {k:'qt',  n:'調質', s:'調質', g:'whole'},
+    {k:'qc',  n:'焼入れ焼戻し', s:'焼入れ焼戻し', g:'whole'},
+    {k:'vq',  n:'真空焼入れ', s:'真空焼入れ', g:'whole'},
+    {k:'ph',  n:'析出硬化（時効）', s:'析出硬化', g:'whole'},
+    {k:'hq',  n:'高周波焼入れ', s:'高周波', g:'surf'},
+    {k:'cb',  n:'浸炭焼入れ', s:'浸炭', g:'surf'},
+    {k:'nit', n:'窒化', s:'窒化', g:'surf'},
+    {k:'sn',  n:'軟窒化(イソナイト)', s:'軟窒化', g:'surf'},
+    {k:'cr',  n:'硬質クロムメッキ', s:'硬質クロム', g:'coat'},
+    {k:'enp', n:'無電解ニッケル', s:'無電解Ni', g:'coat'},
+    {k:'enph',n:'無電解ニッケル＋熱処理', s:'無電解Ni＋熱処理', g:'coat'},
+    {k:'pvd', n:'PVD（TiN・CrN など）', s:'PVD', g:'coat'},
+    {k:'dlc', n:'DLC', s:'DLC', g:'coat'},
+    {k:'ha',  n:'硬質アルマイト', s:'硬質アルマイト', g:'coat'}
+  ];
+  /* ★処理の説明（新人向け）。why＝なぜやる／how＝何をする／where＝よく使う部品／hard＝どこがどれだけ硬くなる／tip＝つまずきやすい所 */
+  var PEXP={
+    raw:{why:'熱処理をしない、買ったままの材。削りやすく、安い。硬さが要らない部品はこれで十分です。',
+         how:'製鋼所で圧延・引抜きしたままの状態（材によっては焼なましてあります）。',
+         where:'カバー・ブラケット・フレーム・スペーサーなど、力や摩耗の少ない部品。',
+         hard:'全体が同じ硬さ。軟らかい（鋼で HV100〜250 前後）。',
+         tip:'HRC では軟らかすぎて読めません。HRB かブリネルで測ります。'},
+    nrm:{why:'圧延や鍛造でばらついた組織をそろえ、性質を均一にします。硬くするための処理ではありません。',
+         how:'少し高い温度まで加熱し、空気中で冷まします。',
+         where:'鍛造品・大物の素材。調質や焼入れの前の下ごしらえ。',
+         hard:'全体が同じ。生材とほぼ同じか、少し硬いくらい。',
+         tip:'図面に「焼ならし」とあれば、目的は硬さより組織をそろえること。'},
+    qt: {why:'強さと粘り（割れにくさ）を両方ほしいとき。折れては困る軸・ボルト・歯車の素材の基本です。',
+         how:'焼入れで硬くしたあと、高い温度（おおむね 500℃ 以上）で焼戻して粘りを戻します。',
+         where:'シャフト・ボルト・ナット・歯車の素材・金型のホルダー。',
+         hard:'全体が同じ。HRC 20〜35 前後の、硬すぎない硬さ。',
+         tip:'焼入れ焼戻しより軟らかいのが正常です。HRC が低いからといって焼き不足とは限りません。'},
+    qc: {why:'摩耗に強く、へこまない硬さがほしいとき。',
+         how:'高い温度から急に冷やして（焼入れ）硬くし、低い温度（150〜200℃ 前後）で焼戻して割れにくくします。',
+         where:'刃物・ピン・ガイド・ゲージ・軸受・金型。',
+         hard:'全体（太い物は芯まで入らないこともあります）。HRC 50〜65 前後。',
+         tip:'焼入れのままは割れやすいので、ふつうは焼戻しまでします。図面の「焼入れ」はふつう焼入れ焼戻しのこと。'
+           +'焼入れのあと −70℃ 前後まで冷やす<b>サブゼロ処理</b>を足すと、硬さと寸法が安定します（SKD11・SUS440C など）。'},
+    vq: {why:'焼入れで表面を酸化・脱炭させず、曲がりも少なくしたいとき。仕上げに近い精密部品や金型に使います。',
+         how:'真空の炉で加熱し、窒素などのガスを吹きつけて冷やします（油や水に入れません）。表面がきれい（光輝）なまま。',
+         where:'金型・パンチ・ダイ（SKD11・SKD61・SKH51）、精密なステンレス部品（SUS440C・SUS420J2）、ゲージ。',
+         hard:'焼入れ焼戻しと同じ（材で決まります）。',
+         tip:'ガスで冷やすので、油・水より冷え方がゆるやか。<b>焼きが入りやすい合金の多い鋼向け</b>で、S45C のような炭素鋼には向きません（硬さが出にくい）。'},
+    ph: {why:'焼入れをせず、中くらいの温度で強く硬くします。曲がりが少ない。',
+         how:'溶体化（高温から急冷）で軟らかい状態にしたあと、中くらいの温度で時間をかけて保つと、細かい粒が析出して硬くなります。',
+         where:'SUS630（17-4PH）のポンプ・バルブの軸・強度部品。アルミ 6061・7075 の T6 材（買うときすでにこの状態）。',
+         hard:'全体。SUS630 は記号で違い、H900 は HRC 40〜48、H1150 は 26〜36 前後。',
+         tip:'SUS630 は図面の記号（H900・H1025・H1075・H1150）で硬さが違います。アルミの 5052 は熱処理で硬くなりません。'},
+    hq: {why:'表面だけ硬くして摩耗に強くし、中は粘りを残します。',
+         how:'コイルで表面だけを電気で急に加熱し、水などで急冷します。',
+         where:'シャフトの軸受け部・ピン・歯車の歯・ローラー・機械の摺動面。',
+         hard:'表面だけ（深さ 1〜数 mm）。HRC 50〜60 前後。',
+         tip:'炭素の多い鋼（S45C・SCM440 など）向け。SS400 のような低炭素鋼は硬くなりません。'},
+    cb: {why:'表面は硬く、中は粘り強く。歯車のように、表面の摩耗と根元の折れの両方に耐えたいとき。',
+         how:'炭素の少ない鋼の表面に、高温で炭素をしみこませてから焼入れします。',
+         where:'歯車・カム・ピン・ローラー。',
+         hard:'表面だけ（深さ 0.5〜1.5mm 前後。図面の指示による）。HV 650〜800 前後。',
+         tip:'炭素の少ない鋼（SCM415・SNCM220）用。S45C のように炭素の多い鋼にはしません。層が薄いと HRC は下地に沈むので HR15N で。'},
+    nit:{why:'焼入れより低い温度で表面を硬くするので、曲がりがほとんど出ません。摩耗とかじりに強い。',
+         how:'500〜550℃ 前後で、表面に窒素をしみこませます（ガス・イオンなど）。',
+         where:'ダイカスト型・ギヤ・シリンダー・精密な軸・スピンドル。',
+         hard:'表面だけ（化合物層 数〜20µm と、その下の拡散層）。HV 600〜1200（鋼種で大きく違う）。',
+         tip:'Cr・Mo・Al を含む鋼でよく硬くなります（SACM645 は窒化用の鋼）。低温で焼戻した工具鋼は、窒化の熱で軟らかくなります。'},
+    sn: {why:'窒化より短い時間・安い費用で、表面に硬い層を作ります。錆びにくさも少し上がります。',
+         how:'570℃ 前後で、窒素と炭素を同時にしみこませます（塩浴・ガス）。',
+         where:'シャフト・ピン・クランク・金型の部品・ブラケット。',
+         hard:'表面だけ（化合物層 10〜20µm）。HV 400〜1100（鋼種で違う）。',
+         tip:'炭素鋼（S45C・SS400）にもできます。層がとても薄いので HRC では測れません。'},
+    cr: {why:'摩耗に強く、すべりのよい硬い膜をつけます。すり減った軸を太らせて直すのにも使います。',
+         how:'電気めっきで、クロムの膜を厚くつけます。',
+         where:'油圧シリンダーのロッド・ロール・シャフト・摺動部品。',
+         hard:'膜だけ（厚さ 10〜30µm 前後。厚いものもあります）。HV 800〜1000。下地は硬くなりません。',
+         tip:'膜の厚さが足りないと<b>下地を拾って軟らかく出ます</b>。上の「層の厚さ」に入れて、使える試験力を確かめます。'},
+    enp:{why:'形が複雑でも、穴の中まで同じ厚さの膜がつきます（電気を使わないため）。錆びにくく、摩耗にもそこそこ強い。',
+         how:'薬品の中で、ニッケルとリンを化学反応で析出させます。リンの多い膜は<b>アモルファス</b>（結晶になっていない）。',
+         where:'精密部品・金型・穴の中まで膜がほしい部品。アルミやステンレスの防錆にも。',
+         hard:'膜だけ（厚さ 5〜25µm 前後。指定できる）。めっきのままで HV 450〜600。',
+         tip:'熱処理をすると硬くなります（次の「無電解Ni＋熱処理」）。図面にどちらと書いてあるかを見ます。'},
+    enph:{why:'無電解ニッケルの膜を、硬質クロムに近い硬さまで上げます。',
+         how:'めっきのあと 400℃ 前後で加熱すると、膜の中にリン化ニッケルが析出して硬くなります。',
+         where:'摩耗の多い精密部品・金型。',
+         hard:'膜だけ。HV 850〜1000 前後。',
+         tip:'400℃ の熱で、低い温度で焼戻した下地（焼入れ品）やアルミは軟らかくなることがあります。錆びにくさは少し落ちることがあります。'},
+    pvd:{why:'とても硬い薄い膜で、刃物や金型の寿命をのばします。',
+         how:'真空の中で金属を蒸発させ、窒素などと反応させて膜にします（窒化チタン TiN は金色）。',
+         where:'切削工具・パンチ・金型・摺動部品。',
+         hard:'膜だけ（厚さ 1〜5µm）。HV 1800〜3000 前後。',
+         tip:'膜が薄く、多くは最小 10gf でも下地を拾います。膜の硬さは<b>メーカーの成績書</b>か、専門の機関（ナノインデンテーション）で確かめます。処理の熱で下地が焼戻されないかも確かめます。'},
+    dlc:{why:'とても硬く、すべりがよい（摩擦が小さい）膜。相手を傷つけにくい。',
+         how:'真空の中で炭素の膜をつけます。ダイヤモンドに近い結合を含む<b>アモルファス</b>（結晶になっていない）炭素。',
+         where:'摺動部品・金型・アルミを削る刃物・エンジン部品。',
+         hard:'膜だけ（厚さ 1〜3µm 前後）。HV 1500〜3000（種類で大きく違う）。',
+         tip:'膜がとても薄く、表面からのビッカースでは測れません。膜の硬さは<b>成績書</b>か専門の機関で確かめます。'},
+    ha: {why:'軟らかいアルミの表面を、硬く摩耗に強い膜に変えます。',
+         how:'アルミを電気分解して、表面そのものを硬い酸化アルミの膜に変えます（上に載せるめっきとは違います）。',
+         where:'アルミのシリンダー・ピストン・ガイド・治具・摺動部品。',
+         hard:'膜だけ（厚さ 30〜60µm 前後）。HV 400〜450 前後（合金で違う）。',
+         tip:'アルミの処理です。膜はおよそ半分が内側に食いこみ、半分が外へ太ります（寸法が変わる）。下地は軟らかいので、大きな試験力では沈みます。'}
+  };
+  /* 層の厚さの目安(µm)と測り方。処理で決まる（材質では変わらない） */
+  /* dev: 使う機器 ／ set: ★推奨設定（圧子・試験力・保持時間） ／ note: 気をつけること
+     ★「マイクロビッカース」だけでは設定できない。圧子と試験力と保持時間まで書く。 */
+  var PINFO={
+    raw:{t:0,   dev:'HRB / ブリネル / ショア',
+         set:'HRB … 鋼球 φ1.5875mm・試験力 100kgf（初試験力 10kgf）／ブリネル … 球 φ10mm・3000kgf・保持10〜15秒（小物は φ5/750kgf）',
+         note:'全体が同じ硬さです。HRC では軟らかすぎて読めません'},
+    nrm:{t:0,   dev:'HRB / ブリネル',
+         set:'HRB … 鋼球 φ1.5875mm・100kgf（初試験力 10kgf）',
+         note:'全体が同じ硬さです'},
+    qt: {t:0,   dev:'ロックウェルC / HRB',
+         set:'HRC … ダイヤ円錐120°・試験力 150kgf（初試験力 10kgf）・保持 4〜6秒。HV で測るなら HV10 か HV30',
+         note:'全体が同じ硬さです。芯まで同じ硬さになります'},
+    qc: {t:0,   dev:'ロックウェルC',
+         set:'HRC … ダイヤ円錐120°・150kgf（初試験力 10kgf）・保持 4〜6秒',
+         note:'全体が同じ硬さです'},
+    vq: {t:0,   dev:'ロックウェルC',
+         set:'HRC … ダイヤ円錐120°・150kgf（初試験力 10kgf）・保持 4〜6秒',
+         note:'全体が同じ硬さです。表面は光輝（酸化していない）のまま測れます'},
+    ph: {t:0,   dev:'ロックウェルC（アルミはブリネルか HV）',
+         set:'HRC … ダイヤ円錐120°・150kgf（SUS630）／アルミ … ブリネル 球 φ10mm・500kgf か HV10',
+         note:'全体が同じ硬さです'},
+    hq: {t:2000,dev:'ロックウェルC（表面からそのまま）',
+         set:'HRC … ダイヤ円錐120°・150kgf・保持 4〜6秒。<b>有効硬化層深さ</b>を出すなら断面で HV0.3（300gf）・0.1mm 間隔',
+         note:'硬化層が mm 単位あるので表面から測れます'},
+    cb: {t:800, dev:'ロックウェルC（薄ければ HR15N）',
+         set:'HRC … 150kgf。有効硬化層 0.8mm 未満なら <b>HR15N</b>（ダイヤ円錐・15kgf・初試験力 3kgf）。層深さは断面 HV0.3',
+         note:'有効硬化層が <b>0.8mm 未満</b>だと HRC は下地に沈みます'},
+    nit:{t:12,  dev:'マイクロビッカース（多くは断面）',
+         set:'HV0.05〜HV0.1（50〜100gf）・保持 10〜15秒。断面で測るなら樹脂埋め＋鏡面研磨',
+         note:'化合物層（白層）が薄く、表面からでは拡散層や素地と混ざります'},
+    sn: {t:15,  dev:'マイクロビッカース（多くは断面）',
+         set:'HV0.05〜HV0.1（50〜100gf）・保持 10〜15秒',
+         note:'化合物層 10〜20µm。表面から測れるかは試験力しだいです'},
+    cr: {t:20,  dev:'マイクロビッカース',
+         set:'HV0.05〜HV0.1（50〜100gf）・保持 10〜15秒。膜が薄ければ断面で',
+         note:'膜厚の幅が広い処理です。厚めなら表面から、薄ければ断面で'},
+    enp:{t:15,  dev:'マイクロビッカース',
+         set:'HV0.05〜HV0.1（50〜100gf）・保持 10〜15秒。膜が薄ければ断面で',
+         note:'膜厚を指定できる処理です。図面の膜厚を確かめてから試験力を決めます'},
+    enph:{t:15, dev:'マイクロビッカース',
+         set:'HV0.05〜HV0.1（50〜100gf）・保持 10〜15秒。膜が薄ければ断面で',
+         note:'膜厚を指定できる処理です。図面の膜厚を確かめてから試験力を決めます'},
+    pvd:{t:3,   dev:'成績書・専門の機関（ナノインデンテーション）',
+         set:'膜が 1〜5µm と薄く、多くは最小 10gf でも下地を拾います（厚い膜なら届くこともあります。下の計算を見てください）',
+         note:'受入れでは、膜の色むら・はがれ・成績書（膜厚・硬さ）を見ます'},
+    dlc:{t:2,   dev:'成績書・専門の機関（ナノインデンテーション）',
+         set:'膜が 1〜3µm と薄く、表面からのビッカースでは下地を拾います',
+         note:'受入れでは、膜のはがれ・色むら・成績書（膜厚・硬さ）を見ます'},
+    ha: {t:40,  dev:'マイクロビッカース（正確には断面）',
+         set:'HV0.05〜HV0.1（50〜100gf）・保持 10〜15秒。膜が厚ければ表面からも',
+         note:'下地のアルミは軟らかいので、大きな試験力では膜ごと沈みます'}
+  };
+  /* どの機器にも共通する置き方（v131） */
+  var COMMON='試験面は平らに、荷重の向きと直角に。圧痕どうしは<b>圧痕径の3倍以上</b>、端からは<b>2.5倍以上</b>離す。'
+    +'<b>3〜5点</b>測って中央の値を採ります。';
+  var PTHIN={nit:[5,20], sn:[10,20], cr:[5,50], enp:[5,25], enph:[5,25], pvd:[1,5], dlc:[1,3], ha:[30,60]};   /* 薄い層の厚さの目安 */
+
+  /* 材質ごとの期待硬さ(HV)。
+     [下,上] … できる ／ [下,上,'注意'] … できるが気をつけること ／ X('理由') … 一般に成立しない。
+     ★main … その材質で主流の処理（ボタンに★）。use … 何に使う材か。why … なぜその処理が主流か（新人向け）。
+     ★g … 分類。al は鋼ではない（鋼の換算表が使えない）。 */
+  function X(r){ return {x:r}; }
+  var MGROUPS=[['cs','炭素鋼'],['case','肌焼き鋼'],['alloy','合金鋼'],['tool','工具鋼・軸受鋼'],['ss','ステンレス'],['ci','鋳鉄'],['al','アルミ']];
+  var SOFT='下地が軟らかいと、膜が割れやすい（卵の殻）。焼入れした下地に向きます';
+  var TEMPER='処理の熱で、低い温度で焼戻した下地が軟らかくなることがあります';
+  var NOSTEEL='鋼の処理です（アルミにはしません）';
+  var ALUONLY='アルミの処理です';
+  var MAT=[
+    {n:'不明', any:true},
+    {n:'SS400', g:'cs', main:['raw'],
+     use:'フレーム・ブラケット・板金・架台。いちばん一般的な構造用の鋼。',
+     why:'炭素が少なく焼きが入らないので、熱処理せずに使います。摩耗が気になる所だけ、浸炭・軟窒化・めっきで表面を守ります。',
+     raw:[110,160], nrm:[110,170],
+     qt:X('炭素が少なく（0.2%以下）焼きが入りません'),
+     qc:X('炭素が少なく焼きが入りません'),
+     vq:X('炭素が少なく焼きが入りません'), ph:X('析出硬化する材ではありません'),
+     hq:X('炭素が少なく高周波では硬化しません'),
+     cb:[600,750], nit:X('窒化用鋼ではありません'), sn:[400,550], cr:[800,1000],
+     enp:[450,600], enph:[850,1000], pvd:[1800,3000,SOFT], dlc:[1500,3000,SOFT], ha:X(ALUONLY)},
+    {n:'S45C', g:'cs', main:['raw','qt','hq'],
+     use:'軸・ピン・ボルト・歯車・カラー。機械部品でいちばん使われる炭素鋼。',
+     why:'そのまま削って使うか、強さが要れば調質、摩耗する所だけ高周波焼入れ、が定番です。',
+     raw:[170,210], nrm:[180,230], qt:[200,270], qc:[600,700],
+     vq:X('焼きが入りにくい炭素鋼で、真空炉のガス冷却では冷え方が足りません（水・油で焼入れします）'),
+     ph:X('析出硬化する材ではありません'), hq:[550,650],
+     cb:X('炭素が多く、肌焼き（浸炭）には向きません'),
+     nit:X('窒化用鋼ではありません（軟窒化なら可）'), sn:[500,650], cr:[800,1000],
+     enp:[450,600], enph:[850,1000], pvd:[1800,3000,SOFT], dlc:[1500,3000,SOFT], ha:X(ALUONLY)},
+    {n:'S50C', g:'cs', main:['qt','hq'],
+     use:'S45C より少し硬くしたい軸・歯車・カム。',
+     why:'炭素が少し多く、焼入れでやや硬くなります。調質か高周波で使うのが定番です。',
+     raw:[180,220], nrm:[190,240], qt:[210,280], qc:[620,720],
+     vq:X('焼きが入りにくい炭素鋼で、真空炉のガス冷却では冷え方が足りません（水・油で焼入れします）'),
+     ph:X('析出硬化する材ではありません'), hq:[570,670],
+     cb:X('炭素が多く、肌焼きには向きません'), nit:X('窒化用鋼ではありません'), sn:[500,650], cr:[800,1000],
+     enp:[450,600], enph:[850,1000], pvd:[1800,3000,SOFT], dlc:[1500,3000,SOFT], ha:X(ALUONLY)},
+    {n:'SCM435', g:'alloy', main:['qt','hq'],
+     use:'高強度ボルト・軸・歯車。',
+     why:'Cr・Mo で焼きが入りやすい鋼。調質で強さと粘りを出し、摩耗する所は高周波で。',
+     raw:[200,250], nrm:[200,260], qt:[230,330], qc:[600,700],
+     vq:[600,700,'太い品は、ガス冷却では芯まで焼きが入りにくいことがあります'],
+     ph:X('析出硬化する材ではありません'), hq:[550,650],
+     cb:X('炭素が多く、肌焼きには向きません'), nit:[600,750], sn:[500,700], cr:[800,1000],
+     enp:[450,600], enph:[850,1000,TEMPER], pvd:[1800,3000,SOFT], dlc:[1500,3000], ha:X(ALUONLY)},
+    {n:'SCM415', g:'case', main:['cb'],
+     use:'歯車・ピン・カムなど、表面は硬く、中は粘り強くしたい部品。',
+     why:'炭素の少ない「肌焼き鋼」。浸炭して表面だけを硬くする前提の鋼です。',
+     raw:[140,200], nrm:[150,210], qt:[200,260],
+     qc:X('炭素が少なく、単独の焼入れでは硬くなりません'),
+     vq:X('炭素が少なく、単独の焼入れでは硬くなりません'), ph:X('析出硬化する材ではありません'),
+     hq:X('炭素が少なく高周波では硬化しません'),
+     cb:[650,800], nit:X('窒化用鋼ではありません'), sn:[450,600], cr:[800,1000],
+     enp:[450,600], enph:[850,1000], pvd:[1800,3000,SOFT], dlc:[1500,3000,SOFT], ha:X(ALUONLY)},
+    {n:'SNCM220', g:'case', main:['cb'],
+     use:'強さの要る歯車・軸（自動車・建設機械）。',
+     why:'SCM415 より焼きが入りやすい肌焼き鋼。太い歯車でも中まで粘り強くできます。',
+     raw:[150,210], nrm:[160,220], qt:[210,270],
+     qc:X('炭素が少なく、単独の焼入れでは硬くなりません'),
+     vq:X('炭素が少なく、単独の焼入れでは硬くなりません'), ph:X('析出硬化する材ではありません'),
+     hq:X('炭素が少なく高周波では硬化しません'),
+     cb:[650,800], nit:X('窒化用鋼ではありません'), sn:[450,600], cr:[800,1000],
+     enp:[450,600], enph:[850,1000], pvd:[1800,3000,SOFT], dlc:[1500,3000,SOFT], ha:X(ALUONLY)},
+    {n:'SUJ2', g:'tool', main:['qc'],
+     use:'軸受（ベアリング）の玉・輪、ガイド、ゲージ、ピン。',
+     why:'炭素と Cr が多く、焼入れ焼戻しで高い硬さにして使う軸受鋼です。',
+     raw:[180,220], nrm:[190,230], qt:[650,750], qc:[700,800],
+     vq:[700,800,'太い品は、ガス冷却では芯まで焼きが入りにくいことがあります'],
+     ph:X('析出硬化する材ではありません'),
+     hq:X('軸受鋼は全体焼入れが普通です'), cb:X('もともと高炭素で浸炭は不要'),
+     nit:X('一般には行いません'), sn:[600,750], cr:[800,1000],
+     enp:[450,600], enph:[850,1000,TEMPER], pvd:[1800,3000,TEMPER], dlc:[1500,3000], ha:X(ALUONLY)},
+    {n:'SK95(SK4)', g:'tool', main:['qc'],
+     use:'刃物・ゲージ・ばね・ピン。',
+     why:'炭素の多い工具鋼。焼入れ焼戻しで硬くして使います。焼きが入りにくいので、水・油で急に冷やします。',
+     raw:[180,230], nrm:[190,240], qt:[600,700], qc:[700,850],
+     vq:X('焼きが入りにくい炭素工具鋼で、ガス冷却では硬さが出にくい（水・油で焼入れします）'),
+     ph:X('析出硬化する材ではありません'), hq:[600,750],
+     cb:X('もともと高炭素で浸炭は不要'), nit:X('一般には行いません'), sn:[600,750], cr:[800,1000],
+     enp:[450,600], enph:[850,1000,TEMPER], pvd:[1800,3000,TEMPER], dlc:[1500,3000], ha:X(ALUONLY)},
+    {n:'SACM645', g:'alloy', main:['nit'],
+     use:'窒化して使う精密な軸・シリンダー・スピンドル。',
+     why:'Al を含む窒化用の鋼。調質してから窒化すると、表面がとても硬くなります（HV900 以上）。',
+     raw:[200,250], nrm:[210,260], qt:[250,320], qc:[600,700],
+     vq:X('窒化して使う鋼です（調質してから窒化します）'), ph:X('析出硬化する材ではありません'),
+     hq:X('窒化して使う鋼です'), cb:X('窒化用鋼で、浸炭はしません'),
+     nit:[900,1100], sn:[700,900], cr:[800,1000],
+     enp:[450,600], enph:[850,1000], pvd:[1800,3000], dlc:[1500,3000], ha:X(ALUONLY)},
+    {n:'SUS304', g:'ss', main:['raw'],
+     use:'食品機械・水回り・カバー・タンク。いちばん使われるステンレス。',
+     why:'熱処理では硬くなりません（加工すると硬くなる＝加工硬化）。表面を硬くしたいときは、めっき・PVD・DLC で。',
+     raw:[150,200], nrm:[150,200],
+     qt:X('オーステナイト系ステンレスは焼入れで硬化しません'),
+     qc:X('オーステナイト系ステンレスは焼入れで硬化しません'),
+     vq:X('オーステナイト系ステンレスは焼入れで硬化しません'),
+     ph:X('析出硬化する材ではありません（析出硬化は SUS630）'),
+     hq:X('焼入れで硬化しません'), cb:X('一般には行いません'),
+     nit:X('一般には行いません（低温窒化を除く）'), sn:X('一般には行いません'), cr:[800,1000],
+     enp:[450,600], enph:[850,1000], pvd:[1800,3000], dlc:[1500,3000], ha:X(ALUONLY)},
+    {n:'SUS420J2', g:'ss', main:['qc','vq'],
+     use:'刃物・ノズル・ポンプの軸・プラスチック金型。',
+     why:'SUS410 より炭素が多く、焼入れ焼戻しで HRC 50 台まで硬くなるステンレスです。',
+     raw:[200,250], nrm:[200,260], qt:[450,550], qc:[500,600], vq:[500,600],
+     ph:X('析出硬化する材ではありません'),
+     hq:[450,550], cb:X('もともと高炭素で浸炭は不要'), nit:[900,1100], sn:[600,800], cr:[800,1000],
+     enp:[450,600], enph:[850,1000,TEMPER], pvd:[1800,3000,TEMPER], dlc:[1500,3000], ha:X(ALUONLY)},
+    {n:'FC250(鋳鉄)', g:'ci', main:['raw'],
+     use:'機械のベッド・ケース・ブラケット・プーリー。',
+     why:'鋳物のまま使うのがふつう。摩耗する摺動面だけ高周波で硬くすることがあります。',
+     raw:[190,250], nrm:[190,250],
+     qt:X('鋳鉄は一般に調質しません'), qc:X('一般には行いません'),
+     vq:X('一般には行いません'), ph:X('析出硬化する材ではありません'),
+     hq:[400,500], cb:X('一般には行いません'), nit:X('一般には行いません'),
+     sn:[400,550], cr:[800,1000],
+     enp:[450,600], enph:[850,1000], pvd:X('一般には行いません'), dlc:X('一般には行いません'), ha:X(ALUONLY)},
+    /* ── ここから v168 で足した材 ── */
+    {n:'SCM440', g:'alloy', main:['qt','hq'],
+     use:'強い力のかかる軸・歯車・ボルト・金型のホルダー。',
+     why:'焼きが入りやすく、太くても芯まで強くできる合金鋼。調質で使い、摩耗する所は高周波で。',
+     raw:[200,260], nrm:[210,270], qt:[300,370], qc:[510,600],
+     vq:[510,600,'太い品は、ガス冷却では芯まで焼きが入りにくいことがあります'],
+     ph:X('析出硬化する材ではありません'), hq:[520,650],
+     cb:X('炭素が多く、肌焼きには向きません'), nit:[600,750], sn:[500,700], cr:[800,1000],
+     enp:[450,600], enph:[850,1000,TEMPER], pvd:[1800,3000,SOFT], dlc:[1500,3000], ha:X(ALUONLY)},
+    {n:'SNCM439', g:'alloy', main:['qt'],
+     use:'大きな力・衝撃のかかる軸・歯車・クランク。',
+     why:'Ni を含み、太くても芯まで焼きが入り、粘りが強い合金鋼。調質で使うのが定番です。',
+     raw:[220,280], nrm:[230,290], qt:[300,370], qc:[510,600], vq:[510,600],
+     ph:X('析出硬化する材ではありません'), hq:[520,650],
+     cb:X('炭素が多く、肌焼きには向きません'), nit:[550,700], sn:[500,700], cr:[800,1000],
+     enp:[450,600], enph:[850,1000,TEMPER], pvd:[1800,3000,SOFT], dlc:[1500,3000], ha:X(ALUONLY)},
+    {n:'SKS3', g:'tool', main:['qc'],
+     use:'ゲージ・プレスの抜き型・刃物。',
+     why:'油で焼入れする合金工具鋼。炭素工具鋼（SK）より焼きが入りやすく、曲がりが少ない。',
+     raw:[180,230], nrm:X('工具鋼は焼なまし材で買い、焼入れ焼戻しで使います'),
+     qt:X('高い硬さで使う鋼で、一般に調質はしません'), qc:[697,800],
+     vq:[697,800,'油で焼入れする鋼で、ガス冷却では硬さが出にくいことがあります'],
+     ph:X('析出硬化する材ではありません'), hq:X('一般には行いません（全体を焼入れして使います）'),
+     cb:X('もともと高炭素で浸炭は不要'), nit:X('低い温度で焼戻す鋼で、窒化の熱で軟らかくなります'),
+     sn:X('低い温度で焼戻す鋼で、軟窒化の熱で軟らかくなります'), cr:[800,1000],
+     enp:[450,600], enph:[850,1000,TEMPER], pvd:[1800,3000,TEMPER], dlc:[1500,3000], ha:X(ALUONLY)},
+    {n:'SKD11', g:'tool', main:['qc','vq'],
+     use:'プレス金型・パンチ・ダイ・せん断刃・転造ダイス。',
+     why:'焼きがとても入りやすく、空気やガスでも焼入れできる冷間金型用の鋼。曲がりを嫌うので<b>真空焼入れ</b>が多い。サブゼロを足すことも多い。',
+     raw:[210,270], nrm:X('工具鋼は焼なまし材で買い、焼入れ焼戻しで使います'),
+     qt:X('高い硬さで使う鋼で、一般に調質はしません'), qc:[653,750], vq:[653,750],
+     ph:X('析出硬化する材ではありません'), hq:X('一般には行いません（全体を焼入れして使います）'),
+     cb:X('もともと高炭素で浸炭は不要'),
+     nit:[900,1200,'高い温度（500℃ 以上）で焼戻した材に。低い温度で焼戻した材は、窒化の熱で軟らかくなります'],
+     sn:[900,1100,'高い温度（500℃ 以上）で焼戻した材に。低い温度で焼戻した材は、軟窒化の熱で軟らかくなります'],
+     cr:[800,1000], enp:[450,600], enph:[850,1000,TEMPER], pvd:[1800,3000,TEMPER], dlc:[1500,3000], ha:X(ALUONLY)},
+    {n:'SKD61', g:'tool', main:['vq','nit'],
+     use:'ダイカスト型・熱間鍛造型・押出し型。',
+     why:'熱に強い熱間金型用の鋼。焼入れ焼戻しで粘りを残した硬さにし、窒化で表面を守ることが多い。',
+     raw:[200,250], nrm:X('工具鋼は焼なまし材で買い、焼入れ焼戻しで使います'),
+     qt:X('一般には調質と言わず、焼入れ焼戻し（高い温度で焼戻す）で使います'), qc:[446,560], vq:[446,560],
+     ph:X('析出硬化する材ではありません'), hq:X('一般には行いません（全体を焼入れして使います）'),
+     cb:X('一般には行いません'), nit:[1000,1200], sn:[900,1100], cr:[800,1000],
+     enp:[450,600], enph:[850,1000], pvd:[1800,3000], dlc:[1500,3000], ha:X(ALUONLY)},
+    {n:'SKH51', g:'tool', main:['vq','pvd'],
+     use:'ドリル・タップ・エンドミル・パンチ。高速度工具鋼（ハイス）。',
+     why:'とても高い温度で焼入れし、500〜600℃ で焼戻すとさらに硬くなる鋼。真空焼入れがふつうで、工具は PVD の膜をつけることが多い。',
+     raw:[210,270], nrm:X('工具鋼は焼なまし材で買い、焼入れ焼戻しで使います'),
+     qt:X('高い硬さで使う鋼で、一般に調質はしません'), qc:[720,830], vq:[720,830],
+     ph:X('析出硬化する材ではありません'), hq:X('一般には行いません（全体を焼入れして使います）'),
+     cb:X('もともと高炭素で浸炭は不要'), nit:[1000,1300,'工具の表面を薄く窒化することがあります'],
+     sn:X('一般には行いません'), cr:[800,1000], enp:[450,600], enph:[850,1000],
+     pvd:[1800,3000], dlc:[1500,3000], ha:X(ALUONLY)},
+    {n:'SUS316', g:'ss', main:['raw'],
+     use:'塩分・薬品のある所（海水・食品・薬品）。',
+     why:'SUS304 に Mo を足して錆びにくくした材。熱処理では硬くなりません。表面を硬くしたいときは、めっき・PVD・DLC で。',
+     raw:[150,200], nrm:[150,200],
+     qt:X('オーステナイト系ステンレスは焼入れで硬化しません'),
+     qc:X('オーステナイト系ステンレスは焼入れで硬化しません'),
+     vq:X('オーステナイト系ステンレスは焼入れで硬化しません'),
+     ph:X('析出硬化する材ではありません（析出硬化は SUS630）'),
+     hq:X('焼入れで硬化しません'), cb:X('一般には行いません'),
+     nit:X('一般には行いません（低温窒化を除く）'), sn:X('一般には行いません'), cr:[800,1000],
+     enp:[450,600], enph:[850,1000], pvd:[1800,3000], dlc:[1500,3000], ha:X(ALUONLY)},
+    {n:'SUS410', g:'ss', main:['qc'],
+     use:'ボルト・ポンプの軸・バルブ部品・安価な刃物。',
+     why:'焼入れで硬くなるステンレスの基本。焼入れ焼戻しで HRC 38〜45 前後まで。',
+     raw:[150,210], nrm:X('ステンレスは焼ならしをせず、焼なまし材で買います'),
+     qt:[230,300], qc:[372,446], vq:[372,446],
+     ph:X('析出硬化する材ではありません'), hq:X('一般には行いません'),
+     cb:X('一般には行いません'), nit:[900,1200,'窒化すると錆びにくさが落ちます'],
+     sn:[600,800,'軟窒化すると錆びにくさが落ちます'], cr:[800,1000],
+     enp:[450,600], enph:[850,1000,TEMPER], pvd:[1800,3000], dlc:[1500,3000], ha:X(ALUONLY)},
+    {n:'SUS440C', g:'ss', main:['qc','vq'],
+     use:'ステンレスの軸受（ベアリング）・バルブの弁座・ノズル・刃物・ゲージ。',
+     why:'ステンレスでいちばん硬くなる材（焼入れ焼戻しで HRC 58 以上）。曲がりと錆を嫌うので<b>真空焼入れ</b>が多く、サブゼロを足すことも多い。',
+     raw:[230,280], nrm:X('ステンレスは焼ならしをせず、焼なまし材で買います'),
+     qt:X('高い硬さで使う材で、一般に調質はしません'), qc:[653,750], vq:[653,750],
+     ph:X('析出硬化する材ではありません'), hq:X('一般には行いません'),
+     cb:X('もともと高炭素で浸炭は不要'), nit:[900,1200,'窒化すると錆びにくさが落ちます。焼戻しの温度より高い熱で軟らかくなることもあります'],
+     sn:X('一般には行いません'), cr:[800,1000],
+     enp:[450,600], enph:[850,1000,TEMPER], pvd:[1800,3000,TEMPER], dlc:[1500,3000], ha:X(ALUONLY)},
+    {n:'SUS630', g:'ss', main:['ph'],
+     use:'ポンプ・バルブの軸・化学機械や航空の強度部品（17-4PH）。',
+     why:'焼入れではなく<b>析出硬化</b>（H900〜H1150）で強くするステンレス。図面の記号で硬さが違います。',
+     raw:[280,380], nrm:X('ステンレスは焼ならしをしません'),
+     qt:X('析出硬化で強くする材です'), qc:X('析出硬化で強くする材です'), vq:X('析出硬化で強くする材です'),
+     ph:[270,490,'記号で硬さが違います（H900 は HRC 40〜48、H1150 は 26〜36 前後）。図面の記号の範囲で見てください'],
+     hq:X('一般には行いません'), cb:X('一般には行いません'), nit:X('一般には行いません'), sn:X('一般には行いません'),
+     cr:[800,1000], enp:[450,600], enph:[850,1000], pvd:[1800,3000], dlc:[1500,3000], ha:X(ALUONLY)},
+    {n:'FCD450', g:'ci', main:['raw'],
+     use:'強さの要る鋳物（ハウジング・レバー・歯車やプーリーの素材）。',
+     why:'黒鉛が丸い鋳鉄（ダクタイル鋳鉄）で、FC より粘りがあります。鋳物のまま使うことが多い。',
+     raw:[145,220], nrm:[180,270],
+     qt:X('一般には行いません'), qc:X('一般には行いません'), vq:X('一般には行いません'),
+     ph:X('析出硬化する材ではありません'), hq:[450,600], cb:X('一般には行いません'),
+     nit:X('一般には行いません'), sn:[400,600], cr:[800,1000],
+     enp:[450,600], enph:[850,1000], pvd:X('一般には行いません'), dlc:X('一般には行いません'), ha:X(ALUONLY)},
+    {n:'A5052', g:'al', nonsteel:true, main:['raw','ha'],
+     use:'板金・カバー・タンク・治具のベース。',
+     why:'熱処理で硬くならない合金（加工して強くする）。摩耗する所は<b>硬質アルマイト</b>で守ります。',
+     raw:[45,80], nrm:X('アルミは焼ならしをしません'),
+     qt:X('アルミは焼入れでは硬くなりません'), qc:X('アルミは焼入れでは硬くなりません'), vq:X('アルミは焼入れでは硬くなりません'),
+     ph:X('5052 は熱処理で硬くならない合金です（加工で強くします）'),
+     hq:X(NOSTEEL), cb:X(NOSTEEL), nit:X(NOSTEEL), sn:X(NOSTEEL),
+     cr:[800,1000,'アルミへの硬質クロムは前処理が難しく、あまりしません'], enp:[450,600],
+     enph:[850,1000,'400℃ の熱で、アルミが軟らかくなることがあります'],
+     pvd:[1800,3000,SOFT], dlc:[1500,3000,SOFT], ha:[350,450]},
+    {n:'A6061', g:'al', nonsteel:true, main:['ph','ha'],
+     use:'治具・フレーム・ブロック・継手。',
+     why:'T6（溶体化・時効＝析出硬化）の状態で買うのがふつう。摩耗する所は硬質アルマイトで。',
+     raw:[30,40,'熱処理していない O 材の硬さです。ふつうは T6 材（析出硬化）で買います'],
+     nrm:X('アルミは焼ならしをしません'),
+     qt:X('アルミは焼入れでは硬くなりません'), qc:X('アルミは焼入れでは硬くなりません'), vq:X('アルミは焼入れでは硬くなりません'),
+     ph:[95,120], hq:X(NOSTEEL), cb:X(NOSTEEL), nit:X(NOSTEEL), sn:X(NOSTEEL),
+     cr:[800,1000,'アルミへの硬質クロムは前処理が難しく、あまりしません'], enp:[450,600],
+     enph:[850,1000,'400℃ の熱で、T6 のアルミが軟らかくなります'],
+     pvd:[1800,3000,SOFT], dlc:[1500,3000,SOFT], ha:[350,450]},
+    {n:'A7075', g:'al', nonsteel:true, main:['ph','ha'],
+     use:'強さの要る治具・構造部品・航空機部品。',
+     why:'アルミでいちばん強い系統。T6（析出硬化）の状態で買うのがふつう。',
+     raw:[60,75,'熱処理していない O 材の硬さです。ふつうは T6 材（析出硬化）で買います'],
+     nrm:X('アルミは焼ならしをしません'),
+     qt:X('アルミは焼入れでは硬くなりません'), qc:X('アルミは焼入れでは硬くなりません'), vq:X('アルミは焼入れでは硬くなりません'),
+     ph:[160,190], hq:X(NOSTEEL), cb:X(NOSTEEL), nit:X(NOSTEEL), sn:X(NOSTEEL),
+     cr:[800,1000,'アルミへの硬質クロムは前処理が難しく、あまりしません'], enp:[450,600],
+     enph:[850,1000,'400℃ の熱で、T6 のアルミが軟らかくなります'],
+     pvd:[1800,3000,SOFT], dlc:[1500,3000,SOFT], ha:[300,450,'Zn・Cu の多い合金は、膜が硬くなりにくいことがあります']}
+  ];
+  /* ★画面に並べる順（分類ごと）。MAT の並び（＝記録や旧版の検算の番号）は変えない。 */
+  function slug(n){ return String(n).replace(/\(.*$/,'').replace(/[^A-Za-z0-9]/g,''); }
+  /* 材質不明のときの、その処理で見かける幅（各材質の最小〜最大）。
+     ★鋼の幅を先に見る。アルミの処理（硬質アルマイト）のように鋼に無いものだけ、アルミから取る。 */
+  function anyRange(k){
+    function over(steel){
+      var lo=null, hi=null, i, r;
+      for(i=1;i<MAT.length;i++){
+        if(!!MAT[i].nonsteel===steel) continue;
+        r=MAT[i][k];
+        if(!r||r.x) continue;
+        if(lo===null||r[0]<lo) lo=r[0];
+        if(hi===null||r[1]>hi) hi=r[1];
+      }
+      return (lo===null)? null : [lo,hi];
+    }
+    return over(true)||over(false);
+  }
+  var mat=0, tz=-1;      /* 選んでいる材質／処理。tz=-1 は未選択 */
+  function expected(){
+    if(tz<0) return null;
+    var k=PROC[tz].k;
+    if(MAT[mat].any){ var r=anyRange(k); return r? {r:r,any:true} : null; }
+    var e=MAT[mat][k];
+    if(!e) return null;
+    if(e.x) return {ng:e.x};
+    return {r:[e[0],e[1]], w:e[2]||''};
+  }
+  /* 材質の中で、その硬さが<どの状態に相当するか>を探す（範囲の外のときの見立て）
+     ★膜（めっき・皮膜）と真空焼入れ（焼入れ焼戻しと同じ硬さ）は見立てに使わない。
+       下地を測ったのに「無電解ニッケル相当」と言っても手がかりにならない。 */
+  function stateOf(hv){
+    if(MAT[mat].any) return null;
+    var i, k, r, best=null;
+    for(i=0;i<PROC.length;i++){
+      k=PROC[i].k; r=MAT[mat][k];
+      if(PROC[i].g==='coat'||k==='vq') continue;
+      if(!r||r.x) continue;
+      if(hv>=r[0]-10&&hv<=r[1]+10) best=PROC[i].n;
+    }
+    return best;
+  }
+  /* その材質で、その処理がどういう扱いか：main（主流）／ok（できる）／w（注意）／x（一般にしない） */
+  function stOf(mi,k){
+    var m=MAT[mi], e;
+    if(m.any) return '';
+    e=m[k];
+    if(!e||e.x) return 'x';
+    if(e[2]) return (m.main&&m.main.indexOf(k)>=0)?'mainw':'w';
+    return (m.main&&m.main.indexOf(k)>=0)?'main':'ok';
+  }
+  var STMARK={main:'★', mainw:'★', w:'△', x:'×', ok:'', '':''};
+  var STNAME={main:'主流', mainw:'主流', w:'注意', x:'一般にしない', ok:'できる'};
+  function hesc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  /* ★公差判定（v164）と同じ作り：分類ごとの行・左に分類名・同じ大きさのマス */
+  function buildMat(){
+    var box=$('matChips'); box.innerHTML='';
+    /* 不明は先頭に1つ（分からないこともある） */
+    var top=document.createElement('div'); top.className='prow';
+    top.innerHTML='<div class="pl">分からない</div>';
+    var cells=document.createElement('div'); cells.className='pcs';
+    cells.appendChild(matBtn(0)); top.appendChild(cells); box.appendChild(top);
+    MGROUPS.forEach(function(g){
+      var row=document.createElement('div'); row.className='prow';
+      row.innerHTML='<div class="pl">'+g[1]+'</div>';
+      var cs=document.createElement('div'); cs.className='pcs';
+      MAT.forEach(function(m,i){ if(m.g===g[0]) cs.appendChild(matBtn(i)); });
+      row.appendChild(cs); box.appendChild(row);
+    });
+  }
+  function matBtn(i){
+    var m=MAT[i], b=document.createElement('button');
+    b.type='button'; b.className='chip pc'+(i===mat?' on':'');
+    b.id='swm-'+(m.any?'any':slug(m.n));
+    b.setAttribute('data-k',m.n);
+    b.textContent=m.n;
+    b.addEventListener('click',function(){ mat=i; buildMat(); buildTz(); drawInfo(); recalc(); });
+    return b;
+  }
+  function buildTz(){
+    var box=$('tzChips'); box.innerHTML='';
+    PGROUPS.forEach(function(g){
+      var row=document.createElement('div'); row.className='prow';
+      row.innerHTML='<div class="pl">'+g[1]+'</div>';
+      var cs=document.createElement('div'); cs.className='pcs';
+      PROC.forEach(function(z,i){
+        if(z.g!==g[0]) return;
+        var st=stOf(mat,z.k), b=document.createElement('button');
+        b.type='button'; b.className='chip pc st-'+(st||'free')+(i===tz?' on':'');
+        b.id='swp-'+z.k;
+        b.setAttribute('data-k',z.k);
+        b.setAttribute('title',z.n+(st?'（'+STNAME[st]+'）':''));
+        b.innerHTML=(STMARK[st]?'<span class="mk">'+STMARK[st]+'</span>':'')+hesc(z.s);
+        b.addEventListener('click',function(){ tz=(tz===i)?-1:i; buildTz(); drawInfo(); recalc(); });
+        cs.appendChild(b);
+      });
+      row.appendChild(cs); box.appendChild(row);
+    });
+    $('tzLeg').style.display=MAT[mat].any?'none':'';
+  }
+  /* ── 新人向けの説明（材質・処理） ── */
+  function drawInfo(){
+    var m=MAT[mat], mb=$('mInfo'), pb=$('pInfo'), h, i, k, st;
+    if(m.any){ mb.style.display='none'; mb.innerHTML=''; }
+    else{
+      h='<div class="ih"><span class="it">材質</span><b>'+hesc(m.n)+'</b></div><dl class="il">'
+        +'<dt>何に使う</dt><dd>'+m.use+'</dd>'
+        +'<dt>主流の処理</dt><dd class="mains">';
+      for(i=0;i<m.main.length;i++){ k=m.main[i]; h+='<button type="button" class="mainb" data-p="'+k+'">★'+hesc(procOf(k).n)+'</button>'; }
+      h+='</dd><dt>なぜ</dt><dd>'+m.why+'</dd></dl>';
+      if(m.nonsteel) h+='<p class="inote">アルミは<b>鋼の換算表（HRC・HB の換算）が使えません</b>。HV かブリネル（球 φ10mm・500kgf）で測った値を、そのまま期待の範囲と比べてください。</p>';
+      mb.innerHTML=h; mb.style.display='';
+    }
+    if(tz<0){
+      pb.innerHTML='<p class="ihint">処理を選ぶと、<b>なぜその処理をするのか</b>・何に使うか・どこが硬くなるか・測り方が出ます。'
+        +(m.any?'':'★は '+hesc(m.n)+' で主流の処理、△は気をつけること付き、×は一般にしない組み合わせです。')+'</p>';
+      return;
+    }
+    k=PROC[tz].k; var x=PEXP[k]; st=stOf(mat,k);
+    h='<div class="ih"><span class="it">処理</span><b>'+hesc(PROC[tz].n)+'</b>'
+      +(st?'<span class="ist s-'+st+'">'+(STMARK[st]?STMARK[st]+' ':'')+STNAME[st]+'</span>':'')+'</div><dl class="il">'
+      +'<dt>なぜやる</dt><dd>'+x.why+'</dd>'
+      +'<dt>何をする</dt><dd>'+x.how+'</dd>'
+      +'<dt>よく使う部品</dt><dd>'+x.where+'</dd>'
+      +'<dt>どこが硬くなる</dt><dd>'+x.hard+'</dd>'
+      +'<dt>気をつけること</dt><dd>'+x.tip+'</dd></dl>';
+    pb.innerHTML=h;
+  }
+  function procOf(k){ for(var i=0;i<PROC.length;i++) if(PROC[i].k===k) return PROC[i]; return null; }
+  function procIdx(k){ for(var i=0;i<PROC.length;i++) if(PROC[i].k===k) return i; return -1; }
+  /* 材質の説明の「主流の処理」を押すと、その処理を選ぶ */
+  $('mInfo').addEventListener('click',function(e){
+    var b=e.target; while(b&&b!==this&&!(b.getAttribute&&b.getAttribute('data-p')))b=b.parentNode;
+    if(!b||b===this)return;
+    tz=procIdx(b.getAttribute('data-p')); buildTz(); drawInfo(); recalc();
+  });
+  /* ── 早見表：材質 × 処理（★主流 ○できる △注意 ×一般にしない）── */
+  function buildMx(){
+    var h='<table class="mx"><thead><tr><th class="c0">材質＼処理</th>', i, j, g, st;
+    for(j=0;j<PROC.length;j++) h+='<th><span>'+hesc(PROC[j].s)+'</span></th>';
+    h+='</tr></thead><tbody>';
+    for(g=0;g<MGROUPS.length;g++){
+      h+='<tr class="mg"><td class="c0" colspan="'+(PROC.length+1)+'">'+MGROUPS[g][1]+'</td></tr>';
+      for(i=1;i<MAT.length;i++){
+        if(MAT[i].g!==MGROUPS[g][0]) continue;
+        h+='<tr><th class="c0">'+hesc(MAT[i].n)+'</th>';
+        for(j=0;j<PROC.length;j++){
+          st=stOf(i,PROC[j].k);
+          h+='<td class="s-'+st+'">'+(st==='ok'?'○':STMARK[st])+'</td>';
+        }
+        h+='</tr>';
+      }
+    }
+    h+='</tbody></table>';
+    $('mxTbl').innerHTML=h;
+  }
+  /* ★この機械で出せるいちばん小さい試験力（v133）。実機で確認した値。
+     計算そのものには使わない。<勧める試験力の下限>としてだけ使う。
+     機械が変わったらここだけ直せばよい（旧v129の入力欄は廃止）。 */
+  var FMIN=10;
+  /* ★ISO 6507-1（JIS Z 2244 系）の適用範囲（v136・外部監査 A-05）。
+     圧痕の対角長 0.020〜1.400mm。表面から測るコーティングは厚さ 0.030mm 以上。
+     この外でも数値は出せる（社内の目安としては使える）が、
+     <規格に基づく合否>には使えない。止めずに、その場で分かるように添える。 */
+  var ISO_DMIN=20, ISO_DMAX=1400, ISO_TMIN=30;   /* µm */
+  function isoNote(dum,tum){
+    var a=[];
+    if(dum>0&&dum<ISO_DMIN) a.push('対角長 '+dum.toFixed(1)+'µm は規格の下限 '+ISO_DMIN+'µm より小さい');
+    if(dum>ISO_DMAX) a.push('対角長 '+dum.toFixed(0)+'µm は規格の上限 '+ISO_DMAX+'µm より大きい');
+    if(tum>0&&tum<ISO_TMIN) a.push('表面から測る層の厚さ '+tum.toFixed(1)+'µm は規格の下限 '+ISO_TMIN+'µm より薄い');
+    if(!a.length) return '';
+    return '<br><span class="iso">※ '+a.join('／')+'ため、<b>ISO 6507-1 の適用範囲の外</b>です。'
+      +'社内の目安としては使えますが、<b>規格に基づく合否には使えません</b>。'
+      +'受渡しの判定が要るときは、断面で測るか、規格の範囲に入る試験力で測り直してください。</span>';
+  }
+  /* 試験力の呼び方（HV0.05（50gf）のような書き方）。案内文で使う。 */
+  function loadName(g){
+    var h=(g>=1000)? ('HV'+(g/1000))
+                   : ('HV'+(g/1000).toFixed(g>=100?1:3).replace(/0+$/,'').replace(/\.$/,''));
+    return h+'（'+g+'gf）';
+  }
+  /* この上限(gf)までで、手持ちにある<いちばん大きい>試験力を選ぶ。
+     大きいほど圧痕が大きく読みやすいので、上限に近いものを勧める。 */
+  function pickLoad(fmax){
+    if(!(fmax>0)) return null;
+    for(var i=LOADS.length-1;i>=0;i--){ if(LOADS[i]<=fmax&&LOADS[i]>=FMIN) return LOADS[i]; }
+    return null;
+  }
+  /* この硬さ・この試験力のとき、表面から測るのに要る層の厚さ(µm) */
+  function needT(hv,Fgf){
+    if(!(hv>0)||!(Fgf>0))return null;
+    return Math.sqrt(1.8544*(Fgf/1000)/hv)*1000*1.5;
+  }
+  /* ② 測り方の案内（材質×処理が決まったら出す） */
+  /* ── 測り方の比べ（v169）──
+     ムギさん：「ロックウェルと出ていたら推奨ということ？ 傷をつけたくないときはビッカースをよく使う。
+       ビッカースの測り方も出して。推奨・どちらでもよい・非推奨と、非推奨の方の注意点も」。
+     ★上の「推奨の測り方」はいちばん一般的なもの。ここでは、ほかの測り方も並べて
+       <推奨／どちらでもよい／非推奨>と、その理由・注意を出す。
+     ★圧痕の大きさは、期待される硬さの真ん中で計算した目安（傷をどれだけ残すかの比べ）。
+       ビッカース d=√(1.8544×F÷HV)、ブリネル d=√(D²−(D−2F/(πD·HB))²)、
+       ロックウェルの深さ C:(100−HRC)×0.002mm／B:(130−HRB)×0.002mm（規格の定義そのもの）。 */
+  var MK={
+    HRC:{n:'ロックウェルC（HRC）', set:'ダイヤ円錐120°・150kgf（初試験力 10kgf）・保持 4〜6秒'},
+    HRB:{n:'ロックウェルB（HRB）', set:'鋼球 φ1.5875mm・100kgf（初試験力 10kgf）'},
+    N15:{n:'表面ロックウェル（HR15N）', set:'ダイヤ円錐・15kgf（初試験力 3kgf）'},
+    HV10:{n:'ビッカース（HV10）', set:'ダイヤ四角錐136°・10kgf・保持 10〜15秒。仕上げた面なら HV1（1kgf）でさらに小さく'},
+    HV1:{n:'ビッカース（HV1）', set:'ダイヤ四角錐136°・1kgf・保持 10〜15秒'},
+    HVM:{n:'マイクロビッカース（HV0.05〜HV0.1）', set:'50〜100gf・保持 10〜15秒。膜厚から試験力を絞る（上の「層の厚さ」）'},
+    HB:{n:'ブリネル', set:'超硬球 φ10mm・3000kgf（小物は φ5mm・750kgf）・保持 10〜15秒'},
+    HBA:{n:'ブリネル（アルミ）', set:'球 φ10mm・500kgf・保持 10〜15秒'},
+    NANO:{n:'成績書・ナノインデンテーション', set:'膜のメーカーの成績書（膜厚・硬さ）か、専門の機関で'}
+  };
+  /* 処理ごとの並び：[推奨の有無, 測り方, 理由・注意] */
+  var LV3={'推奨':'p1','どちらでも':'p2','非推奨':'p3'};
+  var SOFTSTEEL=[
+    ['推奨','HRB','軟らかい鋼の定番。手早く、表面の仕上げもあまり要りません'],
+    ['どちらでも','HV10','<b>傷を小さくしたいとき</b>に。面を磨き、対角線を読む手間がかかります。圧痕が小さいぶん、表面の粗さ・汚れで値が散ります'],
+    ['どちらでも','HB','大物・粗い素材の段階なら。<b>凹みが大きい</b>ので、仕上げた面・見える面には使いません'],
+    ['非推奨','HRC','軟らかすぎて、HRC 20 を下回る域は規格の外。値が当てになりません']
+  ];
+  var HARDSTEEL=[
+    ['推奨','HRC','焼入れ品の定番。手早く、表面の仕上げもあまり要りません。<b>目で見える凹みが残る</b>ので、機能面・見える面は避け、端や捨て面で'],
+    ['どちらでも','HV10','<b>傷を小さくしたいとき</b>に（凹みが目立たない）。面を磨き、対角線を読む手間がかかります。仕上げた面なら HV1 でさらに小さく'],
+    ['非推奨','HB','焼入れ品には向きません。超硬球でも HBW 650 までで、<b>凹みが大きく（直径 数mm）</b>製品に残ります']
+  ];
+  var THIN=[
+    ['推奨','HVM','層・膜だけを測るには、小さな試験力のビッカースで。凹みも小さい'],
+    ['非推奨','HRC','150kgf で層・膜を突き抜け、<b>下地（芯）の硬さを測ってしまいます</b>。値が低く出て「処理が入っていない」と誤ります'],
+    ['非推奨','N15','15kgf でも、薄い層・膜には深すぎます。下地を拾いやすい'],
+    ['非推奨','HB','層・膜を押しつぶし、下地を測ります。凹みも大きい']
+  ];
+  var METH={
+    raw:SOFTSTEEL, nrm:SOFTSTEEL,
+    qt:[
+      ['推奨','HRC','調質品の定番（HRC 20〜38 前後）。HRC 20 を下回るなら HRB で。凹みは目で見える大きさ'],
+      ['どちらでも','HV10','<b>傷を小さくしたいとき</b>に。面を磨き、対角線を読む手間がかかります。仕上げた面なら HV1'],
+      ['どちらでも','HB','大物・素材の段階なら。凹みが大きいので仕上げた面には使いません']
+    ],
+    qc:HARDSTEEL, vq:HARDSTEEL, ph:HARDSTEEL,
+    hq:[
+      ['推奨','HRC','硬化層が mm 単位あるので、表面から測れます。凹みは目で見える大きさ'],
+      ['どちらでも','HV10','<b>傷を小さくしたいとき</b>に。<b>有効硬化層深さ</b>を出すなら、断面で HV0.3・0.1mm 間隔（切断するので抜き取り）'],
+      ['非推奨','HB','3000kgf の大きな球は<b>硬化層の下（芯）まで押し</b>、層の硬さになりません。凹みも大きい']
+    ],
+    cb:[
+      ['推奨','HRC','有効硬化層が 0.8mm 以上なら。凹みは目で見える大きさ'],
+      ['どちらでも','N15','層が 0.8mm 未満なら HRC より HR15N（HRC は下地に沈む）'],
+      ['どちらでも','HV1','<b>傷を小さくしたいとき</b>・層が薄いときに。層の深さは断面で HV0.3'],
+      ['非推奨','HB','大きな球が<b>浸炭層の下（芯）まで押し</b>、層の硬さになりません。凹みも大きい']
+    ],
+    nit:[
+      ['推奨','HVM','化合物層（白層）・拡散層の硬さは、小さな試験力のビッカースで（多くは断面）。凹みも小さい'],
+      ['どちらでも','N15','<b>拡散層が 0.2mm 以上</b>ある窒化（ガス窒化など）なら、表面硬さを HR15N で見ることも。図面に HR15N の指定があればそれで'],
+      ['非推奨','HRC','150kgf で層を突き抜け、<b>芯の硬さを測ってしまいます</b>。値が低く出て「窒化が入っていない」と誤ります'],
+      ['非推奨','HB','層を押しつぶし、芯を測ります。凹みも大きい']
+    ],
+    sn:THIN, cr:THIN, enp:THIN, enph:THIN, ha:THIN,
+    pvd:[
+      ['推奨','NANO','膜が 1〜5µm と薄く、手持ちの機器では膜だけを測れないことが多い'],
+      ['非推奨','HVM','最小 10gf でも<b>下地を拾う</b>ことが多い（厚い膜なら届くこともある。上の計算を見てください）'],
+      ['非推奨','HRC','膜を突き抜け、下地を測ってしまいます']
+    ],
+    dlc:[
+      ['推奨','NANO','膜が 1〜3µm と薄く、手持ちの機器では膜だけを測れません'],
+      ['非推奨','HVM','最小 10gf でも<b>下地を拾います</b>'],
+      ['非推奨','HRC','膜を突き抜け、下地を測ってしまいます']
+    ]
+  };
+  /* 材質でかわるところ：鋳鉄（黒鉛）・アルミ（軟らかい・鋼の換算表が使えない） */
+  var METH_CI=[
+    ['推奨','HB','鋳鉄は黒鉛が混じるので、<b>大きな球でならして</b>測るのが定番'],
+    ['どちらでも','HRB','小物で、凹みを小さくしたいとき'],
+    ['非推奨','HV10','圧痕が小さく、<b>黒鉛に当たると値が大きく外れます</b>。測るなら場所を変えて数を増やす'],
+    ['非推奨','HRC','軟らかすぎて測れません']
+  ];
+  var METH_AL=[
+    ['推奨','HBA','厚みのあるアルミの定番。<b>鋼用の 3000kgf は使いません</b>'],
+    ['どちらでも','HV10','<b>傷を小さくしたいとき</b>に（HV5〜HV10）。面を磨く手間がかかります'],
+    ['どちらでも','HRB','T6 の 6061・7075 なら。軟らかい O 材・5052 は HRE・HRF か HV で'],
+    ['非推奨','HRC','軟らかすぎて測れません']
+  ];
+  function methOf(k){
+    var g=MAT[mat].g;
+    if(g==='ci'&&(k==='raw'||k==='nrm')) return METH_CI;
+    if(g==='al'&&(k==='raw'||k==='nrm'||k==='ph')) return METH_AL;
+    return METH[k]||[];
+  }
+  /* 圧痕の大きさ（この硬さでの目安）
+     ★ロックウェルは規格の定義が<深さ>。直径は圧子の形から深さで出した値で、
+       弾性の戻りがあるぶん実物はやや大きい → 「以上」と書く。
+       HRC：先端 R0.2mm の球＋120°円錐（深さ 0.1mm までが球）。HRB：φ1.5875mm の鋼球。 */
+  function fmtLen(mm){ return mm>=0.1? '約'+mm.toFixed(2)+'mm' : '約'+Math.round(mm*1000)+'µm'; }
+  function capD(R,h){ return 2*Math.sqrt(Math.max(0,2*R*h-h*h)); }
+  function hrcDia(h){ return h<=0.1? capD(0.2,h) : 2*(0.2*Math.cos(Math.PI/6)+(h-0.1)*Math.tan(Math.PI/3)); }
+  function dentOf(key,hv){
+    if(!(hv>0)) return '';
+    var r=convert(1,hv), hb, F, k;
+    if(key==='HV10') return '対角線 '+fmtLen(Math.sqrt(1.8544*10/hv))+'（HV1 なら '+fmtLen(Math.sqrt(1.8544*1/hv))+'）';
+    if(key==='HV1') return '対角線 '+fmtLen(Math.sqrt(1.8544*1/hv));
+    if(key==='HVM') return '対角線 '+fmtLen(Math.sqrt(1.8544*0.1/hv))+'（100gf）';
+    if(key==='HRC'){ if(!r||r.c==null) return ''; k=(100-r.c)*0.002;
+      return '深さ '+fmtLen(k)+'・直径 '+fmtLen(hrcDia(k))+' 以上（HRC'+r.c.toFixed(0)+'）'; }
+    if(key==='HRB'){ if(!r||r.rb==null) return ''; k=(130-r.rb)*0.002;
+      return '深さ '+fmtLen(k)+'・直径 '+fmtLen(capD(1.5875/2,k))+' 以上（HRB'+r.rb.toFixed(0)+'）'; }
+    if(key==='HB'||key==='HBA'){
+      F=(key==='HB')?3000:500;
+      hb=(key==='HBA'||!(r&&r.b!=null))?hv*0.95:r.b;
+      if(key==='HB'&&hb>650) return '';
+      k=2*F/(Math.PI*10*hb);
+      if(k>=10) return '';
+      return '直径 '+fmtLen(Math.sqrt(100-(10-k)*(10-k)));
+    }
+    return '';
+  }
+  /* 上の「推奨の測り方」の名前（比べの<推奨>と食い違わないように、比べから取る） */
+  function methTop(k){
+    var list=methOf(k), a=[], i;
+    for(i=0;i<list.length;i++) if(list[i][0]==='推奨') a.push(MK[list[i][1]]);
+    return a;
+  }
+  function drawMeth(){
+    var box=$('mBox'), e=expected(), list, hvm, h, i, row, mk, dn, fv;
+    if(tz<0||!e||e.ng||!e.r){ box.style.display='none'; box.innerHTML=''; return; }
+    list=methOf(PROC[tz].k);
+    if(!list.length){ box.style.display='none'; box.innerHTML=''; return; }
+    hvm=Math.round((e.r[0]+e.r[1])/2);
+    h='<div class="mh">測り方の比べ<span>推奨・どちらでもよい・非推奨（圧痕はこの硬さ HV'+hvm+' での目安）</span></div><ul class="ml">';
+    for(i=0;i<list.length;i++){
+      row=list[i]; mk=MK[row[1]];
+      dn=MAT[mat].nonsteel&&(row[1]==='HRC'||row[1]==='HRB'||row[1]==='HB')?'':dentOf(row[1],hvm);
+      h+='<li class="'+LV3[row[0]]+'"><div class="mt"><span class="lv">'+(row[0]==='どちらでも'?'どちらでもよい':row[0])+'</span><b>'+mk.n+'</b></div>'
+        +'<div class="md">'+row[2]+'</div>'
+        +'<div class="ms">設定：'+mk.set+(dn?'<br>圧痕：'+dn:'')+'</div></li>';
+    }
+    /* ★膜・層の処理（ビッカースの HV10・HV1 が並ばない）は、傷の話が違う。
+       もともと小さな試験力で測るので圧痕は小さいが、膜を破ればそこが傷・さびの起点になる。 */
+    for(i=0,fv=false;i<list.length;i++) if(list[i][1]==='HV10'||list[i][1]==='HV1') fv=true;
+    h+='</ul><p class="mfoot"><b>傷をつけたくないとき</b>は、'+(fv
+      ? 'ビッカースの試験力を下げるほど圧痕は小さくなります（この硬さなら HV1 で対角線 '+fmtLen(Math.sqrt(1.8544/hvm))+'）。'
+        +'そのかわり、面を磨き、対角線を読む手間がかかり、値も散りやすくなります。'
+        +'ロックウェルは手早い反面、目で見える凹みが残るので、機能面・見える面は避けます。'
+      : '膜・層はもともと小さな試験力で測るので、圧痕は目に見えにくい大きさです。ただし<b>膜を破った圧痕は、そこが傷・さびの起点</b>になります。'
+        +'機能面は避けるか、同じロットの試験片（テストピース）で測ります。')+'</p>';
+    box.innerHTML=h; box.style.display='';
+  }
+  function showTz(){
+    var box=$('txBox'), t=$('txTxt'), e=expected(), s;
+    drawMeth();
+    if(tz<0){ box.style.display='none'; t.innerHTML=''; return; }
+    box.style.display='';
+    var k=PROC[tz].k, pi=PINFO[k];
+    if(e&&e.ng){
+      /* ★成り立たない組み合わせは、測る前に止める。 */
+      t.innerHTML='<b>'+MAT[mat].n+' ＋ '+PROC[tz].n+'</b><br>'
+        +'<span class="ng">この組み合わせは一般に成立しません：'+e.ng+'</span><br>'
+        +'図面の材質・熱処理指示をもう一度確かめてください。';
+      return;
+    }
+    s='<b>'+MAT[mat].n+' ＋ '+PROC[tz].n+'</b>';
+    if(e&&e.r){
+      s+='<br>期待される硬さ <b>HV'+e.r[0]+'〜'+e.r[1]+'</b>'+(e.any?'（材質不明なので幅を広くとっています）':'');
+      if(e.w) s+='<br><span class="wn">△ '+e.w+'</span>';
+    }
+    /* ★v169：名前は下の「測り方の比べ」の<推奨>から取る（上と下で食い違わないように）。
+       鋳鉄・アルミは処理ごとの設定（鋼の前提）ではなく、比べの<推奨>の設定を出す。 */
+    var top=methTop(k), nm=[], j, ov=(methOf(k)!==METH[k]);
+    for(j=0;j<top.length;j++) nm.push(top[j].n);
+    s+='<br>推奨の測り方：<b>'+(nm.length?nm.join(' / '):pi.dev)+'</b>'
+      +(nm.length?'<span style="font-weight:400">（ほかの測り方と注意は、下の「測り方の比べ」）</span>':'')
+      +'<br>推奨設定：'+((ov&&top.length)?top[0].set:pi.set)
+      +(MAT[mat].nonsteel?'<br><span class="ng">アルミは鋼の換算表（HRC・HB の換算）が使えません。ブリネルは 球 φ10mm・500kgf（鋼用の 3000kgf は使わない）か HV で。測った値を、そのまま期待の範囲と比べてください</span>':'')
+      +'<br>'+pi.note
+      +'<br><span style="font-weight:400">'+COMMON+'</span>';
+    /* ★安全側で見る。硬さが低いほど圧痕は大きくなり、要る層厚も増える。
+       期待範囲の<下の端>で計算しておけば、足りると言ったら本当に足りる。 */
+    var hvLo=(e&&e.r)?e.r[0]:null, th=PTHIN[k], tin=num($('fT').value);
+    if(th) s+='<br>層の厚さの目安 <b>'+th[0]+'〜'+th[1]+' µm</b>';
+    if(hvLo>0&&tin>0){
+      /* ★層の厚さが分かっているときは、ここまで絞れる（v133・現場の依頼）。
+         F ≦ HV×(t÷1.5)²÷1.8544 の上限を出し、手持ちの中から1つ選ぶ。 */
+      var fm=maxLoad(hvLo,tin);
+      s+='<br>層の厚さ <b>'+tin.toFixed(1)+' µm</b> のとき、使える試験力は '
+        +'<b>'+(fm>=1000?(fm/1000).toFixed(2)+' kgf':Math.floor(fm)+' gf')+'まで</b>';
+      /* ★上の「推奨設定」は一般的な目安、こちらはこの層厚での結論。
+         どちらが優先か分かるように、必ず<この層厚では>と書き添える。 */
+      var pk=pickLoad(fm);
+      s+= pk? '<br><span class="ok">この層厚での推奨設定：<b>'+loadName(pk)+'</b>・保持 10〜15秒</span>'
+            : '<br><span class="ng">この層厚では、いちばん小さい '+FMIN+'gf でも押し切ります。'
+              +'<b>断面で測ってください</b>（上の推奨設定は、表面から測れる層厚のときの話です）</span>';
+    }else if(hvLo>0&&th){
+      var nt=needT(hvLo,FMIN);
+      if(nt!=null){
+        s+='／最小の '+FMIN+'gf では <b>'+nt.toFixed(1)+' µm 以上</b>の層が要ります。';
+        if(nt>th[1]) s+='<span class="ng">この層では<b>ふつう届きません。断面で測ってください</b></span>';
+        else if(nt>th[0]) s+='<span class="ng">薄い側（'+th[0]+'µm 付近）では届きません。</span>厚い側なら表面から';
+        else s+='<span class="ok">この層なら表面から測れます</span>';
+      }
+      s+='<br>層の厚さが分かれば、上の「層の厚さ」に入れてください。<b>試験力を1つに絞ります</b>';
+    }else if(hvLo>0){
+      s+='<br>層の厚さが分かれば、上の「層の厚さ」に入れてください。<b>使える試験力の上限</b>まで出します';
+    }
+    t.innerHTML=s;
+  }
+  /* ③ 期待される硬さの範囲と見比べる（v130／v133で合否をやめた）
+     ★硬さだけでは受渡しの合否は決まらない（現場の指摘）。だから
+       <範囲に入っているか>だけを色で示し、合格・不合格とは言わない。
+       外れているときに何を疑うか（生材／下地を拾っている／材質違い）は残す。
+       そこが「変な値が出たとき」の手がかりになるので、消してはいけない。 */
+  function showBand(hv){
+    var b=$('band'), e=expected();
+    if(!(hv>0)){ b.style.display='none'; b.textContent=''; return; }
+    b.style.display='';
+    if(e&&e.ng){
+      b.className='band warn';
+      b.innerHTML='この材質と処理の組み合わせは成立しません<small>'+e.ng+'　／　見比べる相手がありません</small>';
+      return;
+    }
+    if(e&&e.r){
+      var lo=e.r[0], hi=e.r[1], x=bandOf(hv), st=stateOf(hv), s;
+      if(hv>=lo&&hv<=hi){
+        b.className='band inr';
+        b.innerHTML='HV'+Math.round(hv)+'　<b>期待 HV'+lo+'〜'+hi+' の中</b>'
+          +'<small>'+MAT[mat].n+' の '+PROC[tz].n+' として、ありうる硬さの範囲です'
+          +(e.any?'（材質不明のため幅は広めです）':'')+(MAT[mat].nonsteel?'（アルミは HV で見比べています。HRC・HB の換算値は使えません）':'')+'　／　合否は図面の指示と測り方で判断してください</small>';
+        return;
+      }
+      b.className='band outr';
+      s='HV'+Math.round(hv)+'　<b>期待 HV'+lo+'〜'+hi+' から'+(hv<lo?'下に':'上に')+'外れています</b><small>';
+      if(hv<lo){
+        if(st) s+='この硬さは <b>'+MAT[mat].n+' の「'+st+'」相当</b>です。';
+        else s+='この硬さは '+x.t+'。';
+        if(!MAT[mat].any&&MAT[mat].raw&&hv<=MAT[mat].raw[1]+10) s+='<b>生材の可能性があります</b>（処理が入っていない、または効いていない）。';
+        if(PTHIN[PROC[tz].k]) s+='薄い層を大きな試験力で押して、<b>下地を拾っている</b>おそれもあります。試験力を下げるか断面で測ってください。';
+        else s+='焼入れ不足・焼戻し過多・材質違いのいずれかを疑ってください。';
+      }else{
+        s+='この硬さは '+x.t+'。材質違い、または別の処理が入っている可能性があります。';
+      }
+      s+='　／　範囲の内と外を見ているだけです。合否は図面の指示と測り方で判断してください</small>';
+      b.innerHTML=s;
+      return;
+    }
+    /* 材質・処理が未選択のときは、これまでどおり見立てだけ */
+    var y=bandOf(hv);
+    b.className='band '+y.k;
+    b.innerHTML='見立て：'+y.t+'<small>'+y.s+'　／　材質と処理を選ぶと<b>期待される硬さの範囲</b>と見比べられます</small>';
+  }
+
+
+  /* ── 多段の試験力から膜厚の目安（v131）──
+     ★層より深く押すと、硬さが下地へ引っ張られる。
+       ・硬さが揃っている（＝層だけを見ている）最後の点 → 層は 1.5×d より<厚い>
+       ・ずれ始めた点                                   → 層は 1.5×d より<薄い>
+       この挟み撃ちで膜厚のおよそが出る。断面測定の代わりではない。
+     ★ずれの向きは上下どちらもありうる（硬い膜／軟らかい膜）。絶対値で見る。 */
+  var DEV=8;      /* ずれとみなす割合(%)。測定のばらつき（3〜5%）より少し外 */
+  function multiRows(){
+    var out=[], i, F, dd;
+    for(i=1;i<=4;i++){
+      F=num($('mF'+i).value); dd=num($('mD'+i).value);
+      if(F>0&&dd>0) out.push({f:F,d:dd,hv:hvFromDiag(F,dd),h:dd/7,need:dd*1.5});
+    }
+    out.sort(function(a,b){ return a.f-b.f; });   /* 小さい試験力から */
+    return out;
+  }
+  function multiCalc(){
+    var r=multiRows(), tb=$('mTbl'), box=$('mRes'), i, h='', s, base, firstDev=-1;
+    if(!r.length){
+      tb.innerHTML=''; box.style.display='none';
+      return null;
+    }
+    base=r[0].hv;
+    for(i=1;i<r.length;i++){
+      if(Math.abs(r[i].hv-base)/base*100>DEV){ firstDev=i; break; }
+    }
+    h='<table class="mtbl"><tr><th>試験力</th><th>対角長</th><th>HV</th><th>深さ</th><th>要る層厚</th><th></th></tr>';
+    for(i=0;i<r.length;i++){
+      var dev=(firstDev>=0&&i>=firstDev);
+      h+='<tr class="'+(dev?'dev':'base')+'"><td>'+r[i].f+' gf</td><td>'+r[i].d.toFixed(1)+'</td>'
+        +'<td>'+Math.round(r[i].hv)+'</td><td>'+r[i].h.toFixed(2)+'</td><td>'+r[i].need.toFixed(1)+'</td>'
+        +'<td class="st">'+(dev?'ずれ':'そろい')+'</td></tr>';
+    }
+    h+='</table>';
+    tb.innerHTML=h;
+
+    box.style.display='';
+    box.className='mres';
+    if(r.length<2){
+      box.innerHTML='もう1点、<b>試験力を変えて</b>測ってください（2点そろうと膜厚の見当がつきます）。';
+      return base;
+    }
+    if(firstDev<0){
+      /* 全部そろっている＝いちばん大きい試験力でも層の中 */
+      box.innerHTML='どの試験力でも硬さが揃っています（差 '+DEV+'% 以内）。'
+        +'<br>層の硬さは <b>HV'+Math.round(base)+'</b> ぐらい。'
+        +'<br>膜厚は少なくとも <b>'+r[r.length-1].need.toFixed(1)+' µm 以上</b>あります'
+        +'（いちばん大きい '+r[r.length-1].f+'gf でも下地に届いていないため）。'
+        +'<br>もっと大きい試験力で測ると、上限も分かります。';
+      return base;
+    }
+    if(firstDev===0){ box.innerHTML='計算できません'; return base; }
+    var lo=r[firstDev-1].need, hi=r[firstDev].need, dir=(r[firstDev].hv<base)?'下地のほうが軟らかい':'下地のほうが硬い';
+    box.innerHTML='層の硬さは <b>HV'+Math.round(base)+'</b>（'+r[0].f+'gf の値）。'
+      +'<br>'+r[firstDev].f+'gf で硬さが <b>HV'+Math.round(r[firstDev].hv)+'</b> へ動きました（'+dir+'）。'
+      +'<br><b>膜厚はおよそ '+lo.toFixed(1)+'〜'+hi.toFixed(1)+' µm</b>'
+      +'<br><span style="font-weight:400">'+r[firstDev-1].f+'gf では層の中（要る層厚 '+lo.toFixed(1)+'µm）、'
+      +r[firstDev].f+'gf では届いていない（同 '+hi.toFixed(1)+'µm）ため、この間にあります。'
+      +'あくまで<b>目安</b>です。確かめるには断面で測ってください。</span>';
+    return base;
+  }
+
+  /* 試験力の早見（マイクロビッカースの常用） */
+  var LOADS=[10,25,50,100,200,300,500,1000];
+  function buildLoads(){
+    /* ★手持ちに無い試験力は出さない（押せても機械が出せない） */
+    var box=$('loadChips'), fmin=FMIN; box.innerHTML='';
+    LOADS.forEach(function(g){
+      if(fmin>0&&g<fmin) return;
+      var b=document.createElement('button');
+      b.type='button'; b.className='chip';
+      b.textContent=(g>=1000)?('HV'+(g/1000)):('HV'+(g/1000).toFixed(g>=100?1:3).replace(/0+$/,'').replace(/\.$/,''))+'（'+g+'gf）';
+      b.addEventListener('click',function(){ $('fF').value=String(g); recalc(); });
+      box.appendChild(b);
+    });
+  }
+
+  var mode='val';   /* val: 硬さの値から / diag: 対角長から / multi: 多段で膜厚 */
+  function syncMode(){
+    $('swVal').classList.toggle('on',mode==='val');
+    $('swDiag').classList.toggle('on',mode==='diag');
+    $('swMulti').classList.toggle('on',mode==='multi');
+    $('boxVal').style.display=(mode==='val')?'':'none';
+    $('boxDiag').style.display=(mode==='diag')?'':'none';
+    $('boxMulti').style.display=(mode==='multi')?'':'none';
+    recalc();
+  }
+  $('swVal').addEventListener('click',function(){ if(mode==='val')return; mode='val'; syncMode(); });
+  $('swDiag').addEventListener('click',function(){ if(mode==='diag')return; mode='diag'; syncMode(); });
+  $('swMulti').addEventListener('click',function(){ if(mode==='multi')return; mode='multi'; syncMode(); });
+  ['fF','fD1','fD2','fT'].forEach(function(id){ $(id).addEventListener('input',recalc); });
+  ['mF1','mD1','mF2','mD2','mF3','mD3','mF4','mD4'].forEach(function(id){ $(id).addEventListener('input',recalc); });
+  $('fFv').addEventListener('input',recalc);
+
+  /* 圧痕の深さと、層を突き抜けていないか（v128／v133で「硬さの値から」にも対応）
+     ★est=true は、対角長を<測った>のではなく硬さと試験力から<計算した>とき。
+       測っていない値を測ったように見せない。 */
+  function showDepth(hv,dum,tum,est){
+    var box=$('depth');
+    if(!(hv>0)||!(dum>0)){ box.style.display='none'; box.innerHTML=''; return; }
+    var h=dum/7, need=dum*1.5, h2;
+    var isoTxt=isoNote(dum,tum);
+    var s=(est? 'この硬さと試験力なら、対角長は <b>'+dum.toFixed(1)+' µm</b> になります（計算値）<br>' : '')
+      +'圧痕の深さ <b>'+h.toFixed(2)+' µm</b>（対角長 '+dum.toFixed(1)+' µm ÷ 7）'
+      +'／この試験力で必要な層の厚さ <b>'+need.toFixed(1)+' µm 以上</b>';
+    if(tum>0){
+      var ok=(tum>=need);
+      s+='<br><span class="'+(ok?'ok':'ng')+'">層の厚さ '+tum.toFixed(1)+' µm → '
+        +(ok?'このまま測れます（層の中で収まっています）'
+            :'足りません。下地を拾って<b>実際より軟らかく</b>出ます')+'</span>';
+      var fm=maxLoad(hv,tum);
+      if(fm!=null){
+        s+='<br>この層厚で使える試験力は <b>'+(fm>=1000?(fm/1000).toFixed(2)+' kgf':Math.floor(fm)+' gf')+'まで</b>';
+        /* ★手持ちの最小より下は勧めない。出せない試験力を勧めても仕方がない。 */
+        var fmin=FMIN, pick=null, i;
+        for(i=LOADS.length-1;i>=0;i--){ if(LOADS[i]<=fm&&(!(fmin>0)||LOADS[i]>=fmin)){ pick=LOADS[i]; break; } }
+        s+=pick? '（手持ちなら <b>'+pick+'gf</b>）'
+               : '<span class="ng">（手持ちの最小 '+(fmin>0?fmin:'—')+'gf でも足りません。<b>断面で測ってください</b>）</span>';
+      }
+    }else{
+      /* ★測る前に分かるのが大事。手持ちの最小試験力で、
+         表面から測れる層の厚さの下限を先に出す。 */
+      var fmin2=FMIN, nt2=needT(hv,fmin2);
+      s+='<br>層の厚さを入れると、下地を拾っていないかを見ます';
+      if(nt2!=null) s+='<br>この硬さなら、手持ちの最小 '+fmin2+'gf でも <b>'+nt2.toFixed(1)+' µm 以上</b>の層が要ります';
+    }
+    box.style.display=''; box.innerHTML=s+isoTxt;
+  }
+
+  function recalc(){
+    /* ── 対角長から（v128）── */
+    showTz();
+    /* ── 多段で膜厚を見る（v131）。層の硬さ（そろっている値）を答えにする ── */
+    if(mode==='multi'){
+      var hvm=multiCalc();
+      if(hvm==null||!(hvm>0)){
+        ['vC','vV','vB'].forEach(function(id){$(id).textContent='―';$(id).className='v dim'});
+        $('vTs').textContent='―';
+        drawMark(null); showBand(0); showDepth(0,0,0);
+        $('statusTxt').textContent='試験力と対角長を、試験力を変えて2点以上入れてください';
+        $('statusTxt').className='statusTxt';
+        lastRes=null;
+        if($('tblWrap').classList.contains('show'))buildTable(null);
+        return;
+      }
+      var rm=convert(1,hvm);
+      $('vV').textContent=String(Math.round(hvm));
+      $('vC').textContent=(rm&&rm.c!=null)?rm.c.toFixed(1):'―';
+      $('vB').textContent=(rm&&rm.b!=null)?String(Math.round(rm.b)):'―';
+      ['vC','vV','vB'].forEach(function(id,i){ $(id).className='v '+(i===1?'dim':'led'); });
+      $('vTs').textContent=(rm&&rm.b!=null)?String(Math.round(rm.b*3.2/10)*10):'―(HB範囲外)';
+      lastRes=rm;
+      drawMark(rm&&rm.c!=null?rm:null);
+      showBand(hvm);
+      showDepth(0,0,0);
+      $('statusTxt').textContent='いちばん小さい試験力の値を<層の硬さ>とみなしています';
+      $('statusTxt').className='statusTxt';
+      if($('tblWrap').classList.contains('show'))buildTable(rm);
+      return;
+    }
+    if(mode==='diag'){
+      var Fg=num($('fF').value), d1=num($('fD1').value), d2=num($('fD2').value);
+      var tt=num($('fT').value);   /* 層の厚さは①②の下の共通欄（v133） */
+      var dm=(d1>0&&d2>0)?(d1+d2)/2:(d1>0?d1:(d2>0?d2:NaN));
+      var hv=hvFromDiag(Fg,dm);
+      if(hv==null){
+        ['vC','vV','vB'].forEach(function(id){$(id).textContent='―';$(id).className='v dim'});
+        $('vTs').textContent='―';
+        drawMark(null); showBand(0); showDepth(0,0,0);
+        $('statusTxt').textContent='試験力と対角長を入れてください';
+        $('statusTxt').className='statusTxt';
+        lastRes=null;
+        if($('tblWrap').classList.contains('show'))buildTable(null);
+        return;
+      }
+      var r2=convert(1,hv);
+      $('vV').textContent=String(Math.round(hv));
+      $('vC').textContent=(r2&&r2.c!=null)?r2.c.toFixed(1):'―';
+      $('vB').textContent=(r2&&r2.b!=null)?String(Math.round(r2.b)):'―';
+      ['vC','vV','vB'].forEach(function(id,i){ $(id).className='v '+(i===1?'dim':'led'); });
+      $('vTs').textContent=(r2&&r2.b!=null)?String(Math.round(r2.b*3.2/10)*10):'―(HB範囲外)';
+      lastRes=r2;
+      drawMark(r2&&r2.c!=null?r2:null);
+      showBand(hv);
+      showDepth(hv,dm,tt);
+      /* ★式の表示は mm でそろえる（v134・外部監査 A-05）。
+         中の計算は最初から mm に直しているが、表示だけ kgf と µm が混ざっていて、
+         そのまま電卓に入れると 100万倍ずれた値になっていた。 */
+      $('statusTxt').textContent='HV = 1.8544 × '+(Fg/1000).toFixed(3)+'kgf ÷ ('+(dm/1000).toFixed(4)+'mm)²'
+        +'（対角長 '+dm.toFixed(1)+'µm を mm に直して計算'+((d1>0&&d2>0)?'・d1とd2の平均':'・対角長1本')+'）';
+      $('statusTxt').className='statusTxt';
+      if($('tblWrap').classList.contains('show'))buildTable(r2);
+      return;
+    }
+    var val=num($('fV').value);
+    lastRes=null;
+    var res=isNaN(val)?null:convert(sc,val);
+    /* ★v168：アルミは鋼の換算表が使えない。HV で入れたときは、表の範囲の外でも HV のまま見比べる */
+    if(!isNaN(val)&&val>0&&sc===1&&MAT[mat].nonsteel){
+      ['vC','vB'].forEach(function(id){$(id).textContent='―';$(id).className='v dim'});
+      $('vV').textContent=String(Math.round(val)); $('vV').className='v dim';
+      $('vTs').textContent='―';
+      drawMark(null);
+      $('statusTxt').textContent='アルミは鋼の換算表を使わず、HV のまま期待の範囲と見比べます（HRC・HB の換算値は出しません）';
+      $('statusTxt').className='statusTxt';
+      showBand(val); showDepth(0,0,0);
+      if($('tblWrap').classList.contains('show'))buildTable(null);
+      return;
+    }
+    if(!res){
+      ['vC','vV','vB'].forEach(function(id){$(id).textContent='―';$(id).className='v dim'});
+      $('vTs').textContent='―';
+      drawMark(null);
+      if(isNaN(val)){
+        $('statusTxt').textContent='入力の硬さ種類を選んで値を入力';
+        $('statusTxt').className='statusTxt';
+      }else{
+        var rows=(sc===2)?T.filter(function(r){return r[2]!=null}):T;
+        $('statusTxt').textContent=SCALES[sc].n+' は '+rows[rows.length-1][sc]+' 〜 '+rows[0][sc]+' の範囲で入力してください';
+        $('statusTxt').className='statusTxt err';
+      }
+      showBand(0); showDepth(0,0,0);
+      if($('tblWrap').classList.contains('show'))buildTable(null);
+      return;
+    }
+    lastRes=res;
+    $('vC').textContent=(res.c!=null)?res.c.toFixed(1):'―';
+    $('vV').textContent=String(Math.round(res.v));
+    $('vB').textContent=(res.b!=null)?String(Math.round(res.b)):'―';
+    ['vC','vV','vB'].forEach(function(id,i){
+      $(id).className='v '+(i===sc?'dim':'led');
+    });
+    $('vTs').textContent=res.b!=null?String(Math.round(res.b*3.2/10)*10):'―(HB範囲外)';
+    /* ★HRC を出せない軟らかい域では、そう言う（無理に換算しない）。 */
+    $('statusTxt').textContent=res.low
+      ? 'この域は HRB で測るところです。HRC の換算は規格に無いので出していません（HB ≒ HV とみなしています）'
+      : (res.high
+        ? '換算表の上（HV940超）です。窒化・硬質クロムメッキ・超硬の域で、HRC・HB の換算はありません'
+        : ((res.b==null)?'この硬さ域ではHB試験は一般に非適用です(圧子が持たない領域)':'表の中間値は直線補間しています'));
+    $('statusTxt').className='statusTxt';
+    /* ★v168：アルミを選んでいるときは、鋼の換算値は当てにならないと添える */
+    if(MAT[mat].nonsteel){ $('statusTxt').textContent='アルミを選んでいます。HRC・HB は鋼の換算表による値で、アルミには使えません。HV で見比べてください'; $('statusTxt').className='statusTxt err'; }
+    drawMark(res.c!=null?res:null);
+    showBand(res.v);
+    /* ★硬さと試験力から、圧痕の大きさを逆に出す（v133・現場の依頼）。
+       HV = 1.8544×F ÷ d²  →  d = √(1.8544×F ÷ HV)
+       HRC・HB・HRB で入れたときは、換算した HV から出した目安になる。 */
+    var Fv=num($('fFv').value), tv=num($('fT').value);
+    if(Fv>0&&res.v>0){
+      var dv=Math.sqrt(1.8544*(Fv/1000)/res.v)*1000;   /* µm */
+      showDepth(res.v,dv,tv,true);
+    }else{
+      showDepth(0,0,0);
+    }
+    if($('tblWrap').classList.contains('show'))buildTable(res);
+  }
+
+  function buildTable(res){
+    var html='<table class="tol"><tr><th>HRC</th><th>HV</th><th>HB</th><th>引張目安 MPa</th></tr>';
+    var hitC=(res)?Math.round(res.c):null;
+    T.forEach(function(r){
+      html+='<tr'+(hitC===r[0]?' class="hit"':'')+'><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+(r[2]!=null?r[2]:'―')+'</td><td>'+(r[2]!=null?Math.round(r[2]*3.2/10)*10:'―')+'</td></tr>';
+    });
+    html+='</table>';
+    $('tblWrap').innerHTML=html;
+  }
+
+  $('fV').addEventListener('input',recalc);
+  $('tblBtn').addEventListener('click',function(){
+    var w=$('tblWrap');
+    var show=!w.classList.contains('show');
+    w.classList.toggle('show',show);
+    $('tblBtn').textContent=show?'▲ 換算表を閉じる':'▼ 換算表を表示';
+    if(show)buildTable(lastRes);
+  });
+
+
+  buildAxes();
+  buildChips();
+  buildLoads();
+  buildMat();
+  buildTz();
+  buildMx();
+  drawInfo();
+  recalc();
+})();
+</script>
+
+<!-- ═══ 数字入力の補助（共通スニペット / 全ツール同一） ═══
+     ・数字キーパッド固定（inputmode）／全角数字・句点の自動半角化
+     ・数字以外（かな・英字・記号）の混入を自動で除去
+     ・± ボタン … 数字キーパッドに無いマイナスを入力
+     ・✕ ボタン … 欄をまとめて消去
+     ・「5 43」のような度分秒のスペース区切りはそのまま通します
+     ・DOM構造は変更しません（再描画するツールでも壊れません）        -->
+<style>
+  /* ═══ 自前キーボード（v72 / 全ツール共通）═══ */
+  /* ★v100まで、ここに<セレクタの無い断片>が残っていた（v72からの取りこぼし）。
+     CSSは「{ が来るまでがセレクタ」なので、その断片が次の規則まで飲み込み、
+     body.kbon .kt-aid ごと無効にしていた。v101で断片を削除。
+     ±の浮動バーは inputmode="none" のせいで元々作られず実害は無かったが、
+     規則が効かない状態は残さない。 */
+  body.kbon .kt-aid{display:none!important}   /* 共通の±浮動ボタンは重複するので隠す */
+
+  .kpad{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#EDF1F3;
+    border-top:2px solid var(--ink);padding:6px 6px calc(6px + env(safe-area-inset-bottom));
+    display:none;-webkit-user-select:none;user-select:none;
+    box-shadow:0 -6px 18px rgba(31,51,65,.16)}
+  .kpad.on{display:block}
+  .kpHead{display:flex;align-items:center;gap:6px;padding:2px 2px 6px}
+  .kpName{flex:1;min-width:0;font-size:12px;font-weight:700;color:#1F3341;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .kpHead button.sep{margin-left:8px}
+  .kpHead button{flex:none;width:40px;height:32px;font:inherit;font-size:13px;
+    background:#fff;border:1px solid #C9D3DA;border-radius:7px;color:#1F3341;cursor:pointer}
+  .kpGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+  .kpGrid button{font:inherit;font-size:19px;font-weight:700;color:#1F3341;background:#fff;
+    border:1px solid #C9D3DA;border-radius:9px;min-height:46px;cursor:pointer;
+    -webkit-tap-highlight-color:transparent}
+  .kpGrid button:active{background:#DCE4E8}
+  .kpGrid button.fn{font-size:13px;font-weight:700;color:#5B707E;background:#F7F9FA}
+  .kpGrid button.go{background:var(--ink);color:#fff;border-color:var(--ink);font-size:14px}
+  .kpGrid button.del{color:var(--red)}
+  .kpGrid button.nx{font-size:13px;color:#1F3341;background:#F7F9FA}
+
+  /* ── 電卓（v97）──
+     計算モードのキーと式の帯は、ふだんは出さない。 */
+  .kpHead button.calcBtn{width:auto;padding:0 12px;font-weight:700}
+  .kpHead button.calcBtn[aria-pressed="true"]{background:#1F3341;color:#fff;border-color:#1F3341}
+  .kpCalc{display:none;align-items:baseline;gap:8px;background:#fff;
+    border:1px solid #C9D3DA;border-radius:8px;padding:7px 10px;margin:0 2px 6px;
+    min-height:34px;overflow:hidden}
+  .kpad.calcon .kpCalc{display:flex}
+    /* ★v97 は direction:rtl を入れていた。長い式で右端(いま打った側)を
+     見せるつもりだったが、この指定は<式の並びそのもの>を右から左にする。
+     100÷2 が 2÷100 に見え、割り算で取り違える。実機で発覚(v98)。
+     並びは必ず左から右。長い式は JS で右端へスクロールさせる。 */
+  .kpExp{flex:1;min-width:0;font-size:17px;font-weight:700;color:#1F3341;
+    text-align:left;white-space:nowrap;overflow-x:auto;overflow-y:hidden;
+    -webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .kpExp::-webkit-scrollbar{display:none}
+  .kpEq{flex:none;font-size:12px;color:#5B707E}
+  .kpEq.bad{color:#B23B2E;font-weight:700}
+  .kpGrid button.cop{display:none}
+  .kpad.calcon .kpGrid button.cop{display:block}
+  .kpad.calcon .kpGrid button.ceq{grid-column:span 4;background:var(--ink);color:#fff;
+    border-color:var(--ink);font-size:14px}
+  .kpad.calcon .kpGrid button.ceq:disabled{background:#C9D3DA;border-color:#C9D3DA;color:#F2F6F8}
+  .kpGrid button.cop{font-size:20px;font-weight:700;color:#1F3341;background:#F7F9FA}
+  /* v99: 計算モードのあいだだけ意味が変わるキー */
+  .kpGrid button.ceq2{font-size:22px;font-weight:700;color:#fff;background:var(--ink);
+    border-color:var(--ink)}
+  .kpGrid button.ceq2:disabled{background:#C9D3DA;border-color:#C9D3DA;color:#F2F6F8}
+  .kpHead button.paren{font-size:20px;font-weight:700;color:#1F3341}
+
+  /* ── 計算モードは<色＋文字＋形>の3つで示す（v100）──
+     色だけに頼らない。手袋・明るい工場・画面の見え方は人によって違う。
+       色 … キーボードの帯全体を濃紺にする
+       文字 … 見出しに「電卓」、「計算」ボタンが反転、式の帯が出る
+       形 … ＝ と ( ) が現れる（キーの並びが変わる） */
+  .kpad.calcon{background:#1F3341;border-top-color:#0E1B24}
+  .kpad.calcon .kpHead{color:#F2F6F8}
+  .kpad.calcon .kpName{color:#F2F6F8}
+  .kpad.calcon .kpHead button{background:#33506A;border-color:#4A6B87;color:#F2F6F8}
+  .kpad.calcon .kpHead button.calcBtn[aria-pressed="true"]{background:#F2F6F8;color:#1F3341;border-color:#F2F6F8}
+  .kpad.calcon .kpHead button.paren{color:#fff}
+  .kpad.calcon .kpCalc{border-color:#4A6B87}
+  .kpad.calcon .kpGrid button{border-color:#4A6B87}
+  .kpad.calcon .kpGrid button.cop{background:#33506A;color:#fff;border-color:#4A6B87}
+
+  /* ── 電卓を常に出しておくボタン（v98）──
+     置き場所はトップの設定で選ぶ。キーボードが開いているあいだは隠す
+     （キーボードの上にも「計算」があるので二重になり、指の下にも来る）。 */
+  .calcFab{position:fixed;z-index:55;display:none;align-items:center;gap:6px;
+    font:inherit;font-size:13px;font-weight:700;color:#fff;background:#1F3341;
+    border:2px solid #fff;border-radius:999px;padding:11px 16px;min-height:48px;
+    box-shadow:0 3px 12px rgba(31,51,65,.28);cursor:pointer;
+    -webkit-tap-highlight-color:transparent}
+  .calcFab:active{background:#33506A}
+  .calcFab.br{display:flex;right:14px;bottom:calc(14px + env(safe-area-inset-bottom))}
+  .calcFab.bl{display:flex;left:14px;bottom:calc(14px + env(safe-area-inset-bottom))}
+  .calcFab.tr{display:flex;right:14px;top:14px}
+  .calcFab.tl{display:flex;left:14px;top:14px}
+  /* 下のバー: 画面いっぱいの帯。body の下余白は JS で確保する。 */
+  .calcFab.bar{display:flex;left:0;right:0;bottom:0;justify-content:center;
+    border-radius:0;border:none;border-top:2px solid #33506A;
+    padding:13px 16px calc(13px + env(safe-area-inset-bottom));box-shadow:0 -4px 14px rgba(31,51,65,.18)}
+  .calcFab .cfIco{font-size:16px;line-height:1}
+  body.kbon-open .calcFab, .kpad.on ~ .calcFab{display:none !important}
+  @media print{.calcFab{display:none !important}}
+
+  /* 大きさの切替（v70／v74で見直し）。押しやすさは端末と手袋で変わるので端末ごとに選ぶ。
+     v74: 40px の「小」は手袋で押しにくく使われないため廃止し、上に「特大」を足した。
+          中=46px(旧 中) / 大=56px(旧 大) / 特大=66px(新規)。
+          保存値 "s" は loadSize() で "m" に引き上げる(端末に残っていても小に戻らない)。 */
+  .kpad.kp-m .kpGrid{gap:5px}
+  .kpad.kp-m .kpGrid button{min-height:46px;font-size:19px}
+  .kpad.kp-l .kpGrid{gap:6px}
+  .kpad.kp-l .kpGrid button{min-height:56px;font-size:22px}
+  .kpad.kp-l .kpGrid button.fn,.kpad.kp-l .kpGrid button.nx{font-size:14px}
+  .kpad.kp-l .kpGrid button.go{font-size:15px}
+  .kpad.kp-l .kpHead button{height:36px;width:44px}
+  .kpad.kp-l .kpName{font-size:13px}
+  .kpad.kp-xl .kpGrid{gap:7px}
+  .kpad.kp-xl .kpGrid button{min-height:66px;font-size:26px;border-radius:11px}
+  .kpad.kp-xl .kpGrid button.fn,.kpad.kp-xl .kpGrid button.nx{font-size:15px}
+  .kpad.kp-xl .kpGrid button.go{font-size:16px}
+  .kpad.kp-xl .kpHead button{height:40px;width:48px;font-size:15px}
+  .kpad.kp-xl .kpName{font-size:14px}
+  .kt-aid{
+    position:absolute;z-index:9998;display:none;gap:4px;
+    background:#1F3341;border-radius:8px;padding:3px;
+    box-shadow:0 3px 10px rgba(0,0,0,.28);
+  }
+  .kt-aid.on{display:flex}
+  .kt-aid button{
+    -webkit-appearance:none;appearance:none;border:none;
+    background:#2C4353;color:#fff;font:inherit;font-size:14px;font-weight:700;
+    line-height:1;padding:8px 12px;border-radius:5px;cursor:pointer;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  .kt-aid button:active{background:#D63426}
+  @media print{.kt-aid{display:none !important}}
+</style>
+<script>
+(function(){
+  "use strict";
+
+  /* ── 対象の判定 ── */
+  function mode(el){
+    return (el && el.tagName==="INPUT" && !el.readOnly && !el.disabled)
+      ? (el.getAttribute("inputmode")||"") : "";
+  }
+  function isNum(el){ var m=mode(el); return m==="decimal"||m==="numeric"; }
+  function isDec(el){ return mode(el)==="decimal"; }
+
+  /* ── 全角→半角（かなキーボードで打たれた場合の救済） ── */
+  function toHalf(v){
+    return v
+      .replace(/[０-９]/g, function(c){ return String.fromCharCode(c.charCodeAt(0)-65248); })
+      .replace(/[．。･・]/g, ".")
+      .replace(/[－−―ーｰ‐–—]/g, "-")
+      .replace(/[\u3000]/g, " ");
+  }
+
+  /* ── 数字だけに整える（空白区切りは温存＝度分秒入力を壊さない） ── */
+  function clean(v, dec){
+    var toks = toHalf(v).split(" "), out = [], i, t, neg, k;
+    for(i=0;i<toks.length;i++){
+      t = toks[i];
+      neg = (i===0) && t.charAt(0)==="-";
+      t = t.replace(/[^0-9.]/g, "");
+      if(!dec) t = t.replace(/\./g, "");
+      else {
+        k = t.indexOf(".");
+        if(k>=0) t = t.slice(0,k+1) + t.slice(k+1).replace(/\./g,"");
+      }
+      out.push((neg?"-":"") + t);
+    }
+    return out.join(" ");
+  }
+
+  /* ── 入力の監視（捕捉フェーズ＝各ツールの計算処理より先に整える） ── */
+  document.addEventListener("input", function(e){
+    var el = e.target;
+    if(!isNum(el)) return;
+    var v = el.value, c = clean(v, isDec(el));
+    if(c === v) return;
+    var p = el.selectionStart, d = v.length - c.length;
+    el.value = c;
+    try{ el.setSelectionRange(Math.max(0,p-d), Math.max(0,p-d)); }catch(err){}
+  }, true);
+
+  /* ── ± / ✕ の浮動ボタン（DOMを包まないので再描画に強い） ── */
+  var bar=null, cur=null, sign=null;
+
+  function notify(el){
+    var ev;
+    try{ ev = new Event("input", {bubbles:true}); }
+    catch(err){ ev = document.createEvent("Event"); ev.initEvent("input", true, false); }
+    el.dispatchEvent(ev);
+    try{ ev = new Event("change", {bubbles:true}); }
+    catch(err){ ev = document.createEvent("Event"); ev.initEvent("change", true, false); }
+    el.dispatchEvent(ev);
+  }
+  /* 押した瞬間に実行する。既定動作を止めることで入力欄のフォーカス（＝
+     数字キーパッド）を保ったまま操作でき、ゴーストクリックも防げる。   */
+  function act(e){
+    e.preventDefault();
+    var b = e.target, a, v;
+    while(b && b !== bar && b.tagName !== "BUTTON") b = b.parentNode;
+    if(!b || b === bar || !cur) return;
+    a = b.getAttribute("data-a");
+    if(a === "clr") cur.value = "";
+    else {
+      v = cur.value;
+      cur.value = (v.charAt(0) === "-") ? v.slice(1) : ("-" + v);
+    }
+    notify(cur);
+    try{ cur.focus(); }catch(err){}
+    place();
+  }
+
+  function build(){
+    bar = document.createElement("div");
+    bar.className = "kt-aid";
+    bar.innerHTML =
+      '<button type="button" data-a="sign" aria-label="符号を反転">±</button>'+
+      '<button type="button" data-a="clr" aria-label="この欄を消去">✕</button>';
+    document.body.appendChild(bar);
+    sign = bar.querySelector('[data-a="sign"]');
+    if(window.PointerEvent){
+      bar.addEventListener("pointerdown", act);
+    } else {
+      bar.addEventListener("mousedown", act);
+      bar.addEventListener("touchstart", act, {passive:false});
+    }
+  }
+
+  function hide(){ if(bar) bar.className = "kt-aid"; cur = null; }
+
+  function place(){
+    if(!cur || !bar) return;
+    if(!document.contains(cur)){ hide(); return; }   /* 再描画で消えた場合 */
+    bar.className = "kt-aid on";
+    var r = cur.getBoundingClientRect();
+    var bw = bar.offsetWidth, bh = bar.offsetHeight;
+    var top = r.top - bh - 6;
+    if(top < 4) top = r.bottom + 6;
+    var left = r.right - bw;
+    if(left < 4) left = 4;
+    bar.style.left = (left + (window.pageXOffset||0)) + "px";
+    bar.style.top  = (top  + (window.pageYOffset||0)) + "px";
+  }
+
+  document.addEventListener("focusin", function(e){
+    if(!isNum(e.target)){ hide(); return; }
+    cur = e.target;
+    if(!bar) build();
+    sign.style.display = isDec(cur) ? "" : "none";   /* 整数欄には ± を出さない */
+    place();
+  });
+  document.addEventListener("focusout", function(){
+    setTimeout(function(){ if(document.activeElement !== cur) hide(); }, 0);
+  });
+  window.addEventListener("scroll", function(){ if(cur) place(); }, true);
+  window.addEventListener("resize", function(){ if(cur) place(); });
+})();
+</script>
+<script>
+(function(){
+  function fire(el,t){
+    try{ el.dispatchEvent(new Event(t,{bubbles:true})); }
+    catch(e){ var ev=document.createEvent('Event'); ev.initEvent(t,true,true); el.dispatchEvent(ev); }
+  }
+  function clickText(within,text){
+    var cont = within ? document.querySelector(within) : document;
+    if(!cont) return;
+    var all=cont.querySelectorAll('button,[class*="chip"],span,a,div,li'), target=String(text), j,e;
+    for(j=0;j<all.length;j++){
+      e=all[j];
+      if(e.textContent.trim()===target && (e.children.length===0 || e.tagName==='BUTTON')){ e.click(); return; }
+    }
+  }
+  window.tryExample=function(btn){
+    var raw=btn.getAttribute('data-ex'); if(!raw) return;
+    var cfg; try{ cfg=JSON.parse(raw); }catch(e){ return; }
+    var steps=cfg.set||[], i, it, el, k, fns, f, fn;
+    for(i=0;i<steps.length;i++){
+      it=steps[i];
+      if(it.click){ var c=document.querySelector(it.click); if(c) c.click(); continue; }
+      if(it.clickText){ clickText(it.within, it.clickText); continue; }
+      if(it.setState){ if(window.S){ for(k in it.setState){ window.S[k]=it.setState[k]; } }
+        fns=(it.apply||'').split(';'); for(f=0;f<fns.length;f++){ fn=fns[f].replace(/^\s+|\s+$/g,''); if(fn && typeof window[fn]==='function'){ try{ window[fn](); }catch(e){} } }
+        continue; }
+      el = it.sel ? document.querySelector(it.sel) : document.getElementById(it.id);
+      if(!el) continue;
+      el.value=String(it.v);
+      fire(el, el.tagName==='SELECT' ? 'change' : 'input');
+    }
+    var gd=btn; while(gd && !(gd.classList && gd.classList.contains('guide'))) gd=gd.parentNode;
+    if(gd) gd.open=false;
+    var fig=document.querySelector('svg#fig, svg#dwg, figure svg, #fig, #dwg');
+    if(fig && fig.scrollIntoView) fig.scrollIntoView({behavior:'smooth',block:'center'});
+  };
+})();
+</script>
+
+<script>
+/* ═══ 一括消去の共通処理（全ツール共通 / 確認ダイアログは使いません）═══
+     1回目 … ボタンが「もう一度押すと消去」に変わります（3秒で自動解除）
+     2回目 … 最初の状態に戻します
+     ※ 確認ポップアップ（ダイアログ）はPWA等で無効化されるため使いません      */
+(function(){
+  "use strict";
+  var KEY = "";   /* このツールは保存を持たないため、再読み込みだけで初期状態に戻ります */
+  window.armClear = function(btn){
+    if(!btn || !btn.getAttribute) return;
+    if(!btn.getAttribute("data-armed")){
+      btn.setAttribute("data-armed","1");
+      if(!btn.getAttribute("data-lbl")) btn.setAttribute("data-lbl", btn.textContent);
+      btn.textContent = "もう一度押すと消去";
+      if(btn.classList) btn.classList.add("arm");
+      setTimeout(function(){
+        if(btn.getAttribute("data-armed")){
+          btn.removeAttribute("data-armed");
+          btn.textContent = btn.getAttribute("data-lbl");
+          if(btn.classList) btn.classList.remove("arm");
+        }
+      }, 3000);
+      return;
+    }
+    btn.removeAttribute("data-armed");
+    if(btn.classList) btn.classList.remove("arm");
+    if(btn.getAttribute("data-lbl")) btn.textContent = btn.getAttribute("data-lbl");
+    if(KEY){ try{ localStorage.removeItem(KEY); }catch(e){} }
+    try{ location.reload(); }catch(e){}
+  };
+})();
+</script>
+<style>
+/* ═══ 記入例（薄字）を入力値と見分ける（v57 / 全ツール共通）═══
+     薄字が入力値と同じ書体（太字・大きめ・右寄せ）で出ていたため、
+     入力済みに見えていた。色の濃さだけだと現場の照明や斜めからの視認で差が消えるので、
+     太さ・大きさ・傾きも変えて別物にする。                                    */
+::placeholder{color:#AEBBC4;font-weight:400;font-size:.82em;font-style:italic;opacity:1}
+::-webkit-input-placeholder{color:#AEBBC4;font-weight:400;font-size:.82em;font-style:italic;opacity:1}
+::-moz-placeholder{color:#AEBBC4;font-weight:400;font-size:.82em;font-style:italic;opacity:1}
+/* 未入力の欄は下線を破線に（入っている欄＝実線）。入力中は元の色を邪魔しない。 */
+input.kt-empty:not(:focus){border-bottom-style:dashed !important;border-bottom-color:#C2CED6 !important}
+td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3DA !important}
+</style>
+<script>
+/* ═══ 未入力の欄に印をつける（v57 / 全ツール共通）═══
+     数字を入れる欄（inputmode 付き）だけを対象にする。
+     行を作り直すツールがあるので、DOMの変化も見張って付け直す。            */
+(function(){
+  "use strict";
+  function hasCls(el){ return (" "+(el.className||"")+" ").indexOf(" kt-empty ")>=0; }
+  function mark(el){
+    if(!el||el.tagName!=="INPUT") return;
+    if(!el.getAttribute("inputmode")) return;
+    if(el.readOnly||el.disabled) return;
+    var empty=((el.value||"").replace(/\s/g,"")==="");
+    var has=hasCls(el);
+    if(empty&&!has) el.className=((el.className||"")+" kt-empty").replace(/^\s+/,"");
+    else if(!empty&&has) el.className=(" "+el.className+" ").replace(" kt-empty "," ").replace(/^\s+|\s+$/g,"");
+  }
+  function scan(){
+    var ns=document.getElementsByTagName("input"),i;
+    for(i=0;i<ns.length;i++) mark(ns[i]);
+  }
+  /* 捕捉フェーズ＝打った欄をすぐ反映。浮上フェーズ＝ツールが行を作り直した後に拾う。 */
+  document.addEventListener("input",function(e){ mark(e.target); },true);
+  document.addEventListener("input",scan,false);
+  document.addEventListener("change",scan,false);
+  document.addEventListener("click",scan,false);
+  if(window.MutationObserver){
+    try{
+      new MutationObserver(scan).observe(document.body,{childList:true,subtree:true});
+    }catch(e){}
+  }
+  scan();
+  setTimeout(scan,0);
+})();
+</script>
+
+<!-- 電卓を常に出しておくボタン（v98）。置き場所はトップの設定で選ぶ。 -->
+<button type="button" class="calcFab off" id="calcFab" aria-label="電卓を開く">
+  <span class="cfIco">🖩</span><span class="cfTxt">電卓</span>
+</button>
+
+<div class="kpad" id="kpad" aria-hidden="true">
+  <div class="kpHead">
+    <span class="kpName" id="kpName">—</span>
+    <button type="button" data-a="left" aria-label="1つ左へ">←</button>
+    <button type="button" data-a="right" aria-label="1つ右へ">→</button>
+    <button type="button" data-a="prev" class="sep" aria-label="前の欄">▲</button>
+    <button type="button" data-a="next" aria-label="次の欄">▼</button>
+    <button type="button" data-a="calc" id="kpCalcBtn" class="sep calcBtn" aria-pressed="false" aria-label="電卓を使う">計算</button>
+  </div>
+  <!-- 計算モードの式（v97）。ここに出るあいだ、欄の数字は変わらない。 -->
+  <div class="kpCalc" id="kpCalc" aria-live="polite">
+    <span class="kpExp" id="kpExp">0</span>
+    <span class="kpEq" id="kpEqv"></span>
+  </div>
+  <div class="kpGrid" id="kpGrid">
+    <button type="button" data-a="d" data-v="7">7</button>
+    <button type="button" data-a="d" data-v="8">8</button>
+    <button type="button" data-a="d" data-v="9">9</button>
+    <button type="button" data-a="bs" class="fn del">⌫</button>
+    <button type="button" data-a="d" data-v="4">4</button>
+    <button type="button" data-a="d" data-v="5">5</button>
+    <button type="button" data-a="d" data-v="6">6</button>
+    <button type="button" data-a="clr" class="fn">C</button>
+    <button type="button" data-a="d" data-v="1">1</button>
+    <button type="button" data-a="d" data-v="2">2</button>
+    <button type="button" data-a="d" data-v="3">3</button>
+    <button type="button" data-a="next" class="fn nx">次へ ▼</button>
+    <button type="button" data-a="sign" class="fn">±</button>
+    <button type="button" data-a="d" data-v="0">0</button>
+    <button type="button" data-a="d" data-v=".">.</button>
+    <button type="button" data-a="done" class="go">閉じる</button>
+    <!-- 計算モードのときだけ出る（v97） -->
+    <button type="button" data-a="op" data-v="÷" class="cop">÷</button>
+    <button type="button" data-a="op" data-v="×" class="cop">×</button>
+    <button type="button" data-a="op" data-v="-" class="cop">−</button>
+    <button type="button" data-a="op" data-v="+" class="cop">＋</button>
+    <button type="button" data-a="eq" class="cop ceq">＝ この欄に入れる</button>
+  </div>
+</div>
+<script>
+/* ═══ 自前キーボード（v72 / 全ツール共通）═══
+   狙い: 機種やOSでキーボードが違う問題をなくす。押しやすい大きさにする。
+        「空白」キーを自分で置けるので、度分入力（5 43）も打てる。
+   要点:
+   ・OS のキーボードを出さないために inputmode="none" にする。
+     元の inputmode は data-im に退避し、OS標準へ戻すときに復元する。
+   ・押した瞬間に preventDefault してフォーカスを奪わない
+     （奪うと欄が閉じてしまう。共通の±浮動ボタンと同じ考え方）。
+   ・穴の欄は後から増えるので、focusin の委譲で拾う。
+   ・入力後に input イベントを投げる（oninput="calc()" を動かすため）。 */
+(function(){
+  "use strict";
+  /* 保存キーはツール名を含めない＝<全ツール共通>。
+     キーの大きさも使う／使わないも、手と手袋と端末で決まるもので、
+     ツールごとに変わる理由がない。同じサイト内なら保存先は共通なので、
+     このキー名にしておけば他ツールへ広げたとき移行作業が要らない。 */
+  var KEY="kensa-kbd";
+  var ZKEY="kensa-kbd-size";
+  var OLDKEY="kensa-kbd-27", OLDZKEY="kensa-kbd-27-size";   /* v70以前からの引き継ぎ */
+  /* 切替のボタンはこのツールには無い。設定はポータル(トップ)の一番下でまとめて行う。
+     一度きりの設定のために全ツールの画面を長くしないため（v72）。 */
+  var pad=document.getElementById("kpad");
+  var grid=document.getElementById("kpGrid");
+  var head=pad?pad.querySelector(".kpHead"):null;
+  var nameEl=document.getElementById("kpName");
+  if(!pad||!grid) return;
+  var cur=null, on=true, size="m";
+
+  /* ── キーの音（v73／音量は v76）──
+     Web Audio で端末の中だけで作る短い電子音（音声ファイルなし・送信なし）。
+     既定は鳴らさない。設定はトップの「キーボードの設定」（保存キー kensa-kbd-snd、
+     音も「人と端末」の性質なのでツール名は含めない）。
+     AudioContext はユーザー操作の中で初回に作る（iOS の自動再生制限のため）。
+     注意: iOS はマナーモード中は Web Audio ごと消音される（仕様。故障ではない）。 */
+  var SKEY="kensa-kbd-snd";
+  /* 保存値は "0"=鳴らさない / "s"=小 / "m"=中 / "l"=大（v76）。
+     v75以前の "1"（＝鳴らす。音が小さいという指摘があった）は「大」として読む。
+     数字と英字で世代が見分けられるので、新旧の取り違えが起きない。 */
+  var SVOL={s:0.20,m:0.40,l:0.70};
+  var svol=0;
+  try{
+    var sv0=localStorage.getItem(SKEY);
+    if(sv0==="1") svol=SVOL.l;                 /* v75以前からの引き継ぎ */
+    else if(SVOL[sv0]) svol=SVOL[sv0];
+  }catch(e){}
+  var sndCtx=null;
+  function beep(){
+    if(!svol) return;
+    try{
+      var AC=window.AudioContext||window.webkitAudioContext;
+      if(!AC) return;
+      if(!sndCtx) sndCtx=new AC();
+      if(sndCtx.state==="suspended"&&sndCtx.resume) sndCtx.resume();
+      var t=sndCtx.currentTime;
+      var o=sndCtx.createOscillator(), gg=sndCtx.createGain();
+      /* 三角波（v76）。サイン波は倍音がなく、スマホの小さいスピーカーでは
+         同じ振幅でも小さく聞こえるため差し替えた。高さは従来どおり C6。 */
+      o.type="triangle"; o.frequency.value=1046.5;
+      gg.gain.setValueAtTime(0.0001,t);
+      gg.gain.exponentialRampToValueAtTime(svol,t+0.006);
+      gg.gain.exponentialRampToValueAtTime(0.0001,t+0.090);   /* 90ms */
+      o.connect(gg); gg.connect(sndCtx.destination);
+      o.start(t); o.stop(t+0.105);
+    }catch(e){}
+  }
+
+
+  function load(){
+    try{
+      var v=localStorage.getItem(KEY);
+      if(v===null){                        /* 旧キーがあれば引き継ぐ */
+        var o=localStorage.getItem(OLDKEY);
+        if(o!==null){ localStorage.setItem(KEY,o); localStorage.removeItem(OLDKEY); v=o; }
+      }
+      return v===null? true : v==="1";
+    }catch(e){ return true; }
+  }
+  function save(){ try{ localStorage.setItem(KEY,on?"1":"0"); }catch(e){} }
+  function loadSize(){
+    try{
+      var v=localStorage.getItem(ZKEY);
+      if(v===null){                        /* 旧キーがあれば引き継ぐ */
+        var o=localStorage.getItem(OLDZKEY);
+        if(o!==null){ localStorage.setItem(ZKEY,o); localStorage.removeItem(OLDZKEY); v=o; }
+      }
+      if(v==="s"){ v="m"; localStorage.setItem(ZKEY,v); }   /* v74: 小は廃止→中へ */
+      return (v==="m"||v==="l"||v==="xl")? v : "m";
+    }catch(e){ return "m"; }
+  }
+  function saveSize(){ try{ localStorage.setItem(ZKEY,size); }catch(e){} }
+  function applySize(){
+    pad.className=(pad.className.indexOf("on")>=0? "kpad on ":"kpad ")+"kp-"+size+
+      (pad.className.indexOf("calcon")>=0? " calcon":"");
+    /* 高さが変わるので、開いているなら下の余白を取り直す */
+    if(pad.className.indexOf("on")>=0) document.body.style.paddingBottom=(pad.offsetHeight+12)+"px";
+  }
+
+  function targets(){
+    var all=document.querySelectorAll("input"), out=[], i, el, im;
+    for(i=0;i<all.length;i++){
+      el=all[i];
+      /* 退避した data-im を先に見る。inputmode は "none" に差し替わっているため、
+         先に読むと対象が1つも見つからず、▲▼ の移動ができなくなる。 */
+      im=el.getAttribute("data-im")||el.getAttribute("inputmode")||"";
+      if((im==="decimal"||im==="numeric") && !el.disabled && !el.readOnly && el.offsetParent!==null) out.push(el);
+    }
+    return out;
+  }
+  /* OS のキーボードを止める／戻す */
+  function apply(){
+    var all=document.querySelectorAll("input"), i, el, im;
+    for(i=0;i<all.length;i++){
+      el=all[i];
+      im=el.getAttribute("inputmode");
+      if(on){
+        if(im==="decimal"||im==="numeric"){
+          el.setAttribute("data-im",im);
+          el.setAttribute("inputmode","none");
+        }
+      }else{
+        if(el.getAttribute("data-im")){
+          el.setAttribute("inputmode",el.getAttribute("data-im"));
+          el.removeAttribute("data-im");
+        }
+      }
+    }
+    document.body.className=on? "kbon":"";
+    if(!on) hide();
+  }
+  /* 穴の欄は後から作られるので、開くたびに掛け直す */
+  function reapply(){ if(on) apply(); }
+
+  function labelOf(el){
+    var d=el.parentNode, l=d?d.querySelector("label.f"):null;
+    if(l) return l.textContent;
+    var th, tb=el.closest? el.closest("td"):null;
+    if(tb) return "\u8868\u306e\u6b04";
+    return "\u6570\u5024";
+  }
+  function show(el){
+    /* 別の欄に移ったら計算はやめる。式はその欄の数字から始めるものなので、
+       持ち越すと「どの欄の計算か」が分からなくなる。 */
+    if(cur!==el&&calcOn) calcSet(false);
+    cur=el;
+    nameEl.textContent=labelOf(el);
+    pad.className="kpad on kp-"+size+(calcOn?" calcon":"");
+    pad.setAttribute("aria-hidden","false");
+    setTimeout(function(){ fabPaint(); },0);
+    document.body.style.paddingBottom=(pad.offsetHeight+12)+"px";
+    try{ el.scrollIntoView({block:"center",behavior:"smooth"}); }catch(e){}
+  }
+  function hide(){
+    calcOn=false; expr="";
+    /* ★入力モードの切り替え（apply→hide）でもここを通る。
+       戻しておかないと ＝ ( ) の文字が残ったままになる(v99)。 */
+    calcKeys(false);
+    setTimeout(function(){ fabPaint(); },0);
+    if(calcBtn) calcBtn.setAttribute("aria-pressed","false");
+    pad.className="kpad kp-"+size;
+    pad.setAttribute("aria-hidden","true");
+    document.body.style.paddingBottom="";
+    cur=null;
+  }
+  function fire(el){
+    var ev;
+    try{ ev=new Event("input",{bubbles:true}); }
+    catch(e){ ev=document.createEvent("Event"); ev.initEvent("input",true,false); }
+    el.dispatchEvent(ev);
+  }
+  function caret(el){
+    var a,b;
+    try{ a=el.selectionStart; b=el.selectionEnd; }catch(e){}
+    if(typeof a!=="number"){ a=el.value.length; b=a; }
+    return [a,b];
+  }
+  function put(el,txt){
+    var c=caret(el), v=el.value;
+    el.value=v.slice(0,c[0])+txt+v.slice(c[1]);
+    var p=c[0]+txt.length;
+    try{ el.setSelectionRange(p,p); }catch(e){}
+    fire(el);
+  }
+  function backsp(el){
+    var c=caret(el), v=el.value, p;
+    if(c[0]!==c[1]){ el.value=v.slice(0,c[0])+v.slice(c[1]); p=c[0]; }
+    else if(c[0]>0){ el.value=v.slice(0,c[0]-1)+v.slice(c[0]); p=c[0]-1; }
+    else return;
+    try{ el.setSelectionRange(p,p); }catch(e){}
+    fire(el);
+  }
+  function sign(el){
+    var v=el.value;
+    el.value=(v.charAt(0)==="-")? v.slice(1) : ("-"+v);
+    fire(el);
+  }
+  function move(step){
+    if(!cur) return;
+    var t=targets(), i=-1, k;
+    for(k=0;k<t.length;k++) if(t[k]===cur){ i=k; break; }
+    if(i<0) return;
+    var n=t[i+step];
+    if(!n){ return; }
+    n.focus();
+    try{ n.setSelectionRange(n.value.length,n.value.length); }catch(e){}
+    show(n);
+  }
+
+  /* ══ 電卓（v97）══
+     狙い: 「半分にする」ような計算のために電卓アプリへ移らなくて済むように。
+     ★ここで組み立てている式は<電卓の中だけ>のもの。＝を押すまで欄は変えない。
+       途中の数字を欄へ書くと、ツールがその値で計算し直してしまう。
+     ★右端スワイプで出す案は採らなかった。iOS Safari も Android Chrome も
+       端からのスワイプが「戻る／進む」で、取り合いになるため。 */
+  var calcOn=false, expr="";
+  var expEl=document.getElementById("kpExp");
+  var eqEl=document.getElementById("kpEqv");
+  var calcBtn=document.getElementById("kpCalcBtn");
+
+  /* 式の読み取り（v99でかっこに対応）。
+     戻り値は {v:数} か {err:理由}。理由が分かれば断り書きを分けられる。
+     ★eval は使わない。読み取りは <式→項→因子> の形。
+       因子 … 数 / (式) / −因子
+       項   … 因子 を × ÷ でつなぐ
+       式   … 項 を + − でつなぐ
+     組み込む前に dev/calc_probe2.js で43項目を単体で確かめてある。 */
+  function calcTok(s){
+    var t=[], num="", i, c;
+    for(i=0;i<s.length;i++){
+      c=s.charAt(i);
+      if(c>="0"&&c<="9"){ num+=c; continue; }
+      /* ★小数点が2つある数(1.2.3)は parseFloat が 1.2 として通してしまう。
+         打ち間違いが静かに別の数になるので弾く。 */
+      if(c==="."){ if(num.indexOf(".")>=0) return null; num+=c; continue; }
+      if(c===" ") continue;
+      if(num!==""){ if(num===".") return null; t.push(parseFloat(num)); num=""; }
+      if("+-×÷()".indexOf(c)<0) return null;
+      t.push(c);
+    }
+    if(num!==""){ if(num===".") return null; t.push(parseFloat(num)); }
+    return t;
+  }
+  function calcParen(s){
+    var i, c, n=0;
+    for(i=0;i<s.length;i++){
+      c=s.charAt(i);
+      if(c==="(") n++;
+      else if(c===")"){ n--; if(n<0) return "extra"; }
+    }
+    return n>0? "open" : "ok";
+  }
+  function calcRun(s){
+    if(s==="") return {err:"empty"};
+    if(calcParen(s)!=="ok") return {err:"paren"};
+    var t=calcTok(s);
+    if(t===null) return {err:"partial"};
+    var p=0, div0=false;
+    function peek(){ return p<t.length? t[p] : null; }
+    function factor(){
+      var c=peek(), v;
+      if(c===null) return null;
+      if(c==="-"){ p++; v=factor(); return v===null? null : -v; }
+      /* ★頭の「＋」は受け付けない。1++2 が 1+(+2)=3 として通ってしまい、
+         二度押しの打ち間違いが黙って計算される。負の数のための「−」だけ許す。 */
+      if(c==="("){ p++; v=expr(); if(v===null) return null;
+                   if(peek()!==")") return null; p++; return v; }
+      if(typeof c==="number"){ p++; return c; }
+      return null;
+    }
+    function term(){
+      var v=factor(), op, r;
+      if(v===null) return null;
+      while(peek()==="×"||peek()==="÷"){
+        op=t[p++]; r=factor();
+        if(r===null) return null;
+        if(op==="÷"){ if(r===0){ div0=true; return null; } v=v/r; }
+        else v=v*r;
+      }
+      return v;
+    }
+    function expr(){
+      var v=term(), op, r;
+      if(v===null) return null;
+      while(peek()==="+"||peek()==="-"){
+        op=t[p++]; r=term();
+        if(r===null) return null;
+        v=(op==="+")? v+r : v-r;
+      }
+      return v;
+    }
+    var v=expr();
+    if(div0) return {err:"div0"};
+    if(v===null||p!==t.length) return {err:"partial"};
+    if(!isFinite(v)) return {err:"partial"};
+    return {v:Math.round(v*1e6)/1e6};   /* mm の桁として6桁あれば足りる */
+  }
+  function calcEval(s){ var r=calcRun(s); return ("v" in r)? r.v : null; }
+  function paintCalc(){
+    if(!expEl) return;
+    expEl.textContent = expr===""? "0" : expr;
+    /* 長い式では、いま打っている右端が見えるようにする。
+       CSS の direction:rtl でこれをやると<並びが逆に見える>ので使わない(v98)。 */
+    try{ expEl.scrollLeft = expEl.scrollWidth; }catch(e){}
+    var res=calcRun(expr);
+    var v=("v" in res)? res.v : null;
+    var eqBtn=pad.querySelector("button.ceq");
+    var gridEq=pad.querySelector("#kpGrid button.nx");
+    if(v===null){
+      /* 直し方が違うので、理由ごとに分けて出す。まとめると何を直せばよいか
+         分からない（0で割ったのに「途中です」と出ると数字を足そうとする）。 */
+      var msg="";
+      if(res.err==="paren") msg="かっこが閉じていません";
+      else if(res.err==="div0") msg="0では割れません";
+      else if(res.err!=="empty") msg="式が途中です";
+      eqEl.textContent=msg;
+      eqEl.className="kpEq"+(msg?" bad":"");
+      if(eqBtn) eqBtn.disabled=true;
+      if(gridEq) gridEq.disabled=true;
+    }else{
+      eqEl.textContent="= "+v;
+      eqEl.className="kpEq";
+      if(eqBtn) eqBtn.disabled=false;
+      if(gridEq) gridEq.disabled=false;
+    }
+    /* ＝が何をするかは、欄を選んでいるかで変わる。押す前に分かるようにする。 */
+    if(eqBtn) eqBtn.textContent= cur? "＝ この欄に入れる" : "＝ 計算する";
+  }
+  /* 計算モードのあいだだけキーの意味を差し替える（v99・ムギさん依頼）。
+       グリッドの「次へ▼」 → 「＝」（計算するだけ。続けて計算できる）
+       上の行の「▲」「▼」  → 「(」「)」
+     ふだんは元の文字に戻す。 */
+  var lblGridNext=null, lblPrev=null, lblNext=null;
+  function calcKeys(onoff){
+    var g=pad.querySelector("#kpGrid button.nx");
+    var hp=pad.querySelector('.kpHead button[data-a="prev"]');
+    var hn=pad.querySelector('.kpHead button[data-a="next"]');
+    if(lblGridNext===null){
+      lblGridNext=g? g.innerHTML : "";
+      lblPrev=hp? hp.innerHTML : "";
+      lblNext=hn? hn.innerHTML : "";
+    }
+    if(g){
+      g.innerHTML= onoff? "＝" : lblGridNext;
+      g.className= onoff? "nx ceq2" : "nx";
+      g.setAttribute("aria-label", onoff? "計算する" : "次の欄へ");
+      if(!onoff) g.disabled=false;
+    }
+    if(hp){
+      hp.innerHTML= onoff? "(" : lblPrev;
+      hp.className= onoff? "sep paren" : "sep";
+      hp.setAttribute("aria-label", onoff? "かっこを開く" : "前の欄");
+    }
+    if(hn){
+      hn.innerHTML= onoff? ")" : lblNext;
+      hn.className= onoff? "paren" : "";
+      hn.setAttribute("aria-label", onoff? "かっこを閉じる" : "次の欄");
+    }
+  }
+  /* 計算するだけ（欄には入れない）。答えが式に残るので続けて計算できる。 */
+  function calcResult(){
+    var r=calcRun(expr);
+    if(!("v" in r)) return;
+    expr=String(r.v);
+    paintCalc();
+  }
+  function calcSet(v){
+    calcOn=!!v;
+    pad.className=(pad.className.replace(/\s*calcon/g,""))+(calcOn?" calcon":"");
+    if(calcBtn) calcBtn.setAttribute("aria-pressed",calcOn?"true":"false");
+    calcKeys(calcOn);
+    if(calcOn){
+      /* いま欄にある数字を式の先頭に置く。100 が入っていれば ÷ 2 ＝ で 50。
+         度分入力(「60 30」)のように数字でないものは、空から始める。 */
+      var v0=cur? String(cur.value||"") : "";
+      expr=/^-?\d*\.?\d+$/.test(v0)? v0 : "";
+    }else{ expr=""; }
+    paintCalc();
+    /* 高さが変わるので下の余白を取り直す */
+    if(pad.className.indexOf("on")>=0) document.body.style.paddingBottom=(pad.offsetHeight+12)+"px";
+  }
+  function calcPut(t){ expr+=t; paintCalc(); }
+  function calcBack(){ expr=expr.slice(0,-1); paintCalc(); }
+  function calcSign(){
+    /* 式の最後の数のプラスマイナスを入れ替える。
+       かっこで終わっているときは、どの数を指すか決まらないので何もしない。 */
+    if(/[)(]$/.test(expr)) return;
+    var m=expr.match(/(-?)(\d*\.?\d*)$/);
+    if(!m||m[2]==="") return;
+    var head=expr.slice(0,expr.length-m[0].length);
+    expr=head+((m[1]==="-")? m[2] : ("-"+m[2]));
+    paintCalc();
+  }
+  function calcEnter(){
+    var v=calcEval(expr);
+    if(v===null) return;
+    if(!cur){
+      /* 欄を選んでいないとき（電卓ボタンから開いたとき）は、
+         答えを式の場所に残す。そのまま次の計算に使える。 */
+      expr=String(v); paintCalc();
+      return;
+    }
+    cur.value=String(v);
+    try{ cur.setSelectionRange(cur.value.length,cur.value.length); }catch(e){}
+    fire(cur);
+    calcSet(false);            /* ＝のあとは数字キーに戻る（ムギさん判断） */
+  }
+
+  /* 押した瞬間に処理し、既定動作を止めてフォーカスを保つ */
+  function act(e){
+    var b=e.target;
+    while(b && b!==pad && b.tagName!=="BUTTON") b=b.parentNode;
+    if(!b || b===pad) return;
+    e.preventDefault();
+    beep();
+    var a=b.getAttribute("data-a");
+    if(a==="calc"){
+      /* ★欄を選ばずに開いた電卓で「計算」を切ると、入力先が無いのに数字キー
+         だけが残る。どこにも入らず、電卓でもない行き止まりになる(v99)。
+         欄が無いときは切らずに閉じる。 */
+      if(calcOn&&!cur){ hide(); return; }
+      calcSet(!calcOn); return;
+    }
+    if(a==="done"){ if(calcOn) calcSet(false); if(cur) cur.blur(); hide(); return; }
+    /* 計算モードのあいだは、数字も⌫もCも±も<式のほう>へ向ける。
+       欄は＝を押すまで変えない。 */
+    if(calcOn){
+      if(a==="op"){ calcPut(b.getAttribute("data-v")); return; }
+      if(a==="eq"){ calcEnter(); return; }
+      if(a==="d"){ calcPut(b.getAttribute("data-v")); return; }
+      if(a==="bs"){ calcBack(); return; }
+      if(a==="clr"){ expr=""; paintCalc(); return; }
+      if(a==="sign"){ calcSign(); return; }
+      if(a==="left"||a==="right") return;    /* 欄の中の移動は計算中は使わない */
+      /* ★グリッドの「次へ」は計算モードでは ＝（計算するだけ）。
+         上の行の ▲▼ は ( ) 。どちらも先に見分ける。 */
+      if(a==="next"&&b.className.indexOf("nx")>=0){ calcResult(); return; }
+      if(a==="prev"){ calcPut("("); return; }
+      if(a==="next"){ calcPut(")"); return; }
+    }
+    if(a==="prev"){ move(-1); return; }
+    if(a==="next"){ move(1); return; }
+    /* ←→: 数字の中でカーソルを1文字ずつ動かす。
+       欄をタップして点滅位置を狙い撃ちしなくても、これで寄せられる。
+       上段は「横＝数字の中を動く、縦＝欄の間を動く」で意味をそろえてある。 */
+    if(a==="left"||a==="right"){
+      if(!cur) return;
+      var c2=caret(cur), p2;
+      if(a==="left")  p2=(c2[0]===c2[1])? c2[0]-1 : c2[0];
+      else            p2=(c2[0]===c2[1])? c2[1]+1 : c2[1];
+      if(p2<0)p2=0;
+      if(p2>cur.value.length)p2=cur.value.length;
+      try{ cur.setSelectionRange(p2,p2); }catch(e2){}
+      return;
+    }
+    if(!cur) return;
+    if(a==="d") put(cur,b.getAttribute("data-v"));
+    else if(a==="bs") backsp(cur);
+    else if(a==="clr"){ cur.value=""; fire(cur); }
+    else if(a==="sign") sign(cur);
+  }
+  pad.addEventListener("mousedown",act);
+  pad.addEventListener("touchstart",act,{passive:false});
+
+  /* 欄に入ったら開く（穴の欄は後から増えるので委譲で拾う） */
+  document.addEventListener("focusin",function(e){
+    if(!on) return;
+    var el=e.target;
+    if(!el||el.tagName!=="INPUT") return;
+    var im=el.getAttribute("data-im")||el.getAttribute("inputmode")||"";
+    if(im!=="decimal"&&im!=="numeric"&&im!=="none") { hide(); return; }
+    if(!el.getAttribute("data-im")) reapply();
+    show(el);
+  });
+  document.addEventListener("focusout",function(e){
+    setTimeout(function(){
+      var a=document.activeElement;
+      if(!a || a.tagName!=="INPUT") { if(cur===e.target) hide(); }
+    },80);
+  });
+
+
+  /* 穴の欄は後から作られる。作られた「その場で」inputmode を止めないと、
+     最初の1回だけOSのキーボードが一瞬出てしまう。
+     クリック後の掛け直しでは間に合わないので、DOM の変化を見て掛ける。 */
+  if(window.MutationObserver){
+    var timer=null;
+    var mo=new MutationObserver(function(){
+      if(timer) return;
+      timer=setTimeout(function(){ timer=null; reapply(); },0);
+    });
+    mo.observe(document.body,{childList:true,subtree:true});
+  }else{
+    document.addEventListener("click",function(){ setTimeout(reapply,0); },false);
+  }
+
+  /* ══ 電卓を常に出しておくボタン（v98）══
+     置き場所は全ツール共通の設定（トップで選ぶ）。 */
+  var FKEY="kensa-calcbtn";
+  var fab=document.getElementById("calcFab");
+  function fabPos(){
+    try{
+      var v=localStorage.getItem(FKEY);
+      if(v===null) return "br";                    /* 既定は右下 */
+      return (v==="br"||v==="bl"||v==="tr"||v==="tl"||v==="bar"||v==="off")? v : "br";
+    }catch(e){ return "br"; }
+  }
+  function fabPaint(){
+    if(!fab) return;
+    var p=fabPos();
+    var open=(pad.className.indexOf("on")>=0);
+    fab.className="calcFab"+((p==="off"||open)? " off":(" "+p));
+    /* 下のバーは画面の下を占めるので、その分の余白を空ける。
+       キーボードが開いているときはキーボード側が余白を決める。 */
+    if(p==="bar"&&!open){ document.body.style.paddingBottom=(fab.offsetHeight+10)+"px"; }
+    else if(!open&&document.body.style.paddingBottom){ document.body.style.paddingBottom=""; }
+  }
+  /* 欄を選んでいなくても開ける。選んでいればその欄に入れる。 */
+  function calcOpen(){
+    var a=document.activeElement, im;
+    if(a&&a.tagName==="INPUT"){
+      im=a.getAttribute("data-im")||a.getAttribute("inputmode")||"";
+      if(im==="decimal"||im==="numeric"||im==="none"){ show(a); calcSet(true); fabPaint(); return; }
+    }
+    /* どの欄も選んでいないとき: 電卓だけを開く。cur は null のまま。 */
+    cur=null;
+    if(nameEl) nameEl.textContent="電卓";
+    pad.className="kpad on kp-"+size;
+    pad.setAttribute("aria-hidden","false");
+    /* ★ここで pad.className を自分で組み立てていたため calcSet を通らず、
+       キーの文字を差し替える calcKeys() が呼ばれていなかった。
+       「次へ▼」「▲」「▼」のままなのに、押すと ＝ ( ) として働いていた(v99)。
+       calcSet に任せる。 */
+    calcSet(true);
+    document.body.style.paddingBottom=(pad.offsetHeight+12)+"px";
+    fabPaint();
+  }
+  if(fab){
+    fab.addEventListener("click",function(e){ e.preventDefault(); calcOpen(); });
+  }
+  /* ★設定はトップの画面で変える。ふつうはツールを開き直すので読み直されるが、
+     開いたままのときは on が古いまま残る。すると欄は inputmode="none" のまま
+     なのに自前キーボードが出ない＝<どこにも入力できない>状態になりうる。
+     設定の変更を拾って当て直す。 */
+  window.addEventListener("storage",function(e){
+    if(!e) return;
+    if(e.key===FKEY){ fabPaint(); return; }
+    if(e.key===KEY){ on=load(); apply(); return; }
+    if(e.key===ZKEY){ size=loadSize(); applySize(); return; }
+  });
+
+  on=load();
+  size=loadSize();
+  apply();
+  applySize();
+  fabPaint();
+  window.__kbd={ apply:apply, targets:targets, isOn:function(){return on;},
+                 size:function(){return size;}, applySize:applySize,
+                 show:show, hide:hide, pad:pad, cur:function(){return cur;},
+                 calc:{ set:calcSet, evalExpr:calcEval,
+                        isOn:function(){return calcOn;},
+                        expr:function(){return expr;},
+                        open:calcOpen, fabPos:fabPos, fabPaint:fabPaint,
+                        run:calcRun, result:calcResult } };
+})();
+</script>
+
+<script>
+/* ── 記録（部品ノート）v73 ／ 保存先の作り直しと取り消し v80 ──
+   狙い: 同じ部品がまた来たとき、前回の数字をタップ1つで呼び戻す。
+   考え方（v80で改めた点）:
+   ・「呼び出しは簡潔に、保存は丁寧に」。保存先は<部品の身元>として
+     加工先・部品名・図番・部組(機種)・形状・備考(通称) の6項目で作る。
+     6つのうち<どれか1つ以上>を入れないと作れない。名無しの保存先は作れない。
+   ・2回目以降は保存先を選ぶだけ。選ぶ画面には6項目をそのまま出すので、
+     名前だけの一覧と違って取り違えにくい。
+   ・保存した直後は「取り消す」が出る（60秒）。押すとその記録を消す。
+     その保存で新しく作った保存先なら、中が空になる場合は保存先ごと戻す。
+   ・保存するのは<入力値だけ>。答えは保存しない＝呼び出すたびに計算し直す。
+     後で計算式を直しても、古い答えが蘇らないようにするため。
+   ・値は文字列のまま保存。数値化すると NaN/null が JSON で化ける(v55の学び)。
+   ・保存はこの端末の中だけ(送信なし)。編集・削除はトップの「📒 記録」で行う。 */
+(function(){
+  "use strict";
+  var RKEY="kensa-rec";
+  var TOOL=(function(){
+    var m=(location.pathname||"").match(/\/([^\/]+)\/(?:index\.html)?$/);
+    return m? m[1] : "";
+  })();
+  var TNAME=(document.title||"").split("|")[0].replace(/^\s+|\s+$/g,"");
+
+
+  /* ── 図のサムネイル（v87）──
+     狙い: 記録の一覧で「探している部品か」を見て分かるようにする。
+     ・入れ物は IndexedDB。localStorage(5MB)とは別枠なので、図を入れても
+       記録そのものを圧迫しない。使えない端末では黙って何もしない。
+     ・ここは「答えは保存しない」の<例外>。保存しない道を選ぶと、ポータル側に
+       各ツールの描画を持つことになり、生成元と成果物の二重管理（v82の原因）に
+       戻ってしまう。保存すれば描くのはツールだけで済む。
+     ・代わりに<作ったときの版>を一緒に残す。いまの版と違えばポータルが
+       バッジを出す。古いことが分かれば、黙って誤解させることはない。
+     ・ツール側で window.krThumb() を用意すれば図が付く。無ければ付かない。
+       ★この共有ブロックは全ツールで完全に同じままにすること。 */
+  var TDB="kensa-thumbs", TSTORE="thumbs", TVKEY="kensa-thumbver";
+  function tOpen(cb){
+    var idb=window.indexedDB, rq;
+    if(!idb){ cb(null); return; }
+    try{ rq=idb.open(TDB,1); }catch(e){ cb(null); return; }
+    rq.onupgradeneeded=function(ev){
+      var db=ev.target.result;
+      if(!db.objectStoreNames.contains(TSTORE)) db.createObjectStore(TSTORE,{keyPath:"id"});
+    };
+    rq.onsuccess=function(){ cb(rq.result); };
+    rq.onerror=function(){ cb(null); };
+  }
+  function tPut(id,svg){
+    tOpen(function(db){
+      if(!db) return;
+      try{ db.transaction(TSTORE,"readwrite").objectStore(TSTORE)
+             .put({id:id, svg:svg, ts:(new Date()).getTime()}); }catch(e){}
+    });
+  }
+  function tDel(id){
+    tOpen(function(db){
+      if(!db) return;
+      try{ db.transaction(TSTORE,"readwrite").objectStore(TSTORE)["delete"](id); }catch(e){}
+    });
+  }
+  function thumbVer(){ return (typeof window.krThumbVer==="string")? window.krThumbVer : ""; }
+  function makeThumb(){
+    var s="";
+    if(typeof window.krThumb!=="function") return "";
+    try{ s=window.krThumb(); }catch(e){ s=""; }
+    if(typeof s!=="string") return "";
+    if(s.length>20000) return "";        /* 大きすぎる図は入れない（一覧が重くなる） */
+    return s;
+  }
+  /* いまの版を控える。ポータルはこれと記録の版を見比べてバッジを出す。
+     ツールが自分で書くので、ポータルに版の表を持たない（二重管理を避ける）。 */
+  (function(){
+    var v=thumbVer(), m;
+    if(!v||!TOOL) return;
+    try{
+      m=JSON.parse(localStorage.getItem(TVKEY)||"{}");
+      if(!m||typeof m!=="object") m={};
+      if(m[TOOL]!==v){ m[TOOL]=v; localStorage.setItem(TVKEY,JSON.stringify(m)); }
+    }catch(e){}
+  })();
+
+  function inOwn(el){
+    var n=el;
+    while(n){ if(n.id==="kpad"||n.id==="krBar"||n.id==="krSheet"||n.id==="krCall") return true; n=n.parentNode; }
+    return false;
+  }
+  function hasOn(el){ return (" "+el.className+" ").indexOf(" on ")>=0; }
+  function fire(el,type){
+    var ev;
+    try{ ev=new Event(type,{bubbles:true}); }
+    catch(e){ ev=document.createEvent("Event"); ev.initEvent(type,true,false); }
+    el.dispatchEvent(ev);
+  }
+  function esc(s){
+    return String(s==null? "":s).replace(/&/g,"&amp;").replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+  function trim(s){ return String(s==null? "":s).replace(/^\s+|\s+$/g,""); }
+
+  /* ▼ここだけツールごとに違う：保存する中身の出し入れ▼
+     汎用版 … id の付いた text/textarea/select/checkbox を拾う(readonly は除外)。
+     id^="sw" のボタン(モード切替)は on の組を保存し、復元はクリックで再現する。 */
+  function fields(){
+    var sel='input[type="text"][id],textarea[id],select[id],input[type="checkbox"][id]';
+    var els=document.querySelectorAll(sel), out=[], i, el;
+    for(i=0;i<els.length;i++){
+      el=els[i];
+      if(el.readOnly||inOwn(el)) continue;
+      out.push(el);
+    }
+    return out;
+  }
+  function swBtns(){
+    var els=document.querySelectorAll('button[id^="sw"]'), out=[], i;
+    for(i=0;i<els.length;i++){ if(!inOwn(els[i])) out.push(els[i]); }
+    return out;
+  }
+  function collect(){
+    var v={}, els=fields(), i, el, sw=[], bs=swBtns();
+    for(i=0;i<els.length;i++){
+      el=els[i];
+      if(el.type==="checkbox") v[el.id]=el.checked? "1":"0";
+      else v[el.id]=String(el.value==null? "":el.value);
+    }
+    for(i=0;i<bs.length;i++){ if(hasOn(bs[i])) sw.push(bs[i].id); }
+    return {v:v, sw:sw};
+  }
+  function makeLabel(){
+    var els=fields(), i, el, out=[], s;
+    for(i=0;i<els.length&&out.length<3;i++){
+      el=els[i];
+      if(el.type==="checkbox"||el.tagName==="SELECT"||el.tagName==="TEXTAREA") continue;
+      s=String(el.value==null? "":el.value).replace(/\s+/g," ");
+      if(s!=="") out.push(s.length>10? s.slice(0,10)+"…":s);
+    }
+    return out.length? out.join(" / ") : "(入力なし)";
+  }
+  /* ▲差込口ここまで▲ */
+
+
+  /* ── 項目の定義（全ツール・ポータル共通。並び・ラベルは必ずそろえる）──
+     フォルダ(保存先)は軽く、ファイル(記録1件)に詳細を持たせる。
+     同じ部品でも回ごとに加工先や図番の版が変わるので、詳細は<記録ごと>が正しい。 */
+  var DFLD=[["nm","名前"],["as","部組（機種）"],["nt","備考"]];
+  var RFLD=[["mk","加工先"],["pt","部品名"],["dw","図番"],["sh","形状"],["nt","備考（通称）"]];
+
+  function emptyD(){ return {nm:"",as:"",nt:""}; }
+  function emptyR(){ return {mk:"",pt:"",dw:"",sh:"",nt:""}; }
+  function normBy(list,f){
+    var o={}, i;
+    for(i=0;i<list.length;i++) o[list[i][0]]=trim(f? f[list[i][0]]:"");
+    return o;
+  }
+  function anyOf(list,f){
+    var i; for(i=0;i<list.length;i++) if(f[list[i][0]]!=="") return true;
+    return false;
+  }
+  /* フォルダの見出しは名前そのもの（名前は必須）。 */
+  function headD(f){ return f.nm!==""? f.nm : "(名称なし)"; }
+  function subD(f){
+    var out=[], i, k;
+    for(i=1;i<DFLD.length;i++){ k=DFLD[i][0]; if(f[k]!=="") out.push(DFLD[i][1]+" "+f[k]); }
+    return out.join(" / ");
+  }
+  /* ファイルの見出しは 部品名 ・ 図番 ・ 加工先。空はとばす。 */
+  function headR(g){
+    var out=[], k=["pt","dw","mk"], i;
+    if(!g) return "";
+    for(i=0;i<k.length;i++) if(g[k[i]]&&g[k[i]]!=="") out.push(g[k[i]]);
+    if(!out.length) for(i=0;i<RFLD.length;i++) if(g[RFLD[i][0]]&&g[RFLD[i][0]]!==""){ out.push(g[RFLD[i][0]]); break; }
+    return out.join(" ・ ");
+  }
+  function subR(g){
+    var out=[], used={pt:1,dw:1,mk:1}, i, k;
+    if(!g) return "";
+    for(i=0;i<RFLD.length;i++){
+      k=RFLD[i][0];
+      if(used[k]||!g[k]||g[k]==="") continue;
+      out.push(RFLD[i][1]+" "+g[k]);
+    }
+    return out.join(" / ");
+  }
+
+  /* ── 保存の入れ物 ──
+     v80 はフォルダ側に6項目を持たせていたが、詳細は記録ごとに要るという指摘で
+     v81 で組み替えた。古い形は読み込んだ時点で新しい形に直す。
+     ・v79以前 … d.n（名前だけ）→ フォルダ名へ
+     ・v80    … d.f{mk,pt,dw,as,sh,nt} → 名前は見出し、部組と備考はそのまま、
+                残り(加工先・部品名・図番・形状)は取りこぼさないよう備考へ添える。 */
+  function loadDB(){
+    var db=null, i, f, o, ex;
+    try{ db=JSON.parse(localStorage.getItem(RKEY)||"null"); }catch(e){ db=null; }
+    if(!db||typeof db!=="object") db={};
+    if(!db.d) db.d=[];
+    if(!db.r) db.r=[];
+    if(!db.seq) db.seq=0;
+    if(db.last==null) db.last="";
+    for(i=0;i<db.d.length;i++){
+      f=db.d[i].f;
+      if(f&&f.nm!=null){ db.d[i].f=normBy(DFLD,f); }
+      else if(f){
+        o=emptyD();
+        o.nm=trim(f.pt)||trim(f.dw)||trim(f.mk)||trim(f.sh)||trim(db.d[i].n)||"";
+        o.as=trim(f.as);
+        ex=[];
+        if(trim(f.mk)&&trim(f.mk)!==o.nm) ex.push("加工先 "+trim(f.mk));
+        if(trim(f.pt)&&trim(f.pt)!==o.nm) ex.push("部品名 "+trim(f.pt));
+        if(trim(f.dw)&&trim(f.dw)!==o.nm) ex.push("図番 "+trim(f.dw));
+        if(trim(f.sh)&&trim(f.sh)!==o.nm) ex.push("形状 "+trim(f.sh));
+        o.nt=[trim(f.nt)].concat(ex).join(" / ").replace(/^ \/ | \/ $/g,"").replace(/^\s*\/\s*/,"");
+        db.d[i].f=normBy(DFLD,o);
+      }else{
+        db.d[i].f=normBy(DFLD,{nm:trim(db.d[i].n)});
+      }
+      db.d[i].n=headD(db.d[i].f);
+    }
+    for(i=0;i<db.r.length;i++) if(db.r[i].g) db.r[i].g=normBy(RFLD,db.r[i].g);
+    return db;
+  }
+  function saveDB(db){
+    try{ localStorage.setItem(RKEY,JSON.stringify(db)); return true; }
+    catch(e){ return false; }
+  }
+  function destOf(db,id){
+    var i; for(i=0;i<db.d.length;i++) if(db.d[i].i===id) return db.d[i];
+    return null;
+  }
+  /* 同じフォルダの直近の記録を、次の記入の下敷きにする（打ち直しを減らす） */
+  function lastGOf(db,did){
+    var i;
+    for(i=0;i<db.r.length;i++) if(db.r[i].d===did&&db.r[i].g) return db.r[i].g;
+    return null;
+  }
+
+  /* ── 画面部品 ── */
+  var css=""
+    +"#krBar{margin:14px 0 6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}"
+    +"#krBar button{font:inherit;font-size:13px;padding:7px 14px;border:1px solid #C9D3DA;"
+    +"border-radius:9px;background:#fff;color:#1F3341;cursor:pointer;min-height:38px}"
+    +"#krBar button#krUndo{border-color:#B4232C;color:#B4232C;font-weight:bold}"
+    +"#krBar button#krUndo.off{display:none}"
+    +"#krNote{font-size:12px;color:#5B707E;opacity:0;transition:opacity .25s}"
+    +"#krNote.show{opacity:1}"
+    +"#krNote.warn{color:#B4232C}"
+    +"#krSheet{position:fixed;left:0;right:0;bottom:0;z-index:10000;background:#fff;"
+    +"border-top:1px solid #C9D3DA;box-shadow:0 -6px 18px rgba(0,0,0,.18);"
+    +"padding:12px 14px calc(14px + env(safe-area-inset-bottom));max-height:74%;overflow-y:auto}"
+    +"#krSheet.off{display:none}"
+    +"#krSheet .krH{display:flex;justify-content:space-between;align-items:center;"
+    +"font-size:13px;font-weight:bold;color:#1F3341;margin-bottom:8px}"
+    +"#krSheet .krH button{font:inherit;font-size:12px;padding:5px 12px;border:1px solid #C9D3DA;"
+    +"border-radius:8px;background:#F2F4F5;cursor:pointer}"
+    +"#krList button{display:block;width:100%;text-align:left;font:inherit;font-size:14px;"
+    +"padding:10px 12px;margin:6px 0;border:1px solid #C9D3DA;border-radius:9px;"
+    +"background:#F7F9FA;color:#1F3341;cursor:pointer}"
+    +"#krList button small{display:block;color:#5B707E;font-size:11.5px;margin-top:3px;line-height:1.5}"
+    +"#krSheet .krT{font-size:11.5px;color:#5B707E;margin-top:8px;line-height:1.7}"
+    +"#krNewBtn{display:block;width:100%;font:inherit;font-size:13.5px;padding:11px;margin-top:10px;"
+    +"border:1px dashed #C9D3DA;border-radius:9px;background:#fff;color:#1F3341;cursor:pointer}"
+    +"#krPick.off,#krDForm.off,#krRForm.off,#krSheet .krT.off{display:none}"
+    +"#krSheet .krFR{margin-bottom:7px}"
+    +"#krSheet .krFR label{display:block;font-size:11.5px;font-weight:bold;color:#5B707E;margin-bottom:3px}"
+    +"#krSheet .krFR input{width:100%;font:inherit;font-size:15px;padding:9px 10px;"
+    +"border:1px solid #C9D3DA;border-radius:9px;background:#fff;color:#1F3341}"
+    +"#krSheet .krFB{display:flex;gap:7px;margin-top:9px}"
+    +"#krSheet .krFB button{flex:1;font:inherit;font-size:13.5px;padding:11px;border:1px solid #C9D3DA;"
+    +"border-radius:9px;background:#1F3341;color:#fff;cursor:pointer;min-height:44px}"
+    +"#krSheet .krFB button.sub{background:#fff;color:#1F3341}"
+    +"#krSheet .krFN{font-size:11.5px;color:#B4232C;margin-top:6px;min-height:16px}"
+    +"#krWhere{font-size:12.5px;color:#1F3341;background:#F2F4F5;border-radius:8px;"
+    +"padding:8px 10px;margin-bottom:9px;line-height:1.6}"
+    +"#krWhere .krPre{font-size:11px;color:#5B707E}"
+    /* 記録の部品は紙に出さない。v88まではガイドの中にいたので印刷されて
+       いなかったが、外へ出したので明示的に外す(v89)。 */
+    +"@media print{#krBar,#krSheet,#krCall{display:none !important}}";
+
+  function build(){
+    var st=document.createElement("style");
+    st.appendChild(document.createTextNode(css));
+    document.head.appendChild(st);
+
+    var bar=document.createElement("div");
+    bar.id="krBar";
+    bar.innerHTML='<button type="button" id="krBtn">📒 記録する</button>'
+      +'<button type="button" id="krUndo" class="off">取り消す</button>'
+      +'<span id="krNote"></span>';
+    /* 置き場所は<結果の直下>。v88まで .src の前に入れていたが、.src は
+       「使い方と例を見る」(details)の中にあるため、ガイドを開かないと
+       ボタンが出てこなかった。jsdom は details を描画しないので検算では
+       見えず、実機で発覚した(v89)。
+       ・結果ブロックがタブの中にあるツール(axis-tilt/chord-r/corner-dist)は、
+         タブごと消えないようタブ群の外へ出す。
+       ・結果ブロックが無いツール(pitch-row/resin-guide)はフッターの直前。 */
+    var wrap=document.querySelector(".wrap");
+    var dro=wrap? wrap.querySelector(".dro"):null;
+    if(wrap&&dro){
+      var host=dro;
+      while(host.parentNode&&host.parentNode!==wrap) host=host.parentNode;
+      if(host.tagName==="SECTION"){
+        while(host.nextElementSibling&&host.nextElementSibling.tagName==="SECTION")
+          host=host.nextElementSibling;
+      }
+      wrap.insertBefore(bar,host.nextSibling);
+    }else if(wrap){
+      wrap.insertBefore(bar,wrap.querySelector("footer"));
+    }else document.body.appendChild(bar);
+
+    /* 名前などの欄には inputmode を付けない＝OS標準キーボードで文字が打てる */
+    function fh(list,pre){
+      var h="", i;
+      for(i=0;i<list.length;i++){
+        h+='<div class="krFR"><label for="'+pre+list[i][0]+'">'+list[i][1]+'</label>'
+          +'<input type="text" id="'+pre+list[i][0]+'" autocomplete="off"></div>';
+      }
+      return h;
+    }
+    var sh=document.createElement("div");
+    sh.id="krSheet"; sh.className="off";
+    sh.innerHTML='<div class="krH"><span id="krTitle">どのフォルダに入れますか</span>'
+      +'<button type="button" id="krClose">閉じる</button></div>'
+
+      /* ① フォルダを選ぶ */
+      +'<div id="krPick">'
+      +'<div id="krList"></div>'
+      +'<button type="button" id="krNewBtn">＋ 新しいフォルダを作る</button>'
+      +'</div>'
+
+      /* ② フォルダを作る（軽く：名前・部組・備考） */
+      +'<div id="krDForm" class="off">'+fh(DFLD,"krD_")
+      +'<div id="krDNote" class="krFN"></div>'
+      +'<div class="krFB"><button type="button" id="krDGo">作る</button>'
+      +'<button type="button" class="sub" id="krDNo">やめる</button></div></div>'
+
+      /* ③ 記録の中身を書く（詳細はこちら） */
+      +'<div id="krRForm" class="off">'
+      +'<div class="krWhere" id="krWhere"></div>'+fh(RFLD,"krR_")
+      +'<div id="krRNote" class="krFN"></div>'
+      +'<div class="krFB"><button type="button" id="krRGo">記録する</button>'
+      +'<button type="button" class="sub" id="krRNo">フォルダを選び直す</button></div></div>'
+
+      +'<div class="krT" id="krTip">フォルダは<b>名前</b>だけ必須です。'
+      +'加工先・図番などの詳しい内容は、次の画面で<b>記録1件ごと</b>に書きます。<br>'
+      +'保存はこの端末の中だけです(送信なし)。</div>';
+    document.body.appendChild(sh);
+
+    document.getElementById("krBtn").onclick=function(){ openSheet(); };
+    document.getElementById("krClose").onclick=function(){ sheet(false); };
+    document.getElementById("krNewBtn").onclick=function(){ showPane("d"); };
+    document.getElementById("krDNo").onclick=function(){ showPane("pick"); };
+    document.getElementById("krDGo").onclick=function(){ addDest(); };
+    document.getElementById("krRNo").onclick=function(){ showPane("pick"); };
+    document.getElementById("krRGo").onclick=function(){ saveRec(); };
+    document.getElementById("krUndo").onclick=function(){ undo(); };
+  }
+
+  function sheet(on){
+    var el=document.getElementById("krSheet");
+    if(el) el.className=on? "":"off";
+    if(!on) showPane("pick");
+  }
+  function showPane(p){
+    var pick=document.getElementById("krPick"), df=document.getElementById("krDForm"),
+        rf=document.getElementById("krRForm"), ti=document.getElementById("krTitle"),
+        tip=document.getElementById("krTip"), i, el;
+    if(!pick) return;
+    pick.className=(p==="pick")? "":"off";
+    df.className=(p==="d")? "":"off";
+    rf.className=(p==="r")? "":"off";
+    tip.className=(p==="pick")? "krT":"krT off";
+    document.getElementById("krDNote").textContent="";
+    document.getElementById("krRNote").textContent="";
+    if(p==="pick") ti.textContent="どのフォルダに入れますか";
+    if(p==="d"){
+      ti.textContent="フォルダを作ります";
+      for(i=0;i<DFLD.length;i++){ el=document.getElementById("krD_"+DFLD[i][0]); if(el) el.value=""; }
+      el=document.getElementById("krD_nm"); if(el) el.focus();
+    }
+    if(p==="r") ti.textContent="この記録の内容";
+  }
+
+  function openSheet(){
+    var db=loadDB(), list=document.getElementById("krList"), h="", i, d;
+    var ds=db.d.slice().sort(function(a,b){ return (b.ts||0)-(a.ts||0); });
+    if(!ds.length){
+      h='<div class="krT">まだフォルダがありません。下の「＋ 新しいフォルダを作る」から作ってください。</div>';
+    }
+    for(i=0;i<ds.length;i++){
+      d=ds[i];
+      h+='<button type="button" data-d="'+esc(d.i)+'">'+esc(headD(d.f))
+        +(subD(d.f)? '<small>'+esc(subD(d.f))+'</small>':'')+'</button>';
+    }
+    list.innerHTML=h;
+    list.onclick=function(e){
+      var b=e.target;
+      while(b&&b!==list&&b.tagName!=="BUTTON") b=b.parentNode;
+      if(!b||b===list) return;
+      openRecForm(b.getAttribute("data-d"),false);
+    };
+    showPane(ds.length? "pick":"d");
+    sheet(true);
+  }
+
+  function addDest(){
+    var f=emptyD(), i, el;
+    for(i=0;i<DFLD.length;i++){
+      el=document.getElementById("krD_"+DFLD[i][0]);
+      f[DFLD[i][0]]=trim(el? el.value:"");
+    }
+    if(f.nm===""){
+      document.getElementById("krDNote").textContent="フォルダの名前を入れてください。";
+      el=document.getElementById("krD_nm"); if(el) el.focus();
+      return;
+    }
+    var db=loadDB();
+    db.seq++;
+    var id="d"+db.seq;
+    db.d.push({i:id,n:f.nm,f:f,ts:(new Date()).getTime()});
+    if(!saveDB(db)){ note("保存できませんでした(端末の空き容量を確認してください)",true); return; }
+    openRecForm(id,true);
+  }
+
+  /* ── 記録の中身を書く画面 ──
+     同じフォルダの直近の記録があれば下敷きにする。同じ部品を何度も測るときに
+     打ち直さずに済み、それでいて<今回の内容として目を通した>形になる。 */
+  var curDest="", curNew=false;
+  function openRecForm(destId,isNew){
+    var db=loadDB(), d=destOf(db,destId);
+    if(!d){ note("そのフォルダが見つかりませんでした",true); sheet(false); return; }
+    curDest=destId; curNew=!!isNew;
+    var g=lastGOf(db,destId), i, el, k;
+    for(i=0;i<RFLD.length;i++){
+      k=RFLD[i][0];
+      el=document.getElementById("krR_"+k);
+      if(el) el.value=(g&&g[k])? g[k] : "";
+    }
+    document.getElementById("krWhere").innerHTML="入れ先: <b>"+esc(headD(d.f))+"</b>"
+      +(g? '　<span class="krPre">前回の内容を写しています</span>':"");
+    showPane("r");
+    el=document.getElementById("krR_pt"); if(el&&!(g&&g.pt)) el.focus();
+  }
+  function saveRec(){
+    var g=emptyR(), i, el;
+    for(i=0;i<RFLD.length;i++){
+      el=document.getElementById("krR_"+RFLD[i][0]);
+      g[RFLD[i][0]]=trim(el? el.value:"");
+    }
+    if(!anyOf(RFLD,g)){
+      document.getElementById("krRNote").textContent="5つのうち、どれか1つは入れてください。";
+      el=document.getElementById("krR_pt"); if(el) el.focus();
+      return;
+    }
+    doSave(curDest,curNew,g);
+  }
+
+  var lastSave=null, undoTimer=null;
+  function doSave(destId,isNew,g){
+    var db=loadDB(), d=destOf(db,destId);
+    if(!d){ note("そのフォルダが見つかりませんでした",true); sheet(false); return; }
+    var c=collect();
+    var tsvg=makeThumb();                 /* v87: 図。ツールが用意していなければ空 */
+    db.seq++;
+    var rid="r"+db.seq;
+    db.r.unshift({ i:rid, d:destId, t:TOOL, n:TNAME, l:makeLabel(), g:g,
+                   ts:(new Date()).getTime(), v:c.v, sw:c.sw,
+                   tv:(tsvg? thumbVer():"") });
+    db.last=destId;
+    if(saveDB(db)){
+      lastSave={r:rid, d:destId, newDest:!!isNew};
+      note("「"+headD(d.f)+"」に "+headR(g)+" として記録しました",false);
+      if(tsvg) tPut(rid,tsvg);            /* v87: 記録が保存できたときだけ図を入れる */
+      armUndo();
+    }else{
+      note("保存できませんでした(端末の空き容量を確認してください)",true);
+    }
+    sheet(false);
+  }
+  /* ── 取り消し（v80）──
+     失敗に気づくのはたいてい保存した直後。トップまで戻らずその場で消せるようにする。
+     その保存で作ったフォルダなら、中が空になる場合はフォルダごと戻す。 */
+  function armUndo(){
+    var b=document.getElementById("krUndo");
+    if(!b) return;
+    b.className="";
+    if(undoTimer) clearTimeout(undoTimer);
+    undoTimer=setTimeout(function(){ b.className="off"; lastSave=null; },60000);
+  }
+  function undo(){
+    if(!lastSave){ return; }
+    var db=loadDB(), keep=[], i, n=0;
+    for(i=0;i<db.r.length;i++) if(db.r[i].i!==lastSave.r) keep.push(db.r[i]);
+    db.r=keep;
+    tDel(lastSave.r);                     /* v87: 記録を消したら図も消す（孤児を作らない） */
+    if(lastSave.newDest){
+      for(i=0;i<db.r.length;i++) if(db.r[i].d===lastSave.d) n++;
+      if(n===0){
+        var d2=[];
+        for(i=0;i<db.d.length;i++) if(db.d[i].i!==lastSave.d) d2.push(db.d[i]);
+        db.d=d2;
+        if(db.last===lastSave.d) db.last="";
+      }
+    }
+    if(saveDB(db)) note("記録を取り消しました",false);
+    else note("取り消せませんでした",true);
+    lastSave=null;
+    var b=document.getElementById("krUndo"); if(b) b.className="off";
+    if(undoTimer) clearTimeout(undoTimer);
+  }
+
+  var noteTimer=null;
+  function note(msg,warn){
+    var el=document.getElementById("krNote");
+    if(!el) return;
+    el.textContent=msg;
+    el.className=warn? "show warn":"show";
+    if(noteTimer) clearTimeout(noteTimer);
+    noteTimer=setTimeout(function(){ el.className=""; },5000);
+  }
+
+  /* ── 呼び出し(?rec=ID) ──
+     欄の数が決まっているツールは、そのまま入れて既存の計算を走らせる。 */
+  function restore(){
+    var m=(location.search||"").match(/[?&]rec=([^&]+)/);
+    if(!m) return;
+    var id=decodeURIComponent(m[1]);
+    var db=loadDB(), i, rec=null;
+    for(i=0;i<db.r.length;i++) if(db.r[i].i===id){ rec=db.r[i]; break; }
+    if(!rec){ note("呼び出す記録が見つかりませんでした(削除済みの可能性)",true); return; }
+    if(rec.t!==TOOL){ note("この記録は別のツールのものです",true); return; }
+    var sw=rec.sw||[], el;
+    for(i=0;i<sw.length;i++){
+      el=document.getElementById(sw[i]);
+      if(el&&!hasOn(el)) el.click();     /* モードを先に合わせる */
+    }
+    var v=rec.v||{}, k, filled=[], miss=0;
+    for(k in v){
+      if(!Object.prototype.hasOwnProperty.call(v,k)) continue;
+      el=document.getElementById(k);
+      if(!el||inOwn(el)){ miss++; continue; }
+      if(el.type==="checkbox") el.checked=(v[k]==="1");
+      else el.value=v[k];
+      filled.push(el);
+    }
+    for(i=0;i<filled.length;i++){
+      el=filled[i];
+      fire(el,(el.tagName==="SELECT"||el.type==="checkbox")? "change":"input");
+    }
+    var d=destOf(db,rec.d);
+    note("記録「"+(headR(rec.g)||rec.l)+"」を呼び出しました"+(d? "("+headD(d.f)+")":"")
+      +(miss? "。一部の欄は復元できませんでした":""), miss>0);
+  }
+
+
+  function init(){ build(); restore(); }
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",init);
+  else init();
+})();
+</script>
+</body>
+</html>

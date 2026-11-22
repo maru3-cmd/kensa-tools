@@ -2,7 +2,7 @@
  * オフライン専用機向け：全ツールを事前キャッシュし、キャッシュ優先で即表示。
  * 更新時は下の CACHE のバージョン(v1→v2…)を上げるだけ。古いキャッシュは自動削除。
  */
-var CACHE = "kensa-tools-v173";
+var CACHE = "kensa-tools-v177";
 
 /* プリキャッシュで取りこぼしたURLの記録先。ページからの診断に使う（外部通信はしない） */
 var FAILKEY = "./__precache_failed";
@@ -91,6 +91,8 @@ var PRECACHE = [
   "./resin-guide/index.html",
   "./material-cross/",
   "./material-cross/index.html",
+  "./surface/",
+  "./surface/index.html",
   "./right-triangle/",
   "./right-triangle/index.html",
   "./scale-count/",
@@ -109,6 +111,10 @@ var PRECACHE = [
   "./temp-comp/index.html",
   "./tolerance/",
   "./tolerance/index.html",
+  "./geo-tol/",
+  "./geo-tol/index.html",
+  "./keyway/",
+  "./keyway/index.html",
   "./true-position/",
   "./true-position/index.html"
 ];
