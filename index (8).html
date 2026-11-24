@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#1F3341">
-<meta name="description" content="弦(スパン)と矢高から円弧の半径Rを計算。R既知なら期待矢高の逆算も。Rと開き角から周長・弦と角度指示の穴の割り出し(円弧カバー)にも対応。両端に直線の付いたカバーを定盤に置いたときの先端の高さ・全長・高さ推移も出せます。板の角の大きなRを、曲がり尺（直角定規）を当てて角から円弧までのいちばん短い距離から求めることもできます。計算は端末内で完結し、入力値はどこにも送信されません。">
+<meta name="description" content="弦(スパン)と矢高から円弧の半径Rを計算。R既知なら期待矢高の逆算も。Rと開き角から周長・弦と角度指示の穴の割り出し(円弧カバー)にも対応。両端に直線の付いたカバーを定盤に置いたときの先端の高さ・全長・高さ推移も出せます。計算は端末内で完結し、入力値はどこにも送信されません。">
 <title>弦・矢高とR | 検査計算ツール</title>
 <style>
   :root{
@@ -167,23 +167,6 @@
     border-radius:8px;font-size:11.5px;line-height:1.75;color:#3D515F}
   .src b{color:#1F3341}
   .src code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#fff;border:1px solid #E3E9EC;border-radius:4px;padding:0 3px}
-  /* v177: 角のR（曲がり尺で測る） */
-  .ktips{margin-top:12px;padding:10px 12px;background:#FFFBEF;border:1px solid #EAD9A6;border-radius:10px;font-size:12px;line-height:1.7;color:#3D515F}
-  .ktips>b{color:#7A5410}
-  .ktips ol{margin:4px 0 0;padding-left:1.3em}
-  .ktips li{margin:3px 0}
-  .ktips li b{color:#1F3341}
-  .kalt{background:#fff;border:1px solid #D5DDE2;border-radius:12px;margin:12px 0 0;overflow:hidden}
-  .kalt>summary{list-style:none;cursor:pointer;padding:12px 14px;font-size:12.5px;font-weight:700;color:#1F3341;display:flex;align-items:center;gap:8px}
-  .kalt>summary::-webkit-details-marker{display:none}
-  .kalt>summary::before{content:"\FF0B";display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:6px;background:#1F3341;color:#fff;font-size:12px;flex:none}
-  .kalt[open]>summary::before{content:"\FF0D"}
-  .kalt[open]>summary{border-bottom:1px solid #E3E9EC}
-  .kalt .kaltb{padding:10px 12px 12px}
-  .kalt .kaltb svg{display:block;width:100%;height:auto;background:#fff;border:1px solid #E3E9EC;border-radius:8px}
-  .statusTxt.okc{color:#5CD6A0}
-  /* タブが4つになったので、スマホ幅では2段（2×2）に。1段のままだと「R・角度割り出し」が途中で折れる */
-  @media(max-width:460px){.tabbar{display:grid;grid-template-columns:1fr 1fr}}
   /* v151: 著作権表示。フッターの末尾に置く（全ページ共通の見た目） */
   .crnote{margin-top:8px;padding-top:7px;border-top:1px solid rgba(143,162,175,.45);
     font-size:11px;line-height:1.7;color:inherit;opacity:.92}
@@ -192,7 +175,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>弦・矢高とR<small>弦・矢高⇔R ／ R・開き角→周長・穴割り出し ／ 板の角のR</small></h1>
+    <h1>弦・矢高とR<small>弦・矢高⇔R ／ R・開き角→周長・穴割り出し</small></h1>
   </header>
 
   <div class="topclear"><a class="backlink" href="../index.html">≡ ツール一覧</a><button type="button" aria-label="入力をすべて消去して最初から始める" onclick="armClear(this)">すべて消去</button></div>
@@ -212,9 +195,6 @@
           <li><b>割り部品</b>のタブは、割った片側だけを測るとき用です。<b>半径</b>と<b>割の隙間</b>を入れると、
         割面での<b>弦</b>と<b>矢高</b>が出ます（隙間のぶんを電卓で引く必要はありません）。
         <b>中心から端面まで</b>も入れると、実際に測れる<b>端面から円の底まで</b>が公差つきで出ます。</li>
-      <li><b>角のR</b>のタブは、板の四隅などの<b>大きな角の R</b>（R ゲージや R の型に無い大きさ）を、<b>曲がり尺（直角定規）</b>で測るとき用です。
-        尺の内側の2辺を板の2辺にぴったり当て、<b>尺の内側の角から円弧までのいちばん短い距離 d</b> を測って入れると R が出ます。
-        <b>図面の R</b> を入れると、測ったときに出るはずの d と、公差の範囲も出ます。</li>
 </ol>
     <div class="src">
       <b>計算のしかた</b><br>
@@ -258,16 +238,6 @@
         <b>弧の中心は必ず真上</b>にあります（中心が下にあると弧は定盤の中へもぐってしまいます）。
         向きを選ぶ余地はないので、<b>反対側の直線を定盤に付けたいときは入れ替えボタン</b>を使ってください。
         図面の弧が下にふくらんで見えるときは、その部品は<b>ひっくり返して置く</b>ことになります。<br>
-      ・<b>角のR</b> … 尺の内側の2辺を板の2辺に当てると、尺の内側の角は<b>板の2辺を延ばした線の交わる所</b>になります。
-        角が直角なら、円弧の中心はそこから縦・横に R ずつ入った所にあり、尺の角から中心までは <code>R√2</code>。
-        円弧のいちばん近い点はその線の上（<b>45°の向き</b>）にあるので<br>
-        　<code>d = R√2 − R = R(√2 − 1) ≈ 0.4142 × R</code>　<code>R = d(√2 + 1) ≈ 2.4142 × d</code><br>
-        d の読み違いは<b>約 2.4 倍</b>になって R に出ます（0.5 違うと R は 1.2 違う）。
-        いっぽう<b>向きのずれには鈍く</b>、45°から 2° ずれても R245 で d は 0.09 しか変わりません（いちばん短い所を読んでいるため。5° で 0.55）。<br>
-        R の始まり（板が尺から離れはじめる所）は尺の角から R の所ですが、まっすぐな辺と円弧が<b>なめらかにつながっていて見分けにくい</b>ので、そこを読むより d を測るほうが確かです。<br>
-      ・<b>別の測り方（目盛りの所のすき間）</b> … 尺の目盛り a の所で尺から板までのすき間 g を測ると、その点は円弧の上にあるので
-        <code>(a − R)² + (g − R)² = R²</code>。大きいほうの答えが R で <code>R = a + g + √(2ag)</code>（小さいほうは、その点が円弧に乗らない答え）。
-        図面の R から、目盛り a の所のすき間は <code>g = R − √(R² − (R − a)²)</code>（a が R より先なら、板は尺に当たっていてすき間 0）。<br>
 </div>
     <div class="gx">
       <h4>例 ── 弦100・矢高10 の大きなR</h4>
@@ -343,27 +313,6 @@
         </div>
       </div>
     </div>
-    <div class="gx">
-      <h4>例 ── 大きな板の四隅が R245（±1）。R の型に 245 が無い</h4>
-      <div class="gxin">
-        <div class="gfig"><svg viewBox="0 0 120 120" role="img" aria-label="板の角に曲がり尺を当て、尺の内側の角から円弧までの距離dを測る図">
-          <path d="M 18 84 A 66 66 0 0 1 84 18 L 116 18 L 116 116 L 18 116 Z" fill="#EEF2F4"/>
-          <path d="M 18 116 L 18 84 A 66 66 0 0 1 84 18 L 116 18" fill="none" stroke="#1F3341" stroke-width="1.8"/>
-          <path d="M 10 10 L 110 10 L 110 18 L 18 18 L 18 110 L 10 110 Z" fill="#F4EBCB" stroke="#8A6A1E" stroke-width="1"/>
-          <line x1="18" y1="18" x2="37.3" y2="37.3" stroke="#D63426" stroke-width="1.8"/>
-          <circle cx="18" cy="18" r="2.2" fill="#D63426"/>
-          <text x="22" y="44" font-size="10" font-weight="700" fill="#D63426">d</text>
-          <text x="104" y="104" font-size="8" fill="#5B707E" text-anchor="end">R245</text>
-        </svg></div>
-        <div class="gtxt">
-          <p>曲がり尺を角に当て、尺の内側の角から円弧までのいちばん短い所を測ったら 101.5 だった。R は？</p>
-          <p class="gset">角のR ／ 距離 d 101.5 ／ 図面の R 245 ／ ±1</p>
-          <p class="gread">読み方：R = 101.5 × 2.4142 = <b>245.043</b>（図面より +0.043）。
-            図面の R245 なら d は <b>101.482</b>、R244〜246 なら d は <b>101.068〜101.897</b> の間に入ります。</p>
-          <button class="gbtn" type="button" data-ex='{"set":[{"click":"#tCorner"},{"id":"fKD","v":101.5},{"id":"fKR","v":245},{"id":"fKTol","v":1},{"id":"fKA","v":""},{"id":"fKG","v":""}]}' onclick="tryExample(this)">この例を試す</button>
-        </div>
-      </div>
-    </div>
 </div>
   </div>
 </details>
@@ -374,10 +323,9 @@
     <button type="button" id="tCH" class="on">弦・矢高⇔R</button>
     <button type="button" id="tArc">R・角度割り出し</button>
     <button type="button" id="tSplit">割り部品</button>
-    <button type="button" id="tCorner">角のR</button>
   </div>
 
-  <div class="dimsw" id="cdSw" role="group" aria-label="半径で入れるか直径で入れるか">
+  <div class="dimsw" role="group" aria-label="半径で入れるか直径で入れるか">
     <button type="button" id="cdR" class="on">半径 R で</button>
     <button type="button" id="cdD">直径 φ で</button>
   </div>
@@ -693,104 +641,6 @@
   </div>
   <div class="hint" id="aNote" style="display:none">周長・弦は<b>「穴の並ぶ半径」の円弧上</b>の値です（左端＝その円弧の端 0°）。⚠は開き角の外にある穴、隣の⚠は並び順が逆の穴です。</div>
   </div>
-  </section>
-
-  <section id="paneCorner" hidden>
-  <div class="sheet">
-    <div class="sheet-inner">
-      <svg id="figCorner" viewBox="0 0 340 270" role="img" aria-label="板の角の大きなRに曲がり尺を当てた図。尺の内側の角から円弧までのいちばん短い距離dは45°の向きで、その線を延ばした先に円弧の中心がある。Rの始まりは尺の角からRの所"><defs><marker id="arKR" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L8,3 L0,6 z" fill="#D63426"/></marker><marker id="arKI" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L8,3 L0,6 z" fill="#1F3341"/></marker></defs><path d="M 220 64 L 336 64 L 336 270 L 70 270 L 70 214 A 150 150 0 0 1 220 64 Z" fill="#EEF2F4"/><path d="M 52 46 L 318 46 L 318 64 L 70 64 L 70 258 L 52 258 Z" fill="#F4EBCB" stroke="#8A6A1E" stroke-width="1.2"/><g stroke="#8A6A1E" stroke-width="0.8"><line x1="78" y1="64" x2="78" y2="60"/><line x1="86" y1="64" x2="86" y2="60"/><line x1="94" y1="64" x2="94" y2="60"/><line x1="102" y1="64" x2="102" y2="60"/><line x1="110" y1="64" x2="110" y2="57"/><line x1="118" y1="64" x2="118" y2="60"/><line x1="126" y1="64" x2="126" y2="60"/><line x1="134" y1="64" x2="134" y2="60"/><line x1="142" y1="64" x2="142" y2="60"/><line x1="150" y1="64" x2="150" y2="57"/><line x1="158" y1="64" x2="158" y2="60"/><line x1="166" y1="64" x2="166" y2="60"/><line x1="174" y1="64" x2="174" y2="60"/><line x1="182" y1="64" x2="182" y2="60"/><line x1="190" y1="64" x2="190" y2="57"/><line x1="198" y1="64" x2="198" y2="60"/><line x1="206" y1="64" x2="206" y2="60"/><line x1="214" y1="64" x2="214" y2="60"/><line x1="222" y1="64" x2="222" y2="60"/><line x1="230" y1="64" x2="230" y2="57"/><line x1="238" y1="64" x2="238" y2="60"/><line x1="246" y1="64" x2="246" y2="60"/><line x1="254" y1="64" x2="254" y2="60"/><line x1="262" y1="64" x2="262" y2="60"/><line x1="70" y1="72" x2="66" y2="72"/><line x1="70" y1="80" x2="66" y2="80"/><line x1="70" y1="88" x2="66" y2="88"/><line x1="70" y1="96" x2="66" y2="96"/><line x1="70" y1="104" x2="63" y2="104"/><line x1="70" y1="112" x2="66" y2="112"/><line x1="70" y1="120" x2="66" y2="120"/><line x1="70" y1="128" x2="66" y2="128"/><line x1="70" y1="136" x2="66" y2="136"/><line x1="70" y1="144" x2="63" y2="144"/><line x1="70" y1="152" x2="66" y2="152"/><line x1="70" y1="160" x2="66" y2="160"/><line x1="70" y1="168" x2="66" y2="168"/><line x1="70" y1="176" x2="66" y2="176"/><line x1="70" y1="184" x2="63" y2="184"/><line x1="70" y1="192" x2="66" y2="192"/><line x1="70" y1="200" x2="66" y2="200"/><line x1="70" y1="208" x2="66" y2="208"/><line x1="70" y1="216" x2="66" y2="216"/><line x1="70" y1="224" x2="63" y2="224"/><line x1="70" y1="232" x2="66" y2="232"/><line x1="70" y1="240" x2="66" y2="240"/><line x1="70" y1="248" x2="66" y2="248"/></g><path d="M 220 64 L 336 64" fill="none" stroke="#1F3341" stroke-width="2"/><path d="M 70 214 L 70 270" fill="none" stroke="#1F3341" stroke-width="2"/><path d="M 70 214 A 150 150 0 0 1 220 64" fill="none" stroke="#1F3341" stroke-width="2.8"/><text x="290" y="58.5" font-size="9.5" fill="#7A5410" text-anchor="middle">曲がり尺</text><g stroke="#8FA2AF" stroke-width="0.9" stroke-dasharray="7 3 1.5 3"><line x1="204" y1="214" x2="236" y2="214"/><line x1="220" y1="198" x2="220" y2="230"/></g><circle cx="220" cy="214" r="2.4" fill="#1F3341"/><text x="228" y="234" font-size="9.5" fill="#5B707E">円弧の中心</text><line id="kDimR" x1="220" y1="214" x2="113.93" y2="107.93" stroke="#1F3341" stroke-width="1.3" marker-end="url(#arKI)"/><text id="kfR" x="173.97" y="153.97" font-size="12" fill="#1F3341" text-anchor="middle" stroke="#fff" stroke-width="3.5" paint-order="stroke" transform="rotate(45 173.97 153.97)">R</text><circle cx="152" cy="172" r="8.5" fill="#1F3341" stroke="#fff" stroke-width="2"/><text x="152" y="176" font-size="10.5" font-weight="700" fill="#fff" text-anchor="middle">2</text><path d="M 92 64 A 22 22 0 0 1 85.56 79.56" fill="none" stroke="#8FA2AF" stroke-width="0.9"/><text x="98.64" y="78.86" font-size="8.5" fill="#5B707E" text-anchor="middle">45°</text><line id="kDimD" x1="70" y1="64" x2="113.93" y2="107.93" stroke="#D63426" stroke-width="1.9" marker-start="url(#arKR)" marker-end="url(#arKR)"/><text id="kfD" x="81.97" y="99.97" font-size="13" font-weight="700" fill="#D63426" text-anchor="middle" stroke="#fff" stroke-width="3.5" paint-order="stroke">d</text><circle cx="115" cy="89" r="8.5" fill="#D63426" stroke="#fff" stroke-width="2"/><text x="115" y="93" font-size="10.5" font-weight="700" fill="#fff" text-anchor="middle">1</text><line x1="40" y1="33" x2="67.5" y2="61.5" stroke="#5B707E" stroke-width="0.8"/><circle cx="70" cy="64" r="2.8" fill="#D63426"/><text x="6" y="29" font-size="9.5" fill="#1F3341" font-weight="700">尺の内側の角</text><line x1="220" y1="40" x2="220" y2="61" stroke="#8FA2AF" stroke-width="0.8" stroke-dasharray="2 2"/><circle cx="220" cy="64" r="2.6" fill="#fff" stroke="#1F3341" stroke-width="1.4"/><circle cx="70" cy="214" r="2.6" fill="#fff" stroke="#1F3341" stroke-width="1.4"/><text x="220" y="24" font-size="9.5" fill="#5B707E" text-anchor="middle">R の始まり（角から R）</text><text x="220" y="36" font-size="8.5" fill="#8FA2AF" text-anchor="middle">なめらかで見分けにくい</text><text id="kfV1" x="326" y="112" font-size="11" fill="#1F3341" text-anchor="end">d … 尺の角から円弧まで</text><text id="kfV2" x="326" y="130" font-size="11" fill="#1F3341" text-anchor="end">R … 角の丸みの半径</text><text x="326" y="262" font-size="9.5" fill="#5B707E" text-anchor="end">板（上から見た図）</text></svg>
-      <div class="titleblock">
-        <div><b>品名</b> 弦・矢高とR</div>
-        <div><b>方式</b> 角のR（曲がり尺）</div>
-        <div>TOOL-04</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="hint">板の<b>角の大きな R</b>（R ゲージや R の型に無い大きさ）を、<b>曲がり尺（直角定規）</b>で測ります。
-    尺の内側の2辺を板の2辺に当て、<b>尺の内側の角から円弧までのいちばん短い距離 d</b> を入れると R が出ます。
-    図面の R も入れると、比べられます。<b>角が直角（90°）の板</b>のときの計算です。</div>
-
-  <div class="inputs">
-    <div class="row">
-      <span class="badge" style="background:#D63426">1</span>
-      <label for="fKD">角から円弧までの距離 d<small>尺の内側の角から、いちばん近い所</small></label>
-      <input id="fKD" type="text" inputmode="decimal" autocomplete="off" placeholder="例 101.5">
-      <span class="unit">mm</span>
-    </div>
-    <div class="row">
-      <span class="badge">2</span>
-      <label for="fKR">図面の R<small>空欄可。比べるときに</small></label>
-      <input id="fKR" type="text" inputmode="decimal" autocomplete="off" placeholder="例 245">
-      <span class="unit">mm</span>
-    </div>
-    <div class="row">
-      <span class="badge">±</span>
-      <label for="fKTol">R の公差 ±<small>空欄可</small></label>
-      <input id="fKTol" type="text" inputmode="decimal" autocomplete="off" placeholder="例 1">
-      <span class="unit">mm</span>
-    </div>
-  </div>
-
-  <div class="dro">
-    <div class="dro-grid">
-      <div class="cellv"><span class="k">R</span><span class="v dim" id="vKR">―</span><span class="s">mm</span></div>
-      <div class="cellv"><span class="k">図面Rの d</span><span class="v dim" id="vKD0">―</span><span class="s">mm</span></div>
-      <div class="cellv"><span class="k">差</span><span class="v dim" id="vKDiff">―</span><span class="s">mm 測−図</span></div>
-    </div>
-    <div class="dro-sub" id="kSub">R の始まり：―</div>
-    <div class="dro-sub" id="kSens">d が ±0.5 違うと R は ±1.207</div>
-    <div class="dro-sub" id="kTol"></div>
-    <div class="dro-foot">
-      <span class="statusTxt" id="kStatus">入力待ち(尺の角から円弧までの距離 d を入れてください)</span>
-    </div>
-  </div>
-
-  <div class="ktips">
-    <b>測るときのコツ</b>
-    <ol>
-      <li>尺の両方の腕を、<b>R の始まりより先のまっすぐな辺</b>にぴったり当てます。R の始まりは尺の角から R の所なので、<b>腕が R より長い尺</b>を使います（R245 なら、角から 245 より先まで届くもの）。</li>
-      <li>スケールの 0 を<b>尺の内側の角</b>に合わせ、円弧へ向けて<b>少し振って、いちばん短い値</b>を読みます。ほぼ 45° の向きです。いちばん短い所を読めば、向きは少しずれても値はほとんど変わりません。</li>
-      <li>d の読み違いは<b>約 2.4 倍</b>になって R に出ます（0.5 違うと R は 1.2 違う）。きわどいときは、下の「別の測り方」でも確かめてください。</li>
-      <li>R の始まり（板が尺から離れはじめる所）を探して読むやり方は、<b>なめらかにつながっていて見分けにくい</b>ので、ずれやすくなります。</li>
-      <li>角が直角でない板（台形の角など）には使えません。</li>
-    </ol>
-  </div>
-
-  <details class="kalt">
-    <summary>別の測り方：尺の目盛りの所で、すき間を測る</summary>
-    <div class="kaltb">
-      <svg viewBox="30 12 240 150" role="img" aria-label="尺の目盛りaの所で、尺に直角にスケールを当て、尺から板までのすき間gを測る図"><defs><marker id="arKaR" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L8,3 L0,6 z" fill="#D63426"/></marker><marker id="arKaI" viewBox="0 0 8 6" refX="7" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L8,3 L0,6 z" fill="#1F3341"/></marker></defs><path d="M 220 64 L 336 64 L 336 270 L 70 270 L 70 214 A 150 150 0 0 1 220 64 Z" fill="#EEF2F4"/><path d="M 52 46 L 318 46 L 318 64 L 70 64 L 70 258 L 52 258 Z" fill="#F4EBCB" stroke="#8A6A1E" stroke-width="1.2"/><g stroke="#8A6A1E" stroke-width="0.8"><line x1="78" y1="64" x2="78" y2="60"/><line x1="86" y1="64" x2="86" y2="60"/><line x1="94" y1="64" x2="94" y2="60"/><line x1="102" y1="64" x2="102" y2="60"/><line x1="110" y1="64" x2="110" y2="57"/><line x1="118" y1="64" x2="118" y2="60"/><line x1="126" y1="64" x2="126" y2="60"/><line x1="134" y1="64" x2="134" y2="60"/><line x1="142" y1="64" x2="142" y2="60"/><line x1="150" y1="64" x2="150" y2="57"/><line x1="158" y1="64" x2="158" y2="60"/><line x1="166" y1="64" x2="166" y2="60"/><line x1="174" y1="64" x2="174" y2="60"/><line x1="182" y1="64" x2="182" y2="60"/><line x1="190" y1="64" x2="190" y2="57"/><line x1="198" y1="64" x2="198" y2="60"/><line x1="206" y1="64" x2="206" y2="60"/><line x1="214" y1="64" x2="214" y2="60"/><line x1="222" y1="64" x2="222" y2="60"/><line x1="230" y1="64" x2="230" y2="57"/><line x1="238" y1="64" x2="238" y2="60"/><line x1="246" y1="64" x2="246" y2="60"/><line x1="254" y1="64" x2="254" y2="60"/><line x1="262" y1="64" x2="262" y2="60"/><line x1="70" y1="72" x2="66" y2="72"/><line x1="70" y1="80" x2="66" y2="80"/><line x1="70" y1="88" x2="66" y2="88"/><line x1="70" y1="96" x2="66" y2="96"/><line x1="70" y1="104" x2="63" y2="104"/><line x1="70" y1="112" x2="66" y2="112"/><line x1="70" y1="120" x2="66" y2="120"/><line x1="70" y1="128" x2="66" y2="128"/><line x1="70" y1="136" x2="66" y2="136"/><line x1="70" y1="144" x2="63" y2="144"/><line x1="70" y1="152" x2="66" y2="152"/><line x1="70" y1="160" x2="66" y2="160"/><line x1="70" y1="168" x2="66" y2="168"/><line x1="70" y1="176" x2="66" y2="176"/><line x1="70" y1="184" x2="63" y2="184"/><line x1="70" y1="192" x2="66" y2="192"/><line x1="70" y1="200" x2="66" y2="200"/><line x1="70" y1="208" x2="66" y2="208"/><line x1="70" y1="216" x2="66" y2="216"/><line x1="70" y1="224" x2="63" y2="224"/><line x1="70" y1="232" x2="66" y2="232"/><line x1="70" y1="240" x2="66" y2="240"/><line x1="70" y1="248" x2="66" y2="248"/></g><path d="M 220 64 L 336 64" fill="none" stroke="#1F3341" stroke-width="2"/><path d="M 70 214 L 70 270" fill="none" stroke="#1F3341" stroke-width="2"/><path d="M 70 214 A 150 150 0 0 1 220 64" fill="none" stroke="#1F3341" stroke-width="2.8"/><line x1="70" y1="30" x2="70" y2="45" stroke="#8FA2AF" stroke-width="0.8"/><line x1="110" y1="30" x2="110" y2="45" stroke="#8FA2AF" stroke-width="0.8"/><line x1="70" y1="34" x2="110" y2="34" stroke="#1F3341" stroke-width="1.2" marker-start="url(#arKaI)" marker-end="url(#arKaI)"/><text x="90" y="30" font-size="11" font-weight="700" fill="#1F3341" text-anchor="middle">a</text><line x1="110" y1="64" x2="110" y2="112.02" stroke="#D63426" stroke-width="1.9" marker-start="url(#arKaR)" marker-end="url(#arKaR)"/><path d="M 104 70 L 104 70 L 104 64" fill="none" stroke="#5B707E" stroke-width="0.8"/><text x="116" y="92.01" font-size="12" font-weight="700" fill="#D63426" stroke="#fff" stroke-width="3" paint-order="stroke">g</text><circle cx="70" cy="64" r="2.6" fill="#D63426"/><text x="150" y="120" font-size="9.5" fill="#5B707E">板</text></svg>
-      <div class="hint" style="margin-top:8px">尺の目盛り <b>a</b> の所から、尺に<b>直角</b>にスケールを当てて、板までの<b>すき間 g</b> を測ります。
-        a は R の始まりより手前（板が尺から離れている所）で測ります。
-        <b>2か所で測って同じ R</b> になれば、きれいな円弧で、尺もきちんと当たっています。</div>
-      <div class="inputs">
-        <div class="row">
-          <span class="badge">a</span>
-          <label for="fKA">目盛り a<small>尺の内側の角から</small></label>
-          <input id="fKA" type="text" inputmode="decimal" autocomplete="off" placeholder="例 50">
-          <span class="unit">mm</span>
-        </div>
-        <div class="row">
-          <span class="badge" style="background:#D63426">g</span>
-          <label for="fKG">すき間 g<small>尺から板まで・尺に直角に</small></label>
-          <input id="fKG" type="text" inputmode="decimal" autocomplete="off" placeholder="例 96.7">
-          <span class="unit">mm</span>
-        </div>
-      </div>
-      <div class="dro">
-        <div class="dro-grid">
-          <div class="cellv"><span class="k">R</span><span class="v dim" id="vKR2">―</span><span class="s">mm</span></div>
-          <div class="cellv"><span class="k">差</span><span class="v dim" id="vKR2d">―</span><span class="s">mm 上の R と</span></div>
-          <div class="cellv"><span class="k">図面Rの g</span><span class="v dim" id="vKG0">―</span><span class="s">mm 出るはず</span></div>
-        </div>
-        <div class="dro-sub" id="kSub2">g が ±0.5 違うと R は ― 違う</div>
-        <div class="dro-foot">
-          <span class="statusTxt" id="kStatus2">目盛り a とすき間 g を入れてください</span>
-        </div>
-      </div>
-    </div>
-  </details>
   </section>
 
   <button class="clearBtn" type="button" onclick="armClear(this)">すべて消去</button>
@@ -1120,21 +970,14 @@ function CD_K(){ return CD_DIM==='d' ? 2 : 1; }
     $('tCH').className    = (w==='ch')  ? 'on' : '';
     $('tArc').className   = (w==='arc') ? 'on' : '';
     $('tSplit').className = (w==='spl') ? 'on' : '';
-    $('tCorner').className= (w==='cor') ? 'on' : '';
     $('paneCH').hidden    = (w!=='ch');
     $('paneArc').hidden   = (w!=='arc');
     $('paneSplit').hidden = (w!=='spl');
-    $('paneCorner').hidden= (w!=='cor');
-    /* v177: 角のRは半径だけで扱う（角の丸みは R で指示される）。半径／直径の切替は隠す。
-       .dimsw は display:flex を持つので hidden 属性では消えない → style で消す */
-    $('cdSw').style.display = (w==='cor') ? 'none' : '';
     if(w==='spl') splitCalc();
-    if(w==='cor' && window.__cornerCalc) window.__cornerCalc();
   }
   $('tCH').addEventListener('click',function(){ setTab('ch'); });
   $('tArc').addEventListener('click',function(){ setTab('arc'); });
   $('tSplit').addEventListener('click',function(){ setTab('spl'); });
-  $('tCorner').addEventListener('click',function(){ setTab('cor'); });
 
   /* ── 数値まわり ── */
   function numA(v){
@@ -1522,139 +1365,6 @@ function CD_K(){ return CD_DIM==='d' ? 2 : 1; }
   window.__arcRecalc=function(){ calcArc(); calcPlate(); };
 
 
-})();
-</script>
-
-<script>
-/* ═══ 角のR（v177 追加タブ）═══════════════════════════════════════
-   板の角の大きな R を、曲がり尺（直角定規）で測る。
-   ・尺の内側の2辺を板の2辺に当てると、尺の内側の角は「板の2辺を延ばした線の交点」になる。
-   ・角が直角なら、円弧の中心はその交点から (R, R) の所。交点から中心までは R√2。
-   ・交点から円弧までのいちばん近い点は、中心へ向かう線（45°）の上にある。
-        d = R√2 − R = R(√2 − 1)   →   R = d(√2 + 1) ≈ 2.414 d
-   ・別の測り方：尺の目盛り a の所で、尺から板までのすき間 g を測る。点 (a, g) が円弧の上にあるので
-        (a − R)² + (g − R)² = R²  →  R² − 2R(a + g) + a² + g² = 0
-        大きいほうの根  R = a + g + √(2ag)  （小さいほうは a・g より小さく、点が円弧に乗らない）
-   ・図は R によらず相似なので固定。文字だけ書きかえる（形と数字が食い違うことはない）。
-   ・他のタブの計算・DOM には触れない。半径／直径の切替（CD_DIM）は見ない（常に半径）。 */
-(function(){
-  var $=function(id){return document.getElementById(id)};
-  var K=Math.SQRT2-1;                          /* d = K × R */
-  var EPS=1e-9;
-
-  function numK(v){
-    if(v==null) return NaN;
-    v=String(v).replace(/[０-９．]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0)}).replace(/。/g,'.').trim();
-    if(v==='') return NaN;
-    return Number(v);
-  }
-  function fmt(x){ return x.toFixed(3); }
-  function sgn(x){ var t=x.toFixed(3); if(t==='-0.000') t='0.000'; return (x>0 && t!=='0.000' ? '+' : '')+t; }
-  function cell(id,val,led,txt){
-    var e=$(id);
-    if(val==null || !isFinite(val)){ e.textContent='―'; e.className='v dim'; return; }
-    e.textContent = txt!=null ? txt : fmt(val);
-    e.className = led ? 'v led' : 'v dim';
-  }
-  function setSt(id,msg,isErr){
-    var s=$(id); s.textContent=msg; s.className='statusTxt'+(isErr?' err':'');
-  }
-  /* 欄を読む：空欄は NaN、数字でない・範囲外は null（＝入力の誤り） */
-  function readPos(id, allowZero){
-    var t=$(id).value.trim();
-    if(t==='') return NaN;
-    var x=numK(t);
-    if(isNaN(x) || (allowZero ? x<0 : x<=0)) return null;
-    return x;
-  }
-  function paintFig(d,R,Rd,d0){
-    var v1=$('kfV1'), v2=$('kfV2'), tD=$('kfD'), tR=$('kfR');
-    if(isFinite(d)){ v1.textContent='測った d = '+fmt(d); v1.setAttribute('fill','#1F3341'); }
-    else if(isFinite(d0)){ v1.textContent='図面 R なら d = '+fmt(d0); v1.setAttribute('fill','#D63426'); }
-    else { v1.textContent='d … 尺の角から円弧まで'; v1.setAttribute('fill','#1F3341'); }
-    if(isFinite(R)){ v2.textContent='R = '+fmt(R); v2.setAttribute('fill','#D63426'); }
-    else if(isFinite(Rd)){ v2.textContent='図面 R = '+fmt(Rd); v2.setAttribute('fill','#1F3341'); }
-    else { v2.textContent='R … 角の丸みの半径'; v2.setAttribute('fill','#1F3341'); }
-    v1.setAttribute('font-weight', (isFinite(d)||isFinite(d0)) ? '700' : '400');
-    v2.setAttribute('font-weight', (isFinite(R)||isFinite(Rd)) ? '700' : '400');
-    tR.setAttribute('fill', isFinite(R) ? '#D63426' : '#1F3341');
-    tR.setAttribute('font-weight', isFinite(R) ? '700' : '400');
-    $('kDimR').setAttribute('stroke', isFinite(R) ? '#D63426' : '#1F3341');
-    $('kDimR').setAttribute('marker-end', isFinite(R) ? 'url(#arKR)' : 'url(#arKI)');
-  }
-
-  function calcCorner(){
-    var d=readPos('fKD',false), Rd=readPos('fKR',false), t=readPos('fKTol',true);
-    var err='';
-    if(d===null){ err='距離 d は正の数で入れてください'; d=NaN; }
-    if(Rd===null){ err=err||'図面の R は正の数で入れてください'; Rd=NaN; }
-    if(t===null){ err=err||'公差は 0 以上の数で入れてください'; t=NaN; }
-    if(isFinite(Rd) && isFinite(t) && t>=Rd){ err=err||'公差が R 以上になっています'; t=NaN; }
-
-    var R  = isFinite(d)  ? d/K  : NaN;           /* 測った d から */
-    var d0 = isFinite(Rd) ? Rd*K : NaN;           /* 図面の R なら出るはずの d */
-    var df = (isFinite(R) && isFinite(Rd)) ? R-Rd : NaN;
-
-    cell('vKR', R, true);
-    cell('vKD0', d0, true);
-    cell('vKDiff', df, true, isFinite(df) ? sgn(df) : null);
-
-    var Rs = isFinite(R) ? R : Rd;
-    $('kSub').textContent = 'R の始まり：' + (isFinite(Rs) ? '尺の角から '+fmt(Rs)+(isFinite(R)?'':'（図面）') : '―');
-    $('kSens').textContent = 'd が ±0.5 違うと R は ±' + (0.5/K).toFixed(3);
-
-    var tolTxt='', judge=null;
-    if(isFinite(Rd) && isFinite(t) && t>0){
-      var lo=Rd-t, hi=Rd+t;
-      tolTxt='R '+fmt(lo)+'〜'+fmt(hi)+' なら d は '+fmt(lo*K)+'〜'+fmt(hi*K);
-      if(isFinite(R)) judge = (R>=lo-EPS && R<=hi+EPS);
-    }
-    $('kTol').textContent=tolTxt;
-
-    if(err) setSt('kStatus', err, true);
-    else if(!isFinite(d) && !isFinite(Rd)) setSt('kStatus','入力待ち(尺の角から円弧までの距離 d を入れてください)',false);
-    else if(!isFinite(d)) setSt('kStatus','図面の R から、測ったときに出るはずの d を出しました',false);
-    else if(!isFinite(Rd)) setSt('kStatus','R を出しました（図面の R を入れると比べられます）',false);
-    else if(judge===false) setSt('kStatus','範囲外です。尺の当たりと読みを確かめ、もう一度測ってください',true);
-    else if(judge===true){ setSt('kStatus','範囲内です（R '+fmt(Rd-t)+'〜'+fmt(Rd+t)+'）',false); $('kStatus').className+=' okc'; }
-    else setSt('kStatus','測った R と図面の R の差を出しました（公差を入れると範囲も出ます）',false);
-
-    paintFig(d,R,Rd,d0);
-    calcAlt(R,Rd);
-  }
-
-  /* 別の測り方：目盛り a のすき間 g */
-  var lastR=NaN, lastRd=NaN;
-  function calcAlt(R,Rd){
-    if(arguments.length){ lastR=R; lastRd=Rd; } else { R=lastR; Rd=lastRd; }
-    var a=readPos('fKA',false), g=readPos('fKG',false), err='';
-    if(a===null){ err='目盛り a は正の数で入れてください'; a=NaN; }
-    if(g===null){ err=err||'すき間 g は正の数で入れてください'; g=NaN; }
-    var R2 = (isFinite(a) && isFinite(g)) ? a+g+Math.sqrt(2*a*g) : NaN;
-    var dd = (isFinite(R2) && isFinite(R)) ? R2-R : NaN;
-    var g0 = NaN, beyond=false;
-    if(isFinite(a) && isFinite(Rd)){
-      if(a < Rd) g0 = Rd - Math.sqrt(Rd*Rd - (Rd-a)*(Rd-a));
-      else beyond = true;
-    }
-    cell('vKR2', R2, true);
-    cell('vKR2d', dd, true, isFinite(dd) ? sgn(dd) : null);
-    cell('vKG0', beyond ? 0 : g0, true);   /* a が R より先なら すき間 0（板が尺に当たる）。理由は下の文で知らせる */
-    $('kSub2').textContent = (isFinite(a) && isFinite(g))
-      ? 'g が ±0.5 違うと R は ±' + (0.5*(1+Math.sqrt(a/(2*g)))).toFixed(3) + ' 違う'
-      : 'g が ±0.5 違うと R は ― 違う';
-    if(err) setSt('kStatus2', err, true);
-    else if(beyond && !isFinite(g)) setSt('kStatus2','目盛り a が図面の R より先です。そこでは板が尺に当たり、すき間は 0 です（a を小さく）',true);
-    else if(!isFinite(a)) setSt('kStatus2','目盛り a とすき間 g を入れてください',false);
-    else if(!isFinite(g)) setSt('kStatus2','すき間 g を入れてください'+(isFinite(g0)?'（図面の R なら '+fmt(g0)+'）':''),false);
-    else if(isFinite(dd)) setSt('kStatus2','R を出しました。上の d から出した R と比べられます',false);
-    else setSt('kStatus2','R を出しました',false);
-  }
-
-  ['fKD','fKR','fKTol'].forEach(function(id){ $(id).addEventListener('input',calcCorner); });
-  ['fKA','fKG'].forEach(function(id){ $(id).addEventListener('input',function(){ calcAlt(); }); });
-  window.__cornerCalc = calcCorner;
-  calcCorner();
 })();
 </script>
 
