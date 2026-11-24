@@ -627,7 +627,7 @@ function ogBlocker(k){
   var o=S.orgs[k-1], j, us;
   if(!o) return "";
   us=ogUsers(k);
-  if(us.length) return o.nm+" を基準にした部品（"+us.join("・")+"）があるため、先にそちらを削除するか、基準を変えてください";
+  if(us.length) return o.nm+" を基準にした穴群（"+us.join("・")+"）があるため、先にそちらを削除するか、基準を変えてください";
   for(j=k;j<S.orgs.length;j++) if(S.orgs[j].from===k) return o.nm+" から測った原点（"+S.orgs[j].nm+"）があるため、先にそちらを削除してください";
   return "";
 }
@@ -662,7 +662,7 @@ function partBlocker(i){
     }
   }
   for(j=i+1;j<S.parts.length;j++){
-    if(refsPart(S.parts[j],i)) return "部品 "+LB.charAt(i)+" の穴を基準にした部品（"+LB.charAt(j)+"）があるため、先にそちらを削除してください";
+    if(refsPart(S.parts[j],i)) return "穴群 "+LB.charAt(i)+" の穴を基準にした穴群（"+LB.charAt(j)+"）があるため、先にそちらを削除してください";
   }
   return "";
 }
@@ -685,7 +685,7 @@ function typeChangeBlocker(i,p){
   }
   if(old&&p.t!==old.t){
     for(j=i+1;j<S.parts.length;j++){
-      if(refsPart(S.parts[j],i)) return "部品 "+LB.charAt(i)+" の穴を基準にした部品（"+LB.charAt(j)+"）があるため、種類は変えられません";
+      if(refsPart(S.parts[j],i)) return "穴群 "+LB.charAt(i)+" の穴を基準にした穴群（"+LB.charAt(j)+"）があるため、種類は変えられません";
     }
   }
   return "";
@@ -703,7 +703,7 @@ function build(){
       var ths=[];
       if(p.cref){
         var cb=refHole(p.cpi,p.chi);
-        if(!cb) err="中心にする穴が見つかりません（基準にした部品を確かめてください）";
+        if(!cb) err="中心にする穴が見つかりません（基準にした穴群を確かめてください）";
         else { p.cx=cb.x; p.cy=cb.y; }
       } else if(p.og>0){                 /* 版158：原点2 が中心（cref と同じく、ここで中心を入れ直す） */
         var oc=ogAt(p.og);
@@ -724,7 +724,7 @@ function build(){
         else { ths=ua.ths; note=ua.note; }
       }
       if(!err){
-        base={x:p.cx, y:p.cy, lb:"部品 "+nm+" の中心"};
+        base={x:p.cx, y:p.cy, lb:"穴群 "+nm+" の中心"};
         ths.forEach(function(th){
           var q=pos(p,th);
           out.push({x:q.x, y:q.y, th:((th%360)+360)%360, src:"PCD"+(numOK(p.pcd)?" φ"+p.pcd:""), adjable:true,
@@ -737,7 +737,7 @@ function build(){
       var x=NaN, y=NaN, sr="", hpa=NaN, rb=null, isRef=(p.mode==="rxy"||p.mode==="rpolar"||p.mode==="rperp");
       if(isRef){
         rb=refHole(p.rpi,p.rhi);
-        if(!rb) err="基準の穴が見つかりません（基準にした部品を確かめてください）";
+        if(!rb) err="基準の穴が見つかりません（基準にした穴群を確かめてください）";
       }
       var hog=null;
       if(!isRef && p.mode!=="edge" && p.og>0){   /* 版158：原点2 から。起点を原点2 の位置で入れ直す */
@@ -784,7 +784,7 @@ function build(){
         }
       }
       if(!err){
-        base={x:x, y:y, lb:"部品 "+nm+" の穴"};
+        base={x:x, y:y, lb:"穴群 "+nm+" の穴"};
         out.push({x:x, y:y, th:NaN, src:sr, adjable:false, pa:hpa});
       }
     }
@@ -828,7 +828,7 @@ function build(){
                                               : (function(){var z=[],q;for(q=0;q<ths.length;q++)z.push(q);return z;})();
             if(!pick.length) err="複製する点が指定されていません（例：1,5 または 1-7）";
             else {
-              base={x:cp.cx, y:cp.cy, lb:"部品 "+nm+" の元PCD中心"};
+              base={x:cp.cx, y:cp.cy, lb:"穴群 "+nm+" の元PCD中心"};
               pick.forEach(function(idx){
                 var thPt=ths[idx];                         /* その点の方位（PCD中心から見た角度） */
                 var q=pos(cp,thPt);                         /* その点の座標 */
@@ -854,7 +854,7 @@ function build(){
         else if(!p.tip && !L.length && !R.length) err="先端の穴にチェックを入れるか、左右のオフセットを入れてください";
         else {
           var Pp=emitPattern(p.bx, p.by, p.th, "");
-          base={x:Pp.x, y:Pp.y, lb:"部品 "+nm+" の先端"};
+          base={x:Pp.x, y:Pp.y, lb:"穴群 "+nm+" の先端"};
           note=out.length+" 穴 / 先端 ("+f3(Pp.x)+", "+f3(Pp.y)+")";
         }
       }
@@ -944,7 +944,18 @@ function pairs(){
       var dd=Math.abs(a.pidx-b.pidx);
       if(!(dd===1 || dd===a.pn-1)) continue;   /* 元PCD上で隣接（端と端の一周も隣） */
     }
-    out.push({a:a,b:b,d:Math.hypot(b.x-a.x,b.y-a.y),adj:adj});
+    out.push({a:a,b:b,d:Math.hypot(b.x-a.x,b.y-a.y),adj:adj,ia:i,ib:j});
+  }
+  /* v177：「隣どうしだけ」の番号順は<円周を1周する順>（A1–A2, A2–A3, …, A5–A6, A6–A1）。
+     i<j の順のままだと閉じの組（A1–A6）が2番目に来て、図を見ながら「次へ」で順に送ると
+     1つ飛んで反対側へ行く（PCD穴ピッチ v103 と同じ学び）。閉じの組だけ、後ろの穴（A6）の
+     組の先頭へ回す。ほかの絞り込み・並べ替えの並びは変えない。 */
+  if(S.filter==="adj" && S.sort==="order"){
+    out.forEach(function(p){
+      var cl=p.adj && p.a.nh>2 && Math.abs(p.a.hi-p.b.hi)===p.a.nh-1;
+      p.k1=cl? p.ib : p.ia; p.k2=cl? p.ib+0.5 : p.ib;
+    });
+    out.sort(function(p,q){ return (p.k1-q.k1)||(p.k2-q.k2); });
   }
   if(S.sort==="asc")  out.sort(function(p,q){return p.d-q.d;});
   if(S.sort==="desc") out.sort(function(p,q){return q.d-p.d;});
@@ -1206,7 +1217,7 @@ function pfPart(f,idx){
 function pfTry(f,idx){
   var r=pfPart(f,idx), i, saved=null, res;
   if(r.err) return {err:r.err, part:null, holes:[], note:""};
-  if(idx<0 && S.parts.length>=MAXPART) return {err:"部品は "+MAXPART+" までです", part:null, holes:[], note:""};
+  if(idx<0 && S.parts.length>=MAXPART) return {err:"穴群は "+MAXPART+" までです", part:null, holes:[], note:""};
   i=(idx>=0)? idx : S.parts.length;
   if(idx>=0){ saved=S.parts[idx]; S.parts[idx]=r.part; } else S.parts.push(r.part);
   build();
@@ -1226,7 +1237,7 @@ function pfCommit(){
   } else { S.parts.push(r.part); nm=LB.charAt(S.parts.length-1); }
   n=r.holes.length;
   build(); persist();
-  toast(PFI>=0? ("部品 "+nm+" を直しました") : ("部品 "+nm+" を足しました（"+n+" 穴）"));
+  toast(PFI>=0? ("穴群 "+nm+" を直しました") : ("穴群 "+nm+" を足しました（"+n+" 穴）"));
   return true;
 }
 function pfDelete(i){
@@ -1234,7 +1245,7 @@ function pfDelete(i){
   if(bk){ toast(bk); return false; }
   partRemove(i); S.sel=null; PICK1="";
   build(); persist();
-  toast("部品 "+nm+" を消しました（後ろの部品の記号が1つずつ詰まります）");
+  toast("穴群 "+nm+" を消しました（後ろの穴群の記号が1つずつ詰まります）");
   return true;
 }
 /* 入れている途中の穴の説明（1行） */
@@ -1283,7 +1294,7 @@ function pfHTML(opt){
   if(refs.length&&f.kind!=="axis") h+=chip(isH,"data-ctr","h","ほかの穴","");
   h+='</div>';
   if(isH&&f.kind!=="axis"){
-    h+='<div style="margin-top:6px"><label class="f" for="pf_ref">どの穴から？（前に足した部品の穴）</label><select id="pf_ref">';
+    h+='<div style="margin-top:6px"><label class="f" for="pf_ref">どの穴から？（前に足した穴群の穴）</label><select id="pf_ref">';
     refs.forEach(function(q){ var v="h:"+q.pi+":"+q.hi; h+='<option value="'+v+'"'+(f.ctr===v?" selected":"")+'>'+esc(q.key)+'</option>'; });
     h+='</select></div>';
   }
@@ -1824,11 +1835,11 @@ function showPanel(){
 function renderPanel(){
   var t, sub, go, del=g("pDel");
   if(MODE==="part"){
-    t=(PFI>=0)? ("部品 "+LB.charAt(PFI)+" を直す") : "穴を足す";
+    t=(PFI>=0)? ("穴群 "+LB.charAt(PFI)+" を直す") : "穴を足す";
     sub='入れている穴は、図に<b style="color:#E07B00">橙色</b>で出ます。ほかの穴を中心にするときは、図の穴を押しても選べます。';
     go=(PFI>=0)? "変更を保存" : "この穴を足す";
     g("pBody").innerHTML=pfHTML({axis:true});
-    del.textContent="この部品を消す"; del.style.display=(PFI>=0)? "" : "none";
+    del.textContent="この穴群を消す"; del.style.display=(PFI>=0)? "" : "none";
   } else {
     t=(OFM.k>=0)? (S.orgs[OFM.k].nm+" を直す") : "原点を足す";
     sub='穴ではなく、穴を並べる基準の点です（別のPCDの中心など）。ピッチの表には入りません。図に<b style="color:#1F5F99">青い十字</b>で出ます。';
@@ -1875,7 +1886,7 @@ function onPanelChange(structural){ if(structural) renderPanel(); T_redraw(); }
     if(MODE==="part"&&PF&&PF.kind!=="axis"){
       h=byKey(k); si=(PFI>=0)? PFI : S.parts.length;
       if(h&&h.pi<si){ PF.ctr="h:"+h.pi+":"+h.hi; renderPanel(); T_redraw(); toast("中心（測り始め）を 穴 "+k+" にしました"); }
-      else toast("中心にできるのは、前に足した部品の穴です");
+      else toast("中心にできるのは、前に足した穴群の穴です");
       return;
     }
     if(MODE) return;
@@ -1914,7 +1925,7 @@ function onPanelChange(structural){ if(structural) renderPanel(); T_redraw(); }
   });
   g("pDel").addEventListener("click",function(){
     var b=g("pDel");
-    if(MODE==="part") arm2(b,"この部品を消す","もう一度押すと消します",function(){ if(pfDelete(PFI)) closePanel(); });
+    if(MODE==="part") arm2(b,"この穴群を消す","もう一度押すと消します",function(){ if(pfDelete(PFI)) closePanel(); });
     else if(MODE==="org") arm2(b,"この原点を消す","もう一度押すと消します",function(){ if(ofDelete(OFM.k+1)) closePanel(); });
   });
   T_redraw();
@@ -3115,12 +3126,6 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
     var i; for(i=0;i<db.d.length;i++) if(db.d[i].i===id) return db.d[i];
     return null;
   }
-  /* 同じフォルダの直近の記録を、次の記入の下敷きにする（打ち直しを減らす） */
-  function lastGOf(db,did){
-    var i;
-    for(i=0;i<db.r.length;i++) if(db.r[i].d===did&&db.r[i].g) return db.r[i].g;
-    return null;
-  }
 
   /* ── 画面部品 ── */
   var css=""
@@ -3168,7 +3173,6 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
     +"#krSheet .krFN{font-size:11.5px;color:#B4232C;margin-top:6px;min-height:16px}"
     +"#krWhere{font-size:12.5px;color:#1F3341;background:#F2F4F5;border-radius:8px;"
     +"padding:8px 10px;margin-bottom:9px;line-height:1.6}"
-    +"#krWhere .krPre{font-size:11px;color:#5B707E}"
     /* 記録の部品は紙に出さない。v88まではガイドの中にいたので印刷されて
        いなかったが、外へ出したので明示的に外す(v89)。 */
     +"@media print{#krBar,#krSheet,#krCall{display:none !important}}";
@@ -3319,23 +3323,22 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
   }
 
   /* ── 記録の中身を書く画面 ──
-     同じフォルダの直近の記録があれば下敷きにする。同じ部品を何度も測るときに
-     打ち直さずに済み、それでいて<今回の内容として目を通した>形になる。 */
+     v177：前回の内容は写さない。いつも空から書く。
+     v80〜v176 は同じフォルダの直近の記録を下敷きにしていたが、前の図番が残ったまま
+     別の記録として残してしまう（ムギさんの指摘）。図番・加工先は回ごとに変わりうるので、
+     写して「目を通したつもり」になるほうが危ない。 */
   var curDest="", curNew=false;
   function openRecForm(destId,isNew){
-    var db=loadDB(), d=destOf(db,destId);
+    var db=loadDB(), d=destOf(db,destId), i, el;
     if(!d){ note("そのフォルダが見つかりませんでした",true); sheet(false); return; }
     curDest=destId; curNew=!!isNew;
-    var g=lastGOf(db,destId), i, el, k;
     for(i=0;i<RFLD.length;i++){
-      k=RFLD[i][0];
-      el=document.getElementById("krR_"+k);
-      if(el) el.value=(g&&g[k])? g[k] : "";
+      el=document.getElementById("krR_"+RFLD[i][0]);
+      if(el) el.value="";
     }
-    document.getElementById("krWhere").innerHTML="入れ先: <b>"+esc(headD(d.f))+"</b>"
-      +(g? '　<span class="krPre">前回の内容を写しています</span>':"");
+    document.getElementById("krWhere").innerHTML="入れ先: <b>"+esc(headD(d.f))+"</b>";
     showPane("r");
-    el=document.getElementById("krR_pt"); if(el&&!(g&&g.pt)) el.focus();
+    el=document.getElementById("krR_pt"); if(el) el.focus();
   }
   function saveRec(){
     var g=emptyR(), i, el;
@@ -3418,10 +3421,20 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
   /* ── 呼び出し(?rec=ID) ──
      いまの入力を<置き換える>ので、開いた瞬間には入れ替えない。確認の帯を出して
      2回押しで実行する（すべて消去と同じ作法。alert/confirm は使わない）。 */
+  /* v177：?rec= は一度読んだら URL から外す（ほかのクエリ ?m= などは残す）。
+     残すと、すべて消去（消してから再読み込み）や画面の引き下げのたびに、消したはずの
+     記録の「呼び出します」の帯がまた出る（ムギさんの指摘）。呼び出すかどうかは、
+     いま出ている帯で決める。 */
+  function dropRec(){
+    var q=(location.search||"").replace(/^\?/,"").split("&"), out=[], i;
+    for(i=0;i<q.length;i++) if(q[i]!==""&&!/^rec=/.test(q[i])) out.push(q[i]);
+    try{ history.replaceState(history.state,"",location.pathname+(out.length? "?"+out.join("&") : "")+(location.hash||"")); }catch(e){}
+  }
   function restore(){
     var m=(location.search||"").match(/[?&]rec=([^&]+)/);
     if(!m) return;
     var id=decodeURIComponent(m[1]);
+    dropRec();
     var db=loadDB(), i, rec=null;
     for(i=0;i<db.r.length;i++) if(db.r[i].i===id){ rec=db.r[i]; break; }
     if(!rec){ note("呼び出す記録が見つかりませんでした(削除済みの可能性)",true); return; }
@@ -3491,8 +3504,8 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
     var nh=(H&&H.length)?H.length:0, np=(S&&S.parts)?S.parts.length:0, t;
     var nm=String((KEEP.v&&KEEP.v.recName)||"").replace(/\s+/g," ").replace(/^\s+|\s+$/g,"");
     if(nm.length>12) nm=nm.slice(0,12)+"…";
-    t=(nh?nh+"穴":"")+((nh&&np)?" / ":"")+(np?np+"部品":"");
-    return nm? (nm+" ・ "+(t||"(部品なし)")) : (t||"(部品なし)");
+    t=(nh?nh+"穴":"")+((nh&&np)?" / ":"")+(np?np+"穴群":"");
+    return nm? (nm+" ・ "+(t||"(穴群なし)")) : (t||"(穴群なし)");
   };
   window.krHasInput=function(){
     return !!(S&&((S.parts&&S.parts.length>0)||(S.orgs&&S.orgs.length>0)));

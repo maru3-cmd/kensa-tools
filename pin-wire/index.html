@@ -1799,12 +1799,6 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
     var i; for(i=0;i<db.d.length;i++) if(db.d[i].i===id) return db.d[i];
     return null;
   }
-  /* 同じフォルダの直近の記録を、次の記入の下敷きにする（打ち直しを減らす） */
-  function lastGOf(db,did){
-    var i;
-    for(i=0;i<db.r.length;i++) if(db.r[i].d===did&&db.r[i].g) return db.r[i].g;
-    return null;
-  }
 
   /* ── 画面部品 ── */
   var css=""
@@ -1843,7 +1837,6 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
     +"#krSheet .krFN{font-size:11.5px;color:#B4232C;margin-top:6px;min-height:16px}"
     +"#krWhere{font-size:12.5px;color:#1F3341;background:#F2F4F5;border-radius:8px;"
     +"padding:8px 10px;margin-bottom:9px;line-height:1.6}"
-    +"#krWhere .krPre{font-size:11px;color:#5B707E}"
     /* 記録の部品は紙に出さない。v88まではガイドの中にいたので印刷されて
        いなかったが、外へ出したので明示的に外す(v89)。 */
     +"@media print{#krBar,#krSheet,#krCall{display:none !important}}";
@@ -1994,23 +1987,22 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
   }
 
   /* ── 記録の中身を書く画面 ──
-     同じフォルダの直近の記録があれば下敷きにする。同じ部品を何度も測るときに
-     打ち直さずに済み、それでいて<今回の内容として目を通した>形になる。 */
+     v177：前回の内容は写さない。いつも空から書く。
+     v80〜v176 は同じフォルダの直近の記録を下敷きにしていたが、前の図番が残ったまま
+     別の記録として残してしまう（ムギさんの指摘）。図番・加工先は回ごとに変わりうるので、
+     写して「目を通したつもり」になるほうが危ない。 */
   var curDest="", curNew=false;
   function openRecForm(destId,isNew){
-    var db=loadDB(), d=destOf(db,destId);
+    var db=loadDB(), d=destOf(db,destId), i, el;
     if(!d){ note("そのフォルダが見つかりませんでした",true); sheet(false); return; }
     curDest=destId; curNew=!!isNew;
-    var g=lastGOf(db,destId), i, el, k;
     for(i=0;i<RFLD.length;i++){
-      k=RFLD[i][0];
-      el=document.getElementById("krR_"+k);
-      if(el) el.value=(g&&g[k])? g[k] : "";
+      el=document.getElementById("krR_"+RFLD[i][0]);
+      if(el) el.value="";
     }
-    document.getElementById("krWhere").innerHTML="入れ先: <b>"+esc(headD(d.f))+"</b>"
-      +(g? '　<span class="krPre">前回の内容を写しています</span>':"");
+    document.getElementById("krWhere").innerHTML="入れ先: <b>"+esc(headD(d.f))+"</b>";
     showPane("r");
-    el=document.getElementById("krR_pt"); if(el&&!(g&&g.pt)) el.focus();
+    el=document.getElementById("krR_pt"); if(el) el.focus();
   }
   function saveRec(){
     var g=emptyR(), i, el;
@@ -2092,10 +2084,20 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
 
   /* ── 呼び出し(?rec=ID) ──
      欄の数が決まっているツールは、そのまま入れて既存の計算を走らせる。 */
+  /* v177：?rec= は一度読んだら URL から外す（ほかのクエリ ?m= などは残す）。
+     残すと、すべて消去（消してから再読み込み）や画面の引き下げのたびに、消したはずの
+     記録の「呼び出します」の帯がまた出る（ムギさんの指摘）。呼び出すかどうかは、
+     いま出ている帯で決める。 */
+  function dropRec(){
+    var q=(location.search||"").replace(/^\?/,"").split("&"), out=[], i;
+    for(i=0;i<q.length;i++) if(q[i]!==""&&!/^rec=/.test(q[i])) out.push(q[i]);
+    try{ history.replaceState(history.state,"",location.pathname+(out.length? "?"+out.join("&") : "")+(location.hash||"")); }catch(e){}
+  }
   function restore(){
     var m=(location.search||"").match(/[?&]rec=([^&]+)/);
     if(!m) return;
     var id=decodeURIComponent(m[1]);
+    dropRec();
     var db=loadDB(), i, rec=null;
     for(i=0;i<db.r.length;i++) if(db.r[i].i===id){ rec=db.r[i]; break; }
     if(!rec){ note("呼び出す記録が見つかりませんでした(削除済みの可能性)",true); return; }

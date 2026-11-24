@@ -14,6 +14,20 @@
     border-radius:99px;background:#fff;color:#5B707E;cursor:pointer;min-height:32px;white-space:nowrap}
   .figChips button.on{background:#1B7F9E;border-color:#1B7F9E;color:#fff;font-weight:700}
   .figChips .figHint{font-size:11px;color:#8FA2AF;align-self:center;padding-left:2px}
+  /* v177: 図のすぐ下の「◀ 戻る／次へ ▶」。表まで下りずに、図を見ながら組を1つずつ送る。 */
+  .stepNav{display:flex;align-items:stretch;gap:8px;margin-top:8px}
+  .stepNav .snBtn{flex:0 0 auto;min-width:82px;min-height:52px;padding:0 10px;font:inherit;font-size:14px;font-weight:700;
+    border:1px solid var(--ink);border-radius:9px;background:var(--ink);color:#fff;cursor:pointer}
+  .stepNav .snBtn:disabled{background:#fff;color:#7A8C97;border-color:#D5DDE2;border-style:dashed;cursor:default}
+  .stepNav .snMid{flex:1;min-width:0;text-align:center;border:1px solid #E3E9EC;border-radius:9px;background:#FBFCFC;
+    padding:4px 6px;display:flex;flex-direction:column;justify-content:center;font-variant-numeric:tabular-nums}
+  .stepNav .snPair{font-family:ui-monospace,Menlo,monospace;font-size:13px;font-weight:700;color:#B4232C}
+  .stepNav .snVal{font-family:ui-monospace,Menlo,monospace;font-size:19px;font-weight:700;color:var(--ink);line-height:1.25;white-space:nowrap}
+  .stepNav .snVal small{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;font-size:11px;font-weight:600;color:#5B707E;margin:0 4px}
+  .stepNav .snCnt{font-size:11px;color:#5B707E}
+  .snNote{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:11.5px;color:#5B707E;margin-top:6px}
+  .snNote button{font:inherit;font-size:12px;font-weight:700;padding:6px 12px;border:1px solid #1F3341;border-radius:99px;
+    background:#fff;color:#1F3341;cursor:pointer;min-height:36px}
 
   :root{
     --paper:#F2F4F5; --sheet:#FFFFFF; --ink:#1F3341; --line:#8FA2AF; --red:#D63426;
@@ -270,22 +284,23 @@
   <div class="gb">
     <h4>使い方</h4>
     <ol>
-      <li>部品は「<b>1. なにを置く？</b>（PCDの穴／1つの穴／中心線で左右に振る）→ <b>2. どこから測る？</b>（基準）→ <b>3. どう置く？と数値</b>」の順に入れて「この部品を追加」。すべての部品が<b>原点 (0, 0)</b> を基準に1枚の上に載ります。</li>
-      <li>追加した部品は上の一覧に「<b>A：PCD100 に 6穴 等配…</b>」のように日本語で残り、<b>編集・削除</b>できます。入力中は図に<b>プレビュー（破線の赤丸・寸法線・角度）</b>がその場で描かれます。</li>
+      <li><b>穴群</b>（あなぐん：一緒に入れる穴のひとまとまり。PCD なら円1つぶんの穴）は「<b>1. なにを置く？</b>（PCDの穴／1つの穴／中心線で左右に振る）→ <b>2. どこから測る？</b>（基準）→ <b>3. どう置く？と数値</b>」の順に入れて「この穴群を追加」。すべての穴群が<b>原点 (0, 0)</b> を基準に1枚の上に載ります。</li>
+      <li>追加した穴群は上の一覧に「<b>A：PCD100 に 6穴 等配…</b>」のように日本語で残り、<b>編集・削除</b>できます。入力中は図に<b>プレビュー（破線の赤丸・寸法線・角度）</b>がその場で描かれます。</li>
       <li>角度は<b>真上0°・時計回り＋</b>。図面まるごとを1枚で入れると、<b>全穴の座標</b>と<b>総当たりの穴間ピッチ</b>が出ます。行をタップで図と連動します。</li>
+      <li><b>図のすぐ下の「◀ 戻る／次へ ▶」</b>で、穴の組を<b>1つずつ順に送れます</b>。送った組は図に赤い線で出て、距離もボタンの間に出るので、表まで下りずに図を見ながら測れます。送る順は<b>下の表の並び</b>（絞り込み・並べ替え）のとおりです。PCD の穴が多いときは<b>「隣どうしだけ」</b>にすると、<b>円を1周する順</b>（1–2、2–3、…、最後–1）に送れます（ボタンの下の「隣どうしだけで送る」でも切り替わります）。</li>
       <li><b>穴径を入れると、図に出る距離を「中心間／外−外／内−内」から選べます</b>（表の上のボタン）。<b>はじめは外−外</b>です。ノギスを当てたまま図が読めます。穴が重なって内−内が測れない組は「―」になります。穴径を入れていないときは中心間しか出せないので、ボタンは出ません。</li>
       <li><b>同じ穴パターンが PCD の各点にあるとき</b>は、「中心線で左右に振る」の基準で<b>「PCD ◯ の各点」</b>を選びます。1点ぶん入れるだけで全点に複製され、<b>別の点どうしの穴の距離</b>まで一気に出ます。既定の「隣り合う点だけ」フィルタで、隣の点との距離だけを拾えます（PCDの基準穴は除外）。</li>
-      <li><b>穴径</b>を入れると、穴間ピッチと並べて<b>ノギスの読み（外−外・内−内）</b>が出ます。穴径は<b>部品ごとに1つ</b>で、PCDの部品ならその円の全穴に効きます。同じキリで揃っているなら<b>「この穴径を全部品にまとめて入れる」</b>が使えます。記録表の実測値は、<b>外−外・内−内・中心間のどれで測ったか候補を選んで表示します</b>（読みの差は穴径ぶんあるので、ふつうは取り違えません）。
+      <li><b>穴径</b>を入れると、穴間ピッチと並べて<b>ノギスの読み（外−外・内−内）</b>が出ます。穴径は<b>穴群ごとに1つ</b>で、PCDの穴群ならその円の全穴に効きます。同じキリで揃っているなら<b>「この穴径を全部の穴群にまとめて入れる」</b>が使えます。記録表の実測値は、<b>外−外・内−内・中心間のどれで測ったか候補を選んで表示します</b>（読みの差は穴径ぶんあるので、ふつうは取り違えません）。
         ただし実物が大きく外れていると、別の測り方として読み替えてしまうことがあります。<b>図面の値からどれも大きく外れているときは、ご自分で測り方を決めてください。</b></li>
       <li><b>「1つの穴」は原点以外からでも置けます</b>。基準で<b>「指定した点から」</b>を選ぶと、起点の X・Y を決めて、そこから距離と角度（または X・Y）で穴を置けます。</li>
-      <li><b>原点とは別の中心（原点2）から寸法が出ている図面</b>は、部品の一覧の下の<b>「＋ 原点を足す」</b>で、原点からの寸法（<b>左へ・右へ／上へ・下へ</b>、または距離と角度）を入れて<b>原点2</b>を作ります。作ると、部品の「2. どこから測る？」に<b>「原点2が中心」「原点2から」</b>が出ます。原点2 の寸法を直すと、そこから置いた部品も一緒に動きます。原点2 は穴ではないので、ピッチの表には入りません。</li>
+      <li><b>原点とは別の中心（原点2）から寸法が出ている図面</b>は、穴群の一覧の下の<b>「＋ 原点を足す」</b>で、原点からの寸法（<b>左へ・右へ／上へ・下へ</b>、または距離と角度）を入れて<b>原点2</b>を作ります。作ると、穴群の「2. どこから測る？」に<b>「原点2が中心」「原点2から」</b>が出ます。原点2 の寸法を直すと、そこから置いた穴群も一緒に動きます。原点2 は穴ではないので、ピッチの表には入りません。</li>
       <li><b>図面が「前の穴から」で寸法を書いているとき</b>は、「1つの穴」の基準で<b>「既存の穴から」</b>を選びます。<b>距離と角度で</b>／<b>X・Yで</b>／<b>直角に振り出す</b>（基準の穴からの差）の3通りで、点をつないでいけます。同じように「PCDの穴」も<b>「既存の穴を中心に」</b>で、置いた穴を中心にした円周配置ができます。</li>
       <li>単一PCDの穴間ピッチや単純な弦長だけなら PCD穴ピッチ（TOOL-02）が手軽です。複数PCD・任意穴・点つなぎの混在はこの画面でまとめられます。</li>
     </ol>
     <div class="src">
       <b>計算のしかた</b><br>
-      式はひとつではなく、<b>入れた部品を順に座標へ直してから、穴どうしの距離を総当たりで出す</b>手順です。角度は<b>真上0°・時計回りが＋</b>で統一しています。<br>
-      ・部品を座標にする … 単位ベクトルは <code>(x, y) = (sin θ, cos θ)</code>（真上0°の規約のため sin と cos が入れ替わります）<br>
+      式はひとつではなく、<b>入れた穴群を順に座標へ直してから、穴どうしの距離を総当たりで出す</b>手順です。角度は<b>真上0°・時計回りが＋</b>で統一しています。<br>
+      ・穴群を座標にする … 単位ベクトルは <code>(x, y) = (sin θ, cos θ)</code>（真上0°の規約のため sin と cos が入れ替わります）<br>
       　PCDの穴 … <code>中心 + (PCD/2) × (sin θk, cos θk)</code>、等配なら <code>θk = 起点角 + k×360/n</code>、不等配は <code>θk = 起点角 + 角度</code>。<b>起点角の位置に穴があるか</b>（ある＝穴1）と、<b>角度の測り方</b>（となりの穴から足していく／どれも起点角の線から）の組み合わせ4通りで並べます<br>
       　距離と角度 … <code>起点 + L × (sin θ, cos θ)</code>　　X・Y … <code>起点 + (X, Y)</code>（起点は既定で原点 (0,0)。原点2から置いたときは原点2）<br>
       　原点2 … <code>測り始めの原点 + (横, 縦)</code>（右・上が＋、左・下が−）または <code>測り始めの原点 + 距離 × (sin θ, cos θ)</code><br>
@@ -314,7 +329,7 @@
           <text x="60" y="63" font-size="7" fill="#5B707E" text-anchor="middle">PCD100</text>
         </svg></div>
         <div class="gtxt">
-          <p>まずは1部品だけ。PCD100 に6穴を等配したときの穴間ピッチは？</p>
+          <p>まずは穴群1つだけ。PCD100 に6穴を等配したときの穴間ピッチは？</p>
           <p class="gset">PCDの穴 ／ 等配 ／ PCD 100 ／ 穴数 6 ／ 起点角 0</p>
           <p class="gread">読み方：全6穴の座標と 15組の穴間ピッチが出ます。隣り合う穴は <b>50.000mm</b>、対角は 100.000mm（表の行をタップで拡大表示）。</p>
           <button class="gbtn" type="button" data-ex='{"set":[{"setState":{"orgs":[],"parts":[{"t":"circle","cx":0,"cy":0,"pcd":100,"mode":"eq","n":6,"th0":0,"dir":1,"angMode":"rel","angs":""}]},"apply":"renderParts;build;calc;renderBaseChips;renderFormFields;persist"}]}' onclick="tryExample(this)">この例を試す</button>
@@ -417,18 +432,18 @@
 <div class="tb-strip">
   <div><b>TOOL-30</b></div>
   <div>0°＝真上</div>
-  <div>部品を重ねる</div>
+  <div>穴群を重ねる</div>
   <div>端末内計算</div>
 </div>
 
 <div class="card">
-  <h2>部品の一覧<span class="tag" id="cCount">0 個</span></h2>
-  <div class="convnote">角度は<b>真上（12時）が 0°・時計回りが＋</b>（PCD穴ピッチと同じ規約）。部品は<b>原点 (0, 0)</b> から測ります。原点とは別の中心から寸法が出ている図面は、<b>「＋ 原点を足す」</b>で<b>原点2</b>を作ると、そこからも測れます。</div>
+  <h2>穴群の一覧<span class="tag" id="cCount">0 個</span></h2>
+  <div class="convnote">角度は<b>真上（12時）が 0°・時計回りが＋</b>（PCD穴ピッチと同じ規約）。穴群は<b>原点 (0, 0)</b> から測ります。原点とは別の中心から寸法が出ている図面は、<b>「＋ 原点を足す」</b>で<b>原点2</b>を作ると、そこからも測れます。</div>
   <div class="plist" id="cBox"></div>
   <div class="ogbar noprint" id="ogBar"><button type="button" class="btn sm" id="ogAdd">＋ 原点を足す（別の中心・穴を並べる基準の点）</button></div>
   <div class="ogform noprint" id="ogForm" style="display:none">
     <div class="stephead" id="ogHead">原点を足す</div>
-    <div class="hint" style="margin:3px 0 0">穴ではなく、<b>穴を並べる基準の点</b>です（別のPCDの中心など）。ピッチの表には入りません。足すと、部品の「2. どこから測る？」で選べるようになります。</div>
+    <div class="hint" style="margin:3px 0 0">穴ではなく、<b>穴を並べる基準の点</b>です（別のPCDの中心など）。ピッチの表には入りません。足すと、穴群の「2. どこから測る？」で選べるようになります。</div>
     <div class="row" style="margin:8px 0 0">
       <div><label class="f" for="ogName">呼び名（変えてもよい）</label><input type="text" autocomplete="off" id="ogName" maxlength="8"></div>
     </div>
@@ -459,7 +474,7 @@
 </div>
 
 <div class="addform noprint" id="addForm">
-  <div class="stephead">部品を追加<span class="ebadge" id="ebadge">編集中</span></div>
+  <div class="stephead">穴群を追加<span class="ebadge" id="ebadge">編集中</span></div>
   <div class="steplab">1. なにを置く？</div>
   <div class="chips2" id="typeChips">
     <button type="button" class="chip2 on" data-t="circle">PCDの穴</button>
@@ -477,7 +492,7 @@
     </div>
     <div id="fCrefRow" style="display:none;margin-top:8px">
       <label class="f">中心にする穴</label><select id="fCref"></select>
-      <div class="hint" style="margin:4px 0 0">基準にできるのは<b>この部品より前に追加した部品の穴</b>です。</div>
+      <div class="hint" style="margin:4px 0 0">基準にできるのは<b>この穴群より前に追加した穴群の穴</b>です。</div>
     </div>
     <div id="fCxy" class="row" style="display:none;margin-top:8px">
       <div><label class="f">中心X（原点から右＋）</label><input type="text" inputmode="decimal" autocomplete="off" id="fCx" placeholder="0"></div>
@@ -530,7 +545,7 @@
   <div id="fg_hole" style="display:none">
     <div id="fHrefRow" style="display:none;margin-bottom:8px">
       <label class="f">どの穴を基準に</label><select id="fHref"></select>
-      <div class="hint" style="margin:4px 0 0">基準にできるのは<b>この部品より前に追加した部品の穴</b>です。</div>
+      <div class="hint" style="margin:4px 0 0">基準にできるのは<b>この穴群より前に追加した穴群の穴</b>です。</div>
     </div>
     <div id="fHplace" class="chips2">
       <button type="button" class="chip2 on" data-hp="polar">距離と角度で</button>
@@ -613,9 +628,9 @@
   <div class="row" id="fHdRow">
     <div><label class="f" for="fHd">穴径<small style="font-weight:400;color:#8FA2AF">　入れるとノギスの読み（外−外・内−内）が出ます</small></label><input type="text" inputmode="decimal" autocomplete="off" id="fHd" placeholder="例 9" data-fk="dist"></div>
   </div>
-  <button class="btn sm" type="button" id="fHdAll" style="margin-bottom:9px">この穴径を全部品にまとめて入れる</button>
+  <button class="btn sm" type="button" id="fHdAll" style="margin-bottom:9px">この穴径を全部の穴群にまとめて入れる</button>
 
-  <button class="addgo" type="button" id="addGo">この部品を追加</button>
+  <button class="addgo" type="button" id="addGo">この穴群を追加</button>
   <button class="cancelE" type="button" id="cancelEdit">編集をやめる（変更を破棄）</button>
 </div>
 
@@ -641,7 +656,18 @@
 
 <div class="card">
   <h2>図<span class="tag">タップで選択と連動</span></h2>
-  <figure><svg id="fig" viewBox="0 0 300 300" role="img" aria-label="部品を合成した穴配置の図"></svg><figcaption>上 が 0°／緑の十字が読み替え原点（既定は原点 0,0）／青の十字は足した原点（原点2など）</figcaption></figure>
+  <figure><svg id="fig" viewBox="0 0 300 300" role="img" aria-label="穴群を重ねた穴配置の図"></svg><figcaption>上 が 0°／緑の十字が読み替え原点（既定は原点 0,0）／青の十字は足した原点（原点2など）</figcaption></figure>
+  <!-- v177: 図のすぐ下で組を送る。★ID を sw で始めない（見せ方の操作であって入力値ではない）。 -->
+  <div class="stepNav noprint" id="stepNav" style="display:none">
+    <button type="button" class="snBtn" id="snPrev" onclick="stepGo(-1)" aria-label="前の組へ">◀ 戻る</button>
+    <div class="snMid" aria-live="polite">
+      <div class="snPair" id="snPair">—</div>
+      <div class="snVal" id="snVal"></div>
+      <div class="snCnt" id="snCnt"></div>
+    </div>
+    <button type="button" class="snBtn" id="snNext" onclick="stepGo(1)" aria-label="次の組へ">次へ ▶</button>
+  </div>
+  <div class="snNote noprint" id="snNote" style="display:none"></div>
   <div class="figChips" id="figChips"></div>
 </div>
 
@@ -649,8 +675,8 @@
   <h2>穴間ピッチ<span class="tag" id="pCount">0 組</span></h2>
   <div class="chips" id="fltChips">
     <button aria-pressed="true"  onclick="setFilter('all',this)">すべて</button>
-    <button aria-pressed="false" onclick="setFilter('same',this)">同じ部品の中</button>
-    <button aria-pressed="false" onclick="setFilter('cross',this)">部品をまたぐ</button>
+    <button aria-pressed="false" onclick="setFilter('same',this)">同じ穴群の中</button>
+    <button aria-pressed="false" onclick="setFilter('cross',this)">穴群をまたぐ</button>
     <button aria-pressed="false" id="fltAdj" onclick="setFilter('adj',this)">隣どうしだけ</button>
     <button aria-pressed="false" id="fltGadj" style="display:none" onclick="setFilter('gadj',this)">隣り合う点だけ</button>
     <button aria-pressed="false" id="fltGcross" style="display:none" onclick="setFilter('gcross',this)">点をまたぐ（全部）</button>
@@ -706,7 +732,7 @@
       <select id="orgKind" onchange="orgSet('kind',this)">
         <option value="common">原点 (0, 0) のまま</option>
         <option value="og">足した原点（原点2など）</option>
-        <option value="part">部品の基準点</option>
+        <option value="part">穴群の基準点</option>
         <option value="hole">穴を原点に</option>
         <option value="xy">指定した点</option>
       </select>
@@ -755,9 +781,9 @@
     <ul>
       <li>穴の中心そのものは測れません。ピンを入れて外々・内々で測るか、当ピンの径を足し引きしてください（外々－ピン径＝中心間）。</li>
       <li><b>軸配置の「左」「右」は、基点から先端を見たときの左手・右手</b>です。図面を裏から見た向きで読むと左右が入れ替わります。図で必ず確認してください。</li>
-      <li>離れた部品どうしの穴ピッチは、<b>基準点の位置の精度がそのまま乗ります</b>。中心のズレ（X・Y）や基点は図面値ではなく、可能なら現物で確認してください。</li>
+      <li>離れた穴群どうしの穴ピッチは、<b>基準点の位置の精度がそのまま乗ります</b>。中心のズレ（X・Y）や基点は図面値ではなく、可能なら現物で確認してください。</li>
       <li>不等配の「隣との角度」は、<b>最後の1つを省略できます</b>。残り（360°−合計）を自動で補います。例：<b>30 150 30</b> → 4穴目の閉じ角 150°を自動補完。全部（合計360°ちょうど）入れても従来どおり動きます。合計が360°を超えるとエラーになります。</li>
-      <li>回り方向を間違えると、鏡像になって同じPCD内のピッチは合うのに他の部品との距離だけ合わない、という紛らわしい形で出ます。図と現物を必ず見比べてください。</li>
+      <li>回り方向を間違えると、鏡像になって同じPCD内のピッチは合うのに他の穴群との距離だけ合わない、という紛らわしい形で出ます。図と現物を必ず見比べてください。</li>
       <li>端面基準は、ワーク外形の <b>W・H と「原点の位置」</b>に依存します。中心と左下隅を取り違えると、その穴だけが W/2・H/2 ずれます。図で外形と穴の関係を確認してください。</li>
       <li>ここで出るのは理論値です。合否は記録表の実測との差で判定してください。真位置度で見る場合は真位置度判定ツールへ。</li>
       <li><b>加工に座標を渡す場合。</b>この画面の値は入力した数値から計算したものです。入力を間違えると、間違った座標で加工し、同じ間違った値で検査して「合格」と出ます（検査が独立でなくなる）。加工用に使うときは、必ず図面で照合してから渡してください。</li>
@@ -960,7 +986,7 @@ function ogBlocker(k){
   var o=S.orgs[k-1], j, us;
   if(!o) return "";
   us=ogUsers(k);
-  if(us.length) return o.nm+" を基準にした部品（"+us.join("・")+"）があるため、先にそちらを削除するか、基準を変えてください";
+  if(us.length) return o.nm+" を基準にした穴群（"+us.join("・")+"）があるため、先にそちらを削除するか、基準を変えてください";
   for(j=k;j<S.orgs.length;j++) if(S.orgs[j].from===k) return o.nm+" から測った原点（"+S.orgs[j].nm+"）があるため、先にそちらを削除してください";
   return "";
 }
@@ -995,7 +1021,7 @@ function partBlocker(i){
     }
   }
   for(j=i+1;j<S.parts.length;j++){
-    if(refsPart(S.parts[j],i)) return "部品 "+LB.charAt(i)+" の穴を基準にした部品（"+LB.charAt(j)+"）があるため、先にそちらを削除してください";
+    if(refsPart(S.parts[j],i)) return "穴群 "+LB.charAt(i)+" の穴を基準にした穴群（"+LB.charAt(j)+"）があるため、先にそちらを削除してください";
   }
   return "";
 }
@@ -1018,7 +1044,7 @@ function typeChangeBlocker(i,p){
   }
   if(old&&p.t!==old.t){
     for(j=i+1;j<S.parts.length;j++){
-      if(refsPart(S.parts[j],i)) return "部品 "+LB.charAt(i)+" の穴を基準にした部品（"+LB.charAt(j)+"）があるため、種類は変えられません";
+      if(refsPart(S.parts[j],i)) return "穴群 "+LB.charAt(i)+" の穴を基準にした穴群（"+LB.charAt(j)+"）があるため、種類は変えられません";
     }
   }
   return "";
@@ -1036,7 +1062,7 @@ function build(){
       var ths=[];
       if(p.cref){
         var cb=refHole(p.cpi,p.chi);
-        if(!cb) err="中心にする穴が見つかりません（基準にした部品を確かめてください）";
+        if(!cb) err="中心にする穴が見つかりません（基準にした穴群を確かめてください）";
         else { p.cx=cb.x; p.cy=cb.y; }
       } else if(p.og>0){                 /* 版158：原点2 が中心（cref と同じく、ここで中心を入れ直す） */
         var oc=ogAt(p.og);
@@ -1057,7 +1083,7 @@ function build(){
         else { ths=ua.ths; note=ua.note; }
       }
       if(!err){
-        base={x:p.cx, y:p.cy, lb:"部品 "+nm+" の中心"};
+        base={x:p.cx, y:p.cy, lb:"穴群 "+nm+" の中心"};
         ths.forEach(function(th){
           var q=pos(p,th);
           out.push({x:q.x, y:q.y, th:((th%360)+360)%360, src:"PCD"+(numOK(p.pcd)?" φ"+p.pcd:""), adjable:true,
@@ -1070,7 +1096,7 @@ function build(){
       var x=NaN, y=NaN, sr="", hpa=NaN, rb=null, isRef=(p.mode==="rxy"||p.mode==="rpolar"||p.mode==="rperp");
       if(isRef){
         rb=refHole(p.rpi,p.rhi);
-        if(!rb) err="基準の穴が見つかりません（基準にした部品を確かめてください）";
+        if(!rb) err="基準の穴が見つかりません（基準にした穴群を確かめてください）";
       }
       var hog=null;
       if(!isRef && p.mode!=="edge" && p.og>0){   /* 版158：原点2 から。起点を原点2 の位置で入れ直す */
@@ -1117,7 +1143,7 @@ function build(){
         }
       }
       if(!err){
-        base={x:x, y:y, lb:"部品 "+nm+" の穴"};
+        base={x:x, y:y, lb:"穴群 "+nm+" の穴"};
         out.push({x:x, y:y, th:NaN, src:sr, adjable:false, pa:hpa});
       }
     }
@@ -1161,7 +1187,7 @@ function build(){
                                               : (function(){var z=[],q;for(q=0;q<ths.length;q++)z.push(q);return z;})();
             if(!pick.length) err="複製する点が指定されていません（例：1,5 または 1-7）";
             else {
-              base={x:cp.cx, y:cp.cy, lb:"部品 "+nm+" の元PCD中心"};
+              base={x:cp.cx, y:cp.cy, lb:"穴群 "+nm+" の元PCD中心"};
               pick.forEach(function(idx){
                 var thPt=ths[idx];                         /* その点の方位（PCD中心から見た角度） */
                 var q=pos(cp,thPt);                         /* その点の座標 */
@@ -1187,7 +1213,7 @@ function build(){
         else if(!p.tip && !L.length && !R.length) err="先端の穴にチェックを入れるか、左右のオフセットを入れてください";
         else {
           var Pp=emitPattern(p.bx, p.by, p.th, "");
-          base={x:Pp.x, y:Pp.y, lb:"部品 "+nm+" の先端"};
+          base={x:Pp.x, y:Pp.y, lb:"穴群 "+nm+" の先端"};
           note=out.length+" 穴 / 先端 ("+f3(Pp.x)+", "+f3(Pp.y)+")";
         }
       }
@@ -1277,7 +1303,18 @@ function pairs(){
       var dd=Math.abs(a.pidx-b.pidx);
       if(!(dd===1 || dd===a.pn-1)) continue;   /* 元PCD上で隣接（端と端の一周も隣） */
     }
-    out.push({a:a,b:b,d:Math.hypot(b.x-a.x,b.y-a.y),adj:adj});
+    out.push({a:a,b:b,d:Math.hypot(b.x-a.x,b.y-a.y),adj:adj,ia:i,ib:j});
+  }
+  /* v177：「隣どうしだけ」の番号順は<円周を1周する順>（A1–A2, A2–A3, …, A5–A6, A6–A1）。
+     i<j の順のままだと閉じの組（A1–A6）が2番目に来て、図を見ながら「次へ」で順に送ると
+     1つ飛んで反対側へ行く（PCD穴ピッチ v103 と同じ学び）。閉じの組だけ、後ろの穴（A6）の
+     組の先頭へ回す。ほかの絞り込み・並べ替えの並びは変えない。 */
+  if(S.filter==="adj" && S.sort==="order"){
+    out.forEach(function(p){
+      var cl=p.adj && p.a.nh>2 && Math.abs(p.a.hi-p.b.hi)===p.a.nh-1;
+      p.k1=cl? p.ib : p.ia; p.k2=cl? p.ib+0.5 : p.ib;
+    });
+    out.sort(function(p,q){ return (p.k1-q.k1)||(p.k2-q.k2); });
   }
   if(S.sort==="asc")  out.sort(function(p,q){return p.d-q.d;});
   if(S.sort==="desc") out.sort(function(p,q){return q.d-p.d;});
@@ -1464,7 +1501,7 @@ function submitOg(){
   nm=r.o.nm;
   if(was>=0) S.orgs[was]=r.o; else S.orgs.push(r.o);
   closeOg(); calc(); renderBaseChips(); renderFormFields(); persist(); updatePreview();
-  toast(was>=0? (nm+" を直しました") : (nm+" を足しました（部品の「2. どこから測る？」で選べます）"));
+  toast(was>=0? (nm+" を直しました") : (nm+" を足しました（穴群の「2. どこから測る？」で選べます）"));
 }
 function delOg(k){
   var o=S.orgs[k-1], bk;
@@ -1552,7 +1589,7 @@ function partDescBody(p){
 function renderParts(){
   var box=g("cBox"), h="";
   g("cCount").textContent=S.parts.length+" 個";
-  h+='<div class="pcard baseA"><span class="pn">原点</span><div class="pd"><b>(0, 0)</b>｜部品はここから測ります</div></div>';
+  h+='<div class="pcard baseA"><span class="pn">原点</span><div class="pd"><b>(0, 0)</b>｜穴群はここから測ります</div></div>';
   /* 版158：足した原点（原点2など）。位置と原点からの距離は build() が oNote に書く */
   S.orgs.forEach(function(o,k){
     h+='<div class="pcard og'+((OF.open&&OF.k===k)?' editing':'')+'"><span class="pn">'+esc(o.nm)+'</span>'
@@ -1571,7 +1608,7 @@ function renderParts(){
       +'<button type="button" class="act" data-edit="'+i+'">編集</button>'
       +'<button type="button" class="act del" data-del="'+i+'">削除</button></div>';
   });
-  if(!S.parts.length) h+='<div class="hint" style="padding:2px 2px 6px">まだ部品がありません。下のフォーム「1. なにを置く？」から追加してください。</div>';
+  if(!S.parts.length) h+='<div class="hint" style="padding:2px 2px 6px">まだ穴群がありません。下のフォーム「1. なにを置く？」から追加してください。</div>';
   box.innerHTML=h;
   if(g("ogAdd")) g("ogBar").style.display=(OF.open||S.orgs.length>=MAXORG)? "none" : "";
   renderOgNotes(); renderMsgs();
@@ -1776,7 +1813,7 @@ function clearFormVals(){
   dirAuto=true;
 }
 function submitPart(){
-  if(editIdx<0 && S.parts.length>=MAXPART){ toast("部品は "+MAXPART+" までです。"); return; }
+  if(editIdx<0 && S.parts.length>=MAXPART){ toast("穴群は "+MAXPART+" までです。"); return; }
   var r=readFormToPart(true), p, nm, j, q;
   if(r.err){ toast(r.err); return; }
   p=r.part;
@@ -1786,11 +1823,11 @@ function submitPart(){
     nm=LB.charAt(editIdx);
     S.parts[editIdx]=p;
     endEdit(); calc(); persist();
-    toast("部品 "+nm+" の変更を保存しました"); return;
+    toast("穴群 "+nm+" の変更を保存しました"); return;
   }
   S.parts.push(p); nm=LB.charAt(S.parts.length-1);
   clearFormVals(); renderParts(); calc(); renderBaseChips(); renderFormFields(); persist();
-  toast("部品 "+nm+" を追加しました");
+  toast("穴群 "+nm+" を追加しました");
 }
 function startEdit(i){
   var p=S.parts[i]; if(!p) return;
@@ -1843,7 +1880,7 @@ function startEdit(i){
 function endEdit(){
   editIdx=-1;
   g("addForm").classList.remove("edit");
-  g("addGo").textContent="この部品を追加";
+  g("addGo").textContent="この穴群を追加";
   clearFormVals();
   renderBaseChips(); renderFormFields(); renderParts(); updatePreview();
 }
@@ -2200,9 +2237,9 @@ function renderOrg(){
   }
   g("orgKind").value=o.kind;
   if(o.kind==="part"){
-    h='<label class="f">どの部品</label><select onchange="orgSet(\'pi\',this)">';
+    h='<label class="f">どの穴群</label><select onchange="orgSet(\'pi\',this)">';
     BASE.forEach(function(b,i){ if(b) h+='<option value="'+i+'"'+(o.pi===i?" selected":"")+'>'+b.lb+'</option>'; });
-    if(!BASE.some(function(b){return !!b;})) h+='<option>（部品がありません）</option>';
+    if(!BASE.some(function(b){return !!b;})) h+='<option>（穴群がありません）</option>';
     h+='</select>';
   } else if(o.kind==="hole"){
     h='<label class="f">どの穴</label><select onchange="orgSet(\'key\',this)">';
@@ -2257,7 +2294,7 @@ function renderPos(){
       +'<td>'+p.key+'</td><td style="font-family:inherit;font-size:10.5px;color:#7A8C97">'+p.src+'</td>'
       +'<td>'+f3(X)+'</td><td>'+f3(Y)+'</td><td>'+f3(Math.hypot(X,Y))+'</td></tr>';
   });
-  if(!H.length) h='<tr><td colspan="5" style="text-align:center;color:#8FA2AF;font-family:inherit;padding:12px">部品を追加すると出ます</td></tr>';
+  if(!H.length) h='<tr><td colspan="5" style="text-align:center;color:#8FA2AF;font-family:inherit;padding:12px">穴群を追加すると出ます</td></tr>';
   tb.innerHTML=h;
 }
 var ROWCAP=500;   /* 総当たりは穴数の2乗。端末が固まらないよう表示行を制限する */
@@ -2266,7 +2303,7 @@ var ROWCAP=500;   /* 総当たりは穴数の2乗。端末が固まらないよ�
    ★見せ方であって入力値ではないので S に持たせない＝保存しない。
      開くたびに外−外から始まる。 */
 var rdKind="o";
-function setRdKind(v,b){ rdKind=v; mark("rdChips",b); draw(); renderDRO(); }
+function setRdKind(v,b){ rdKind=v; mark("rdChips",b); draw(); renderDRO(); renderStep(); }
 function rdName(){ return (rdKind==="o")?"外−外":(rdKind==="i")?"内−内":"中心間"; }
 /* 選んだ組の距離を、いまの見せ方に直す。測れない組は null。
    ★穴径は穴ごとに違いうるので 中心間 ± (d1+d2)/2。既存の dmOf を使う。 */
@@ -2331,6 +2368,7 @@ function renderPairs(){
     h='<tr><td colspan="'+ncol+'" style="text-align:center;color:#8FA2AF;font-family:inherit;padding:12px">'+msg+'</td></tr>';
   }
   tb.innerHTML=h;
+  renderStep();     /* v177: 図の下の「戻る／次へ」は表の並びで送るので、表と一緒に描き直す */
 }
 document.addEventListener("click",function(e){
   /* v85: 部品チップ。押した部品を色づけし、穴間ピッチの選択は落とす。 */
@@ -2353,6 +2391,79 @@ document.addEventListener("click",function(e){
     calc(); persist();
   }
 });
+/* ═══ 図のすぐ下の「◀ 戻る／次へ ▶」（v177）═══
+   ムギさん：「PCD の穴が何十個もあると、スマホでは図と表（どこの穴とどこの穴の距離を見るか）が
+   離れていてやりにくい。図のすぐ近くの 次へ・戻る で順々に送れたら楽」。
+   ・送る順は<下の表の並び>（絞り込み・並べ替え）そのもの。別の順を持たない（v82 の二重管理を避ける）。
+     並びは芯の pairs() が決める。「隣どうしだけ」の番号順は円周を1周する順（v177 で芯を直した）。
+   ・動かすのは選んだ組（S.sel）だけ。図・表・下の大きな数字は calc() がいつもどおり描き直す。
+   ・いまの組が表に無い（別の絞り込みで選んだ／穴を1つだけ選んだ）ときは、次へで先頭・戻るで最後から。
+   ・端では止める（最後から先頭へは飛ばない）。何組目かを出す。
+   ・表の枠の中だけを動かして、選んだ行を見える所へ寄せる。ページは動かさない（図が逃げるため）。 */
+function stepIdx(L){
+  if(!(S.sel&&S.sel.length===2)) return -1;
+  for(var i=0;i<L.length;i++){
+    if((L[i].a.key===S.sel[0]&&L[i].b.key===S.sel[1])||(L[i].a.key===S.sel[1]&&L[i].b.key===S.sel[0])) return i;
+  }
+  return -1;
+}
+function stepGo(dir){
+  var L=pairs(), i=stepIdx(L), j;
+  if(!L.length) return;
+  if(i<0) j=(dir>0)? 0 : L.length-1;
+  else{ j=i+dir; if(j<0||j>=L.length) return; }
+  S.sel=[L[j].a.key, L[j].b.key];
+  HL=-1;                                   /* 穴間ピッチを選んだら穴群の色づけは消す（表の行を押したときと同じ） */
+  calc(); persist();
+  stepShowRow();
+}
+function stepShowRow(){
+  var tr=document.querySelector('#pairBody tr[aria-selected="true"]'), box;
+  if(!tr) return;
+  box=tr.parentNode;
+  while(box&&!(box.classList&&box.classList.contains("tblwrap"))) box=box.parentNode;
+  if(!box||!box.getBoundingClientRect||box.scrollHeight<=box.clientHeight) return;
+  var r=tr.getBoundingClientRect(), b=box.getBoundingClientRect();
+  if(r.top<b.top || r.bottom>b.bottom) box.scrollTop += (r.top-b.top) - (box.clientHeight-r.height)/2;
+}
+/* 「隣どうしだけで送る」：表の上のボタンと同じ setFilter を通す。いまの組が隣どうしでなければ先頭の組を選ぶ。 */
+function stepAdj(){
+  var b=g("fltAdj"); if(!b) return;
+  setFilter("adj",b);
+  var L=pairs();
+  if(L.length && stepIdx(L)<0){ S.sel=[L[0].a.key, L[0].b.key]; HL=-1; calc(); persist(); stepShowRow(); }
+}
+/* いま押されているボタンの文字（表の上の絞り込み・並べ替え）。名前を別に持たない。 */
+function pressedText(id){
+  var c=g(id), i;
+  if(!c) return "";
+  for(i=0;i<c.children.length;i++) if(c.children[i].getAttribute("aria-pressed")==="true") return c.children[i].textContent;
+  return "";
+}
+function renderStep(){
+  var nav=g("stepNav"), note=g("snNote");
+  if(!nav||!note) return;
+  if(H.length<2){ nav.style.display="none"; note.style.display="none"; return; }
+  nav.style.display=""; note.style.display="";
+  var L=pairs(), n=L.length, i=stepIdx(L);
+  g("snPrev").disabled = (n===0) || (i===0);
+  g("snNext").disabled = (n===0) || (i===n-1);
+  var a=(S.sel&&S.sel.length===2)? byKey(S.sel[0]) : null, b=(S.sel&&S.sel.length===2)? byKey(S.sel[1]) : null;
+  if(a&&b){
+    var dm=dmOf(a,b), sv=shownDist(a,b);
+    var lb=!anyHd()? "ピッチ" : (!numOK(dm)? "中心間" : rdName());
+    g("snPair").textContent=a.key+" – "+b.key;
+    g("snVal").innerHTML='<small>'+lb+'</small>'+(sv===null? "―" : f3(sv))+'<small>mm</small>';
+  }else{
+    g("snPair").textContent="—";
+    g("snVal").innerHTML= n? '<small>「次へ ▶」で1組目から</small>' : '';
+  }
+  g("snCnt").textContent = !n ? "いまの絞り込みでは組がありません"
+    : ((i>=0? String(i+1) : "—")+" / "+n.toLocaleString()+" 組");
+  var t='表の並び（'+pressedText("fltChips")+'・'+pressedText("srtChips")+'）の順に送ります';
+  if(S.filter!=="adj" && hasAdj()) t+='<button type="button" id="snAdj" onclick="stepAdj()">隣どうしだけで送る</button>';
+  note.innerHTML=t;
+}
 function renderDRO(){
   var a=(S.sel&&S.sel[0])?byKey(S.sel[0]):null, b=(S.sel&&S.sel[1])?byKey(S.sel[1]):null;
   if(!a||!b){
@@ -2369,7 +2480,7 @@ function renderDRO(){
   if(a.pi===b.pi && numOK(a.th) && numOK(b.th)){
     var d=Math.abs(a.th-b.th)%360; if(d>180) d=360-d;
     g("dAng").textContent=f2(d)+"°";
-  } else g("dAng").textContent = (a.pi===b.pi) ? "—（PCDではない）" : "—（別の部品）";
+  } else g("dAng").textContent = (a.pi===b.pi) ? "—（PCDではない）" : "—（別の穴群）";
   var az=Math.atan2(dx,dy)/RAD; if(az<0) az+=360;   /* 真上から時計回り */
   g("dAz").textContent=f2(az)+"°";
   var dmv=dmOf(a,b);
@@ -4129,11 +4240,11 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
     if(v===""){ toast("先に穴径を入れてください。"); return; }
     var n=pf(v);
     if(!numOK(n)||n<=0){ toast("穴径は 0 より大きい数で入れてください。"); return; }
-    if(!S.parts.length){ toast("先に部品を追加してください。"); return; }
+    if(!S.parts.length){ toast("先に穴群を追加してください。"); return; }
     var i;
     for(i=0;i<S.parts.length;i++) S.parts[i].hd=n;
     renderParts(); calc(); persist();
-    toast(S.parts.length+" 個の部品に 穴径 φ"+n+" を入れました。");
+    toast(S.parts.length+" 個の穴群に 穴径 φ"+n+" を入れました。");
   });
 })();
 </script>
@@ -4337,12 +4448,6 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
     var i; for(i=0;i<db.d.length;i++) if(db.d[i].i===id) return db.d[i];
     return null;
   }
-  /* 同じフォルダの直近の記録を、次の記入の下敷きにする（打ち直しを減らす） */
-  function lastGOf(db,did){
-    var i;
-    for(i=0;i<db.r.length;i++) if(db.r[i].d===did&&db.r[i].g) return db.r[i].g;
-    return null;
-  }
 
   /* ── 画面部品 ── */
   var css=""
@@ -4390,7 +4495,6 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
     +"#krSheet .krFN{font-size:11.5px;color:#B4232C;margin-top:6px;min-height:16px}"
     +"#krWhere{font-size:12.5px;color:#1F3341;background:#F2F4F5;border-radius:8px;"
     +"padding:8px 10px;margin-bottom:9px;line-height:1.6}"
-    +"#krWhere .krPre{font-size:11px;color:#5B707E}"
     /* 記録の部品は紙に出さない。v88まではガイドの中にいたので印刷されて
        いなかったが、外へ出したので明示的に外す(v89)。 */
     +"@media print{#krBar,#krSheet,#krCall{display:none !important}}";
@@ -4541,23 +4645,22 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
   }
 
   /* ── 記録の中身を書く画面 ──
-     同じフォルダの直近の記録があれば下敷きにする。同じ部品を何度も測るときに
-     打ち直さずに済み、それでいて<今回の内容として目を通した>形になる。 */
+     v177：前回の内容は写さない。いつも空から書く。
+     v80〜v176 は同じフォルダの直近の記録を下敷きにしていたが、前の図番が残ったまま
+     別の記録として残してしまう（ムギさんの指摘）。図番・加工先は回ごとに変わりうるので、
+     写して「目を通したつもり」になるほうが危ない。 */
   var curDest="", curNew=false;
   function openRecForm(destId,isNew){
-    var db=loadDB(), d=destOf(db,destId);
+    var db=loadDB(), d=destOf(db,destId), i, el;
     if(!d){ note("そのフォルダが見つかりませんでした",true); sheet(false); return; }
     curDest=destId; curNew=!!isNew;
-    var g=lastGOf(db,destId), i, el, k;
     for(i=0;i<RFLD.length;i++){
-      k=RFLD[i][0];
-      el=document.getElementById("krR_"+k);
-      if(el) el.value=(g&&g[k])? g[k] : "";
+      el=document.getElementById("krR_"+RFLD[i][0]);
+      if(el) el.value="";
     }
-    document.getElementById("krWhere").innerHTML="入れ先: <b>"+esc(headD(d.f))+"</b>"
-      +(g? '　<span class="krPre">前回の内容を写しています</span>':"");
+    document.getElementById("krWhere").innerHTML="入れ先: <b>"+esc(headD(d.f))+"</b>";
     showPane("r");
-    el=document.getElementById("krR_pt"); if(el&&!(g&&g.pt)) el.focus();
+    el=document.getElementById("krR_pt"); if(el) el.focus();
   }
   function saveRec(){
     var g=emptyR(), i, el;
@@ -4640,10 +4743,20 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
   /* ── 呼び出し(?rec=ID) ──
      いまの入力を<置き換える>ので、開いた瞬間には入れ替えない。確認の帯を出して
      2回押しで実行する（すべて消去と同じ作法。alert/confirm は使わない）。 */
+  /* v177：?rec= は一度読んだら URL から外す（ほかのクエリ ?m= などは残す）。
+     残すと、すべて消去（消してから再読み込み）や画面の引き下げのたびに、消したはずの
+     記録の「呼び出します」の帯がまた出る（ムギさんの指摘）。呼び出すかどうかは、
+     いま出ている帯で決める。 */
+  function dropRec(){
+    var q=(location.search||"").replace(/^\?/,"").split("&"), out=[], i;
+    for(i=0;i<q.length;i++) if(q[i]!==""&&!/^rec=/.test(q[i])) out.push(q[i]);
+    try{ history.replaceState(history.state,"",location.pathname+(out.length? "?"+out.join("&") : "")+(location.hash||"")); }catch(e){}
+  }
   function restore(){
     var m=(location.search||"").match(/[?&]rec=([^&]+)/);
     if(!m) return;
     var id=decodeURIComponent(m[1]);
+    dropRec();
     var db=loadDB(), i, rec=null;
     for(i=0;i<db.r.length;i++) if(db.r[i].i===id){ rec=db.r[i]; break; }
     if(!rec){ note("呼び出す記録が見つかりませんでした(削除済みの可能性)",true); return; }
@@ -4713,8 +4826,8 @@ td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3D
   var s=S, nh=(H&&H.length)?H.length:0, np=(s&&s.parts)?s.parts.length:0;
   var nm=String((g("recName")||{}).value||"").replace(/\s+/g," ").replace(/^\s+|\s+$/g,"");
   if(nm.length>12) nm=nm.slice(0,12)+"…";
-  var t=(nh?nh+"穴":"")+((nh&&np)?" / ":"")+(np?np+"部品":"");
-  return nm? (nm+" ・ "+(t||"(部品なし)")) : (t||"(部品なし)");
+  var t=(nh?nh+"穴":"")+((nh&&np)?" / ":"")+(np?np+"穴群":"");
+  return nm? (nm+" ・ "+(t||"(穴群なし)")) : (t||"(穴群なし)");
   };
   window.krHasInput=function(){
     return !!(S&&((S.parts&&S.parts.length>0)||(S.orgs&&S.orgs.length>0)));
