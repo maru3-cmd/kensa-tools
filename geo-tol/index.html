@@ -1,0 +1,2302 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1F3341">
+<meta name="description" content="幾何公差の 14 の記号（真直度・平面度・真円度・円筒度・輪郭度・平行度・直角度・傾斜度・位置度・同軸度・対称度・円周振れ・全振れ）の意味、公差域の図、データム、定盤とダイヤルゲージでの測り方、値の出し方と合否判定。計算は端末内で完結します。">
+<title>幾何公差 | 検査計算ツール</title>
+<style>
+  :root{
+    --paper:#F2F4F5;
+    --sheet:#FFFFFF;
+    --ink:#1F3341;
+    --line:#8FA2AF;
+    --red:#D63426;
+    --dro-bg:#15181A;
+    --dro-red:#FF5A48;
+    --dro-dim:#9FB0B8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI",sans-serif;
+    background:var(--paper);color:var(--ink);
+    min-height:100dvh;display:flex;flex-direction:column;align-items:center;
+    padding:0 12px calc(16px + env(safe-area-inset-bottom));
+  }
+  .wrap{width:100%;max-width:480px}
+
+  header{display:flex;align-items:baseline;justify-content:space-between;padding:14px 2px 10px}
+  header h1{font-size:16px;font-weight:700;letter-spacing:.04em}
+  header h1 small{display:block;font-size:11px;font-weight:400;color:#5B707E;letter-spacing:.08em;margin-top:2px}
+  header a{font-size:12px;color:#5B707E;text-decoration:none}
+
+  .mode-lg{
+    display:grid;grid-template-columns:1fr 1fr 1fr;
+    border:1.5px solid var(--ink);border-radius:9px;overflow:hidden;
+    margin-bottom:10px;
+  }
+  .mode-lg button{
+    font-size:13px;font-weight:700;padding:10px 3px;border:none;
+    background:var(--sheet);color:var(--ink);letter-spacing:.03em;
+  }
+  /* 3つ目のモードが増えて1つあたりが狭くなったので、
+     狭い端末では字を落とす。折り返して2行になるより読みやすい。 */
+  @media(max-width:400px){.mode-lg button{font-size:11.5px;letter-spacing:0}}
+  @media(max-width:340px){.mode-lg button{font-size:10.5px;padding:10px 1px}}
+  .mode-lg button.on{background:var(--ink);color:#fff}
+
+  .sheet{background:var(--sheet);border:2px solid var(--ink);padding:5px}
+  .sheet-inner{border:1px solid var(--ink)}
+  .sheet svg{display:block;width:100%;height:auto}
+  .titleblock{display:flex;border-top:1px solid var(--ink);font-size:9px;letter-spacing:.06em}
+  .titleblock div{padding:3px 8px;border-right:1px solid var(--ink)}
+  .titleblock div:last-child{border-right:none;margin-left:auto}
+  .titleblock b{font-weight:700}
+
+  h2{
+    font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.1em;
+    margin:12px 2px 8px;display:flex;align-items:center;gap:6px;
+  }
+  h2::before{content:'';width:4px;height:14px;background:var(--ink);border-radius:2px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{
+    font-size:12.5px;font-weight:700;padding:8px 11px;
+    border:1.5px solid var(--ink);border-radius:8px;
+    background:var(--sheet);color:var(--ink);
+    font-variant-numeric:tabular-nums;
+  }
+  .chip.on{background:var(--ink);color:#fff}
+
+  .inputs{margin-top:10px;display:flex;flex-direction:column;gap:10px}
+  .row{
+    display:grid;grid-template-columns:26px 1fr 130px 40px;
+    align-items:center;gap:8px;
+    background:var(--sheet);border:1px solid #D5DDE2;border-radius:10px;
+    padding:10px 12px;
+  }
+  .badge{
+    width:22px;height:22px;border-radius:50%;
+    background:var(--ink);color:#fff;font-size:12px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .row label{font-size:13px;font-weight:600}
+  .row label small{display:block;font-size:10px;font-weight:400;color:#5B707E}
+  .row input{
+    width:100%;font-size:19px;font-weight:600;text-align:right;
+    font-variant-numeric:tabular-nums;
+    border:none;border-bottom:2px solid var(--ink);
+    background:transparent;color:var(--ink);
+    padding:2px 4px;border-radius:0;outline:none;
+  }
+  .row input:focus{border-bottom-color:var(--red)}
+  .unit{font-size:12px;color:#5B707E}
+  .note{font-size:11px;color:#5B707E;line-height:1.7;margin-top:8px;padding:0 2px}
+  .note b{color:var(--ink)}
+
+  .dro{
+    margin-top:14px;background:var(--dro-bg);border-radius:12px;
+    padding:16px 18px 12px;box-shadow:inset 0 2px 8px rgba(0,0,0,.5);
+  }
+  .dro-line{display:flex;align-items:baseline;gap:10px;justify-content:flex-end}
+  .dro-label{color:#7d8a91;font-size:13px;font-weight:700;letter-spacing:.08em}
+  .dro-val{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:30px;font-weight:600;color:var(--dro-red);
+    text-shadow:0 0 10px rgba(255,90,72,.35);letter-spacing:.02em;
+  }
+  .dro-unit{color:#7d8a91;font-size:13px;font-weight:600}
+  .dro-grid{
+    display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;
+    border-top:1px solid #2a3034;margin-top:10px;padding-top:10px;
+  }
+  .cellv{display:flex;flex-direction:column;align-items:flex-end;padding:4px 8px;border-radius:8px}
+  .cellv:active{background:#1e2327}
+  .cellv .k{color:#7d8a91;font-size:11px;font-weight:700;letter-spacing:.06em;align-self:flex-start}
+  .cellv .v{
+    font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:17px;font-weight:600;color:var(--dro-dim);
+  }
+  .cellv .s{color:#5d6a71;font-size:10px}
+  .dro-foot{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-top:10px;border-top:1px solid #2a3034;padding-top:9px;gap:8px;
+  }
+  .statusTxt{color:#5d6a71;font-size:11px;letter-spacing:.02em;line-height:1.6}
+  .statusTxt.err{color:#FF8A7E}
+
+  .tbl-btn{
+    margin-top:14px;width:100%;
+    font-size:13px;font-weight:700;padding:11px 4px;
+    border:1.5px solid var(--ink);border-radius:9px;
+    background:var(--sheet);color:var(--ink);letter-spacing:.05em;
+  }
+  .tbl-btn:active{background:var(--ink);color:#fff}
+  .tblWrap{margin-top:10px;display:none;overflow-x:auto}
+  .tblWrap.show{display:block}
+  table.tol{
+    width:100%;border-collapse:collapse;background:var(--sheet);
+    border:2px solid var(--ink);font-size:12px;
+    font-variant-numeric:tabular-nums;
+  }
+  table.tol th,table.tol td{border:1px solid var(--ink);padding:4px 6px;text-align:right;white-space:nowrap}
+  table.tol th{background:#E8EDF0;font-size:10px;font-weight:700;text-align:center}
+  table.tol td:first-child{text-align:left;font-weight:700}
+  table.tol tr.hit td{background:#FCE9E7;font-weight:700}
+
+  footer{margin-top:16px;font-size:11px;color:#5B707E;line-height:1.7;text-align:center;letter-spacing:.03em}
+  /* ── 使い方ガイド（全ツール共通） ── */
+  .guide{background:#FFFFFF;border:1px solid #D5DDE2;border-radius:12px;margin:0 0 12px;overflow:hidden}
+  .guide>summary{list-style:none;cursor:pointer;padding:12px 14px;font-size:12px;font-weight:700;color:#5B707E;letter-spacing:.04em;display:flex;align-items:center;gap:7px}
+  .guide>summary::-webkit-details-marker{display:none}
+  .guide>summary::before{content:"?";display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#1F3341;color:#fff;font-size:11px;font-weight:700;flex:none}
+  .guide[open]>summary{border-bottom:1px solid #E3E9EC}
+  .guide .gb{padding:2px 14px 14px}
+  .guide .gb h4{font-size:11px;letter-spacing:.07em;color:#5B707E;font-weight:700;margin:13px 0 6px}
+  .guide .gb ol{margin:0;padding-left:1.2em;font-size:11.5px;line-height:1.75;color:#1F3341}
+  .guide .gb ol b{color:#1F3341}
+  .guide .gx{border-top:1px dashed #E3E9EC;margin-top:11px;padding-top:8px}
+  .guide .gx h4{margin-top:6px}
+  .guide .gxin{display:flex;gap:12px;align-items:flex-start;margin-top:4px}
+  .guide .gfig{flex:none}
+  .guide .gfig svg{width:112px;height:112px;display:block;background:#FBFCFC;border:1px solid #EDF1F3;border-radius:8px}
+  .guide .gtxt{flex:1;font-size:11.5px;line-height:1.6;color:#1F3341}
+  .guide .gtxt p{margin:0 0 7px}
+  .guide .gset{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;background:#F2F6F8;border:1px solid #E3E9EC;border-radius:6px;padding:6px 8px;color:#3A5060;line-height:1.5}
+  .guide .gread b{color:#D63426}
+  .guide .gbtn{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;font:inherit;font-size:11.5px;font-weight:600;border:1px solid #1F3341;border-radius:6px;background:#fff;color:#1F3341;cursor:pointer;margin-top:2px}
+  .guide .gbtn:active{transform:translateY(1px)}
+  @media(max-width:360px){.guide .gxin{flex-direction:column}.guide .gfig svg{width:128px;height:128px}}
+  /* 一括消去ボタン（v37 / 全ツール共通の見た目） */
+  .topclear{display:flex;justify-content:flex-end;margin:2px 2px 10px}
+  .topclear button{font-size:12px;font-weight:700;color:#B23B2E;background:#FBECEA;border:1px solid #E7B7B0;border-radius:9px;padding:7px 14px;cursor:pointer}
+  .topclear button:active{background:#F6DAD5}
+  .topclear button.arm{background:#B23B2E;color:#fff;border-color:#B23B2E}
+  .clearBtn{width:100%;font-size:13px;font-weight:700;padding:12px 4px;border:1.5px solid #C9D3DA;border-radius:10px;background:var(--sheet);color:#5B707E;letter-spacing:.05em;margin-bottom:6px;cursor:pointer}
+  .clearBtn.arm{border-color:var(--red);color:var(--red);background:#FCF0EF}
+
+  /* ── このツール固有 ── */
+  .lead{margin:8px 2px 0;padding:9px 11px;background:#EEF3F6;border:1px solid #C9D3DA;
+    border-radius:9px;font-size:12.5px;line-height:1.75;color:#1F3341}
+  .gline{font-size:11.5px;color:#5B707E;margin:4px 2px 0;line-height:1.7}
+  .gline b{color:#1F3341}
+  .tchips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 2px}
+  .tchips button{flex:0 0 auto;min-width:58px;padding:8px 10px;font-size:13px;font-weight:700;
+    background:var(--sheet);color:var(--ink);border:1.5px solid var(--line);border-radius:8px;
+    cursor:pointer;-webkit-appearance:none;appearance:none}
+  .tchips button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .okbox{margin-top:9px;padding:9px 11px;background:#ECF5EF;border:1px solid #A9CDB8;
+    border-left:3px solid #0B6B3A;border-radius:8px;font-size:12px;line-height:1.8;color:#1E4530}
+  .warnbox{margin-top:9px;padding:9px 11px;background:#FFF7E8;border:1px solid #E8D3A8;
+    border-left:3px solid #C08A16;border-radius:8px;font-size:12px;line-height:1.8;color:#5A4413}
+  .ngbox{margin-top:9px;padding:9px 11px;background:#FBECEA;border:1px solid #E7B7B0;
+    border-left:3px solid #B23B2E;border-radius:8px;font-size:12px;line-height:1.8;color:#5A2A24}
+  .verdict{margin-top:9px;padding:10px 12px;background:var(--sheet);border:2px solid var(--ink);
+    border-radius:10px;font-size:13px;line-height:1.85}
+  .verdict .vh{font-size:11px;letter-spacing:.08em;color:#5B707E;margin-bottom:3px}
+  .tolTbl{width:100%;border-collapse:collapse;margin-top:9px;font-size:12px;background:var(--sheet)}
+  .tolTbl th,.tolTbl td{border:1px solid #C9D3DA;padding:5px 7px;text-align:right}
+  .tolTbl th{background:#EDF1F3;font-weight:700;text-align:center}
+  .tolTbl td:first-child{text-align:left}
+  .fig{background:var(--sheet);border:2px solid var(--ink);padding:5px;margin-bottom:10px}
+  .fig-inner{border:1px solid var(--ink)}
+  .fig svg{display:block;width:100%;height:auto}
+  .titleblock{display:flex;border-top:1px solid var(--ink);font-size:9px;letter-spacing:.06em}
+  .titleblock div{padding:3px 8px;border-right:1px solid var(--ink)}
+  .titleblock div:last-child{border-right:none;margin-left:auto}
+  .titleblock b{font-weight:700}
+  .src{font-size:11px;color:#5B707E;line-height:1.8;margin-top:8px;
+    padding:7px 9px;background:#F7F9FA;border:1px solid #DCE3E7;border-radius:8px}
+  /* v151: 著作権表示。フッターの末尾に置く（全ページ共通の見た目） */
+  .crnote{margin-top:8px;padding-top:7px;border-top:1px solid rgba(143,162,175,.45);
+    font-size:11px;line-height:1.7;color:inherit;opacity:.92}
+  /* v153: 歯形を系列ごとに並べる／型番の読み取り結果 */
+  .tchips{display:block}
+  .tgrp{margin-bottom:8px}
+  .tlbl{display:block;font-size:11px;color:#5B707E;margin:2px 2px 4px;letter-spacing:.04em}
+  .trow{display:flex;flex-wrap:wrap;gap:6px}
+  #fKata{text-align:left;font-family:ui-monospace,Menlo,Consolas,monospace;letter-spacing:.04em}
+  .kbox{margin:6px 0 0;padding:9px 11px;border-radius:9px;font-size:12px;line-height:1.8}
+  .kbox.ok{background:#ECF5EF;border:1px solid #A9CDB8;border-left:3px solid #0B6B3A;color:#1E4530}
+  .kbox.ng{background:#FBECEA;border:1px solid #E7B7B0;border-left:3px solid #B23B2E;color:#5A2A24}
+  .kbox b{font-weight:700}
+  /* v173：ねじ込み管継手 */
+  .fit3{background:#FFF8E8;border:1px solid #E8D3A3;border-left:4px solid #C98A1B;border-radius:10px;padding:10px 12px 8px;margin:10px 0 4px;font-size:12.5px;line-height:1.75;color:#1F3341}
+  .fit3 .f3h{font-weight:700;font-size:12.5px;color:#7A5410;margin-bottom:2px}
+  .fit3 ol{margin:0;padding-left:1.2em}
+  .fit3 li{margin:3px 0}
+  #fHin{text-transform:none}
+  #fTiles{margin:4px 0 2px}
+  .tg{margin:0 0 7px}
+  .tgl{font-size:11px;font-weight:700;color:#3A5060;margin:0 0 4px;padding-left:7px;border-left:4px solid #1F3341;line-height:1.4}
+  .tgr{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+  .tgr button{-webkit-appearance:none;appearance:none;font:inherit;background:var(--sheet);border:1.5px solid #C9D3DA;border-radius:9px;padding:4px 3px 5px;
+    cursor:pointer;color:var(--ink);display:flex;flex-direction:column;align-items:center;min-width:0;line-height:1.25}
+  .tgr button svg{display:block;width:100%;height:44px}
+  .tgr button b{font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;font-size:13px;margin-top:1px}
+  .tgr button span{font-size:9.5px;color:#3A5060;text-align:center;word-break:keep-all;overflow-wrap:anywhere}
+  .tgr button.on{border-color:#1F3341;background:#EAF0F3;box-shadow:inset 0 0 0 1.5px #1F3341}
+  .szc{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px;margin:4px 0 10px}
+  .szc button{-webkit-appearance:none;appearance:none;font:inherit;font-size:13px;font-weight:700;background:var(--sheet);color:var(--ink);border:1.5px solid var(--line);
+    border-radius:8px;padding:6px 2px 5px;cursor:pointer;display:flex;flex-direction:column;align-items:center;line-height:1.2;min-width:0;font-variant-numeric:tabular-nums}
+  .szc button small{font-size:9.5px;font-weight:700;color:#5B707E;margin-top:2px;white-space:nowrap}
+  .szc button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .szc button.on small{color:#C9D3DA}
+  .szc button.na{opacity:.38;border-style:dashed}
+  .fname{font-size:15px;color:var(--ink);margin:4px 0 6px;line-height:1.5}
+  .fname b{font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;font-size:17px;margin-right:4px}
+  .fname .fsz{display:inline-block;margin-left:8px;font-weight:700;font-variant-numeric:tabular-nums}
+  .fname small{font-size:11.5px;color:#5B707E;margin-left:6px}
+  .flegend{font-size:10.5px;color:#3A5060;margin:-4px 0 10px;line-height:2}
+  .flegend .ek{margin-left:6px}
+  .ek{display:inline-block;min-width:22px;padding:0 5px;margin-right:4px;border-radius:5px;color:#fff;font-size:10.5px;font-weight:700;text-align:center;line-height:18px;vertical-align:1px}
+  .ends{display:flex;flex-wrap:wrap;gap:4px 12px}
+  .ek2{font-size:12px;white-space:nowrap}
+  #fitOut{margin-top:10px}
+  .fsec{background:var(--sheet);border:1px solid #DCE3E7;border-radius:10px;padding:9px 11px;margin-bottom:8px;font-size:12px;line-height:1.75}
+  .fsec p{margin:2px 0}
+  .fh{font-size:11.5px;font-weight:700;color:#3A5060;letter-spacing:.04em;margin:2px 0 5px}
+  .pl{margin:2px 0;padding-left:1.15em}
+  .pl li{margin:3px 0}
+  .pl a{color:#2C5FA0}
+  .subs{display:flex;flex-wrap:wrap;gap:5px}
+  .subs button{-webkit-appearance:none;appearance:none;font:inherit;font-size:12px;font-weight:700;background:#fff;color:var(--ink);border:1.5px solid var(--line);border-radius:8px;
+    padding:5px 9px;cursor:pointer;display:flex;flex-direction:column;align-items:center;line-height:1.25;font-variant-numeric:tabular-nums}
+  .subs button small{font-size:9.5px;color:#5B707E}
+  .subs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .subs button.on small{color:#C9D3DA}
+  #fTbl{margin:2px 0 8px}
+  .tscroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .ftbl{width:100%;border-collapse:collapse;font-size:11.5px;background:var(--sheet);font-variant-numeric:tabular-nums;margin:2px 0 4px}
+  .ftbl th,.ftbl td{border:1px solid #C9D3DA;padding:4px 5px;text-align:right;line-height:1.4}
+  .ftbl th{background:#EDF1F3;font-weight:700;text-align:center;font-size:10.5px}
+  .ftbl th small{display:block;font-weight:400;font-size:9px;color:#5B707E}
+  .ftbl td:first-child{text-align:left;font-weight:700;white-space:nowrap}
+  .ftbl td.sm{font-size:10px;text-align:left}
+  .ftbl tr.hit td{background:#FFF1D6;font-weight:700}
+  .ftbl.kk td{text-align:left}
+  .ftbl.kk td:first-child{white-space:normal}
+  .ftbl.ks td:nth-child(2){white-space:nowrap}
+  .ftbl.kj td:first-child{width:46%}
+  #bTbl td,#bTbl th{white-space:nowrap}
+  header a{white-space:nowrap;flex-shrink:0}
+  .ftbl.cmb td{text-align:center}
+  .ftbl.cmb td:first-child{text-align:center}
+  .ftbl.cmb small{display:block;font-size:9px;font-weight:400}
+  .ftbl .g2{background:#DDF0E3;color:#0B6B3A;font-weight:700}
+  .ftbl .g1{background:#EEF7F0;color:#1E7A45;font-weight:700}
+  .ftbl .ng{background:#FBECEA;color:#B23B2E;font-weight:700}
+  .panel{background:var(--sheet);border:1px solid #D5DDE2;border-radius:12px;margin:10px 0 4px;overflow:hidden}
+  .panel>summary{list-style:none;cursor:pointer;padding:11px 13px;font-size:12.5px;font-weight:700;color:var(--ink);position:relative;padding-right:30px;line-height:1.5}
+  .panel>summary::-webkit-details-marker{display:none}
+  .panel>summary::after{content:'›';position:absolute;right:13px;top:9px;font-size:18px;color:#B7C3CA}
+  .panel[open]>summary::after{transform:rotate(90deg)}
+  .panel[open]>summary{border-bottom:1px solid #E3E9EC}
+  .pbody{padding:10px 12px 12px;font-size:12px;line-height:1.75}
+  .pbody .fh{margin-top:12px}
+  .pbody .fh:first-child{margin-top:0}
+  .mnote{font-size:11px;color:#5B707E;margin:4px 0 0;line-height:1.7}
+  .mnote a{color:#2C5FA0}
+  #hinOut{margin-bottom:6px}
+  .dro-label{white-space:nowrap}
+  /* v174：キー溝の寸法・幾何公差 */
+  .kwc{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin:6px 0}
+  .kwc button{-webkit-appearance:none;appearance:none;font:inherit;font-size:12px;font-weight:700;background:var(--sheet);color:var(--ink);border:1.5px solid var(--line);
+    border-radius:8px;padding:6px 2px 5px;cursor:pointer;display:flex;flex-direction:column;align-items:center;line-height:1.25;min-width:0}
+  .kwc button small{font-size:9.5px;font-weight:700;color:#5B707E;margin-top:2px;white-space:nowrap}
+  .kwc button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .kwc button.on small{color:#C9D3DA}
+  .kexp{background:#F4F7F9;border:1px solid #DCE3E7;border-radius:10px;padding:8px 11px;margin:2px 0 10px;font-size:12px;line-height:1.75;color:#1F3341}
+  .kexh{font-size:11px;font-weight:700;color:#3A5060;margin-bottom:2px}
+  .ktb{width:100%;border-collapse:collapse;font-size:11.5px;background:var(--sheet);font-variant-numeric:tabular-nums;margin:10px 0 4px}
+  .ktb th,.ktb td{border:1px solid #C9D3DA;padding:5px 5px;line-height:1.4;text-align:right}
+  .ktb th{background:#EDF1F3;font-size:10.5px;text-align:center}
+  .ktb td:first-child{text-align:left}
+  .ktb td:nth-child(3){font-size:10px;color:#3A5060;text-align:center}
+  .ktb td:nth-child(4){white-space:nowrap}
+  .ktb td:nth-child(2){white-space:nowrap}
+  .ktb tr.sep td{background:#1F3341;color:#fff;font-size:11px;padding:3px 6px}
+  .ktb tr.hot td{background:#FFF1D6;font-weight:700}
+  .kwn{font-size:12px;line-height:1.7;background:#FFF8E8;border:1px solid #E8D3A3;border-radius:8px;padding:7px 10px;margin:8px 0 0}
+  .kwn.ng{background:#FBECEA;border-color:#E9B7B0;color:#8E2A20}
+  .gsym{display:block;width:100%;height:34px}
+  .tgr.g5{grid-template-columns:repeat(5,minmax(0,1fr))}
+  .tgr.g5 button b{font-size:10.5px;font-family:inherit;margin-top:2px;text-align:center;line-height:1.25}
+  .gmeth{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0 8px}
+  .gmeth button{-webkit-appearance:none;appearance:none;font:inherit;font-size:12px;font-weight:700;background:var(--sheet);color:var(--ink);border:1.5px solid var(--line);border-radius:8px;padding:7px 10px;cursor:pointer;line-height:1.3;text-align:left}
+  .gmeth button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .gver{font-size:13px;line-height:1.7;border-radius:10px;padding:9px 12px;margin:8px 0;border:1px solid #DCE3E7;background:#F4F7F9;color:#1F3341}
+  .gver.ok{background:#E6F4EA;border-color:#A9D5B6;color:#0B5A31}
+  .gver.ng{background:#FBECEA;border-color:#E9B7B0;color:#8E2A20}
+  .gver b.big{font-size:15px}
+  .gver small{display:block;font-size:11.5px;margin-top:3px;color:#3A5060}
+  .gfx{font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;font-size:12px;background:#F4F7F9;border-radius:6px;padding:5px 8px;margin:4px 0;display:block}
+  .pl ol{margin:2px 0;padding-left:1.3em}
+  .fsec ol{margin:2px 0;padding-left:1.3em}
+  .fsec ol li{margin:3px 0}
+  .dro-val{white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>幾何公差<small>14 の記号の意味・測り方・値の出し方と合否</small></h1>
+    <a href="../">← ポータル</a>
+  </header>
+
+<details class="guide noprint">
+  <summary>使い方と出典</summary>
+  <div class="gb">
+    <h4>使い方</h4>
+    <ol>
+      <li>図面の<b>公差記入枠</b>（四角い枠）の左の<b>記号</b>と同じ絵を押します。</li>
+      <li>その記号が<b>何を言っているか・公差域の図・データムが要るか・現場での測り方</b>が出ます。測り方が2通りあるものは、ボタンで選びます。</li>
+      <li><b>公差の値</b>と<b>測った値</b>（ダイヤルの読みの最大・最小など）を入れると、幾何公差の値と<b>合否</b>が出ます。</li>
+      <li>測り方によっては<b>厳しめ</b>に出る・<b>見逃し</b>があることを、合否と一緒に書きます。</li>
+    </ol>
+    <div class="gx">
+      <h4>例 ── 平面度 0.05。ダイヤルの読みは ＋0.03 〜 −0.01</h4>
+      <div class="gxin"><div class="gtxt">
+        <p>3点で支えて面をなぞった。</p>
+        <p class="gset">平面度 ／ 公差 0.05 ／ 読みの最大 0.03・最小 −0.01</p>
+        <p class="gread">読み方：0.03 − (−0.01) ＝ <b>0.040</b>。0.05 以内なので<b>公差の内側</b>。この測り方は厳しめに出るので、合格なら安心です。</p>
+        <button class="gbtn" type="button" data-ex='{"set":[{"click":"#swg-flt"},{"id":"fT","v":"0.05"},{"id":"fA","v":"0.03"},{"id":"fB","v":"-0.01"}]}' onclick="tryExample(this)">この例を試す</button>
+      </div></div>
+    </div>
+    <div class="gx">
+      <h4>例 ── キー溝の対称度 0.1。両側の肉厚が 10.02 と 9.94</h4>
+      <div class="gxin"><div class="gtxt">
+        <p>溝が片寄っていないかを見たい。</p>
+        <p class="gset">対称度 ／ 公差 0.1 ／ A 10.02・B 9.94</p>
+        <p class="gread">読み方：｜10.02 − 9.94｜＝ <b>0.080</b>（中心のずれは 0.040、その2倍）。0.1 以内なので<b>公差の内側</b>。「ずれ 0.04 だから余裕」ではなく、<b>2倍の 0.08 で比べます</b>。</p>
+        <button class="gbtn" type="button" data-ex='{"set":[{"click":"#swg-sym"},{"id":"fT","v":"0.1"},{"id":"fA","v":"10.02"},{"id":"fB","v":"9.94"}]}' onclick="tryExample(this)">この例を試す</button>
+      </div></div>
+    </div>
+    <div class="gx">
+      <h4>例 ── 同軸度 φ0.05。回したら振れが ＋0.04 〜 −0.02</h4>
+      <div class="gxin"><div class="gtxt">
+        <p>データムの円筒を V ブロックに載せて回した。</p>
+        <p class="gset">同軸度 ／ 公差 0.05 ／ 読みの最大 0.04・最小 −0.02</p>
+        <p class="gread">読み方：0.04 − (−0.02) ＝ <b>0.060</b>。<b>公差を超えています</b>（超過 0.010）。ただし振れには真円度も混ざるので、この測り方は厳しめ。三次元測定機で中心のずれを確かめる価値があります。</p>
+        <button class="gbtn" type="button" data-ex='{"set":[{"click":"#swg-coa"},{"id":"fT","v":"0.05"},{"id":"fA","v":"0.04"},{"id":"fB","v":"-0.02"}]}' onclick="tryExample(this)">この例を試す</button>
+      </div></div>
+    </div>
+    <h4>入っていないもの</h4>
+    <div class="gline">
+      ・<b>Ⓜ（最大実体）・Ⓛ・Ⓟ（突出公差域）・共通公差域 CZ</b> などの付加記号は扱っていません。位置度の Ⓜ は <a href="../true-position/">真位置度判定（TOOL-13）</a> で。<br>
+      ・ここの測り方は<b>定盤・ダイヤルゲージ・マイクロメータでできる現場の方法</b>です。図面の公差が小さい（0.01 前後）ときや、合否がきわどいときは、真円度測定機・三次元測定機で。<br>
+      ・読みの最大・最小は、<b>人が読んだ値を入れる</b>形です（測った点を全部入れて最小の帯を計算する方式ではありません）。
+    </div>
+    <div class="src">
+      出典：JIS B 0021（製品の幾何特性仕様―幾何公差表示方式）、JIS B 0621（幾何偏差の定義及び表示）。
+      測り方と定義の確認：キーエンス「幾何公差」の各ページ
+      （<a href="https://www.keyence.co.jp/ss/products/measure-sys/gd-and-t/basic/drawing-symbol.jsp" target="_blank" rel="noopener">記号とデータムの要・不要</a>、
+      <a href="https://www.keyence.co.jp/ss/products/measure-sys/gd-and-t/form-tolerance/flatness.jsp" target="_blank" rel="noopener">平面度</a>、
+      <a href="https://www.keyence.co.jp/ss/products/measure-sys/gd-and-t/form-tolerance/roundness.jsp" target="_blank" rel="noopener">真円度＝(Dmax−Dmin)/2</a>、
+      <a href="https://www.keyence.co.jp/ss/products/measure-sys/gd-and-t/orientation-tolerance/parallelism.jsp" target="_blank" rel="noopener">平行度</a>、
+      <a href="https://www.keyence.co.jp/ss/products/measure-sys/gd-and-t/orientation-tolerance/perpendicularity.jsp" target="_blank" rel="noopener">直角度（スコヤとすきま）</a>、
+      <a href="https://www.keyence.co.jp/ss/products/measure-sys/gd-and-t/location-tolerance/coaxiality.jsp" target="_blank" rel="noopener">同軸度（回して振れの最大差）</a>、
+      <a href="https://www.keyence.co.jp/ss/products/measure-sys/gd-and-t/type/location-tolerance.jsp" target="_blank" rel="noopener">位置度・同軸度・対称度の公差域</a>、
+      <a href="https://www.keyence.co.jp/ss/products/measure-sys/gd-and-t/type/run-out-tolerance.jsp" target="_blank" rel="noopener">円周振れ・全振れ</a>）。
+      「ずれの2倍」は、公差域が基準の両側に半分ずつ取られること（上の公差域の定義）から。
+    </div>
+  </div>
+</details>
+
+  <div class="fit3">
+    <div class="f3h">まず、この3つだけ</div>
+    <ol>
+      <li>幾何公差は<b>「形・向き・位置・振れ」</b>の決まりです。ノギスで寸法が合っていても、<b>反り・倒れ・片寄り・振れ</b>は別に見ます（2点で挟む測り方では分からない）。</li>
+      <li>図面の枠は<b>［記号｜値｜データム］</b>。データム（A など）があれば、<b>その面を定盤に置く／その軸で回す</b>のが測り方の出発点です。</li>
+      <li>値の出し方は3つだけ：<b>読みの最大 − 最小</b>／<b>（最大 − 最小）÷ 2</b>／<b>ずれ × 2</b>。どれを使うかは、記号を押すと出ます。</li>
+    </ol>
+  </div>
+
+  <h2>記号<small>図面の枠の左にある絵を押す</small></h2>
+  <div id="gTiles"></div>
+
+  <div class="fname" id="gName"></div>
+  <div class="fig">
+    <div class="fig-inner">
+      <svg id="fig" viewBox="0 0 340 230" role="img" aria-label="選んだ幾何公差の、図面での書き方と公差域の図"></svg>
+      <div class="titleblock">
+        <div>GD&amp;T <b id="tbType">―</b></div>
+        <div>UNIT <b>mm</b></div>
+        <div>ZONE <b>SCHEMATIC</b></div>
+      </div>
+    </div>
+  </div>
+  <div class="flegend"><span class="ek" style="background:#D63426">赤</span>公差域（この中に入っていれば合格）<span class="ek" style="background:#2C5FA0">青</span>データム（基準）<span class="ek" style="background:#1F3341">黒</span>実際の形</div>
+
+  <div id="gMean"></div>
+
+  <h2>測り方と判定<small>マイナスの読みは − を付けて入れる</small></h2>
+  <div class="gmeth" id="gMeth"></div>
+  <div id="gHow"></div>
+  <div class="inputs">
+    <div class="row">
+      <span class="badge">t</span>
+      <label for="fT">公差の値<small>図面の枠の真ん中の数字（φ は付けない）</small></label>
+      <input id="fT" type="text" inputmode="decimal" autocomplete="off" placeholder="0.05">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row">
+      <span class="badge">A</span>
+      <label id="lbA" for="fA">読みの最大<small>測った値</small></label>
+      <input id="fA" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row" id="rowB">
+      <span class="badge">B</span>
+      <label id="lbB" for="fB">読みの最小<small>測った値</small></label>
+      <input id="fB" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row" id="rowC">
+      <span class="badge">H</span>
+      <label id="lbC" for="fC">面の高さ H（任意）<small>公差がかかる面の全体</small></label>
+      <input id="fC" type="text" inputmode="decimal" autocomplete="off" placeholder="―">
+      <span class="unit">mm</span>
+    </div>
+  </div>
+  <div class="gver" id="gVer"></div>
+
+  <div class="dro">
+    <div class="dro-line">
+      <span class="dro-label" id="droLbl">測った値</span>
+      <span class="dro-val" id="out">―</span>
+      <span class="dro-unit">mm</span>
+    </div>
+    <div class="dro-grid" id="cellGrid"></div>
+    <div class="dro-foot">
+      <span class="statusTxt" id="statusTxt">記号を選んで、公差と読みを入れてください</span>
+    </div>
+  </div>
+
+  <div id="gTrap"></div>
+
+  <details class="panel" id="pBasic">
+    <summary>幾何公差の基本 ── 枠の読み方・データム・値の出し方の早見・含む／含まれる</summary>
+    <div class="pbody">
+      <div class="fh">公差記入枠の読み方</div>
+      <ul class="pl">
+        <li>枠は左から<b>［記号｜公差の値｜データム］</b>。データムの文字が無い枠は、その面・線だけで決まる公差（形状公差）。</li>
+        <li>値の前に <b>φ</b> があれば、公差域は<b>直径 t の円・円筒</b>。φ が無ければ<b>幅 t の帯</b>（2つの平行な面・線の間）。</li>
+        <li><b>データム</b>は基準にする面・軸で、図面では三角の印に文字（A・B…）が付いた所。<b>その面を定盤に置く・その軸で回す</b>ことで、基準どおりに測れます。</li>
+      </ul>
+      <div class="fh">値の出し方の早見</div>
+      <table class="ftbl kk kj">
+        <tr><th>値の出し方</th><th>使う記号</th></tr>
+        <tr><td>読みの最大 − 最小</td><td>真直度・平面度・平行度・直角度・傾斜度・円周振れ・全振れ（同軸度を振れで見るときも）</td></tr>
+        <tr><td>（直径の最大 − 最小）÷ 2</td><td>真円度・円筒度（マイクロメータで測るとき）</td></tr>
+        <tr><td>ずれ × 2</td><td>位置度・同軸度・対称度・輪郭度</td></tr>
+      </table>
+      <p class="mnote"><b>「ずれ × 2」になる理由</b>：公差域が、基準（理論の位置・データムの軸・中心面）の<b>両側に半分ずつ</b>取られているからです。φ0.1 の位置度なら、中心のずれは 0.05 まで。</p>
+      <div class="fh">含む・含まれる（きびしい側が合格なら、中の物も合格）</div>
+      <ul class="pl">
+        <li><b>平行度・直角度・傾斜度</b>の中には、その面の<b>平面度</b>も入っています。</li>
+        <li><b>円周振れ</b>の中には、<b>真円度と偏心（同軸度）</b>が入っています。<b>全振れ</b>はさらに<b>まっすぐさ・テーパ</b>まで入ります。</li>
+        <li>だから「全振れが t 以内」なら、円周振れ・真円度・同軸度も t 以内です。逆は言えません。</li>
+      </ul>
+      <div class="fh">寸法公差との違い</div>
+      <ul class="pl">
+        <li>ノギス・マイクロメータは<b>2点の間の長さ</b>を測る道具です。厚みがどこでも 10.00 でも、全体が反っていることはあります（平面度）。</li>
+        <li>幾何公差は、<b>定盤・V ブロック・センタで基準を作って</b>、ダイヤルゲージで形の動きを見るのが基本です。</li>
+      </ul>
+    </div>
+  </details>
+
+  <button class="clearBtn" type="button" onclick="armClear(this)">すべて消去</button>
+
+  <footer>
+    検査ミニポータル｜計算・表示はすべてこの端末の中で行われます。入力値はどこにも送られません。<br>
+    JIS B 0021・JIS B 0621。現場の測り方による値は目安です。きわどい合否は、より正確な測定で確かめてください。
+
+    <div class="crnote">© 2026 まるちゃん ｜ 許諾なく転載・複製・再配布・改変することを禁じます。本ツールは著作権法により保護されています。</div>
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  function $(id){return document.getElementById(id)}
+  function z2h(s){
+    return String(s==null?'':s).replace(/[０-９．－，]/g,function(c){
+      if(c==='．')return '.'; if(c==='－')return '-'; if(c==='，')return '';
+      return String.fromCharCode(c.charCodeAt(0)-0xFEE0);
+    });
+  }
+  function num(v){ var t=z2h(v).replace(/[,\s]/g,''); if(t==='')return NaN; var x=Number(t); return isFinite(x)?x:NaN; }
+  function f3(x){ return (Math.round(x*1000)/1000).toFixed(3); }
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  /* ══════ TOOL-52 幾何公差（v174） ══════
+     ムギさん：「幾何公差について、新たなツールを作ってほしい」（真位置度しか無く、振れ・同軸度・平面度・直角度の測り方と判定が無かった）。
+     ★14 の記号ごとに：何を言っているか → 公差域（図）→ データム → 現場での測り方 → 値の出し方 → 判定 → 落とし穴。
+     ★値は「読みの最大 − 最小」「（最大 − 最小）÷ 2」「ずれ × 2」のどれかにほぼ収まる。どれを使うかを測り方ごとに決めてある。
+     ★測り方によって<厳しめ／見逃しあり>がある。合否と一緒にそれを書く（合格なら安心か、超えたら再確認か）。
+     定義：JIS B 0021（幾何公差表示方式）・JIS B 0621（幾何偏差の定義及び表示）。測り方：キーエンス「幾何公差の測定」各ページ。 */
+  var GK={
+    rng:{f:'読みの最大 − 最小',a:'読みの最大',b:'読みの最小'},
+    dia:{f:'（直径の最大 − 最小）÷ 2',a:'直径の最大',b:'直径の最小'},
+    two:{f:'｜A − B｜（＝ 中心のずれ × 2）',a:'片側の寸法 A',b:'反対側の寸法 B'},
+    ecc:{f:'中心のずれ e × 2',a:'中心のずれ e'},
+    xy:{f:'2 × √(ΔX² ＋ ΔY²)',a:'X のずれ ΔX',b:'Y のずれ ΔY'},
+    gap:{f:'いちばん大きいすきま g（面の高さ全体では g × H ÷ h）',a:'すきま g',b:'測った高さ h（任意）',c:'面の高さ H（任意）'},
+    dev:{f:'ずれの大きいほう × 2',a:'外側（＋）への最大のずれ',b:'内側（−）への最大のずれ'}
+  };
+  var OVER='この測り方は<b>厳しめ</b>に出ます。<b>合格なら安心</b>。超えたときは、より正確な方法（三次元測定機など）で確かめる価値があります。';
+  var UNDER='この測り方には<b>見逃し</b>があります。合格でも、形によっては外れていることがあります（下の「落とし穴」）。';
+  var GT=[
+   {k:'str',nm:'真直度',cat:0,z:'flat',sy:'M3 12 H21',
+    mean:'線（稜線・母線・軸線）が<b>どれだけまっすぐか</b>。',
+    zone:'距離 t だけ離れた<b>平行な2本の直線の間</b>（軸線に φ が付けば、直径 t の円筒の中）。',
+    m:[{n:'定盤とダイヤルゲージ',kd:'rng',bias:'over',st:['定盤の上で、測る線の<b>両端を同じ高さ</b>に支える（両端でダイヤルの読みをそろえる）。','ダイヤルゲージを、線に沿って端から端まで動かす。','<b>読みの最大 − 最小</b>が真直度。']}],
+    trap:'丸棒の「曲がり」は、両端を V ブロックで支えて回し、真ん中の振れを見るほうが早い（<b>振れの半分</b>が曲がりの目安）。'},
+   {k:'flt',nm:'平面度',cat:0,z:'flat',sy:'M7 7 H22 L17 17 H2 Z',
+    mean:'面が<b>どれだけ平らか</b>（反り・うねり）。',
+    zone:'距離 t だけ離れた<b>平行な2つの平面の間</b>に、面の全部が入る。',
+    m:[{n:'3点で支えてダイヤルゲージ',kd:'rng',bias:'over',st:['測る面を上にして、定盤の上で<b>3点（ジャッキなど）で支える</b>。','その3点の真上で、ダイヤルの読みが同じになるように高さをそろえる。','面全体をまんべんなくなぞり、<b>読みの最大 − 最小</b>を出す。']}],
+    trap:'<b>部品を定盤にベタ置きして上の面をなぞると、それは「平行度」</b>（下の面に対する上の面）で、平面度ではありません。3点のそろえ方で値は変わり、<b>本当の平面度はこの値以下</b>です。'},
+   {k:'rnd',nm:'真円度',cat:0,z:'ring',sy:'C12 12 8',
+    mean:'輪切りにした断面が<b>どれだけ真ん丸か</b>。',
+    zone:'同じ中心で、半径の差が t の<b>2つの円の間</b>に、断面の輪郭が入る。',
+    m:[{n:'マイクロメータで直径を測る',kd:'dia',bias:'under',st:['同じ断面で、直径を <b>4〜8 方向</b>測る。','<b>（最大 − 最小）÷ 2</b> が真円度。']},
+       {n:'回してダイヤルの振れを見る',kd:'rng',bias:'over',st:['回転台・センタで、軸を中心に回す。','同じ断面にダイヤルを当て、<b>1回転の読みの最大 − 最小</b>。','回す中心がずれていると、その偏心も混ざります。']}],
+    trap:'<b>2点で挟む測り方は「おむすび形」（3つ山・5つ山）を見つけられません</b>（どの向きでも直径が同じに出る）。センタレス研削・3つ爪チャックの品が疑わしいときは、V ブロックに載せて回し、ダイヤルの振れを見ます。'},
+   {k:'cyl',nm:'円筒度',cat:0,z:'ring',sy:'C12 12 5 M4 20 L10 4 M14 20 L20 4',
+    mean:'円筒の全体が<b>どれだけ「真ん丸で、まっすぐで、太さが同じ」か</b>（真円度＋真直度＋テーパ）。',
+    zone:'同じ軸で、半径の差が t の<b>2つの円筒の間</b>に、表面の全部が入る。',
+    m:[{n:'マイクロメータで直径を測る',kd:'dia',bias:'under',st:['軸方向に <b>3 か所以上</b>の断面を決め、各断面で直径を 4 方向以上測る。','<b>全部の中の（最大 − 最小）÷ 2</b>。']}],
+    trap:'直径では、<b>おむすび形</b>と<b>弓なりの曲がり</b>が出ません。図面の指示がきびしいときは真円度測定機・三次元測定機で。'},
+   {k:'pl',nm:'線の輪郭度',cat:0,z:'prof',sy:'M3 17 A9 9 0 0 1 21 17',
+    mean:'曲線（断面の形）が、<b>図面の理論の形からどれだけ外れているか</b>。',
+    zone:'理論の形を真ん中にして、<b>両側へ t/2 ずつ</b>（幅 t）の帯の中。',
+    m:[{n:'理論の形と重ねる',kd:'dev',st:['輪郭形状測定機・投影機（拡大図・テンプレート）・三次元測定機で、理論の形と重ねる。','外側と内側の<b>ずれの大きいほう × 2</b> が輪郭度。']}],
+    trap:'データムの指示がある輪郭度は、<b>形だけでなく位置・向き</b>も一緒に決めています。'},
+   {k:'ps',nm:'面の輪郭度',cat:0,z:'prof',sy:'M3 17 A9 9 0 0 1 21 17 Z',
+    mean:'曲面が、<b>図面の理論の形（3D の形）からどれだけ外れているか</b>。',
+    zone:'理論の面を真ん中にして、<b>両側へ t/2 ずつ</b>（幅 t）の層の中。',
+    m:[{n:'理論の形と重ねる',kd:'dev',st:['三次元測定機・3D スキャナで、CAD の形と比べる。','外側と内側の<b>ずれの大きいほう × 2</b> が輪郭度。']}],
+    trap:'ノギス・マイクロメータでは判定できません。R ゲージやテンプレートは目安です。'},
+   {k:'par',nm:'平行度',cat:1,dat:1,z:'flat',sy:'M5 20 L11 4 M13 20 L19 4',
+    mean:'データム（基準の面・線）に対して、<b>どれだけ平行か</b>。',
+    zone:'データムに平行で、距離 t だけ離れた<b>2つの平面の間</b>。',
+    m:[{n:'定盤とダイヤルゲージ',kd:'rng',st:['<b>データムの面を定盤にぴったり置く</b>（固定する）。','上の面を、ダイヤルゲージ（ハイトゲージ）でまんべんなくなぞる。','<b>読みの最大 − 最小</b>が平行度。']}],
+    trap:'平行度の中には<b>平面度も含まれます</b>（平行度 0.05 なら、平面度も 0.05 以内）。やわらかい樹脂・ゴムは、測定子の力で面がへこんで値が変わります。'},
+   {k:'per',nm:'直角度',cat:1,dat:1,z:'perp',sy:'M12 4 V20 M4 20 H20',
+    mean:'データムに対して、<b>どれだけ直角（90°）か</b>。倒れの量を<b>長さ（mm）</b>で言います（角度ではない）。',
+    zone:'データムに直角で、距離 t だけ離れた<b>2つの平面の間</b>（軸・穴に φ が付けば、直径 t の円筒の中）。',
+    m:[{n:'スコヤとすきまゲージ',kd:'gap',st:['データムの面を定盤に置く。','<b>スコヤ（直角定規）</b>を定盤に立てて、測る面に当てる。','スコヤと面の<b>すきま</b>を、すきまゲージ・ピンゲージで測る。<b>いちばん大きいすきまが直角度</b>。']},
+       {n:'マスタに合わせてダイヤルゲージ',kd:'rng',st:['データムの面を定盤に置く。円筒スコヤ（直角のマスタ）にダイヤルを当てて 0 に合わせる。','同じスタンドのまま、測る面を下から上までなぞる。','<b>読みの最大 − 最小</b>。']}],
+    trap:'<b>公差は面の高さ全体に対する量</b>です。面の一部（高さ h）だけで測ったら、全体（高さ H）では <b>g × H ÷ h</b> が目安（まっすぐ倒れているとき）。'},
+   {k:'ang',nm:'傾斜度',cat:1,dat:1,z:'ang',sy:'M4 20 H20 M4 20 L18 6',
+    mean:'データムに対して、<b>図面の角度（30° など）どおりに傾いているか</b>。これも量は<b>長さ（mm）</b>。',
+    zone:'理論の角度で傾いた、距離 t の<b>2つの平面の間</b>。',
+    m:[{n:'サインバーで起こしてダイヤルゲージ',kd:'rng',st:['サインバー・角度ブロックで、部品を<b>理論の角度だけ起こす</b>（測る面が定盤と平行になる）。','その面をダイヤルゲージでなぞる。','<b>読みの最大 − 最小</b>。']}],
+    trap:'角度の公差（±0.5° など）とは別物です。傾斜度は、面の全部が幅 t の帯に入っているかを見ます。'},
+   {k:'pos',nm:'位置度',cat:2,dat:1,phi:1,z:'axis',sy:'C12 12 6 M12 2 V22 M2 12 H22',
+    mean:'穴・軸・面が、<b>図面の理論の位置（四角で囲んだ寸法）からどれだけずれているか</b>。',
+    zone:'理論の位置を中心にした、<b>直径 t の円（円筒）の中</b>に、穴・軸の中心がある（φ が付くとき）。',
+    m:[{n:'X・Y のずれから',kd:'xy',st:['データムから穴の中心までを X・Y で測る（三次元測定機、ハイトゲージ＋ピンなど）。','図面の理論寸法との差 ΔX・ΔY を出す。','<b>2 × √(ΔX² ＋ ΔY²)</b> が位置度。']}],
+    trap:'<b>ずれの2倍</b>で比べます（φ0.1 なら、中心のずれは 0.05 まで）。Ⓜ（最大実体）付きの判定は <a href="../true-position/">真位置度判定（TOOL-13）</a> で。'},
+   {k:'coa',nm:'同軸度',cat:2,dat:1,phi:1,z:'axis',sy:'C12 12 8 C12 12 4',
+    mean:'2つの円筒の<b>軸（中心）がずれていないか</b>。薄い部品の1つの断面で見るときは<b>同心度</b>（記号は同じ）。',
+    zone:'データムの軸を中心にした、<b>直径 t の円筒の中</b>に、測る側の軸がある。',
+    m:[{n:'データムの軸で回して振れを見る',kd:'rng',bias:'over',st:['<b>データムの円筒</b>を V ブロック・チャック・センタで支える（データムの軸で回るようにする）。','測る側の円筒にダイヤルを当てて1回転させ、<b>読みの最大 − 最小</b>を見る。','軸方向に場所を変えてくり返し、<b>いちばん大きい値</b>を同軸度とする。']},
+       {n:'中心のずれから',kd:'ecc',st:['三次元測定機などで、データムの軸から測る側の中心までの<b>ずれ e</b> を出す。','<b>e × 2</b> が同軸度。']}],
+    trap:'<b>中心のずれの2倍</b>です（振れの読みは、もともと偏心の2倍で出ます）。振れで見た値には<b>真円度も混ざる</b>ので、同軸度そのものより大きく出ます。'},
+   {k:'sym',nm:'対称度',cat:2,dat:1,z:'sym',sy:'M3 12 H21 M7 7 H17 M7 17 H17',
+    mean:'溝や突起が、データムの<b>真ん中（中心面）に対して左右同じか</b>。キー溝の「片寄り」がこれです。',
+    zone:'データムの中心面を真ん中にした、<b>幅 t の2つの平面の間</b>に、溝の中心面がある。',
+    m:[{n:'両側の寸法 A・B から',kd:'two',st:['溝の<b>両側の肉厚</b>（外の面から溝の壁まで）A・B を測る。','丸い軸のキー溝は、V ブロックに載せて溝を横向きにし、上の壁の高さ A を測る。<b>180° 回して</b>反対の壁の高さ B を測る。','<b>｜A − B｜</b> が対称度（中心のずれは その半分）。']},
+       {n:'中心のずれから',kd:'ecc',st:['三次元測定機などで、データムの中心面から溝の中心面までの<b>ずれ e</b> を出す。','<b>e × 2</b> が対称度。']}],
+    trap:'<b>ずれの2倍</b>です。対称度 0.05 は、中心のずれ 0.025 まで。キー溝の寸法は <a href="../keyway/">キー溝の寸法（TOOL-51）</a> で。'},
+   {k:'cro',nm:'円周振れ',cat:3,dat:1,z:'ring',sy:'M5 19 L19 5 M19 5 H12 M19 5 V12',
+    mean:'データムの軸で<b>1回転させたとき、その場所の表面がどれだけ振れるか</b>。',
+    zone:'<b>ダイヤルを動かさずに</b>1回転させたときの読みの幅が、<b>どの断面でも</b> t 以内。',
+    m:[{n:'回してダイヤルゲージ（固定）',kd:'rng',st:['データムの軸で回せるように支える（両センタ・V ブロック・チャック）。','表面にダイヤルを当て、<b>ゲージは固定したまま</b>1回転。<b>読みの最大 − 最小</b>。','場所を変えてくり返し、<b>いちばん大きい値</b>で判定する。']}],
+    trap:'振れには<b>偏心（同軸度）と真円度の両方</b>が入ります。端面に指示があれば、端面にダイヤルを当てて軸方向の振れを見ます。'},
+   {k:'tro',nm:'全振れ',cat:3,dat:1,z:'ring',sy:'M3 19 L10 7 M10 7 H5.5 M10 7 V11.5 M13 19 L20 7 M20 7 H15.5 M20 7 V11.5 M3 19 H13',
+    mean:'回しながら<b>表面の全体</b>をなぞったときの振れ。円周振れに、まっすぐさ・テーパまで含みます。',
+    zone:'回転させながら<b>ダイヤルを軸方向に動かした</b>ときの、全部の読みの幅が t 以内。',
+    m:[{n:'回しながらダイヤルゲージを動かす',kd:'rng',st:['データムの軸で回せるように支える。','回しながら、ダイヤルを<b>軸と平行にまっすぐ</b>端から端まで動かす。','<b>全体での読みの最大 − 最小</b>。']}],
+    trap:'円周振れは断面ごとに見ますが、<b>全振れは 0 を取り直しません</b>（テーパや曲がりも値に入る）。'}
+  ];
+  var GCAT=['形状（データム不要）','姿勢（データム要）','位置（データム要）','振れ（データム要）'];
+  var gI=1, gM=0;
+  function symSvg(sy,sw,col){
+    var o='', m, re=/C([\d.]+) ([\d.]+) ([\d.]+)/g, rest=sy.replace(re,'').replace(/^\s+|\s+$/g,'');
+    while((m=re.exec(sy))) o+='<circle cx="'+m[1]+'" cy="'+m[2]+'" r="'+m[3]+'" fill="none" stroke="'+col+'" stroke-width="'+sw+'"/>';
+    if(rest) o+='<path d="'+rest+'" fill="none" stroke="'+col+'" stroke-width="'+sw+'" stroke-linecap="round" stroke-linejoin="round"/>';
+    return o;
+  }
+  function gTx(x,y,t,o){ o=o||{}; return '<text x="'+x+'" y="'+y+'" font-size="'+(o.fs||11)+'"'+(o.b?' font-weight="700"':'')+' fill="'+(o.c||'#1F3341')+'" text-anchor="'+(o.a||'middle')+'" stroke="#fff" stroke-width="3" paint-order="stroke">'+t+'</text>'; }
+  function gLn(x1,y1,x2,y2,c,w,da){ return '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="'+(c||'#1F3341')+'" stroke-width="'+(w||1)+'"'+(da?' stroke-dasharray="'+da+'"':'')+'/>'; }
+  function gFig(g,tv){
+    var o='', RED='#D63426', BL='#2C5FA0', tl=(tv>0? String(tv):'t'), x=22, y=14, w1=30, w2=(g.phi?58:46), w3=g.dat?26:0, z=g.z;
+    /* 公差記入枠（図面での書き方） */
+    o+='<rect x="'+x+'" y="'+y+'" width="'+(w1+w2+w3)+'" height="26" fill="#fff" stroke="#1F3341" stroke-width="1.3"/>'+gLn(x+w1,y,x+w1,y+26)+(g.dat?gLn(x+w1+w2,y,x+w1+w2,y+26):'');
+    o+='<g transform="translate('+(x+3)+' '+(y+1)+')">'+symSvg(g.sy,1.6,'#1F3341')+'</g>';
+    o+=gTx(x+w1+w2/2,y+18,(g.phi?'φ':'')+tl,{b:1,fs:12.5})+(g.dat?gTx(x+w1+w2+w3/2,y+18,'A',{b:1,fs:12.5}):'');
+    o+=gTx(x+w1+w2+w3+8,y+17,'← 図面の書き方（公差記入枠）',{a:'start',fs:10,c:'#5B707E'});
+    /* 公差域 */
+    if(z==='flat'){
+      o+='<rect x="50" y="96" width="220" height="34" fill="#FBE3E0" stroke="none"/>'+gLn(50,96,270,96,RED,1.2,'5 3')+gLn(50,130,270,130,RED,1.2,'5 3');
+      o+='<path d="M50 118 C80 100 100 126 135 112 S190 102 215 122 S250 104 270 110" fill="none" stroke="#1F3341" stroke-width="2"/>';
+      o+=gLn(286,96,286,130,RED,1.2)+gTx(292,117,tl,{a:'start',b:1,c:RED,fs:12});
+      if(g.dat) o+=gLn(40,186,280,186,BL,2.2)+gTx(160,203,'データム A（基準の面）',{c:BL,b:1,fs:10.5})+gTx(160,156,'帯はデータムと平行',{c:'#5B707E',fs:10});
+      else o+=gTx(160,156,'帯の向きは自由（いちばん狭く挟める向き）',{c:'#5B707E',fs:10});
+    } else if(z==='perp'){
+      o+=gLn(40,196,290,196,BL,2.2)+gTx(230,212,'データム A',{c:BL,b:1,fs:10.5});
+      o+='<rect x="130" y="62" width="30" height="134" fill="#FBE3E0"/>'+gLn(130,62,130,196,RED,1.2,'5 3')+gLn(160,62,160,196,RED,1.2,'5 3');
+      o+='<path d="M136 196 C140 160 146 120 154 62" fill="none" stroke="#1F3341" stroke-width="2"/>';
+      o+=gLn(130,54,160,54,RED,1.2)+gTx(145,48,tl,{b:1,c:RED,fs:12})+gTx(176,128,'データムに直角な帯',{a:'start',c:'#5B707E',fs:10});
+    } else if(z==='ang'){
+      o+=gLn(40,196,290,196,BL,2.2)+gTx(240,212,'データム A',{c:BL,b:1,fs:10.5});
+      o+='<g transform="rotate(-28 70 190)"><rect x="70" y="160" width="210" height="28" fill="#FBE3E0"/>'+gLn(70,160,280,160,RED,1.2,'5 3')+gLn(70,188,280,188,RED,1.2,'5 3')
+        +'<path d="M70 178 C110 164 150 184 200 170 S260 168 280 176" fill="none" stroke="#1F3341" stroke-width="2"/></g>';
+      o+=gTx(96,180,'理論の角度',{c:'#5B707E',fs:10,a:'start'})+gTx(262,84,tl,{b:1,c:RED,fs:12});
+    } else if(z==='sym'){
+      o+='<rect x="60" y="106" width="220" height="28" fill="#FBE3E0"/>'+gLn(60,106,280,106,RED,1.2,'5 3')+gLn(60,134,280,134,RED,1.2,'5 3');
+      o+=gLn(40,120,300,120,BL,1.4,'9 3 2 3')+gTx(60,96,'データムの中心面 A（青の線）',{a:'start',c:BL,b:1,fs:10.5});
+      o+=gLn(60,128,280,128,'#1F3341',2)+gTx(280,150,'黒＝溝の中心面',{a:'end',fs:10})+gLn(46,106,46,134,RED,1.2)+gTx(60,172,'幅 '+tl+'（データムの上下に半分ずつ）',{a:'start',b:1,c:RED,fs:11.5});
+    } else if(z==='prof'){
+      o+='<path d="M50 170 Q160 40 270 170" fill="none" stroke="#FBE3E0" stroke-width="26"/><path d="M50 170 Q160 40 270 170" fill="none" stroke="#2C5FA0" stroke-width="1.2" stroke-dasharray="9 3 2 3"/>';
+      o+='<path d="M50 176 Q120 70 165 96 T270 164" fill="none" stroke="#1F3341" stroke-width="2"/>'+gTx(160,196,'点線＝理論の形。帯の幅 '+tl+'（両側へ半分ずつ）',{c:RED,b:1,fs:11});
+    } else if(z==='ring'){
+      o+='<circle cx="160" cy="128" r="62" fill="#FBE3E0" stroke="'+RED+'" stroke-width="1.2" stroke-dasharray="5 3"/><circle cx="160" cy="128" r="44" fill="#fff" stroke="'+RED+'" stroke-width="1.2" stroke-dasharray="5 3"/>';
+      o+='<path d="M160 72 C196 70 218 100 214 130 C212 166 182 184 156 182 C122 180 104 152 108 124 C110 96 132 74 160 72 Z" fill="none" stroke="#1F3341" stroke-width="2"/>';
+      o+=gLn(204,128,222,128,RED,1.4)+gTx(238,132,tl,{a:'start',b:1,c:RED,fs:12});
+      if(g.dat) o+=gLn(150,128,170,128,BL,1.6)+gLn(160,118,160,138,BL,1.6)+gTx(160,154,'データムの軸 A',{c:BL,b:1,fs:10});
+      else o+=gTx(160,132,'半径の差 '+tl,{c:'#5B707E',fs:10});
+    } else if(z==='axis'){
+      o+='<circle cx="160" cy="128" r="46" fill="#FBE3E0" stroke="'+RED+'" stroke-width="1.2" stroke-dasharray="5 3"/>';
+      o+=gLn(100,128,220,128,BL,1.2,'9 3 2 3')+gLn(160,70,160,186,BL,1.2,'9 3 2 3')+gTx(226,122,g.k==='pos'?'理論の位置':'データムの軸 A',{a:'start',c:BL,b:1,fs:10.5});
+      o+='<circle cx="182" cy="112" r="4" fill="#1F3341"/>'+gLn(160,128,182,112,'#1F3341',1.4)+gTx(190,104,'実際の中心（ずれ e）',{a:'start',fs:10.5});
+      o+=gLn(114,186,206,186,RED,1.2)+gTx(160,203,'直径 '+tl+'（ずれ e は その半分まで）',{c:RED,b:1,fs:11.5});
+    }
+    return o;
+  }
+  function sg(x){ return x<0? '(−'+f3(-x)+')' : f3(x); }
+  function gSet(m,cl){ var v=$('gVer'); v.className='gver'+(cl?' '+cl:''); v.innerHTML=m; }
+  function gCalc(){
+    var g=GT[gI], me=g.m[gM], K=GK[me.kd], t=num($('fT').value), A=num($('fA').value), B=num($('fB').value), C=num($('fC').value), v=NaN, ex='', full=NaN, h='', i, bias='';
+    $('lbA').firstChild.nodeValue=K.a; $('rowB').style.display=K.b?'':'none'; if(K.b) $('lbB').firstChild.nodeValue=K.b;
+    $('rowC').style.display=K.c?'':'none'; if(K.c) $('lbC').firstChild.nodeValue=K.c;
+    if(me.kd==='rng'){ if(!isNaN(A)&&!isNaN(B)){ v=Math.abs(A-B); ex=sg(Math.max(A,B))+' − '+sg(Math.min(A,B)); } }
+    else if(me.kd==='dia'){ if(!isNaN(A)&&!isNaN(B)){ v=Math.abs(A-B)/2; ex='('+f3(Math.max(A,B))+' − '+f3(Math.min(A,B))+') ÷ 2'; } }
+    else if(me.kd==='two'){ if(!isNaN(A)&&!isNaN(B)){ v=Math.abs(A-B); ex='｜'+f3(A)+' − '+f3(B)+'｜（中心のずれ '+f3(v/2)+'）'; } }
+    else if(me.kd==='ecc'){ if(!isNaN(A)){ v=Math.abs(A)*2; ex=f3(Math.abs(A))+' × 2'; } }
+    else if(me.kd==='xy'){ if(!isNaN(A)&&!isNaN(B)){ v=2*Math.sqrt(A*A+B*B); ex='2 × √('+sg(A)+'² ＋ '+sg(B)+'²)'; } }
+    else if(me.kd==='gap'){ if(!isNaN(A)){ v=Math.abs(A); ex='すきま '+f3(v); if(B>0&&C>0){ full=v*C/B; ex+='　高さ全体では '+f3(v)+' × '+C+' ÷ '+B+' ＝ '+f3(full); } } }
+    else if(me.kd==='dev'){ if(!isNaN(A)||!isNaN(B)){ v=2*Math.max(isNaN(A)?0:Math.abs(A),isNaN(B)?0:Math.abs(B)); ex='大きいほう '+f3(v/2)+' × 2'; } }
+    if(!isNaN(full)) v=full;
+    $('droLbl').textContent=g.nm+'（測った値）';
+    $('out').textContent=isNaN(v)?'―':f3(v);
+    $('cellGrid').innerHTML='<div class="cellv"><span class="k">公差</span><span class="v led">'+(t>0?(g.phi?'φ':'')+f3(t):'―')+'</span><span class="s">図面の値</span></div>'
+      +'<div class="cellv"><span class="k">余り</span><span class="v led">'+((t>0&&!isNaN(v))?(t-v>=0?'':'−')+f3(Math.abs(t-v)):'―')+'</span><span class="s">公差 − 測った値</span></div>';
+    $('statusTxt').className='statusTxt';
+    $('statusTxt').textContent=isNaN(v)? '値の出し方：'+K.f : '式：'+ex+(isNaN(full)?' ＝ '+f3(v):'');
+    bias=me.bias==='over'?OVER:(me.bias==='under'?UNDER:'');
+    if(isNaN(v)) gSet('測った値を入れると、'+g.nm+'が出ます。<small>値の出し方：'+K.f+'</small>');
+    else if(!(t>0)) gSet('<b class="big">'+g.nm+' '+f3(v)+'</b><small>図面の公差を入れると、合否を出します。</small>');
+    else if(v<=t+1e-9) gSet('<b class="big">公差の内側</b>　'+f3(v)+' ≦ '+(g.phi?'φ':'')+f3(t)+(bias?'<small>'+bias+'</small>':''),'ok');
+    else gSet('<b class="big">公差を超えています</b>　'+f3(v)+' ＞ '+(g.phi?'φ':'')+f3(t)+'（超過 '+f3(v-t)+'）'+(bias?'<small>'+bias+'</small>':''),'ng');
+    $('fig').innerHTML=gFig(g,t);
+  }
+  function gRender(){
+    var g=GT[gI], h='', i, bs=$('gTiles').querySelectorAll('button');
+    for(i=0;i<bs.length;i++) bs[i].className=(Number(bs[i].getAttribute('data-g'))===gI?'on':'');
+    if(gM>=g.m.length) gM=0;
+    for(i=0;i<g.m.length;i++) h+='<button type="button" id="swm-'+i+'" data-m="'+i+'" class="'+(i===gM?'on':'')+'">'+g.m[i].n+'</button>';
+    $('gMeth').innerHTML=h;
+    $('tbType').textContent=g.nm;
+    $('gName').innerHTML='<b>'+g.nm+'</b><small>'+GCAT[g.cat]+'</small>';
+    $('gMean').innerHTML='<div class="fsec"><div class="fh">何を言っている？</div><p>'+g.mean+'</p><p><b>公差域</b>：'+g.zone+'</p>'
+      +'<p><b>データム</b>：'+(g.dat?'<b>要る</b>。図面の公差記入枠の右の文字（A など）が基準です。<b>その基準に合わせて支えて</b>から測ります。':'<b>要らない</b>。その面・線だけで決まります（置き方に左右されない量）。')+'</p></div>';
+    h='<div class="fsec"><div class="fh">現場での測り方：'+g.m[gM].n+'</div><ol>';
+    for(i=0;i<g.m[gM].st.length;i++) h+='<li>'+g.m[gM].st[i]+'</li>';
+    h+='</ol><span class="gfx">値 ＝ '+GK[g.m[gM].kd].f+'</span></div>';
+    $('gHow').innerHTML=h;
+    $('gTrap').innerHTML='<div class="fsec"><div class="fh">落とし穴</div><p>'+g.trap+'</p></div>';
+    gCalc();
+  }
+  /* 記号・測り方を替えたら、前の数字で合否が出ないように欄を空にする（記号を替えたときは公差も） */
+  function gClr(all){ $('fA').value=''; $('fB').value=''; $('fC').value=''; if(all) $('fT').value=''; }
+  function gInit(){
+    var h='', c, i;
+    for(c=0;c<4;c++){
+      h+='<div class="tg"><div class="tgl">'+GCAT[c]+'</div><div class="tgr g5">';
+      for(i=0;i<GT.length;i++) if(GT[i].cat===c) h+='<button type="button" id="swg-'+GT[i].k+'" data-g="'+i+'"><svg class="gsym" viewBox="0 0 24 24" aria-hidden="true">'+symSvg(GT[i].sy,1.7,'#1F3341')+'</svg><b>'+GT[i].nm+'</b></button>';
+      h+='</div></div>';
+    }
+    $('gTiles').innerHTML=h;
+    $('gTiles').addEventListener('click',function(e){
+      var b=e.target; while(b && b!==this && !(b.getAttribute && b.getAttribute('data-g'))) b=b.parentNode;
+      if(!b || b===this) return; gI=Number(b.getAttribute('data-g')); gM=0; gClr(1); gRender();
+      if(e.isTrusted){ var f=$('gName'); if(f.getBoundingClientRect().top>window.innerHeight*0.7 && f.scrollIntoView) f.scrollIntoView({behavior:'smooth',block:'start'}); }
+    });
+    $('gMeth').addEventListener('click',function(e){
+      var b=e.target; while(b && b!==this && !(b.getAttribute && b.getAttribute('data-m'))) b=b.parentNode;
+      if(!b || b===this) return; gM=Number(b.getAttribute('data-m')); gClr(0); gRender();
+    });
+    ['fT','fA','fB','fC'].forEach(function(id){ $(id).addEventListener('input',gCalc); });
+    gRender();
+  }
+  gInit();
+})();
+</script>
+
+<!-- ═══ 数字入力の補助（共通スニペット / 全ツール同一） ═══
+     ・数字キーパッド固定（inputmode）／全角数字・句点の自動半角化
+     ・数字以外（かな・英字・記号）の混入を自動で除去
+     ・± ボタン … 数字キーパッドに無いマイナスを入力
+     ・✕ ボタン … 欄をまとめて消去
+     ・「5 43」のような度分秒のスペース区切りはそのまま通します
+     ・DOM構造は変更しません（再描画するツールでも壊れません）        -->
+<style>
+  /* ═══ 自前キーボード（v72 / 全ツール共通）═══ */
+  /* ★v100まで、ここに<セレクタの無い断片>が残っていた（v72からの取りこぼし）。
+     CSSは「{ が来るまでがセレクタ」なので、その断片が次の規則まで飲み込み、
+     body.kbon .kt-aid ごと無効にしていた。v101で断片を削除。
+     ±の浮動バーは inputmode="none" のせいで元々作られず実害は無かったが、
+     規則が効かない状態は残さない。 */
+  body.kbon .kt-aid{display:none!important}   /* 共通の±浮動ボタンは重複するので隠す */
+
+  .kpad{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#EDF1F3;
+    border-top:2px solid var(--ink);padding:6px 6px calc(6px + env(safe-area-inset-bottom));
+    display:none;-webkit-user-select:none;user-select:none;
+    box-shadow:0 -6px 18px rgba(31,51,65,.16)}
+  .kpad.on{display:block}
+  .kpHead{display:flex;align-items:center;gap:6px;padding:2px 2px 6px}
+  .kpName{flex:1;min-width:0;font-size:12px;font-weight:700;color:#1F3341;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .kpHead button.sep{margin-left:8px}
+  .kpHead button{flex:none;width:40px;height:32px;font:inherit;font-size:13px;
+    background:#fff;border:1px solid #C9D3DA;border-radius:7px;color:#1F3341;cursor:pointer}
+  .kpGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+  .kpGrid button{font:inherit;font-size:19px;font-weight:700;color:#1F3341;background:#fff;
+    border:1px solid #C9D3DA;border-radius:9px;min-height:46px;cursor:pointer;
+    -webkit-tap-highlight-color:transparent}
+  .kpGrid button:active{background:#DCE4E8}
+  .kpGrid button.fn{font-size:13px;font-weight:700;color:#5B707E;background:#F7F9FA}
+  .kpGrid button.go{background:var(--ink);color:#fff;border-color:var(--ink);font-size:14px}
+  .kpGrid button.del{color:var(--red)}
+  .kpGrid button.nx{font-size:13px;color:#1F3341;background:#F7F9FA}
+
+  /* ── 電卓（v97）──
+     計算モードのキーと式の帯は、ふだんは出さない。 */
+  .kpHead button.calcBtn{width:auto;padding:0 12px;font-weight:700}
+  .kpHead button.calcBtn[aria-pressed="true"]{background:#1F3341;color:#fff;border-color:#1F3341}
+  .kpCalc{display:none;align-items:baseline;gap:8px;background:#fff;
+    border:1px solid #C9D3DA;border-radius:8px;padding:7px 10px;margin:0 2px 6px;
+    min-height:34px;overflow:hidden}
+  .kpad.calcon .kpCalc{display:flex}
+    /* ★v97 は direction:rtl を入れていた。長い式で右端(いま打った側)を
+     見せるつもりだったが、この指定は<式の並びそのもの>を右から左にする。
+     100÷2 が 2÷100 に見え、割り算で取り違える。実機で発覚(v98)。
+     並びは必ず左から右。長い式は JS で右端へスクロールさせる。 */
+  .kpExp{flex:1;min-width:0;font-size:17px;font-weight:700;color:#1F3341;
+    text-align:left;white-space:nowrap;overflow-x:auto;overflow-y:hidden;
+    -webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .kpExp::-webkit-scrollbar{display:none}
+  .kpEq{flex:none;font-size:12px;color:#5B707E}
+  .kpEq.bad{color:#B23B2E;font-weight:700}
+  .kpGrid button.cop{display:none}
+  .kpad.calcon .kpGrid button.cop{display:block}
+  .kpad.calcon .kpGrid button.ceq{grid-column:span 4;background:var(--ink);color:#fff;
+    border-color:var(--ink);font-size:14px}
+  .kpad.calcon .kpGrid button.ceq:disabled{background:#C9D3DA;border-color:#C9D3DA;color:#F2F6F8}
+  .kpGrid button.cop{font-size:20px;font-weight:700;color:#1F3341;background:#F7F9FA}
+  /* v99: 計算モードのあいだだけ意味が変わるキー */
+  .kpGrid button.ceq2{font-size:22px;font-weight:700;color:#fff;background:var(--ink);
+    border-color:var(--ink)}
+  .kpGrid button.ceq2:disabled{background:#C9D3DA;border-color:#C9D3DA;color:#F2F6F8}
+  .kpHead button.paren{font-size:20px;font-weight:700;color:#1F3341}
+
+  /* ── 計算モードは<色＋文字＋形>の3つで示す（v100）──
+     色だけに頼らない。手袋・明るい工場・画面の見え方は人によって違う。
+       色 … キーボードの帯全体を濃紺にする
+       文字 … 見出しに「電卓」、「計算」ボタンが反転、式の帯が出る
+       形 … ＝ と ( ) が現れる（キーの並びが変わる） */
+  .kpad.calcon{background:#1F3341;border-top-color:#0E1B24}
+  .kpad.calcon .kpHead{color:#F2F6F8}
+  .kpad.calcon .kpName{color:#F2F6F8}
+  .kpad.calcon .kpHead button{background:#33506A;border-color:#4A6B87;color:#F2F6F8}
+  .kpad.calcon .kpHead button.calcBtn[aria-pressed="true"]{background:#F2F6F8;color:#1F3341;border-color:#F2F6F8}
+  .kpad.calcon .kpHead button.paren{color:#fff}
+  .kpad.calcon .kpCalc{border-color:#4A6B87}
+  .kpad.calcon .kpGrid button{border-color:#4A6B87}
+  .kpad.calcon .kpGrid button.cop{background:#33506A;color:#fff;border-color:#4A6B87}
+
+  /* ── 電卓を常に出しておくボタン（v98）──
+     置き場所はトップの設定で選ぶ。キーボードが開いているあいだは隠す
+     （キーボードの上にも「計算」があるので二重になり、指の下にも来る）。 */
+  .calcFab{position:fixed;z-index:55;display:none;align-items:center;gap:6px;
+    font:inherit;font-size:13px;font-weight:700;color:#fff;background:#1F3341;
+    border:2px solid #fff;border-radius:999px;padding:11px 16px;min-height:48px;
+    box-shadow:0 3px 12px rgba(31,51,65,.28);cursor:pointer;
+    -webkit-tap-highlight-color:transparent}
+  .calcFab:active{background:#33506A}
+  .calcFab.br{display:flex;right:14px;bottom:calc(14px + env(safe-area-inset-bottom))}
+  .calcFab.bl{display:flex;left:14px;bottom:calc(14px + env(safe-area-inset-bottom))}
+  .calcFab.tr{display:flex;right:14px;top:14px}
+  .calcFab.tl{display:flex;left:14px;top:14px}
+  /* 下のバー: 画面いっぱいの帯。body の下余白は JS で確保する。 */
+  .calcFab.bar{display:flex;left:0;right:0;bottom:0;justify-content:center;
+    border-radius:0;border:none;border-top:2px solid #33506A;
+    padding:13px 16px calc(13px + env(safe-area-inset-bottom));box-shadow:0 -4px 14px rgba(31,51,65,.18)}
+  .calcFab .cfIco{font-size:16px;line-height:1}
+  body.kbon-open .calcFab, .kpad.on ~ .calcFab{display:none !important}
+  @media print{.calcFab{display:none !important}}
+
+  /* 大きさの切替（v70／v74で見直し）。押しやすさは端末と手袋で変わるので端末ごとに選ぶ。
+     v74: 40px の「小」は手袋で押しにくく使われないため廃止し、上に「特大」を足した。
+          中=46px(旧 中) / 大=56px(旧 大) / 特大=66px(新規)。
+          保存値 "s" は loadSize() で "m" に引き上げる(端末に残っていても小に戻らない)。 */
+  .kpad.kp-m .kpGrid{gap:5px}
+  .kpad.kp-m .kpGrid button{min-height:46px;font-size:19px}
+  .kpad.kp-l .kpGrid{gap:6px}
+  .kpad.kp-l .kpGrid button{min-height:56px;font-size:22px}
+  .kpad.kp-l .kpGrid button.fn,.kpad.kp-l .kpGrid button.nx{font-size:14px}
+  .kpad.kp-l .kpGrid button.go{font-size:15px}
+  .kpad.kp-l .kpHead button{height:36px;width:44px}
+  .kpad.kp-l .kpName{font-size:13px}
+  .kpad.kp-xl .kpGrid{gap:7px}
+  .kpad.kp-xl .kpGrid button{min-height:66px;font-size:26px;border-radius:11px}
+  .kpad.kp-xl .kpGrid button.fn,.kpad.kp-xl .kpGrid button.nx{font-size:15px}
+  .kpad.kp-xl .kpGrid button.go{font-size:16px}
+  .kpad.kp-xl .kpHead button{height:40px;width:48px;font-size:15px}
+  .kpad.kp-xl .kpName{font-size:14px}
+  .kt-aid{
+    position:absolute;z-index:9998;display:none;gap:4px;
+    background:#1F3341;border-radius:8px;padding:3px;
+    box-shadow:0 3px 10px rgba(0,0,0,.28);
+  }
+  .kt-aid.on{display:flex}
+  .kt-aid button{
+    -webkit-appearance:none;appearance:none;border:none;
+    background:#2C4353;color:#fff;font:inherit;font-size:14px;font-weight:700;
+    line-height:1;padding:8px 12px;border-radius:5px;cursor:pointer;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  .kt-aid button:active{background:#D63426}
+  @media print{.kt-aid{display:none !important}}
+</style>
+<script>
+(function(){
+  "use strict";
+
+  /* ── 対象の判定 ── */
+  function mode(el){
+    return (el && el.tagName==="INPUT" && !el.readOnly && !el.disabled)
+      ? (el.getAttribute("inputmode")||"") : "";
+  }
+  function isNum(el){ var m=mode(el); return m==="decimal"||m==="numeric"; }
+  function isDec(el){ return mode(el)==="decimal"; }
+
+  /* ── 全角→半角（かなキーボードで打たれた場合の救済） ── */
+  function toHalf(v){
+    return v
+      .replace(/[０-９]/g, function(c){ return String.fromCharCode(c.charCodeAt(0)-65248); })
+      .replace(/[．。･・]/g, ".")
+      .replace(/[－−―ーｰ‐–—]/g, "-")
+      .replace(/[\u3000]/g, " ");
+  }
+
+  /* ── 数字だけに整える（空白区切りは温存＝度分秒入力を壊さない） ── */
+  function clean(v, dec){
+    var toks = toHalf(v).split(" "), out = [], i, t, neg, k;
+    for(i=0;i<toks.length;i++){
+      t = toks[i];
+      neg = (i===0) && t.charAt(0)==="-";
+      t = t.replace(/[^0-9.]/g, "");
+      if(!dec) t = t.replace(/\./g, "");
+      else {
+        k = t.indexOf(".");
+        if(k>=0) t = t.slice(0,k+1) + t.slice(k+1).replace(/\./g,"");
+      }
+      out.push((neg?"-":"") + t);
+    }
+    return out.join(" ");
+  }
+
+  /* ── 入力の監視（捕捉フェーズ＝各ツールの計算処理より先に整える） ── */
+  document.addEventListener("input", function(e){
+    var el = e.target;
+    if(!isNum(el)) return;
+    var v = el.value, c = clean(v, isDec(el));
+    if(c === v) return;
+    var p = el.selectionStart, d = v.length - c.length;
+    el.value = c;
+    try{ el.setSelectionRange(Math.max(0,p-d), Math.max(0,p-d)); }catch(err){}
+  }, true);
+
+  /* ── ± / ✕ の浮動ボタン（DOMを包まないので再描画に強い） ── */
+  var bar=null, cur=null, sign=null;
+
+  function notify(el){
+    var ev;
+    try{ ev = new Event("input", {bubbles:true}); }
+    catch(err){ ev = document.createEvent("Event"); ev.initEvent("input", true, false); }
+    el.dispatchEvent(ev);
+    try{ ev = new Event("change", {bubbles:true}); }
+    catch(err){ ev = document.createEvent("Event"); ev.initEvent("change", true, false); }
+    el.dispatchEvent(ev);
+  }
+  /* 押した瞬間に実行する。既定動作を止めることで入力欄のフォーカス（＝
+     数字キーパッド）を保ったまま操作でき、ゴーストクリックも防げる。   */
+  function act(e){
+    e.preventDefault();
+    var b = e.target, a, v;
+    while(b && b !== bar && b.tagName !== "BUTTON") b = b.parentNode;
+    if(!b || b === bar || !cur) return;
+    a = b.getAttribute("data-a");
+    if(a === "clr") cur.value = "";
+    else {
+      v = cur.value;
+      cur.value = (v.charAt(0) === "-") ? v.slice(1) : ("-" + v);
+    }
+    notify(cur);
+    try{ cur.focus(); }catch(err){}
+    place();
+  }
+
+  function build(){
+    bar = document.createElement("div");
+    bar.className = "kt-aid";
+    bar.innerHTML =
+      '<button type="button" data-a="sign" aria-label="符号を反転">±</button>'+
+      '<button type="button" data-a="clr" aria-label="この欄を消去">✕</button>';
+    document.body.appendChild(bar);
+    sign = bar.querySelector('[data-a="sign"]');
+    if(window.PointerEvent){
+      bar.addEventListener("pointerdown", act);
+    } else {
+      bar.addEventListener("mousedown", act);
+      bar.addEventListener("touchstart", act, {passive:false});
+    }
+  }
+
+  function hide(){ if(bar) bar.className = "kt-aid"; cur = null; }
+
+  function place(){
+    if(!cur || !bar) return;
+    if(!document.contains(cur)){ hide(); return; }   /* 再描画で消えた場合 */
+    bar.className = "kt-aid on";
+    var r = cur.getBoundingClientRect();
+    var bw = bar.offsetWidth, bh = bar.offsetHeight;
+    var top = r.top - bh - 6;
+    if(top < 4) top = r.bottom + 6;
+    var left = r.right - bw;
+    if(left < 4) left = 4;
+    bar.style.left = (left + (window.pageXOffset||0)) + "px";
+    bar.style.top  = (top  + (window.pageYOffset||0)) + "px";
+  }
+
+  document.addEventListener("focusin", function(e){
+    if(!isNum(e.target)){ hide(); return; }
+    cur = e.target;
+    if(!bar) build();
+    sign.style.display = isDec(cur) ? "" : "none";   /* 整数欄には ± を出さない */
+    place();
+  });
+  document.addEventListener("focusout", function(){
+    setTimeout(function(){ if(document.activeElement !== cur) hide(); }, 0);
+  });
+  window.addEventListener("scroll", function(){ if(cur) place(); }, true);
+  window.addEventListener("resize", function(){ if(cur) place(); });
+})();
+</script>
+<script>
+(function(){
+  function fire(el,t){
+    try{ el.dispatchEvent(new Event(t,{bubbles:true})); }
+    catch(e){ var ev=document.createEvent('Event'); ev.initEvent(t,true,true); el.dispatchEvent(ev); }
+  }
+  function clickText(within,text){
+    var cont = within ? document.querySelector(within) : document;
+    if(!cont) return;
+    var all=cont.querySelectorAll('button,[class*="chip"],span,a,div,li'), target=String(text), j,e;
+    for(j=0;j<all.length;j++){
+      e=all[j];
+      if(e.textContent.trim()===target && (e.children.length===0 || e.tagName==='BUTTON')){ e.click(); return; }
+    }
+  }
+  window.tryExample=function(btn){
+    var raw=btn.getAttribute('data-ex'); if(!raw) return;
+    var cfg; try{ cfg=JSON.parse(raw); }catch(e){ return; }
+    var steps=cfg.set||[], i, it, el, k, fns, f, fn;
+    for(i=0;i<steps.length;i++){
+      it=steps[i];
+      if(it.click){ var c=document.querySelector(it.click); if(c) c.click(); continue; }
+      if(it.clickText){ clickText(it.within, it.clickText); continue; }
+      if(it.setState){ if(window.S){ for(k in it.setState){ window.S[k]=it.setState[k]; } }
+        fns=(it.apply||'').split(';'); for(f=0;f<fns.length;f++){ fn=fns[f].replace(/^\s+|\s+$/g,''); if(fn && typeof window[fn]==='function'){ try{ window[fn](); }catch(e){} } }
+        continue; }
+      el = it.sel ? document.querySelector(it.sel) : document.getElementById(it.id);
+      if(!el) continue;
+      el.value=String(it.v);
+      fire(el, el.tagName==='SELECT' ? 'change' : 'input');
+    }
+    var gd=btn; while(gd && !(gd.classList && gd.classList.contains('guide'))) gd=gd.parentNode;
+    if(gd) gd.open=false;
+    var fig=document.querySelector('svg#fig, svg#dwg, figure svg, #fig, #dwg');
+    if(fig && fig.scrollIntoView) fig.scrollIntoView({behavior:'smooth',block:'center'});
+  };
+})();
+</script>
+
+<script>
+/* ═══ 一括消去の共通処理（全ツール共通 / 確認ダイアログは使いません）═══
+     1回目 … ボタンが「もう一度押すと消去」に変わります（3秒で自動解除）
+     2回目 … 最初の状態に戻します
+     ※ 確認ポップアップ（ダイアログ）はPWA等で無効化されるため使いません      */
+(function(){
+  "use strict";
+  var KEY = "";   /* このツールは保存を持たないため、再読み込みだけで初期状態に戻ります */
+  window.armClear = function(btn){
+    if(!btn || !btn.getAttribute) return;
+    if(!btn.getAttribute("data-armed")){
+      btn.setAttribute("data-armed","1");
+      if(!btn.getAttribute("data-lbl")) btn.setAttribute("data-lbl", btn.textContent);
+      btn.textContent = "もう一度押すと消去";
+      if(btn.classList) btn.classList.add("arm");
+      setTimeout(function(){
+        if(btn.getAttribute("data-armed")){
+          btn.removeAttribute("data-armed");
+          btn.textContent = btn.getAttribute("data-lbl");
+          if(btn.classList) btn.classList.remove("arm");
+        }
+      }, 3000);
+      return;
+    }
+    btn.removeAttribute("data-armed");
+    if(btn.classList) btn.classList.remove("arm");
+    if(btn.getAttribute("data-lbl")) btn.textContent = btn.getAttribute("data-lbl");
+    if(KEY){ try{ localStorage.removeItem(KEY); }catch(e){} }
+    try{ location.reload(); }catch(e){}
+  };
+})();
+</script>
+<style>
+/* ═══ 記入例（薄字）を入力値と見分ける（v57 / 全ツール共通）═══
+     薄字が入力値と同じ書体（太字・大きめ・右寄せ）で出ていたため、
+     入力済みに見えていた。色の濃さだけだと現場の照明や斜めからの視認で差が消えるので、
+     太さ・大きさ・傾きも変えて別物にする。                                    */
+::placeholder{color:#AEBBC4;font-weight:400;font-size:.82em;font-style:italic;opacity:1}
+::-webkit-input-placeholder{color:#AEBBC4;font-weight:400;font-size:.82em;font-style:italic;opacity:1}
+::-moz-placeholder{color:#AEBBC4;font-weight:400;font-size:.82em;font-style:italic;opacity:1}
+/* 未入力の欄は下線を破線に（入っている欄＝実線）。入力中は元の色を邪魔しない。 */
+input.kt-empty:not(:focus){border-bottom-style:dashed !important;border-bottom-color:#C2CED6 !important}
+td input.kt-empty:not(:focus){border-style:dashed !important;border-color:#C9D3DA !important}
+</style>
+<script>
+/* ═══ 未入力の欄に印をつける（v57 / 全ツール共通）═══
+     数字を入れる欄（inputmode 付き）だけを対象にする。
+     行を作り直すツールがあるので、DOMの変化も見張って付け直す。            */
+(function(){
+  "use strict";
+  function hasCls(el){ return (" "+(el.className||"")+" ").indexOf(" kt-empty ")>=0; }
+  function mark(el){
+    if(!el||el.tagName!=="INPUT") return;
+    if(!el.getAttribute("inputmode")) return;
+    if(el.readOnly||el.disabled) return;
+    var empty=((el.value||"").replace(/\s/g,"")==="");
+    var has=hasCls(el);
+    if(empty&&!has) el.className=((el.className||"")+" kt-empty").replace(/^\s+/,"");
+    else if(!empty&&has) el.className=(" "+el.className+" ").replace(" kt-empty "," ").replace(/^\s+|\s+$/g,"");
+  }
+  function scan(){
+    var ns=document.getElementsByTagName("input"),i;
+    for(i=0;i<ns.length;i++) mark(ns[i]);
+  }
+  /* 捕捉フェーズ＝打った欄をすぐ反映。浮上フェーズ＝ツールが行を作り直した後に拾う。 */
+  document.addEventListener("input",function(e){ mark(e.target); },true);
+  document.addEventListener("input",scan,false);
+  document.addEventListener("change",scan,false);
+  document.addEventListener("click",scan,false);
+  if(window.MutationObserver){
+    try{
+      new MutationObserver(scan).observe(document.body,{childList:true,subtree:true});
+    }catch(e){}
+  }
+  scan();
+  setTimeout(scan,0);
+})();
+</script>
+
+<!-- 電卓を常に出しておくボタン（v98）。置き場所はトップの設定で選ぶ。 -->
+<button type="button" class="calcFab off" id="calcFab" aria-label="電卓を開く">
+  <span class="cfIco">🖩</span><span class="cfTxt">電卓</span>
+</button>
+
+<div class="kpad" id="kpad" aria-hidden="true">
+  <div class="kpHead">
+    <span class="kpName" id="kpName">—</span>
+    <button type="button" data-a="left" aria-label="1つ左へ">←</button>
+    <button type="button" data-a="right" aria-label="1つ右へ">→</button>
+    <button type="button" data-a="prev" class="sep" aria-label="前の欄">▲</button>
+    <button type="button" data-a="next" aria-label="次の欄">▼</button>
+    <button type="button" data-a="calc" id="kpCalcBtn" class="sep calcBtn" aria-pressed="false" aria-label="電卓を使う">計算</button>
+  </div>
+  <!-- 計算モードの式（v97）。ここに出るあいだ、欄の数字は変わらない。 -->
+  <div class="kpCalc" id="kpCalc" aria-live="polite">
+    <span class="kpExp" id="kpExp">0</span>
+    <span class="kpEq" id="kpEqv"></span>
+  </div>
+  <div class="kpGrid" id="kpGrid">
+    <button type="button" data-a="d" data-v="7">7</button>
+    <button type="button" data-a="d" data-v="8">8</button>
+    <button type="button" data-a="d" data-v="9">9</button>
+    <button type="button" data-a="bs" class="fn del">⌫</button>
+    <button type="button" data-a="d" data-v="4">4</button>
+    <button type="button" data-a="d" data-v="5">5</button>
+    <button type="button" data-a="d" data-v="6">6</button>
+    <button type="button" data-a="clr" class="fn">C</button>
+    <button type="button" data-a="d" data-v="1">1</button>
+    <button type="button" data-a="d" data-v="2">2</button>
+    <button type="button" data-a="d" data-v="3">3</button>
+    <button type="button" data-a="next" class="fn nx">次へ ▼</button>
+    <button type="button" data-a="sign" class="fn">±</button>
+    <button type="button" data-a="d" data-v="0">0</button>
+    <button type="button" data-a="d" data-v=".">.</button>
+    <button type="button" data-a="done" class="go">閉じる</button>
+    <!-- 計算モードのときだけ出る（v97） -->
+    <button type="button" data-a="op" data-v="÷" class="cop">÷</button>
+    <button type="button" data-a="op" data-v="×" class="cop">×</button>
+    <button type="button" data-a="op" data-v="-" class="cop">−</button>
+    <button type="button" data-a="op" data-v="+" class="cop">＋</button>
+    <button type="button" data-a="eq" class="cop ceq">＝ この欄に入れる</button>
+  </div>
+</div>
+<script>
+/* ═══ 自前キーボード（v72 / 全ツール共通）═══
+   狙い: 機種やOSでキーボードが違う問題をなくす。押しやすい大きさにする。
+        「空白」キーを自分で置けるので、度分入力（5 43）も打てる。
+   要点:
+   ・OS のキーボードを出さないために inputmode="none" にする。
+     元の inputmode は data-im に退避し、OS標準へ戻すときに復元する。
+   ・押した瞬間に preventDefault してフォーカスを奪わない
+     （奪うと欄が閉じてしまう。共通の±浮動ボタンと同じ考え方）。
+   ・穴の欄は後から増えるので、focusin の委譲で拾う。
+   ・入力後に input イベントを投げる（oninput="calc()" を動かすため）。 */
+(function(){
+  "use strict";
+  /* 保存キーはツール名を含めない＝<全ツール共通>。
+     キーの大きさも使う／使わないも、手と手袋と端末で決まるもので、
+     ツールごとに変わる理由がない。同じサイト内なら保存先は共通なので、
+     このキー名にしておけば他ツールへ広げたとき移行作業が要らない。 */
+  var KEY="kensa-kbd";
+  var ZKEY="kensa-kbd-size";
+  var OLDKEY="kensa-kbd-27", OLDZKEY="kensa-kbd-27-size";   /* v70以前からの引き継ぎ */
+  /* 切替のボタンはこのツールには無い。設定はポータル(トップ)の一番下でまとめて行う。
+     一度きりの設定のために全ツールの画面を長くしないため（v72）。 */
+  var pad=document.getElementById("kpad");
+  var grid=document.getElementById("kpGrid");
+  var head=pad?pad.querySelector(".kpHead"):null;
+  var nameEl=document.getElementById("kpName");
+  if(!pad||!grid) return;
+  var cur=null, on=true, size="m";
+
+  /* ── キーの音（v73／音量は v76）──
+     Web Audio で端末の中だけで作る短い電子音（音声ファイルなし・送信なし）。
+     既定は鳴らさない。設定はトップの「キーボードの設定」（保存キー kensa-kbd-snd、
+     音も「人と端末」の性質なのでツール名は含めない）。
+     AudioContext はユーザー操作の中で初回に作る（iOS の自動再生制限のため）。
+     注意: iOS はマナーモード中は Web Audio ごと消音される（仕様。故障ではない）。 */
+  var SKEY="kensa-kbd-snd";
+  /* 保存値は "0"=鳴らさない / "s"=小 / "m"=中 / "l"=大（v76）。
+     v75以前の "1"（＝鳴らす。音が小さいという指摘があった）は「大」として読む。
+     数字と英字で世代が見分けられるので、新旧の取り違えが起きない。 */
+  var SVOL={s:0.20,m:0.40,l:0.70};
+  var svol=0;
+  try{
+    var sv0=localStorage.getItem(SKEY);
+    if(sv0==="1") svol=SVOL.l;                 /* v75以前からの引き継ぎ */
+    else if(SVOL[sv0]) svol=SVOL[sv0];
+  }catch(e){}
+  var sndCtx=null;
+  function beep(){
+    if(!svol) return;
+    try{
+      var AC=window.AudioContext||window.webkitAudioContext;
+      if(!AC) return;
+      if(!sndCtx) sndCtx=new AC();
+      if(sndCtx.state==="suspended"&&sndCtx.resume) sndCtx.resume();
+      var t=sndCtx.currentTime;
+      var o=sndCtx.createOscillator(), gg=sndCtx.createGain();
+      /* 三角波（v76）。サイン波は倍音がなく、スマホの小さいスピーカーでは
+         同じ振幅でも小さく聞こえるため差し替えた。高さは従来どおり C6。 */
+      o.type="triangle"; o.frequency.value=1046.5;
+      gg.gain.setValueAtTime(0.0001,t);
+      gg.gain.exponentialRampToValueAtTime(svol,t+0.006);
+      gg.gain.exponentialRampToValueAtTime(0.0001,t+0.090);   /* 90ms */
+      o.connect(gg); gg.connect(sndCtx.destination);
+      o.start(t); o.stop(t+0.105);
+    }catch(e){}
+  }
+
+
+  function load(){
+    try{
+      var v=localStorage.getItem(KEY);
+      if(v===null){                        /* 旧キーがあれば引き継ぐ */
+        var o=localStorage.getItem(OLDKEY);
+        if(o!==null){ localStorage.setItem(KEY,o); localStorage.removeItem(OLDKEY); v=o; }
+      }
+      return v===null? true : v==="1";
+    }catch(e){ return true; }
+  }
+  function save(){ try{ localStorage.setItem(KEY,on?"1":"0"); }catch(e){} }
+  function loadSize(){
+    try{
+      var v=localStorage.getItem(ZKEY);
+      if(v===null){                        /* 旧キーがあれば引き継ぐ */
+        var o=localStorage.getItem(OLDZKEY);
+        if(o!==null){ localStorage.setItem(ZKEY,o); localStorage.removeItem(OLDZKEY); v=o; }
+      }
+      if(v==="s"){ v="m"; localStorage.setItem(ZKEY,v); }   /* v74: 小は廃止→中へ */
+      return (v==="m"||v==="l"||v==="xl")? v : "m";
+    }catch(e){ return "m"; }
+  }
+  function saveSize(){ try{ localStorage.setItem(ZKEY,size); }catch(e){} }
+  function applySize(){
+    pad.className=(pad.className.indexOf("on")>=0? "kpad on ":"kpad ")+"kp-"+size+
+      (pad.className.indexOf("calcon")>=0? " calcon":"");
+    /* 高さが変わるので、開いているなら下の余白を取り直す */
+    if(pad.className.indexOf("on")>=0) document.body.style.paddingBottom=(pad.offsetHeight+12)+"px";
+  }
+
+  function targets(){
+    var all=document.querySelectorAll("input"), out=[], i, el, im;
+    for(i=0;i<all.length;i++){
+      el=all[i];
+      /* 退避した data-im を先に見る。inputmode は "none" に差し替わっているため、
+         先に読むと対象が1つも見つからず、▲▼ の移動ができなくなる。 */
+      im=el.getAttribute("data-im")||el.getAttribute("inputmode")||"";
+      if((im==="decimal"||im==="numeric") && !el.disabled && !el.readOnly && el.offsetParent!==null) out.push(el);
+    }
+    return out;
+  }
+  /* OS のキーボードを止める／戻す */
+  function apply(){
+    var all=document.querySelectorAll("input"), i, el, im;
+    for(i=0;i<all.length;i++){
+      el=all[i];
+      im=el.getAttribute("inputmode");
+      if(on){
+        if(im==="decimal"||im==="numeric"){
+          el.setAttribute("data-im",im);
+          el.setAttribute("inputmode","none");
+        }
+      }else{
+        if(el.getAttribute("data-im")){
+          el.setAttribute("inputmode",el.getAttribute("data-im"));
+          el.removeAttribute("data-im");
+        }
+      }
+    }
+    document.body.className=on? "kbon":"";
+    if(!on) hide();
+  }
+  /* 穴の欄は後から作られるので、開くたびに掛け直す */
+  function reapply(){ if(on) apply(); }
+
+  function labelOf(el){
+    var d=el.parentNode, l=d?d.querySelector("label.f"):null;
+    if(l) return l.textContent;
+    var th, tb=el.closest? el.closest("td"):null;
+    if(tb) return "\u8868\u306e\u6b04";
+    return "\u6570\u5024";
+  }
+  function show(el){
+    /* 別の欄に移ったら計算はやめる。式はその欄の数字から始めるものなので、
+       持ち越すと「どの欄の計算か」が分からなくなる。 */
+    if(cur!==el&&calcOn) calcSet(false);
+    cur=el;
+    nameEl.textContent=labelOf(el);
+    pad.className="kpad on kp-"+size+(calcOn?" calcon":"");
+    pad.setAttribute("aria-hidden","false");
+    setTimeout(function(){ fabPaint(); },0);
+    document.body.style.paddingBottom=(pad.offsetHeight+12)+"px";
+    try{ el.scrollIntoView({block:"center",behavior:"smooth"}); }catch(e){}
+  }
+  function hide(){
+    calcOn=false; expr="";
+    /* ★入力モードの切り替え（apply→hide）でもここを通る。
+       戻しておかないと ＝ ( ) の文字が残ったままになる(v99)。 */
+    calcKeys(false);
+    setTimeout(function(){ fabPaint(); },0);
+    if(calcBtn) calcBtn.setAttribute("aria-pressed","false");
+    pad.className="kpad kp-"+size;
+    pad.setAttribute("aria-hidden","true");
+    document.body.style.paddingBottom="";
+    cur=null;
+  }
+  function fire(el){
+    var ev;
+    try{ ev=new Event("input",{bubbles:true}); }
+    catch(e){ ev=document.createEvent("Event"); ev.initEvent("input",true,false); }
+    el.dispatchEvent(ev);
+  }
+  function caret(el){
+    var a,b;
+    try{ a=el.selectionStart; b=el.selectionEnd; }catch(e){}
+    if(typeof a!=="number"){ a=el.value.length; b=a; }
+    return [a,b];
+  }
+  function put(el,txt){
+    var c=caret(el), v=el.value;
+    el.value=v.slice(0,c[0])+txt+v.slice(c[1]);
+    var p=c[0]+txt.length;
+    try{ el.setSelectionRange(p,p); }catch(e){}
+    fire(el);
+  }
+  function backsp(el){
+    var c=caret(el), v=el.value, p;
+    if(c[0]!==c[1]){ el.value=v.slice(0,c[0])+v.slice(c[1]); p=c[0]; }
+    else if(c[0]>0){ el.value=v.slice(0,c[0]-1)+v.slice(c[0]); p=c[0]-1; }
+    else return;
+    try{ el.setSelectionRange(p,p); }catch(e){}
+    fire(el);
+  }
+  function sign(el){
+    var v=el.value;
+    el.value=(v.charAt(0)==="-")? v.slice(1) : ("-"+v);
+    fire(el);
+  }
+  function move(step){
+    if(!cur) return;
+    var t=targets(), i=-1, k;
+    for(k=0;k<t.length;k++) if(t[k]===cur){ i=k; break; }
+    if(i<0) return;
+    var n=t[i+step];
+    if(!n){ return; }
+    n.focus();
+    try{ n.setSelectionRange(n.value.length,n.value.length); }catch(e){}
+    show(n);
+  }
+
+  /* ══ 電卓（v97）══
+     狙い: 「半分にする」ような計算のために電卓アプリへ移らなくて済むように。
+     ★ここで組み立てている式は<電卓の中だけ>のもの。＝を押すまで欄は変えない。
+       途中の数字を欄へ書くと、ツールがその値で計算し直してしまう。
+     ★右端スワイプで出す案は採らなかった。iOS Safari も Android Chrome も
+       端からのスワイプが「戻る／進む」で、取り合いになるため。 */
+  var calcOn=false, expr="";
+  var expEl=document.getElementById("kpExp");
+  var eqEl=document.getElementById("kpEqv");
+  var calcBtn=document.getElementById("kpCalcBtn");
+
+  /* 式の読み取り（v99でかっこに対応）。
+     戻り値は {v:数} か {err:理由}。理由が分かれば断り書きを分けられる。
+     ★eval は使わない。読み取りは <式→項→因子> の形。
+       因子 … 数 / (式) / −因子
+       項   … 因子 を × ÷ でつなぐ
+       式   … 項 を + − でつなぐ
+     組み込む前に dev/calc_probe2.js で43項目を単体で確かめてある。 */
+  function calcTok(s){
+    var t=[], num="", i, c;
+    for(i=0;i<s.length;i++){
+      c=s.charAt(i);
+      if(c>="0"&&c<="9"){ num+=c; continue; }
+      /* ★小数点が2つある数(1.2.3)は parseFloat が 1.2 として通してしまう。
+         打ち間違いが静かに別の数になるので弾く。 */
+      if(c==="."){ if(num.indexOf(".")>=0) return null; num+=c; continue; }
+      if(c===" ") continue;
+      if(num!==""){ if(num===".") return null; t.push(parseFloat(num)); num=""; }
+      if("+-×÷()".indexOf(c)<0) return null;
+      t.push(c);
+    }
+    if(num!==""){ if(num===".") return null; t.push(parseFloat(num)); }
+    return t;
+  }
+  function calcParen(s){
+    var i, c, n=0;
+    for(i=0;i<s.length;i++){
+      c=s.charAt(i);
+      if(c==="(") n++;
+      else if(c===")"){ n--; if(n<0) return "extra"; }
+    }
+    return n>0? "open" : "ok";
+  }
+  function calcRun(s){
+    if(s==="") return {err:"empty"};
+    if(calcParen(s)!=="ok") return {err:"paren"};
+    var t=calcTok(s);
+    if(t===null) return {err:"partial"};
+    var p=0, div0=false;
+    function peek(){ return p<t.length? t[p] : null; }
+    function factor(){
+      var c=peek(), v;
+      if(c===null) return null;
+      if(c==="-"){ p++; v=factor(); return v===null? null : -v; }
+      /* ★頭の「＋」は受け付けない。1++2 が 1+(+2)=3 として通ってしまい、
+         二度押しの打ち間違いが黙って計算される。負の数のための「−」だけ許す。 */
+      if(c==="("){ p++; v=expr(); if(v===null) return null;
+                   if(peek()!==")") return null; p++; return v; }
+      if(typeof c==="number"){ p++; return c; }
+      return null;
+    }
+    function term(){
+      var v=factor(), op, r;
+      if(v===null) return null;
+      while(peek()==="×"||peek()==="÷"){
+        op=t[p++]; r=factor();
+        if(r===null) return null;
+        if(op==="÷"){ if(r===0){ div0=true; return null; } v=v/r; }
+        else v=v*r;
+      }
+      return v;
+    }
+    function expr(){
+      var v=term(), op, r;
+      if(v===null) return null;
+      while(peek()==="+"||peek()==="-"){
+        op=t[p++]; r=term();
+        if(r===null) return null;
+        v=(op==="+")? v+r : v-r;
+      }
+      return v;
+    }
+    var v=expr();
+    if(div0) return {err:"div0"};
+    if(v===null||p!==t.length) return {err:"partial"};
+    if(!isFinite(v)) return {err:"partial"};
+    return {v:Math.round(v*1e6)/1e6};   /* mm の桁として6桁あれば足りる */
+  }
+  function calcEval(s){ var r=calcRun(s); return ("v" in r)? r.v : null; }
+  function paintCalc(){
+    if(!expEl) return;
+    expEl.textContent = expr===""? "0" : expr;
+    /* 長い式では、いま打っている右端が見えるようにする。
+       CSS の direction:rtl でこれをやると<並びが逆に見える>ので使わない(v98)。 */
+    try{ expEl.scrollLeft = expEl.scrollWidth; }catch(e){}
+    var res=calcRun(expr);
+    var v=("v" in res)? res.v : null;
+    var eqBtn=pad.querySelector("button.ceq");
+    var gridEq=pad.querySelector("#kpGrid button.nx");
+    if(v===null){
+      /* 直し方が違うので、理由ごとに分けて出す。まとめると何を直せばよいか
+         分からない（0で割ったのに「途中です」と出ると数字を足そうとする）。 */
+      var msg="";
+      if(res.err==="paren") msg="かっこが閉じていません";
+      else if(res.err==="div0") msg="0では割れません";
+      else if(res.err!=="empty") msg="式が途中です";
+      eqEl.textContent=msg;
+      eqEl.className="kpEq"+(msg?" bad":"");
+      if(eqBtn) eqBtn.disabled=true;
+      if(gridEq) gridEq.disabled=true;
+    }else{
+      eqEl.textContent="= "+v;
+      eqEl.className="kpEq";
+      if(eqBtn) eqBtn.disabled=false;
+      if(gridEq) gridEq.disabled=false;
+    }
+    /* ＝が何をするかは、欄を選んでいるかで変わる。押す前に分かるようにする。 */
+    if(eqBtn) eqBtn.textContent= cur? "＝ この欄に入れる" : "＝ 計算する";
+  }
+  /* 計算モードのあいだだけキーの意味を差し替える（v99・ムギさん依頼）。
+       グリッドの「次へ▼」 → 「＝」（計算するだけ。続けて計算できる）
+       上の行の「▲」「▼」  → 「(」「)」
+     ふだんは元の文字に戻す。 */
+  var lblGridNext=null, lblPrev=null, lblNext=null;
+  function calcKeys(onoff){
+    var g=pad.querySelector("#kpGrid button.nx");
+    var hp=pad.querySelector('.kpHead button[data-a="prev"]');
+    var hn=pad.querySelector('.kpHead button[data-a="next"]');
+    if(lblGridNext===null){
+      lblGridNext=g? g.innerHTML : "";
+      lblPrev=hp? hp.innerHTML : "";
+      lblNext=hn? hn.innerHTML : "";
+    }
+    if(g){
+      g.innerHTML= onoff? "＝" : lblGridNext;
+      g.className= onoff? "nx ceq2" : "nx";
+      g.setAttribute("aria-label", onoff? "計算する" : "次の欄へ");
+      if(!onoff) g.disabled=false;
+    }
+    if(hp){
+      hp.innerHTML= onoff? "(" : lblPrev;
+      hp.className= onoff? "sep paren" : "sep";
+      hp.setAttribute("aria-label", onoff? "かっこを開く" : "前の欄");
+    }
+    if(hn){
+      hn.innerHTML= onoff? ")" : lblNext;
+      hn.className= onoff? "paren" : "";
+      hn.setAttribute("aria-label", onoff? "かっこを閉じる" : "次の欄");
+    }
+  }
+  /* 計算するだけ（欄には入れない）。答えが式に残るので続けて計算できる。 */
+  function calcResult(){
+    var r=calcRun(expr);
+    if(!("v" in r)) return;
+    expr=String(r.v);
+    paintCalc();
+  }
+  function calcSet(v){
+    calcOn=!!v;
+    pad.className=(pad.className.replace(/\s*calcon/g,""))+(calcOn?" calcon":"");
+    if(calcBtn) calcBtn.setAttribute("aria-pressed",calcOn?"true":"false");
+    calcKeys(calcOn);
+    if(calcOn){
+      /* いま欄にある数字を式の先頭に置く。100 が入っていれば ÷ 2 ＝ で 50。
+         度分入力(「60 30」)のように数字でないものは、空から始める。 */
+      var v0=cur? String(cur.value||"") : "";
+      expr=/^-?\d*\.?\d+$/.test(v0)? v0 : "";
+    }else{ expr=""; }
+    paintCalc();
+    /* 高さが変わるので下の余白を取り直す */
+    if(pad.className.indexOf("on")>=0) document.body.style.paddingBottom=(pad.offsetHeight+12)+"px";
+  }
+  function calcPut(t){ expr+=t; paintCalc(); }
+  function calcBack(){ expr=expr.slice(0,-1); paintCalc(); }
+  function calcSign(){
+    /* 式の最後の数のプラスマイナスを入れ替える。
+       かっこで終わっているときは、どの数を指すか決まらないので何もしない。 */
+    if(/[)(]$/.test(expr)) return;
+    var m=expr.match(/(-?)(\d*\.?\d*)$/);
+    if(!m||m[2]==="") return;
+    var head=expr.slice(0,expr.length-m[0].length);
+    expr=head+((m[1]==="-")? m[2] : ("-"+m[2]));
+    paintCalc();
+  }
+  function calcEnter(){
+    var v=calcEval(expr);
+    if(v===null) return;
+    if(!cur){
+      /* 欄を選んでいないとき（電卓ボタンから開いたとき）は、
+         答えを式の場所に残す。そのまま次の計算に使える。 */
+      expr=String(v); paintCalc();
+      return;
+    }
+    cur.value=String(v);
+    try{ cur.setSelectionRange(cur.value.length,cur.value.length); }catch(e){}
+    fire(cur);
+    calcSet(false);            /* ＝のあとは数字キーに戻る（ムギさん判断） */
+  }
+
+  /* 押した瞬間に処理し、既定動作を止めてフォーカスを保つ */
+  function act(e){
+    var b=e.target;
+    while(b && b!==pad && b.tagName!=="BUTTON") b=b.parentNode;
+    if(!b || b===pad) return;
+    e.preventDefault();
+    beep();
+    var a=b.getAttribute("data-a");
+    if(a==="calc"){
+      /* ★欄を選ばずに開いた電卓で「計算」を切ると、入力先が無いのに数字キー
+         だけが残る。どこにも入らず、電卓でもない行き止まりになる(v99)。
+         欄が無いときは切らずに閉じる。 */
+      if(calcOn&&!cur){ hide(); return; }
+      calcSet(!calcOn); return;
+    }
+    if(a==="done"){ if(calcOn) calcSet(false); if(cur) cur.blur(); hide(); return; }
+    /* 計算モードのあいだは、数字も⌫もCも±も<式のほう>へ向ける。
+       欄は＝を押すまで変えない。 */
+    if(calcOn){
+      if(a==="op"){ calcPut(b.getAttribute("data-v")); return; }
+      if(a==="eq"){ calcEnter(); return; }
+      if(a==="d"){ calcPut(b.getAttribute("data-v")); return; }
+      if(a==="bs"){ calcBack(); return; }
+      if(a==="clr"){ expr=""; paintCalc(); return; }
+      if(a==="sign"){ calcSign(); return; }
+      if(a==="left"||a==="right") return;    /* 欄の中の移動は計算中は使わない */
+      /* ★グリッドの「次へ」は計算モードでは ＝（計算するだけ）。
+         上の行の ▲▼ は ( ) 。どちらも先に見分ける。 */
+      if(a==="next"&&b.className.indexOf("nx")>=0){ calcResult(); return; }
+      if(a==="prev"){ calcPut("("); return; }
+      if(a==="next"){ calcPut(")"); return; }
+    }
+    if(a==="prev"){ move(-1); return; }
+    if(a==="next"){ move(1); return; }
+    /* ←→: 数字の中でカーソルを1文字ずつ動かす。
+       欄をタップして点滅位置を狙い撃ちしなくても、これで寄せられる。
+       上段は「横＝数字の中を動く、縦＝欄の間を動く」で意味をそろえてある。 */
+    if(a==="left"||a==="right"){
+      if(!cur) return;
+      var c2=caret(cur), p2;
+      if(a==="left")  p2=(c2[0]===c2[1])? c2[0]-1 : c2[0];
+      else            p2=(c2[0]===c2[1])? c2[1]+1 : c2[1];
+      if(p2<0)p2=0;
+      if(p2>cur.value.length)p2=cur.value.length;
+      try{ cur.setSelectionRange(p2,p2); }catch(e2){}
+      return;
+    }
+    if(!cur) return;
+    if(a==="d") put(cur,b.getAttribute("data-v"));
+    else if(a==="bs") backsp(cur);
+    else if(a==="clr"){ cur.value=""; fire(cur); }
+    else if(a==="sign") sign(cur);
+  }
+  pad.addEventListener("mousedown",act);
+  pad.addEventListener("touchstart",act,{passive:false});
+
+  /* 欄に入ったら開く（穴の欄は後から増えるので委譲で拾う） */
+  document.addEventListener("focusin",function(e){
+    if(!on) return;
+    var el=e.target;
+    if(!el||el.tagName!=="INPUT") return;
+    var im=el.getAttribute("data-im")||el.getAttribute("inputmode")||"";
+    if(im!=="decimal"&&im!=="numeric"&&im!=="none") { hide(); return; }
+    if(!el.getAttribute("data-im")) reapply();
+    show(el);
+  });
+  document.addEventListener("focusout",function(e){
+    setTimeout(function(){
+      var a=document.activeElement;
+      if(!a || a.tagName!=="INPUT") { if(cur===e.target) hide(); }
+    },80);
+  });
+
+
+  /* 穴の欄は後から作られる。作られた「その場で」inputmode を止めないと、
+     最初の1回だけOSのキーボードが一瞬出てしまう。
+     クリック後の掛け直しでは間に合わないので、DOM の変化を見て掛ける。 */
+  if(window.MutationObserver){
+    var timer=null;
+    var mo=new MutationObserver(function(){
+      if(timer) return;
+      timer=setTimeout(function(){ timer=null; reapply(); },0);
+    });
+    mo.observe(document.body,{childList:true,subtree:true});
+  }else{
+    document.addEventListener("click",function(){ setTimeout(reapply,0); },false);
+  }
+
+  /* ══ 電卓を常に出しておくボタン（v98）══
+     置き場所は全ツール共通の設定（トップで選ぶ）。 */
+  var FKEY="kensa-calcbtn";
+  var fab=document.getElementById("calcFab");
+  function fabPos(){
+    try{
+      var v=localStorage.getItem(FKEY);
+      if(v===null) return "br";                    /* 既定は右下 */
+      return (v==="br"||v==="bl"||v==="tr"||v==="tl"||v==="bar"||v==="off")? v : "br";
+    }catch(e){ return "br"; }
+  }
+  function fabPaint(){
+    if(!fab) return;
+    var p=fabPos();
+    var open=(pad.className.indexOf("on")>=0);
+    fab.className="calcFab"+((p==="off"||open)? " off":(" "+p));
+    /* 下のバーは画面の下を占めるので、その分の余白を空ける。
+       キーボードが開いているときはキーボード側が余白を決める。 */
+    if(p==="bar"&&!open){ document.body.style.paddingBottom=(fab.offsetHeight+10)+"px"; }
+    else if(!open&&document.body.style.paddingBottom){ document.body.style.paddingBottom=""; }
+  }
+  /* 欄を選んでいなくても開ける。選んでいればその欄に入れる。 */
+  function calcOpen(){
+    var a=document.activeElement, im;
+    if(a&&a.tagName==="INPUT"){
+      im=a.getAttribute("data-im")||a.getAttribute("inputmode")||"";
+      if(im==="decimal"||im==="numeric"||im==="none"){ show(a); calcSet(true); fabPaint(); return; }
+    }
+    /* どの欄も選んでいないとき: 電卓だけを開く。cur は null のまま。 */
+    cur=null;
+    if(nameEl) nameEl.textContent="電卓";
+    pad.className="kpad on kp-"+size;
+    pad.setAttribute("aria-hidden","false");
+    /* ★ここで pad.className を自分で組み立てていたため calcSet を通らず、
+       キーの文字を差し替える calcKeys() が呼ばれていなかった。
+       「次へ▼」「▲」「▼」のままなのに、押すと ＝ ( ) として働いていた(v99)。
+       calcSet に任せる。 */
+    calcSet(true);
+    document.body.style.paddingBottom=(pad.offsetHeight+12)+"px";
+    fabPaint();
+  }
+  if(fab){
+    fab.addEventListener("click",function(e){ e.preventDefault(); calcOpen(); });
+  }
+  /* ★設定はトップの画面で変える。ふつうはツールを開き直すので読み直されるが、
+     開いたままのときは on が古いまま残る。すると欄は inputmode="none" のまま
+     なのに自前キーボードが出ない＝<どこにも入力できない>状態になりうる。
+     設定の変更を拾って当て直す。 */
+  window.addEventListener("storage",function(e){
+    if(!e) return;
+    if(e.key===FKEY){ fabPaint(); return; }
+    if(e.key===KEY){ on=load(); apply(); return; }
+    if(e.key===ZKEY){ size=loadSize(); applySize(); return; }
+  });
+
+  on=load();
+  size=loadSize();
+  apply();
+  applySize();
+  fabPaint();
+  window.__kbd={ apply:apply, targets:targets, isOn:function(){return on;},
+                 size:function(){return size;}, applySize:applySize,
+                 show:show, hide:hide, pad:pad, cur:function(){return cur;},
+                 calc:{ set:calcSet, evalExpr:calcEval,
+                        isOn:function(){return calcOn;},
+                        expr:function(){return expr;},
+                        open:calcOpen, fabPos:fabPos, fabPaint:fabPaint,
+                        run:calcRun, result:calcResult } };
+})();
+</script>
+
+<script>
+/* ── 記録（部品ノート）v73 ／ 保存先の作り直しと取り消し v80 ──
+   狙い: 同じ部品がまた来たとき、前回の数字をタップ1つで呼び戻す。
+   考え方（v80で改めた点）:
+   ・「呼び出しは簡潔に、保存は丁寧に」。保存先は<部品の身元>として
+     加工先・部品名・図番・部組(機種)・形状・備考(通称) の6項目で作る。
+     6つのうち<どれか1つ以上>を入れないと作れない。名無しの保存先は作れない。
+   ・2回目以降は保存先を選ぶだけ。選ぶ画面には6項目をそのまま出すので、
+     名前だけの一覧と違って取り違えにくい。
+   ・保存した直後は「取り消す」が出る（60秒）。押すとその記録を消す。
+     その保存で新しく作った保存先なら、中が空になる場合は保存先ごと戻す。
+   ・保存するのは<入力値だけ>。答えは保存しない＝呼び出すたびに計算し直す。
+     後で計算式を直しても、古い答えが蘇らないようにするため。
+   ・値は文字列のまま保存。数値化すると NaN/null が JSON で化ける(v55の学び)。
+   ・保存はこの端末の中だけ(送信なし)。編集・削除はトップの「📒 記録」で行う。 */
+(function(){
+  "use strict";
+  var RKEY="kensa-rec";
+  var TOOL=(function(){
+    var m=(location.pathname||"").match(/\/([^\/]+)\/(?:index\.html)?$/);
+    return m? m[1] : "";
+  })();
+  var TNAME=(document.title||"").split("|")[0].replace(/^\s+|\s+$/g,"");
+
+
+  /* ── 図のサムネイル（v87）──
+     狙い: 記録の一覧で「探している部品か」を見て分かるようにする。
+     ・入れ物は IndexedDB。localStorage(5MB)とは別枠なので、図を入れても
+       記録そのものを圧迫しない。使えない端末では黙って何もしない。
+     ・ここは「答えは保存しない」の<例外>。保存しない道を選ぶと、ポータル側に
+       各ツールの描画を持つことになり、生成元と成果物の二重管理（v82の原因）に
+       戻ってしまう。保存すれば描くのはツールだけで済む。
+     ・代わりに<作ったときの版>を一緒に残す。いまの版と違えばポータルが
+       バッジを出す。古いことが分かれば、黙って誤解させることはない。
+     ・ツール側で window.krThumb() を用意すれば図が付く。無ければ付かない。
+       ★この共有ブロックは全ツールで完全に同じままにすること。 */
+  var TDB="kensa-thumbs", TSTORE="thumbs", TVKEY="kensa-thumbver";
+  function tOpen(cb){
+    var idb=window.indexedDB, rq;
+    if(!idb){ cb(null); return; }
+    try{ rq=idb.open(TDB,1); }catch(e){ cb(null); return; }
+    rq.onupgradeneeded=function(ev){
+      var db=ev.target.result;
+      if(!db.objectStoreNames.contains(TSTORE)) db.createObjectStore(TSTORE,{keyPath:"id"});
+    };
+    rq.onsuccess=function(){ cb(rq.result); };
+    rq.onerror=function(){ cb(null); };
+  }
+  function tPut(id,svg){
+    tOpen(function(db){
+      if(!db) return;
+      try{ db.transaction(TSTORE,"readwrite").objectStore(TSTORE)
+             .put({id:id, svg:svg, ts:(new Date()).getTime()}); }catch(e){}
+    });
+  }
+  function tDel(id){
+    tOpen(function(db){
+      if(!db) return;
+      try{ db.transaction(TSTORE,"readwrite").objectStore(TSTORE)["delete"](id); }catch(e){}
+    });
+  }
+  function thumbVer(){ return (typeof window.krThumbVer==="string")? window.krThumbVer : ""; }
+  function makeThumb(){
+    var s="";
+    if(typeof window.krThumb!=="function") return "";
+    try{ s=window.krThumb(); }catch(e){ s=""; }
+    if(typeof s!=="string") return "";
+    if(s.length>20000) return "";        /* 大きすぎる図は入れない（一覧が重くなる） */
+    return s;
+  }
+  /* いまの版を控える。ポータルはこれと記録の版を見比べてバッジを出す。
+     ツールが自分で書くので、ポータルに版の表を持たない（二重管理を避ける）。 */
+  (function(){
+    var v=thumbVer(), m;
+    if(!v||!TOOL) return;
+    try{
+      m=JSON.parse(localStorage.getItem(TVKEY)||"{}");
+      if(!m||typeof m!=="object") m={};
+      if(m[TOOL]!==v){ m[TOOL]=v; localStorage.setItem(TVKEY,JSON.stringify(m)); }
+    }catch(e){}
+  })();
+
+  function inOwn(el){
+    var n=el;
+    while(n){ if(n.id==="kpad"||n.id==="krBar"||n.id==="krSheet"||n.id==="krCall") return true; n=n.parentNode; }
+    return false;
+  }
+  function hasOn(el){ return (" "+el.className+" ").indexOf(" on ")>=0; }
+  function fire(el,type){
+    var ev;
+    try{ ev=new Event(type,{bubbles:true}); }
+    catch(e){ ev=document.createEvent("Event"); ev.initEvent(type,true,false); }
+    el.dispatchEvent(ev);
+  }
+  function esc(s){
+    return String(s==null? "":s).replace(/&/g,"&amp;").replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+  function trim(s){ return String(s==null? "":s).replace(/^\s+|\s+$/g,""); }
+
+  /* ▼ここだけツールごとに違う：保存する中身の出し入れ▼
+     汎用版 … id の付いた text/textarea/select/checkbox を拾う(readonly は除外)。
+     id^="sw" のボタン(モード切替)は on の組を保存し、復元はクリックで再現する。 */
+  function fields(){
+    var sel='input[type="text"][id],textarea[id],select[id],input[type="checkbox"][id]';
+    var els=document.querySelectorAll(sel), out=[], i, el;
+    for(i=0;i<els.length;i++){
+      el=els[i];
+      if(el.readOnly||inOwn(el)) continue;
+      out.push(el);
+    }
+    return out;
+  }
+  function swBtns(){
+    var els=document.querySelectorAll('button[id^="sw"]'), out=[], i;
+    for(i=0;i<els.length;i++){ if(!inOwn(els[i])) out.push(els[i]); }
+    return out;
+  }
+  function collect(){
+    var v={}, els=fields(), i, el, sw=[], bs=swBtns();
+    for(i=0;i<els.length;i++){
+      el=els[i];
+      if(el.type==="checkbox") v[el.id]=el.checked? "1":"0";
+      else v[el.id]=String(el.value==null? "":el.value);
+    }
+    for(i=0;i<bs.length;i++){ if(hasOn(bs[i])) sw.push(bs[i].id); }
+    return {v:v, sw:sw};
+  }
+  function makeLabel(){
+    var els=fields(), i, el, out=[], s;
+    for(i=0;i<els.length&&out.length<3;i++){
+      el=els[i];
+      if(el.type==="checkbox"||el.tagName==="SELECT"||el.tagName==="TEXTAREA") continue;
+      s=String(el.value==null? "":el.value).replace(/\s+/g," ");
+      if(s!=="") out.push(s.length>10? s.slice(0,10)+"…":s);
+    }
+    return out.length? out.join(" / ") : "(入力なし)";
+  }
+  /* ▲差込口ここまで▲ */
+
+
+  /* ── 項目の定義（全ツール・ポータル共通。並び・ラベルは必ずそろえる）──
+     フォルダ(保存先)は軽く、ファイル(記録1件)に詳細を持たせる。
+     同じ部品でも回ごとに加工先や図番の版が変わるので、詳細は<記録ごと>が正しい。 */
+  var DFLD=[["nm","名前"],["as","部組（機種）"],["nt","備考"]];
+  var RFLD=[["mk","加工先"],["pt","部品名"],["dw","図番"],["sh","形状"],["nt","備考（通称）"]];
+
+  function emptyD(){ return {nm:"",as:"",nt:""}; }
+  function emptyR(){ return {mk:"",pt:"",dw:"",sh:"",nt:""}; }
+  function normBy(list,f){
+    var o={}, i;
+    for(i=0;i<list.length;i++) o[list[i][0]]=trim(f? f[list[i][0]]:"");
+    return o;
+  }
+  function anyOf(list,f){
+    var i; for(i=0;i<list.length;i++) if(f[list[i][0]]!=="") return true;
+    return false;
+  }
+  /* フォルダの見出しは名前そのもの（名前は必須）。 */
+  function headD(f){ return f.nm!==""? f.nm : "(名称なし)"; }
+  function subD(f){
+    var out=[], i, k;
+    for(i=1;i<DFLD.length;i++){ k=DFLD[i][0]; if(f[k]!=="") out.push(DFLD[i][1]+" "+f[k]); }
+    return out.join(" / ");
+  }
+  /* ファイルの見出しは 部品名 ・ 図番 ・ 加工先。空はとばす。 */
+  function headR(g){
+    var out=[], k=["pt","dw","mk"], i;
+    if(!g) return "";
+    for(i=0;i<k.length;i++) if(g[k[i]]&&g[k[i]]!=="") out.push(g[k[i]]);
+    if(!out.length) for(i=0;i<RFLD.length;i++) if(g[RFLD[i][0]]&&g[RFLD[i][0]]!==""){ out.push(g[RFLD[i][0]]); break; }
+    return out.join(" ・ ");
+  }
+  function subR(g){
+    var out=[], used={pt:1,dw:1,mk:1}, i, k;
+    if(!g) return "";
+    for(i=0;i<RFLD.length;i++){
+      k=RFLD[i][0];
+      if(used[k]||!g[k]||g[k]==="") continue;
+      out.push(RFLD[i][1]+" "+g[k]);
+    }
+    return out.join(" / ");
+  }
+
+  /* ── 保存の入れ物 ──
+     v80 はフォルダ側に6項目を持たせていたが、詳細は記録ごとに要るという指摘で
+     v81 で組み替えた。古い形は読み込んだ時点で新しい形に直す。
+     ・v79以前 … d.n（名前だけ）→ フォルダ名へ
+     ・v80    … d.f{mk,pt,dw,as,sh,nt} → 名前は見出し、部組と備考はそのまま、
+                残り(加工先・部品名・図番・形状)は取りこぼさないよう備考へ添える。 */
+  function loadDB(){
+    var db=null, i, f, o, ex;
+    try{ db=JSON.parse(localStorage.getItem(RKEY)||"null"); }catch(e){ db=null; }
+    if(!db||typeof db!=="object") db={};
+    if(!db.d) db.d=[];
+    if(!db.r) db.r=[];
+    if(!db.seq) db.seq=0;
+    if(db.last==null) db.last="";
+    for(i=0;i<db.d.length;i++){
+      f=db.d[i].f;
+      if(f&&f.nm!=null){ db.d[i].f=normBy(DFLD,f); }
+      else if(f){
+        o=emptyD();
+        o.nm=trim(f.pt)||trim(f.dw)||trim(f.mk)||trim(f.sh)||trim(db.d[i].n)||"";
+        o.as=trim(f.as);
+        ex=[];
+        if(trim(f.mk)&&trim(f.mk)!==o.nm) ex.push("加工先 "+trim(f.mk));
+        if(trim(f.pt)&&trim(f.pt)!==o.nm) ex.push("部品名 "+trim(f.pt));
+        if(trim(f.dw)&&trim(f.dw)!==o.nm) ex.push("図番 "+trim(f.dw));
+        if(trim(f.sh)&&trim(f.sh)!==o.nm) ex.push("形状 "+trim(f.sh));
+        o.nt=[trim(f.nt)].concat(ex).join(" / ").replace(/^ \/ | \/ $/g,"").replace(/^\s*\/\s*/,"");
+        db.d[i].f=normBy(DFLD,o);
+      }else{
+        db.d[i].f=normBy(DFLD,{nm:trim(db.d[i].n)});
+      }
+      db.d[i].n=headD(db.d[i].f);
+    }
+    for(i=0;i<db.r.length;i++) if(db.r[i].g) db.r[i].g=normBy(RFLD,db.r[i].g);
+    return db;
+  }
+  function saveDB(db){
+    try{ localStorage.setItem(RKEY,JSON.stringify(db)); return true; }
+    catch(e){ return false; }
+  }
+  function destOf(db,id){
+    var i; for(i=0;i<db.d.length;i++) if(db.d[i].i===id) return db.d[i];
+    return null;
+  }
+  /* 同じフォルダの直近の記録を、次の記入の下敷きにする（打ち直しを減らす） */
+  function lastGOf(db,did){
+    var i;
+    for(i=0;i<db.r.length;i++) if(db.r[i].d===did&&db.r[i].g) return db.r[i].g;
+    return null;
+  }
+
+  /* ── 画面部品 ── */
+  var css=""
+    +"#krBar{margin:14px 0 6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}"
+    +"#krBar button{font:inherit;font-size:13px;padding:7px 14px;border:1px solid #C9D3DA;"
+    +"border-radius:9px;background:#fff;color:#1F3341;cursor:pointer;min-height:38px}"
+    +"#krBar button#krUndo{border-color:#B4232C;color:#B4232C;font-weight:bold}"
+    +"#krBar button#krUndo.off{display:none}"
+    +"#krNote{font-size:12px;color:#5B707E;opacity:0;transition:opacity .25s}"
+    +"#krNote.show{opacity:1}"
+    +"#krNote.warn{color:#B4232C}"
+    +"#krSheet{position:fixed;left:0;right:0;bottom:0;z-index:10000;background:#fff;"
+    +"border-top:1px solid #C9D3DA;box-shadow:0 -6px 18px rgba(0,0,0,.18);"
+    +"padding:12px 14px calc(14px + env(safe-area-inset-bottom));max-height:74%;overflow-y:auto}"
+    +"#krSheet.off{display:none}"
+    +"#krSheet .krH{display:flex;justify-content:space-between;align-items:center;"
+    +"font-size:13px;font-weight:bold;color:#1F3341;margin-bottom:8px}"
+    +"#krSheet .krH button{font:inherit;font-size:12px;padding:5px 12px;border:1px solid #C9D3DA;"
+    +"border-radius:8px;background:#F2F4F5;cursor:pointer}"
+    +"#krList button{display:block;width:100%;text-align:left;font:inherit;font-size:14px;"
+    +"padding:10px 12px;margin:6px 0;border:1px solid #C9D3DA;border-radius:9px;"
+    +"background:#F7F9FA;color:#1F3341;cursor:pointer}"
+    +"#krList button small{display:block;color:#5B707E;font-size:11.5px;margin-top:3px;line-height:1.5}"
+    +"#krSheet .krT{font-size:11.5px;color:#5B707E;margin-top:8px;line-height:1.7}"
+    +"#krNewBtn{display:block;width:100%;font:inherit;font-size:13.5px;padding:11px;margin-top:10px;"
+    +"border:1px dashed #C9D3DA;border-radius:9px;background:#fff;color:#1F3341;cursor:pointer}"
+    +"#krPick.off,#krDForm.off,#krRForm.off,#krSheet .krT.off{display:none}"
+    +"#krSheet .krFR{margin-bottom:7px}"
+    +"#krSheet .krFR label{display:block;font-size:11.5px;font-weight:bold;color:#5B707E;margin-bottom:3px}"
+    +"#krSheet .krFR input{width:100%;font:inherit;font-size:15px;padding:9px 10px;"
+    +"border:1px solid #C9D3DA;border-radius:9px;background:#fff;color:#1F3341}"
+    +"#krSheet .krFB{display:flex;gap:7px;margin-top:9px}"
+    +"#krSheet .krFB button{flex:1;font:inherit;font-size:13.5px;padding:11px;border:1px solid #C9D3DA;"
+    +"border-radius:9px;background:#1F3341;color:#fff;cursor:pointer;min-height:44px}"
+    +"#krSheet .krFB button.sub{background:#fff;color:#1F3341}"
+    +"#krSheet .krFN{font-size:11.5px;color:#B4232C;margin-top:6px;min-height:16px}"
+    +"#krWhere{font-size:12.5px;color:#1F3341;background:#F2F4F5;border-radius:8px;"
+    +"padding:8px 10px;margin-bottom:9px;line-height:1.6}"
+    +"#krWhere .krPre{font-size:11px;color:#5B707E}"
+    /* 記録の部品は紙に出さない。v88まではガイドの中にいたので印刷されて
+       いなかったが、外へ出したので明示的に外す(v89)。 */
+    +"@media print{#krBar,#krSheet,#krCall{display:none !important}}";
+
+  function build(){
+    var st=document.createElement("style");
+    st.appendChild(document.createTextNode(css));
+    document.head.appendChild(st);
+
+    var bar=document.createElement("div");
+    bar.id="krBar";
+    bar.innerHTML='<button type="button" id="krBtn">📒 記録する</button>'
+      +'<button type="button" id="krUndo" class="off">取り消す</button>'
+      +'<span id="krNote"></span>';
+    /* 置き場所は<結果の直下>。v88まで .src の前に入れていたが、.src は
+       「使い方と例を見る」(details)の中にあるため、ガイドを開かないと
+       ボタンが出てこなかった。jsdom は details を描画しないので検算では
+       見えず、実機で発覚した(v89)。
+       ・結果ブロックがタブの中にあるツール(axis-tilt/chord-r/corner-dist)は、
+         タブごと消えないようタブ群の外へ出す。
+       ・結果ブロックが無いツール(pitch-row/resin-guide)はフッターの直前。 */
+    var wrap=document.querySelector(".wrap");
+    var dro=wrap? wrap.querySelector(".dro"):null;
+    if(wrap&&dro){
+      var host=dro;
+      while(host.parentNode&&host.parentNode!==wrap) host=host.parentNode;
+      if(host.tagName==="SECTION"){
+        while(host.nextElementSibling&&host.nextElementSibling.tagName==="SECTION")
+          host=host.nextElementSibling;
+      }
+      wrap.insertBefore(bar,host.nextSibling);
+    }else if(wrap){
+      wrap.insertBefore(bar,wrap.querySelector("footer"));
+    }else document.body.appendChild(bar);
+
+    /* 名前などの欄には inputmode を付けない＝OS標準キーボードで文字が打てる */
+    function fh(list,pre){
+      var h="", i;
+      for(i=0;i<list.length;i++){
+        h+='<div class="krFR"><label for="'+pre+list[i][0]+'">'+list[i][1]+'</label>'
+          +'<input type="text" id="'+pre+list[i][0]+'" autocomplete="off"></div>';
+      }
+      return h;
+    }
+    var sh=document.createElement("div");
+    sh.id="krSheet"; sh.className="off";
+    sh.innerHTML='<div class="krH"><span id="krTitle">どのフォルダに入れますか</span>'
+      +'<button type="button" id="krClose">閉じる</button></div>'
+
+      /* ① フォルダを選ぶ */
+      +'<div id="krPick">'
+      +'<div id="krList"></div>'
+      +'<button type="button" id="krNewBtn">＋ 新しいフォルダを作る</button>'
+      +'</div>'
+
+      /* ② フォルダを作る（軽く：名前・部組・備考） */
+      +'<div id="krDForm" class="off">'+fh(DFLD,"krD_")
+      +'<div id="krDNote" class="krFN"></div>'
+      +'<div class="krFB"><button type="button" id="krDGo">作る</button>'
+      +'<button type="button" class="sub" id="krDNo">やめる</button></div></div>'
+
+      /* ③ 記録の中身を書く（詳細はこちら） */
+      +'<div id="krRForm" class="off">'
+      +'<div class="krWhere" id="krWhere"></div>'+fh(RFLD,"krR_")
+      +'<div id="krRNote" class="krFN"></div>'
+      +'<div class="krFB"><button type="button" id="krRGo">記録する</button>'
+      +'<button type="button" class="sub" id="krRNo">フォルダを選び直す</button></div></div>'
+
+      +'<div class="krT" id="krTip">フォルダは<b>名前</b>だけ必須です。'
+      +'加工先・図番などの詳しい内容は、次の画面で<b>記録1件ごと</b>に書きます。<br>'
+      +'保存はこの端末の中だけです(送信なし)。</div>';
+    document.body.appendChild(sh);
+
+    document.getElementById("krBtn").onclick=function(){ openSheet(); };
+    document.getElementById("krClose").onclick=function(){ sheet(false); };
+    document.getElementById("krNewBtn").onclick=function(){ showPane("d"); };
+    document.getElementById("krDNo").onclick=function(){ showPane("pick"); };
+    document.getElementById("krDGo").onclick=function(){ addDest(); };
+    document.getElementById("krRNo").onclick=function(){ showPane("pick"); };
+    document.getElementById("krRGo").onclick=function(){ saveRec(); };
+    document.getElementById("krUndo").onclick=function(){ undo(); };
+  }
+
+  function sheet(on){
+    var el=document.getElementById("krSheet");
+    if(el) el.className=on? "":"off";
+    if(!on) showPane("pick");
+  }
+  function showPane(p){
+    var pick=document.getElementById("krPick"), df=document.getElementById("krDForm"),
+        rf=document.getElementById("krRForm"), ti=document.getElementById("krTitle"),
+        tip=document.getElementById("krTip"), i, el;
+    if(!pick) return;
+    pick.className=(p==="pick")? "":"off";
+    df.className=(p==="d")? "":"off";
+    rf.className=(p==="r")? "":"off";
+    tip.className=(p==="pick")? "krT":"krT off";
+    document.getElementById("krDNote").textContent="";
+    document.getElementById("krRNote").textContent="";
+    if(p==="pick") ti.textContent="どのフォルダに入れますか";
+    if(p==="d"){
+      ti.textContent="フォルダを作ります";
+      for(i=0;i<DFLD.length;i++){ el=document.getElementById("krD_"+DFLD[i][0]); if(el) el.value=""; }
+      el=document.getElementById("krD_nm"); if(el) el.focus();
+    }
+    if(p==="r") ti.textContent="この記録の内容";
+  }
+
+  function openSheet(){
+    var db=loadDB(), list=document.getElementById("krList"), h="", i, d;
+    var ds=db.d.slice().sort(function(a,b){ return (b.ts||0)-(a.ts||0); });
+    if(!ds.length){
+      h='<div class="krT">まだフォルダがありません。下の「＋ 新しいフォルダを作る」から作ってください。</div>';
+    }
+    for(i=0;i<ds.length;i++){
+      d=ds[i];
+      h+='<button type="button" data-d="'+esc(d.i)+'">'+esc(headD(d.f))
+        +(subD(d.f)? '<small>'+esc(subD(d.f))+'</small>':'')+'</button>';
+    }
+    list.innerHTML=h;
+    list.onclick=function(e){
+      var b=e.target;
+      while(b&&b!==list&&b.tagName!=="BUTTON") b=b.parentNode;
+      if(!b||b===list) return;
+      openRecForm(b.getAttribute("data-d"),false);
+    };
+    showPane(ds.length? "pick":"d");
+    sheet(true);
+  }
+
+  function addDest(){
+    var f=emptyD(), i, el;
+    for(i=0;i<DFLD.length;i++){
+      el=document.getElementById("krD_"+DFLD[i][0]);
+      f[DFLD[i][0]]=trim(el? el.value:"");
+    }
+    if(f.nm===""){
+      document.getElementById("krDNote").textContent="フォルダの名前を入れてください。";
+      el=document.getElementById("krD_nm"); if(el) el.focus();
+      return;
+    }
+    var db=loadDB();
+    db.seq++;
+    var id="d"+db.seq;
+    db.d.push({i:id,n:f.nm,f:f,ts:(new Date()).getTime()});
+    if(!saveDB(db)){ note("保存できませんでした(端末の空き容量を確認してください)",true); return; }
+    openRecForm(id,true);
+  }
+
+  /* ── 記録の中身を書く画面 ──
+     同じフォルダの直近の記録があれば下敷きにする。同じ部品を何度も測るときに
+     打ち直さずに済み、それでいて<今回の内容として目を通した>形になる。 */
+  var curDest="", curNew=false;
+  function openRecForm(destId,isNew){
+    var db=loadDB(), d=destOf(db,destId);
+    if(!d){ note("そのフォルダが見つかりませんでした",true); sheet(false); return; }
+    curDest=destId; curNew=!!isNew;
+    var g=lastGOf(db,destId), i, el, k;
+    for(i=0;i<RFLD.length;i++){
+      k=RFLD[i][0];
+      el=document.getElementById("krR_"+k);
+      if(el) el.value=(g&&g[k])? g[k] : "";
+    }
+    document.getElementById("krWhere").innerHTML="入れ先: <b>"+esc(headD(d.f))+"</b>"
+      +(g? '　<span class="krPre">前回の内容を写しています</span>':"");
+    showPane("r");
+    el=document.getElementById("krR_pt"); if(el&&!(g&&g.pt)) el.focus();
+  }
+  function saveRec(){
+    var g=emptyR(), i, el;
+    for(i=0;i<RFLD.length;i++){
+      el=document.getElementById("krR_"+RFLD[i][0]);
+      g[RFLD[i][0]]=trim(el? el.value:"");
+    }
+    if(!anyOf(RFLD,g)){
+      document.getElementById("krRNote").textContent="5つのうち、どれか1つは入れてください。";
+      el=document.getElementById("krR_pt"); if(el) el.focus();
+      return;
+    }
+    doSave(curDest,curNew,g);
+  }
+
+  var lastSave=null, undoTimer=null;
+  function doSave(destId,isNew,g){
+    var db=loadDB(), d=destOf(db,destId);
+    if(!d){ note("そのフォルダが見つかりませんでした",true); sheet(false); return; }
+    var c=collect();
+    var tsvg=makeThumb();                 /* v87: 図。ツールが用意していなければ空 */
+    db.seq++;
+    var rid="r"+db.seq;
+    db.r.unshift({ i:rid, d:destId, t:TOOL, n:TNAME, l:makeLabel(), g:g,
+                   ts:(new Date()).getTime(), v:c.v, sw:c.sw,
+                   tv:(tsvg? thumbVer():"") });
+    db.last=destId;
+    if(saveDB(db)){
+      lastSave={r:rid, d:destId, newDest:!!isNew};
+      note("「"+headD(d.f)+"」に "+headR(g)+" として記録しました",false);
+      if(tsvg) tPut(rid,tsvg);            /* v87: 記録が保存できたときだけ図を入れる */
+      armUndo();
+    }else{
+      note("保存できませんでした(端末の空き容量を確認してください)",true);
+    }
+    sheet(false);
+  }
+  /* ── 取り消し（v80）──
+     失敗に気づくのはたいてい保存した直後。トップまで戻らずその場で消せるようにする。
+     その保存で作ったフォルダなら、中が空になる場合はフォルダごと戻す。 */
+  function armUndo(){
+    var b=document.getElementById("krUndo");
+    if(!b) return;
+    b.className="";
+    if(undoTimer) clearTimeout(undoTimer);
+    undoTimer=setTimeout(function(){ b.className="off"; lastSave=null; },60000);
+  }
+  function undo(){
+    if(!lastSave){ return; }
+    var db=loadDB(), keep=[], i, n=0;
+    for(i=0;i<db.r.length;i++) if(db.r[i].i!==lastSave.r) keep.push(db.r[i]);
+    db.r=keep;
+    tDel(lastSave.r);                     /* v87: 記録を消したら図も消す（孤児を作らない） */
+    if(lastSave.newDest){
+      for(i=0;i<db.r.length;i++) if(db.r[i].d===lastSave.d) n++;
+      if(n===0){
+        var d2=[];
+        for(i=0;i<db.d.length;i++) if(db.d[i].i!==lastSave.d) d2.push(db.d[i]);
+        db.d=d2;
+        if(db.last===lastSave.d) db.last="";
+      }
+    }
+    if(saveDB(db)) note("記録を取り消しました",false);
+    else note("取り消せませんでした",true);
+    lastSave=null;
+    var b=document.getElementById("krUndo"); if(b) b.className="off";
+    if(undoTimer) clearTimeout(undoTimer);
+  }
+
+  var noteTimer=null;
+  function note(msg,warn){
+    var el=document.getElementById("krNote");
+    if(!el) return;
+    el.textContent=msg;
+    el.className=warn? "show warn":"show";
+    if(noteTimer) clearTimeout(noteTimer);
+    noteTimer=setTimeout(function(){ el.className=""; },5000);
+  }
+
+  /* ── 呼び出し(?rec=ID) ──
+     欄の数が決まっているツールは、そのまま入れて既存の計算を走らせる。 */
+  function restore(){
+    var m=(location.search||"").match(/[?&]rec=([^&]+)/);
+    if(!m) return;
+    var id=decodeURIComponent(m[1]);
+    var db=loadDB(), i, rec=null;
+    for(i=0;i<db.r.length;i++) if(db.r[i].i===id){ rec=db.r[i]; break; }
+    if(!rec){ note("呼び出す記録が見つかりませんでした(削除済みの可能性)",true); return; }
+    if(rec.t!==TOOL){ note("この記録は別のツールのものです",true); return; }
+    var sw=rec.sw||[], el;
+    for(i=0;i<sw.length;i++){
+      el=document.getElementById(sw[i]);
+      if(el&&!hasOn(el)) el.click();     /* モードを先に合わせる */
+    }
+    var v=rec.v||{}, k, filled=[], miss=0;
+    for(k in v){
+      if(!Object.prototype.hasOwnProperty.call(v,k)) continue;
+      el=document.getElementById(k);
+      if(!el||inOwn(el)){ miss++; continue; }
+      if(el.type==="checkbox") el.checked=(v[k]==="1");
+      else el.value=v[k];
+      filled.push(el);
+    }
+    for(i=0;i<filled.length;i++){
+      el=filled[i];
+      fire(el,(el.tagName==="SELECT"||el.type==="checkbox")? "change":"input");
+    }
+    var d=destOf(db,rec.d);
+    note("記録「"+(headR(rec.g)||rec.l)+"」を呼び出しました"+(d? "("+headD(d.f)+")":"")
+      +(miss? "。一部の欄は復元できませんでした":""), miss>0);
+  }
+
+
+  function init(){ build(); restore(); }
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",init);
+  else init();
+})();
+</script>
+</body>
+</html>

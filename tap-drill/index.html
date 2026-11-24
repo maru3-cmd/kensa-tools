@@ -219,12 +219,50 @@
   /* v151: 著作権表示。フッターの末尾に置く（全ページ共通の見た目） */
   .crnote{margin-top:8px;padding-top:7px;border-top:1px solid rgba(143,162,175,.45);
     font-size:11px;line-height:1.7;color:inherit;opacity:.92}
+  /* v175：細目ねじの下穴 早見 */
+  .fnbox{background:#F7F9FA;border:2px solid var(--ink);border-radius:12px;padding:6px 12px 12px;margin:12px 0 14px}
+  .fnlead{font-size:12px;line-height:1.7;color:#1F3341;margin:0 2px 2px}
+  .fnrow{grid-template-columns:26px minmax(0,1fr) minmax(0,150px)}
+  .fntabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;margin:10px 0 6px}
+  .fntabs button{font:inherit;font-size:11px;font-weight:700;padding:7px 2px;border:1.5px solid var(--line);border-radius:7px;background:var(--sheet);color:var(--ink);white-space:nowrap}
+  .fntabs button.on{background:#5B707E;color:#fff;border-color:#5B707E}
+  .fngrid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;margin-bottom:8px}
+  .fngrid button{font:inherit;font-size:13px;font-weight:700;padding:6px 0 4px;border:1.5px solid var(--ink);border-radius:7px;background:var(--sheet);color:var(--ink);display:flex;flex-direction:column;align-items:center;line-height:1.15;font-variant-numeric:tabular-nums}
+  .fngrid button small{font-size:9px;font-weight:400;color:#5B707E}
+  .fngrid button.on{background:var(--ink);color:#fff}
+  .fngrid button.on small{color:#C9D3DA}
+  .fnp{margin-bottom:8px}
+  .chip.nami{border-style:dashed}
+  .fnhint{font-size:12px;color:#5B707E;padding:6px 2px}
+  .fnhint.ng{color:#B23B2E}
+  .fnhead{font-size:15px;color:var(--ink);margin:4px 2px 6px;display:flex;align-items:center;gap:8px}
+  .fnhead b{font-size:18px;font-variant-numeric:tabular-nums}
+  .fnk{font-size:11px;font-weight:700;background:#2C5FA0;color:#fff;border-radius:5px;padding:1px 7px}
+  .fnk.nami{background:#5B707E}
+  .fnbig{background:var(--dro-bg);border-radius:10px;padding:10px 14px;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin-bottom:8px}
+  .fnbig .fnl{font-size:11px;color:var(--dro-dim);letter-spacing:.06em;width:100%}
+  .fnbig .fnv{font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;font-size:26px;font-weight:700;color:var(--dro-red);text-shadow:0 0 10px rgba(255,90,72,.35);white-space:nowrap}
+  .fnbig .fnu{font-size:12px;color:var(--dro-dim)}
+  .fnrows{background:var(--sheet);border:1.5px solid var(--ink);border-radius:8px;overflow:hidden}
+  .fnr{display:grid;grid-template-columns:auto 1fr;align-items:baseline;gap:0 10px;padding:7px 10px;border-top:1px solid #D5DDE2}
+  .fnr:first-child{border-top:none}
+  .fnr.hit{background:#FCE9E7}
+  .fnk2{font-size:12px;font-weight:700;color:#3A5060}
+  .fnr>b{font-size:16px;text-align:right;font-variant-numeric:tabular-nums}
+  .fnr small{grid-column:1 / -1;font-size:11px;color:#5B707E;line-height:1.6;margin-top:2px}
+  .fnwarn{font-size:11.5px;line-height:1.7;background:#FFF8E8;border:1px solid #E8D3A3;border-radius:8px;padding:6px 10px;margin:8px 0 0}
+  .fnall{margin-top:10px;border:1px solid #D5DDE2;border-radius:10px;background:var(--sheet);padding:8px 10px}
+  .fnall summary{font-size:12.5px;font-weight:700;color:var(--ink);cursor:pointer}
+  .fnscroll{max-height:420px;overflow:auto;margin-top:6px;-webkit-overflow-scrolling:touch}
+  table.tol.fnl th{position:sticky;top:0}
+  table.tol.fnl tr[data-d]{cursor:pointer}
+  table.tol.fnl td small{font-size:9px;color:#B23B2E;margin-left:3px}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <h1>ねじ下穴・ひっかかり率<small>メートル並目/細目・切削/転造・限度判定</small></h1>
+    <h1>ねじ下穴・ひっかかり率<small>メートル並目/細目・切削/転造・限度判定／細目 M1〜M120 の下穴の範囲</small></h1>
   </header>
 
   <div class="topclear"><a class="backlink" href="../index.html">≡ ツール一覧</a><button type="button" aria-label="入力をすべて消去して最初から始める" onclick="armClear(this)">すべて消去</button></div>
@@ -234,6 +272,7 @@
   <div class="gb">
     <h4>使い方</h4>
     <ol>
+      <li><b>細目ねじ（M17×1 など）の下穴の下限・上限だけを知りたいとき</b>は、いちばん上の「細目ねじの下穴（M1〜M120）」で、呼び → ピッチの順に押します（または M17×1 と入れる）。一覧もあります。</li>
       <li>ねじサイズ（M8 など）と、<b>切削タップ／転造</b>を選びます。並目/細目のピッチは自動です。</li>
       <li><b>慣用の下穴 D−P</b>（呼び径−ピッチ）と、基準めねじ内径が出ます。</li>
       <li>下の<b>「実測の判定」</b>に、タップ後の<b>めねじ内径</b>やボルトの<b>おねじ外径</b>の実測を入れると、<b>2級相当(6H/6g)</b>の許容限界(JIS B 0209-2)で合否が出ます。並目・細目どちらも対応。</li>
@@ -277,7 +316,29 @@
 
 
   <!-- 図面シート -->
-  <div class="sheet">
+    <!-- v175：細目ねじの下穴 早見（M1〜M120） -->
+  <div class="fnbox" id="fnBox">
+    <h2>細目ねじの下穴（M1〜M120）</h2>
+    <div class="fnlead">図面の <b>M17×1</b> のような細目ねじの、<b>下穴の下限・上限</b>（めねじ内径 6H）が出ます。呼び → ピッチの順に押すか、そのまま入れてください。</div>
+    <div class="inputs">
+      <div class="row fnrow">
+        <span class="badge">M</span>
+        <label for="fFine">ねじの呼び<small>例 M17×1・17x1.5・M60</small></label>
+        <input id="fFine" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="M17×1">
+      </div>
+    </div>
+    <div class="fntabs" id="fnTabs"></div>
+    <div class="fngrid" id="fnSizes"></div>
+    <div class="chips fnp" id="fnPitch"></div>
+    <div id="fnRes"></div>
+    <details class="fnall">
+      <summary>細目ねじの下穴 一覧（M1〜M120・全 <span id="fnCnt">―</span> 種類）</summary>
+      <div class="note" style="margin-top:4px">行を押すと、上にくわしく出ます。並目は呼びを押すと「並目」のボタンで出ます。</div>
+      <div class="fnscroll" id="fnList"></div>
+    </details>
+  </div>
+
+<div class="sheet">
     <div class="sheet-inner">
       <svg viewBox="0 0 340 250" role="img" aria-label="ねじ山のかみ合い高さと下穴径の関係、および限度帯ゲージ">
         <!-- おねじ山(左) -->
@@ -566,7 +627,8 @@
   var PT={'0.3':[-18,75,85],'0.35':[-19,85,100],'0.4':[-19,95,112],'0.45':[-20,100,125],
     '0.5':[-20,106,140],'0.6':[-21,125,160],'0.7':[-22,140,180],'0.75':[-22,140,190],
     '0.8':[-24,150,200],'1':[-26,180,236],'1.25':[-28,212,265],'1.5':[-32,236,300],
-    '1.75':[-34,265,335],'2':[-38,280,375],'2.5':[-42,335,450],'3':[-48,375,500],'3.5':[-53,425,560]};
+    '1.75':[-34,265,335],'2':[-38,280,375],'2.5':[-42,335,450],'3':[-48,375,500],'3.5':[-53,425,560],
+    '4':[-60,475,600],'4.5':[-63,500,670],'5':[-71,530,710],'5.5':[-75,560,750],'6':[-80,600,800]};  /* v175：細目 M120 まで */
   function r3(x){return Math.ceil(x*1000-0.5)/1000}  /* 0.5µm端数はJIS基準寸法表に合わせ切り捨て側 */
   function thJudge(){
     var dp=curDP(), D=dp.D, P=dp.P;
@@ -578,7 +640,7 @@
     }
     if(!(D>0&&P>0&&P<D)){clr('ねじを選ぶと許容限界(JIS B 0209-2)が出ます');return;}
     var t=PT[String(P)];
-    if(!t){clr('ピッチ '+P+' は判定表の対象外です(0.3〜3.5)');return;}
+    if(!t){clr('ピッチ '+P+' は判定表の対象外です(0.3〜6。0.2・0.25 は 6H の公差が規格に無い)');return;}
     var d1min=r3(D-1.0825*P), d1max=r3(d1min+t[2]/1000);
     var odmax=r3(D+t[0]/1000), odmin=r3(odmax-t[1]/1000);
     $('vLimIn').textContent=d1min.toFixed(3)+' 〜 '+d1max.toFixed(3);
@@ -717,6 +779,135 @@
     clearTimeout(toastTimer);
     toastTimer=setTimeout(function(){t.classList.remove('show')},1600);
   }
+
+  /* ══════ v175：細目ねじの下穴 早見（M1〜M120） ══════
+     ムギさん：「17×1 というねじ穴があり、下穴の下限・上限が知りたい場面があった。120 までの細目の下穴の一覧と、
+       M60 を押すと細目の項目が出て、さらに押すと下穴が出るものがほしい」。
+     呼びとピッチの組み合わせ：JIS B 0207:1982（メートル細目ねじ）の表。並目は JIS B 0205。
+     下穴の下限＝基準のめねじ内径 D1（D − 1.0825P）、上限＝D1 ＋ TD1（6H、JIS B 0209-1 表3）。
+     ピッチ 0.2 は 6H・5H の公差が規格に無く 4H だけ、0.25 は 6H が無く 5H まで（ISO 965-1 表3）。 */
+  var FN=[
+    [1,0.25,[0.2]],[1.1,0.25,[0.2]],[1.2,0.25,[0.2]],[1.4,0.3,[0.2]],[1.6,0.35,[0.2]],[1.8,0.35,[0.2]],
+    [2,0.4,[0.25]],[2.2,0.45,[0.25]],[2.5,0.45,[0.35]],[3,0.5,[0.35]],[3.5,0.6,[0.35]],[4,0.7,[0.5]],[4.5,0.75,[0.5]],[5,0.8,[0.5]],[5.5,null,[0.5]],
+    [6,1,[0.75]],[7,1,[0.75]],[8,1.25,[1,0.75]],[9,1.25,[1,0.75]],[10,1.5,[1.25,1,0.75]],[11,1.5,[1,0.75]],[12,1.75,[1.5,1.25,1]],
+    [14,2,[1.5,1.25,1]],[15,null,[1.5,1]],[16,2,[1.5,1]],[17,null,[1.5,1]],[18,2.5,[2,1.5,1]],[20,2.5,[2,1.5,1]],
+    [22,2.5,[2,1.5,1]],[24,3,[2,1.5,1]],[25,null,[2,1.5,1]],[26,null,[1.5]],[27,3,[2,1.5,1]],[28,null,[2,1.5,1]],[30,3.5,[3,2,1.5,1]],
+    [32,null,[2,1.5]],[33,3.5,[3,2,1.5]],[35,null,[1.5]],[36,4,[3,2,1.5]],[38,null,[1.5]],[39,4,[3,2,1.5]],[40,null,[3,2,1.5]],
+    [42,4.5,[4,3,2,1.5]],[45,4.5,[4,3,2,1.5]],[48,5,[4,3,2,1.5]],[50,null,[3,2,1.5]],[52,5,[4,3,2,1.5]],[55,null,[4,3,2,1.5]],
+    [56,5.5,[4,3,2,1.5]],[58,null,[4,3,2,1.5]],[60,5.5,[4,3,2,1.5]],[62,null,[4,3,2,1.5]],[64,6,[4,3,2,1.5]],[65,null,[4,3,2,1.5]],[68,6,[4,3,2,1.5]],
+    [70,null,[6,4,3,2,1.5]],[72,null,[6,4,3,2,1.5]],[75,null,[4,3,2,1.5]],[76,null,[6,4,3,2,1.5]],[78,null,[2]],[80,null,[6,4,3,2,1.5]],[82,null,[2]],
+    [85,null,[6,4,3,2]],[90,null,[6,4,3,2]],[95,null,[6,4,3,2]],[100,null,[6,4,3,2]],[105,null,[6,4,3,2]],[110,null,[6,4,3,2]],[115,null,[6,4,3,2]],[120,null,[6,4,3,2]]
+  ];
+  var FNTAB=[['M1〜5.5',1,5.5],['M6〜20',6,20],['M22〜40',22,40],['M42〜68',42,68],['M70〜120',70,120]];
+  /* ピッチ 0.2・0.25 の内径の公差（µm）と等級。ほかは PT（6H） */
+  var FNSMALL={'0.2':[38,'4H'],'0.25':[56,'5H']};
+  var FNNOTE={'14x1.25':'ISO 261 では<b>点火プラグ専用</b>の組み合わせです。','35x1.5':'ISO 261 では<b>転がり軸受のロックナット専用</b>の組み合わせです。'};
+  var fnTab=1, fnD=-1, fnP=-1;
+  function fnFmt(x){ return x.toFixed(2).replace(/0$/,''); }
+  function fnRow(D){ var i; for(i=0;i<FN.length;i++) if(Math.abs(FN[i][0]-D)<1e-9) return FN[i]; return null; }
+  function fnName(D,P){ return 'M'+D+'×'+P; }
+  /* 内径の範囲と、ボルト（おねじ）外径 6g の範囲 */
+  function fnCalc(D,P){
+    /* D₁ は 1.0825317547×P（＝ 5/4 × 0.8660254 × P）で出し、µm の整数で丸める（M1.1×0.2 ＝ 0.883 など、JIS の値と全部一致） */
+    var k=String(P), t=PT[k], sm=FNSMALL[k], d1u=Math.round((D-1.0825317547*P)*1000), tol, cls, o={}, es, td, odu;
+    if(sm){ tol=sm[0]; cls=sm[1]; } else if(t){ tol=t[2]; cls='6H'; } else return null;
+    o.d1min=d1u/1000; o.d1max=(d1u+tol)/1000; o.cls=cls; o.tol=tol; o.dp=Math.round((D-P)*1000)/1000;
+    es=t?t[0]:(k==='0.2'?-17:-18); td=t?t[1]:(k==='0.2'?56:67);
+    odu=Math.round(D*1000)+es; o.odmax=odu/1000; o.odmin=(odu-td)/1000;
+    return o;
+  }
+  function fnTabs(){
+    var h='', i;
+    for(i=0;i<FNTAB.length;i++) h+='<button type="button" id="swfr-'+i+'" data-t="'+i+'" class="'+(i===fnTab?'on':'')+'">'+FNTAB[i][0]+'</button>';
+    $('fnTabs').innerHTML=h;
+  }
+  function fnSizes(){
+    var h='', i, r, T=FNTAB[fnTab];
+    for(i=0;i<FN.length;i++){
+      r=FN[i]; if(r[0]<T[1]-1e-9||r[0]>T[2]+1e-9) continue;
+      h+='<button type="button" id="swfd-'+String(r[0]).replace('.','_')+'" data-d="'+r[0]+'" class="'+(Math.abs(r[0]-fnD)<1e-9?'on':'')+'">M'+r[0]+'<small>'+r[2].length+'種</small></button>';
+    }
+    $('fnSizes').innerHTML=h;
+  }
+  function fnPitches(){
+    var r=fnRow(fnD), h='', i, p;
+    if(!r){ $('fnPitch').innerHTML='<span class="note">上の呼び（M○）を押すと、細目のピッチが出ます。</span>'; return; }
+    for(i=0;i<r[2].length;i++){ p=r[2][i]; h+='<button type="button" id="swfp-'+String(p).replace('.','_')+'" data-p="'+p+'" class="chip'+(Math.abs(p-fnP)<1e-9?' on':'')+'">細目<small>×'+p+'</small></button>'; }
+    if(r[1]!=null){ p=r[1]; h+='<button type="button" id="swfp-'+String(p).replace('.','_')+'" data-p="'+p+'" class="chip nami'+(Math.abs(p-fnP)<1e-9?' on':'')+'">並目<small>×'+p+'</small></button>'; }
+    $('fnPitch').innerHTML=h;
+  }
+  function fnShow(){
+    var o, r, kind, note='', h, key, out=$('fnRes');
+    fnTabs(); fnSizes(); fnPitches();
+    if(!(fnD>0&&fnP>0)){ out.innerHTML='<div class="fnhint">'+(fnD>0?'M'+fnD+' のピッチを押してください。':'呼び（M○）→ ピッチの順に押すと、下穴の範囲が出ます。')+'</div>'; return; }
+    o=fnCalc(fnD,fnP); r=fnRow(fnD);
+    if(!o){ out.innerHTML='<div class="fnhint ng">ピッチ '+fnP+' は公差の表に無いため出せません（0.2〜6 のピッチに対応）。</div>'; return; }
+    if(!r) note+='<div class="fnwarn">M'+fnD+' は JIS の呼び径の表にありません。値は式どおりに出しています。</div>';
+    else if(r[1]!=null && Math.abs(r[1]-fnP)<1e-9) kind='並目';
+    else if(r[2].indexOf(fnP)>=0) kind='細目';
+    else note+='<div class="fnwarn">'+fnName(fnD,fnP)+' は JIS の表に無い組み合わせです（M'+fnD+' の細目：'+r[2].join('・')+'）。値は式どおりに出しています。</div>';
+    key=fnD+'x'+fnP; if(FNNOTE[key]) note+='<div class="fnwarn">'+FNNOTE[key]+'</div>';
+    if(o.cls!=='6H') note+='<div class="fnwarn">ピッチ '+fnP+' には <b>6H の公差が規格にありません</b>（'+(fnP===0.2?'4H だけ':'5H まで')+'）。ここでは <b>'+o.cls+'</b> の範囲で出しています。</div>';
+    h='<div class="fnhead"><b>'+fnName(fnD,fnP)+'</b>'+(kind?'<span class="fnk'+(kind==='並目'?' nami':'')+'">'+kind+'</span>':'')+'</div>';
+    h+='<div class="fnbig"><span class="fnl">下穴の範囲（めねじ内径 '+o.cls+'）</span><span class="fnv">'+o.d1min.toFixed(3)+' 〜 '+o.d1max.toFixed(3)+'</span><span class="fnu">mm</span></div>';
+    h+='<div class="fnrows">'
+      +'<div class="fnr"><span class="fnk2">下限</span><b>'+o.d1min.toFixed(3)+'</b><small>基準のめねじ内径 D₁（D − 1.0825P）。これより小さいと山が高すぎて、タップが重い・ボルトが入りにくい。</small></div>'
+      +'<div class="fnr"><span class="fnk2">上限</span><b>'+o.d1max.toFixed(3)+'</b><small>下限 ＋ '+o.tol+'µm（'+o.cls+'）。これより大きいと山が浅く、強度が足りない。</small></div>'
+      +'<div class="fnr hit"><span class="fnk2">切削タップの下穴</span><b>'+fnFmt(o.dp)+'</b><small>慣用の D − P（ひっかかり率 約92%）。'+(o.dp>=o.d1min-1e-9&&o.dp<=o.d1max+1e-9?'上の範囲の中に入っています。':'<b>上の範囲から外れています。</b>')+'</small></div>'
+      +(o.odmax?'<div class="fnr"><span class="fnk2">ボルトの外径</span><b>'+o.odmin.toFixed(3)+' 〜 '+o.odmax.toFixed(3)+'</b><small>おねじ 6g（相手のボルト側を測るとき）。</small></div>':'')
+      +'</div>';
+    h+=note+'<button type="button" class="tbl-btn" id="fnUse">↓ この寸法で下の計算（材質の限度・転造タップ・実測の判定）に入れる</button>';
+    out.innerHTML=h;
+  }
+  function fnStale(){
+    var f=$('fFine'), r; if(!f.value) return;
+    r=fnParse(f.value);
+    if(!r || Math.abs(r.D-fnD)>1e-9 || (r.P>0 && Math.abs(r.P-fnP)>1e-9)) f.value='';
+  }
+  function fnParse(raw){
+    var s=String(raw||'').replace(/[０-９．]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0)}).replace(/[ｍＭ]/g,'M').replace(/[×✕＊*ｘＸX]/g,'x').toUpperCase().replace(/^\s*M\s*/,'');
+    var m=/^\s*(\d+(?:\.\d+)?)\s*(?:[xX\-\s]\s*(\d+(?:\.\d+)?))?\s*$/.exec(s);
+    if(!m) return null;
+    return {D:Number(m[1]), P:m[2]?Number(m[2]):0};
+  }
+  /* 押された物から、data-○ を持つボタン（行）までさかのぼる */
+  function fnUp(el,attr,stop){ while(el && el!==stop){ if(el.getAttribute && el.getAttribute(attr)!=null) return el; el=el.parentNode; } return null; }
+  function fnTabOf(D){ var i; for(i=0;i<FNTAB.length;i++) if(D>=FNTAB[i][1]-1e-9&&D<=FNTAB[i][2]+1e-9) return i; return fnTab; }
+  function fnInit(){
+    $('fnTabs').addEventListener('click',function(e){ var b=fnUp(e.target,'data-t',this); if(!b) return; fnTab=Number(b.getAttribute('data-t')); fnShow(); });
+    $('fnSizes').addEventListener('click',function(e){ var b=fnUp(e.target,'data-d',this); if(!b) return;
+      fnD=Number(b.getAttribute('data-d')); fnP=-1; var r=fnRow(fnD); if(r && r[1]==null && r[2].length===1) fnP=r[2][0]; fnStale(); fnShow(); });
+    $('fnPitch').addEventListener('click',function(e){ var b=fnUp(e.target,'data-p',this); if(!b) return; fnP=Number(b.getAttribute('data-p')); fnStale(); fnShow(); });
+    $('fFine').addEventListener('input',function(){
+      var r=fnParse(this.value); if(!r||!(r.D>0)) return;
+      fnD=r.D; fnTab=fnTabOf(r.D); fnP=r.P>0?r.P:-1;
+      if(fnP<0){ var row=fnRow(fnD); if(row && row[1]==null && row[2].length===1) fnP=row[2][0]; }
+      fnShow();
+    });
+    $('fnRes').addEventListener('click',function(e){
+      if(!e.target || e.target.id!=='fnUse') return;
+      var i, j=-1, si=-1;
+      for(i=0;i<SZ.length;i++) if(SZ[i][1]!=null && Math.abs(SZ[i][1]-fnD)<1e-9){ si=i; j=SZ[i][2].indexOf(fnP); break; }
+      if(si>=0 && j>=0){ sizeIdx=si; pitchIdx=j; $('customBox').style.display='none'; }
+      else { sizeIdx=SZ.length-1; pitchIdx=0; $('customBox').style.display=''; $('fCD').value=String(fnD); $('fCP').value=String(fnP); }
+      buildSizes(); buildPitches(); recalc();
+      var sh=document.querySelector('.sheet'); if(sh && sh.scrollIntoView) sh.scrollIntoView({behavior:'smooth',block:'start'});
+    });
+    $('fnList').addEventListener('click',function(e){
+      var tr=fnUp(e.target,'data-d',this); if(!tr) return;
+      fnD=Number(tr.getAttribute('data-d')); fnP=Number(tr.getAttribute('data-p')); fnTab=fnTabOf(fnD); fnStale(); fnShow();
+      var bx=$('fnBox'); if(bx && bx.scrollIntoView) bx.scrollIntoView({behavior:'smooth',block:'start'});
+    });
+    var h='<table class="tol fnl"><tr><th>ねじ</th><th>D−P<br>（切削の下穴）</th><th>下穴の下限<br>（D₁）</th><th>下穴の上限<br>（6H）</th></tr>', i, j, o, n=0, r;
+    for(i=0;i<FN.length;i++){ r=FN[i];
+      for(j=0;j<r[2].length;j++){ o=fnCalc(r[0],r[2][j]); n++;
+        h+='<tr data-d="'+r[0]+'" data-p="'+r[2][j]+'"><td>'+fnName(r[0],r[2][j])+'</td><td>'+fnFmt(o.dp)+'</td><td>'+o.d1min.toFixed(3)+'</td><td>'+o.d1max.toFixed(3)+(o.cls!=='6H'?'<small>'+o.cls+'</small>':'')+'</td></tr>'; }
+    }
+    $('fnList').innerHTML=h+'</table>';
+    $('fnCnt').textContent=String(n);
+    fnShow();
+  }
+  fnInit();
 
   buildSizes();
   buildPitches();
